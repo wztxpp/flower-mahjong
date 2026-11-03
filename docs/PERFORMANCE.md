@@ -53,4 +53,28 @@ The API/D1 regressions verify these properties independently of the performance 
 
 ## V2 production measurement
 
-Pending deployment and a second run of the same script. Do not represent local contract tests as production measurements. The baseline has no server-timing header, so the first v2 server-timing samples cannot be a before/after server-only comparison.
+Captured on 2026-11-03 after the production deployment. `/api/health` reported **0.2.0**. Raw sanitized samples: [performance-after-v2.json](performance-after-v2.json). The URL and script methodology match the baseline.
+
+| Category | V1 → V2 requests | V1 → V2 P50 (ms) | V1 → V2 P95 (ms) | V1 → V2 mean decoded bytes |
+| --- | ---: | ---: | ---: | ---: |
+| Action POST | 11 → 10 | 143.98 → 121.03 | 614.30 → 176.55 | 2,267.64 → 2,868.90 |
+| Three-client refresh after actions | 33 → 30 | 170.09 → 93.94 | 2,241.72 → 390.14 | 2,180.85 → 2,898.97 |
+| Full idle GET | 12 → 12 | 165.18 → 95.59 | 205.54 → 127.41 | 2,781.67 → 3,664.00 |
+| Same-revision idle GET | 12 → 12 | 157.02 → 85.60 | 474.53 → 191.67 | 2,781.67 → 63.00 |
+
+All **12/12 v2 conditional idle polls** returned the unchanged envelope; none returned a full snapshot. Its decoded payload was **63 bytes**, about **97.7% smaller** than the v1 same-revision snapshot mean in these runs. V2 full snapshots are larger because they carry the additional rule explanations, diagnostics and public scoring fields. The compact idle response is the clear bandwidth improvement; full response payloads did not shrink.
+
+The v2 six-discard run required **10 POST actions**: six discards and four claim passes, with no manual draws. The v1 run required six discards and five manual draws. Different random deals produced different claim counts, so total action counts are not a controlled quantitative comparison of the engines. Both runs made three concurrent full refreshes after each action for comparability, even though the v2 UI can consume the successful action response without an extra actor refresh.
+
+V2 `Server-Timing` app-processing P50/P95:
+
+- Action POST: **42/104 ms** (10 samples).
+- Post-action full GET: **17/24 ms** (30 samples).
+- Idle full GET: **15/24 ms** (12 samples).
+- Idle unchanged GET: **16/21 ms** (12 samples).
+
+The baseline had no server-timing header, so these are **not** before/after server-only measurements. All measured requests in both reports returned HTTP 200. The observed HTTP latencies improved in this pair of runs, but the limited, non-simultaneous samples cannot establish browser responsiveness, a sustained latency guarantee, or the root cause of the originally reported inability to hu.
+
+## Production smoke verification
+
+A second fresh anonymous synthetic room passed all smoke checks in 21 requests: three separate credentials, schema 2, automatic server draw, reconnect, private-hand/token filtering, missing/forged authentication denial, duplicate action exactly once, stale revision rejection, manual-draw rejection, seat impersonation rejection, a blocked fourth seat and compact conditional polls. No original user game is inspected. The v1 benchmark credentials were intentionally not persisted, so no old production room is revisited; saved-v1 preservation is covered by the local FileStore and engine regressions described above.

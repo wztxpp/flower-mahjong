@@ -1,0 +1,539 @@
+{
+  "label": "after-v2",
+  "measuredAt": "2026-11-03T14:13:04.109Z",
+  "origin": "https://flower-mahjong-wztxpp.squaresong.chatgpt.site",
+  "serviceVersion": "0.2.0",
+  "methodology": "Node fetch HTTP round trip through complete response body; 3 independent bearer clients; own new anonymous room only; warm reads; six discards with necessary pass/manual-draw actions; after each action, 3 concurrent full snapshot GETs; four idle full rounds and four same-revision rounds, each 3 concurrent GETs. No browser/render/click or human-network timing.",
+  "clientCount": 3,
+  "discards": 6,
+  "actions": 10,
+  "unchangedResponses": 12,
+  "summary": {
+    "actionPost": {
+      "requests": 10,
+      "appServerMs": {
+        "samples": 10,
+        "p50": 42,
+        "p95": 104
+      },
+      "latencyMs": {
+        "p50": 121.03,
+        "p95": 176.55,
+        "max": 176.55,
+        "mean": 139.19
+      },
+      "responseBytes": {
+        "min": 2164,
+        "max": 3585,
+        "mean": 2868.9
+      }
+    },
+    "peerRefreshGet": {
+      "requests": 30,
+      "appServerMs": {
+        "samples": 30,
+        "p50": 17,
+        "p95": 24
+      },
+      "latencyMs": {
+        "p50": 93.94,
+        "p95": 390.14,
+        "max": 560.45,
+        "mean": 125.23
+      },
+      "responseBytes": {
+        "min": 2164,
+        "max": 3886,
+        "mean": 2898.97
+      }
+    },
+    "idleFullGet": {
+      "requests": 12,
+      "appServerMs": {
+        "samples": 12,
+        "p50": 15,
+        "p95": 24
+      },
+      "latencyMs": {
+        "p50": 95.59,
+        "p95": 127.41,
+        "max": 127.41,
+        "mean": 99.22
+      },
+      "responseBytes": {
+        "min": 3551,
+        "max": 3886,
+        "mean": 3664
+      }
+    },
+    "idleSinceGet": {
+      "requests": 12,
+      "appServerMs": {
+        "samples": 12,
+        "p50": 16,
+        "p95": 21
+      },
+      "latencyMs": {
+        "p50": 85.6,
+        "p95": 191.67,
+        "max": 191.67,
+        "mean": 95.43
+      },
+      "responseBytes": {
+        "min": 63,
+        "max": 63,
+        "mean": 63
+      }
+    }
+  },
+  "records": [
+    {
+      "category": "actionPost",
+      "elapsedMs": 162.77,
+      "responseBytes": 2164,
+      "status": 200,
+      "appMs": 37
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 78.36,
+      "responseBytes": 2220,
+      "status": 200,
+      "appMs": 18
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 83.15,
+      "responseBytes": 2164,
+      "status": 200,
+      "appMs": 19
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 102.04,
+      "responseBytes": 2287,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 111.06,
+      "responseBytes": 2203,
+      "status": 200,
+      "appMs": 38
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 79.65,
+      "responseBytes": 2201,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 125.56,
+      "responseBytes": 2629,
+      "status": 200,
+      "appMs": 18
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 250.89,
+      "responseBytes": 2203,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 103.69,
+      "responseBytes": 2438,
+      "status": 200,
+      "appMs": 36
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 70.83,
+      "responseBytes": 2438,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 83.33,
+      "responseBytes": 2556,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 83.78,
+      "responseBytes": 2485,
+      "status": 200,
+      "appMs": 21
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 121.03,
+      "responseBytes": 2778,
+      "status": 200,
+      "appMs": 42
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 76.27,
+      "responseBytes": 2475,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 100.11,
+      "responseBytes": 2470,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 106.73,
+      "responseBytes": 2778,
+      "status": 200,
+      "appMs": 13
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 165.51,
+      "responseBytes": 2741,
+      "status": 200,
+      "appMs": 48
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 85.61,
+      "responseBytes": 2744,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 116.93,
+      "responseBytes": 3072,
+      "status": 200,
+      "appMs": 26
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 390.14,
+      "responseBytes": 2741,
+      "status": 200,
+      "appMs": 22
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 176.55,
+      "responseBytes": 2971,
+      "status": 200,
+      "appMs": 44
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 73.62,
+      "responseBytes": 2971,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 93.94,
+      "responseBytes": 3028,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 120.99,
+      "responseBytes": 3065,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 172.56,
+      "responseBytes": 3011,
+      "status": 200,
+      "appMs": 104
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 82.2,
+      "responseBytes": 3410,
+      "status": 200,
+      "appMs": 22
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 83.51,
+      "responseBytes": 3011,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 107.02,
+      "responseBytes": 3009,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 102.26,
+      "responseBytes": 3247,
+      "status": 200,
+      "appMs": 40
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 117.98,
+      "responseBytes": 3293,
+      "status": 200,
+      "appMs": 18
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 118.02,
+      "responseBytes": 3335,
+      "status": 200,
+      "appMs": 24
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 118.31,
+      "responseBytes": 3247,
+      "status": 200,
+      "appMs": 24
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 112.57,
+      "responseBytes": 3585,
+      "status": 200,
+      "appMs": 49
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 65.66,
+      "responseBytes": 3283,
+      "status": 200,
+      "appMs": 13
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 71.57,
+      "responseBytes": 3277,
+      "status": 200,
+      "appMs": 19
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 560.45,
+      "responseBytes": 3585,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "actionPost",
+      "elapsedMs": 163.91,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 45
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 92.14,
+      "responseBytes": 3886,
+      "status": 200,
+      "appMs": 22
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 94.25,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 23
+    },
+    {
+      "category": "peerRefreshGet",
+      "elapsedMs": 123.97,
+      "responseBytes": 3555,
+      "status": 200,
+      "appMs": 22
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 85.08,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 23
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 96.54,
+      "responseBytes": 3555,
+      "status": 200,
+      "appMs": 24
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 100.55,
+      "responseBytes": 3886,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 81.85,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 19
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 84.55,
+      "responseBytes": 3886,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 90.95,
+      "responseBytes": 3555,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 113.99,
+      "responseBytes": 3886,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 113.92,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 114.12,
+      "responseBytes": 3555,
+      "status": 200,
+      "appMs": 15
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 86.1,
+      "responseBytes": 3555,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 95.59,
+      "responseBytes": 3886,
+      "status": 200,
+      "appMs": 13
+    },
+    {
+      "category": "idleFullGet",
+      "elapsedMs": 127.41,
+      "responseBytes": 3551,
+      "status": 200,
+      "appMs": 13
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 85.6,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 16
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 92.41,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 103.93,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 79.36,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 18
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 98.37,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 106.95,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 70.02,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 77.16,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 11
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 191.67,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 70.56,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 14
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 77.84,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 17
+    },
+    {
+      "category": "idleSinceGet",
+      "elapsedMs": 91.26,
+      "responseBytes": 63,
+      "status": 200,
+      "appMs": 21
+    }
+  ]
+}
