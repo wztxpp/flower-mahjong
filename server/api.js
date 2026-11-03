@@ -1,4 +1,13 @@
 import { createGame, applyAction, getPlayerView } from '../shared/game.js';
+import { applyAction as applyLegacyAction, getPlayerView as getLegacyView } from '../shared/legacy-game.js';
+
+// Existing saved games keep their exact original rules and physical state.
+// Only a new game receives schemaVersion 2; no database migration rewrites hands.
+function engineFor(game) {
+  if (game.schemaVersion === 2) return { apply: applyAction, view: getPlayerView };
+  if (game.schemaVersion === undefined || game.schemaVersion === 1) return { apply: applyLegacyAction, view: getLegacyView };
+  fail(409, 'UNSUPPORTED_GAME_VERSION', '这桌使用了更新的规则版本，请刷新页面后重试');
+}
 
 export class ApiError extends Error {
   constructor(status, code, message) { super(message); this.status=status; this.code=code; }
@@ -18,9 +27,10 @@ async function bodyOf(request){
   try{const body=JSON.parse(new TextDecoder().decode(data));if(!body||Array.isArray(body)||typeof body!=='object')throw Error();return body;}catch{fail(400,'BAD_JSON','请求格式不正确');}
 }
 function publicRoom(room,seat){
-  const game=room.game?getPlayerView(room.game,seat):null;
+  const game=room.game?{...engineFor(room.game).view(room.game,seat),schemaVersion:room.game.schemaVersion??1}:null;
   return {id:room.id,revision:room.revision,phase:room.game?(room.game.phase==='finished'?'finished':'playing'):'lobby',hostSeat:room.hostSeat,you:seat,createdAt:room.createdAt,
-    seats:room.seats.map((p,i)=>p?{seat:i,name:p.name,connected:Date.now()-p.lastSeen<20000,score:game?.players?.[i]?.score??0,handCount:game?.players?.[i]?.handCount??room.game?.players?.[i]?.hand.length??0,huCount:game?.players?.[i]?.huCount??0,melds:game?.players?.[i]?.melds??[],radishes:game?.players?.[i]?.radishes??[]}:null), game};
+    rulesVersion:game?.schemaVersion??2,
+    seats:room.seats.map((p,i)=>p?{seat:i,name:p.name,connected:Date.now()-p.lastSeen<30000,score:game?.players?.[i]?.score??0,handCount:game?.players?.[i]?.handCount??room.game?.players?.[i]?.hand.length??0,huCount:game?.players?.[i]?.huCount??0,melds:game?.players?.[i]?.melds??[],radishes:game?.players?.[i]?.radishes??[],winPile:game?.players?.[i]?.winPile??[],lastScoreBreakdown:game?.players?.[i]?.lastScoreBreakdown??null}:null), game};
 }
 async function authenticate(room,request){const authorization=request.headers.get('authorization')||''; if(!/^Bearer [a-f0-9]{64}$/.test(authorization))fail(401,'UNAUTHORIZED','座位凭证失效，请重新进入房间');const hash=await hashToken(authorization.slice(7));const seat=room.seats.findIndex(p=>p?.tokenHash===hash);if(seat<0)fail(401,'UNAUTHORIZED','座位凭证失效，请重新进入房间');return seat;}
 function revisionMatches(body,room){if(!Number.isSafeInteger(body.revision)||body.revision!==room.revision)fail(409,'STALE_STATE','牌桌已更新，请看最新牌面后再操作');}
@@ -28,11 +38,11 @@ async function commit(store,previous,next){next.revision=previous.revision+1;nex
 
 export function createApi(store){
   const recentCreates=new Map();
-  return async function handle(request){try{
+  const handle=async function(request){try{
     const url=new URL(request.url), method=request.method;
     if(!url.pathname.startsWith('/api/'))return null;
     const origin=request.headers.get('origin');if(origin&&origin!==url.origin)fail(403,'ORIGIN','不接受跨站请求');
-    if(method==='GET'&&url.pathname==='/api/health')return json({ok:true,service:'flower-mahjong',version:'0.1.0'});
+    if(method==='GET'&&url.pathname==='/api/health')return json({ok:true,service:'flower-mahjong',version:'0.2.0',rulesVersion:2});
     if(method==='POST'&&url.pathname==='/api/rooms'){
       const body=await bodyOf(request),name=playerName(body.name); const ip=request.headers.get('cf-connecting-ip')||'local';const now=Date.now();
       const recent=(recentCreates.get(ip)||[]).filter(n=>now-n<60000);if(recent.length>=10)fail(429,'RATE_LIMIT','建房太频繁，请稍后再试');recent.push(now);recentCreates.set(ip,recent);if(recentCreates.size>5000)recentCreates.clear();
@@ -50,7 +60,17 @@ export function createApi(store){
       const token=randomToken(),next=structuredClone(room);next.seats[seat]={name,tokenHash:await hashToken(token),lastSeen:Date.now()};await commit(store,room,next);return json({roomId:id,token,state:publicRoom(next,seat)},201);
     }
     const seat=await authenticate(room,request);
-    if(method==='GET'&&!operation){await store.touch(id,seat,Date.now());const fresh=await store.get(id);return json({state:publicRoom(fresh,seat)});}
+    if(method==='GET'&&!operation){
+      // Most polls only need a revision check: one read, no hand serialization,
+      // and no heartbeat write more often than once per ten seconds per seat.
+      const now=Date.now();
+      if(now-room.seats[seat].lastSeen>=10000){await store.touch(id,seat,now);room.seats[seat].lastSeen=now;}
+      const since=url.searchParams.get('since');
+      if(since!==null&&/^\d+$/.test(since)&&Number(since)===room.revision){
+        return json({unchanged:true,revision:room.revision,connections:room.seats.map(p=>Boolean(p&&now-p.lastSeen<30000))});
+      }
+      return json({state:publicRoom(room,seat)});
+    }
     if(method==='POST'&&operation==='start'){
       const body=await bodyOf(request);revisionMatches(body,room);if(seat!==room.hostSeat)fail(403,'HOST_ONLY','只有房主可以开始');if(room.seats.some(p=>!p))fail(409,'NOT_FULL','三位玩家都落座后才能开始');if(room.game&&room.game.phase!=='finished')fail(409,'PLAYING','这一局还没结束');
       const next=structuredClone(room);next.game=createGame();next.seats[seat].lastSeen=Date.now();await commit(store,room,next);return json({state:publicRoom(next,seat)});
@@ -59,8 +79,15 @@ export function createApi(store){
       const body=await bodyOf(request);revisionMatches(body,room);if(!room.game)fail(409,'NOT_STARTED','房主还没有开始这局');
       const a=body.action;if(!a||typeof a!=='object'||Array.isArray(a)||typeof a.type!=='string')fail(400,'BAD_ACTION','操作格式不正确');
       const action={type:a.type};if(a.tile!==undefined){if(!Number.isInteger(a.tile)||a.tile<0||a.tile>17)fail(400,'BAD_TILE','牌的编号不正确');action.tile=a.tile;}
-      const next=structuredClone(room);try{next.game=applyAction(room.game,seat,action);}catch(error){fail(422,'ILLEGAL_ACTION',error.message||'当前不能这样操作');}next.seats[seat].lastSeen=Date.now();await commit(store,room,next);return json({state:publicRoom(next,seat)});
+      const engine=engineFor(room.game);
+      const next=structuredClone(room);try{next.game=engine.apply(room.game,seat,action);}catch(error){fail(422,'ILLEGAL_ACTION',error.message||'当前不能这样操作');}next.seats[seat].lastSeen=Date.now();await commit(store,room,next);return json({state:publicRoom(next,seat)});
     }
     fail(405,'METHOD','不支持这种操作');
   }catch(error){if(error instanceof ApiError)return json({error:error.message,code:error.code},error.status);console.error('Request failed:',error?.name,error?.message);return json({error:'服务器暂时出了点问题，请稍后刷新',code:'SERVER_ERROR'},500);}};
+  return async request=>{
+    const started=performance.now();
+    const response=await handle(request);
+    if(response)response.headers.set('server-timing',`app;dur=${(performance.now()-started).toFixed(1)}`);
+    return response;
+  };
 }
