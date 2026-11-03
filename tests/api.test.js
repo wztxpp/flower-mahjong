@@ -174,7 +174,7 @@ test('health and API responses are JSON, non-cacheable, and same-origin protecte
   const healthy = await api.request('/api/health', { headers: { origin: api.origin } });
   assert.equal(healthy.status, 200);
   assert.equal(healthy.body.ok, true);
-  assert.equal(healthy.body.version, '0.2.0');
+  assert.equal(healthy.body.version, '0.3.0');
   assert.equal(healthy.body.rulesVersion, 2);
   assert.match(healthy.headers.get('content-type'), /application\/json/);
   assert.match(healthy.headers.get('cache-control'), /no-store/);
@@ -568,7 +568,7 @@ class CountingStore extends MemoryStore {
   gets = 0;
   touches = 0;
   async get(id) { this.gets++; return super.get(id); }
-  async touch(id, seat, at) { this.touches++; return super.touch(id, seat, at); }
+  async touch(...args) { this.touches++; return super.touch(...args); }
   resetCounts() { this.gets = 0; this.touches = 0; }
 }
 

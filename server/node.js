@@ -4,8 +4,19 @@ import { Readable } from 'node:stream';
 import { MemoryStore } from './store.js';
 import { createApi } from './api.js';
 export class FileStore extends MemoryStore {
-  constructor(directory=process.env.MAHJONG_DATA_DIR||'.data'){const dir=resolve(directory);mkdirSync(dir,{recursive:true});let rooms=[];try{rooms=JSON.parse(readFileSync(resolve(dir,'rooms.json'),'utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}super(rooms);this.filename=resolve(dir,'rooms.json');}
-  async persist(){const cutoff=Date.now()-7*24*3600*1000;for(const[id,room]of this.rooms)if(room.updatedAt<cutoff)this.rooms.delete(id);writeFileSync(this.filename+'.tmp',JSON.stringify([...this.rooms.values()]),{mode:0o600});renameSync(this.filename+'.tmp',this.filename);}
+  constructor(directory = process.env.MAHJONG_DATA_DIR || '.data') {
+    const dir = resolve(directory); mkdirSync(dir, { recursive: true });
+    const read = name => { try { return JSON.parse(readFileSync(resolve(dir, name), 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; return []; } };
+    super(read('rooms.json'), read('profiles.json'));
+    this.filename = resolve(dir, 'rooms.json'); this.profilesFilename = resolve(dir, 'profiles.json');
+  }
+  async persist() {
+    // Never prune old rooms: their original games, logs and profile history are durable.
+    // The profile index is written first; an orphan index entry cannot grant access.
+    for (const [filename, data] of [[this.profilesFilename, [...this.profiles.values()]], [this.filename, [...this.rooms.values()]]]) {
+      writeFileSync(filename + '.tmp', JSON.stringify(data), { mode: 0o600 }); renameSync(filename + '.tmp', filename);
+    }
+  }
 }
 export function apiMiddleware(store=new FileStore()){
   const api=createApi(store);

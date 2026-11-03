@@ -23,25 +23,41 @@ function compileComponent(filename, dependencies = {}) {
 const Tile = compileComponent('MahjongTile.vue');
 const Icon = compileComponent('Icon.vue');
 const App = compileComponent('App.vue', { './MahjongTile.vue': Tile, './Icon.vue': Icon });
-const originals = Object.fromEntries(['window', 'document', 'sessionStorage', 'fetch', 'setTimeout', 'clearTimeout'].map(key => [key, globalThis[key]]));
+const originals = Object.fromEntries(['window', 'document', 'sessionStorage', 'localStorage', 'fetch', 'setTimeout', 'clearTimeout'].map(key => [key, globalThis[key]]));
 let scheduled = [];
-function browser() {
+function browser({ search = '', active = null, rooms = null, profile = 'a'.repeat(64), blocked = false, malformed = false } = {}) {
   scheduled = [];
-  globalThis.window = { location: { search: '', href: 'https://example.test/play', origin: 'https://example.test', pathname: '/play' }, history: { replaceState() {} } };
-  globalThis.document = { hidden: false, body: { style: {} } };
-  globalThis.sessionStorage = { setItem() {}, removeItem() {} };
-  globalThis.setTimeout = (callback, delay) => { scheduled.push({ callback, delay }); return scheduled.length; };
-  globalThis.clearTimeout = () => {};
+  const sessionItems = new Map(); const localItems = new Map();
+  const storage = items => ({ getItem(key) { if (blocked) throw new Error('Storage blocked'); return items.get(key) ?? null; }, setItem(key, value) { if (blocked) throw new Error('Storage blocked'); items.set(key, value); }, removeItem(key) { if (blocked) throw new Error('Storage blocked'); items.delete(key); } });
+  if (active) sessionItems.set('huajian-mahjong-session-v1', JSON.stringify(active));
+  if (rooms) sessionItems.set('huajian-mahjong-rooms-v2', JSON.stringify(rooms));
+  if (malformed) sessionItems.set('huajian-mahjong-session-v1', '{bad json');
+  if (profile) localItems.set('huajian-mahjong-player-v1', JSON.stringify(profile));
+  const events = new Map();
+  const setLocation = value => { const url = new URL(value, 'https://example.test'); Object.assign(globalThis.window.location, { search: url.search, href: url.href, origin: url.origin, pathname: url.pathname }); };
+  globalThis.window = { location: {}, history: { replaceState(a, b, url) { setLocation(url); }, pushState(a, b, url) { setLocation(url); } }, addEventListener(name, fn) { events.set(name, fn); }, removeEventListener(name) { events.delete(name); } };
+  setLocation(`https://example.test/play${search}`);
+  globalThis.document = { hidden: false, body: { style: {} }, activeElement: { blur() {} }, addEventListener() {}, removeEventListener() {} };
+  globalThis.sessionStorage = window.sessionStorage = storage(sessionItems);
+  globalThis.localStorage = window.localStorage = storage(localItems);
+  globalThis.setTimeout = (callback, delay) => { scheduled.push({ callback, delay, cancelled: false }); return scheduled.length; };
+  globalThis.clearTimeout = id => { if (scheduled[id - 1]) scheduled[id - 1].cancelled = true; };
+  return { sessionItems, localItems, setLocation, events };
 }
+const credential = (roomId = 'ABCDEF23', token = 'b'.repeat(64)) => ({ roomId, token, name: '本人的名字' });
+const response = (data, status = 200) => ({ ok: status < 400, status, json: async () => data });
+const emptyHistory = () => ({ summary: { settledGames: 0, totalScore: 0 }, records: [] });
+async function settle() { for (let i = 0; i < 30; i++) await Promise.resolve(); }
+function lobby() { return App.setup({}, { expose() {} }); }
 function fixture({ legacy = false, postHu = false } = {}) {
   const players = [0, 1, 2].map(seat => ({ seat, handCount: 13, huCount: 0, score: 0, hand: seat === 0 ? [0, 1, 2, 3] : undefined, melds: [], radishes: [], winPile: [] }));
   if (postHu) { players[0].huCount = 1; players[0].winPile = [{ tile: 3, source: 'discard', virtual: false }]; }
-  return { id: 'ABCDEF', revision: 3, you: 0, hostSeat: 0, phase: 'playing', seats: players.map(player => ({ seat: player.seat, name: `牌友${player.seat + 1}`, connected: true })), game: { schemaVersion: legacy ? 1 : 2, players, phase: 'turn', turnStep: legacy ? 'draw' : 'discard', currentSeat: 0, drawnTile: legacy ? null : 3, wallCount: 70, discards: [], history: [], lockedWaits: [], legalActions: legacy ? [{ type: 'draw' }] : postHu ? [{ type: 'hu' }, { type: 'pass' }, { type: 'discard', tile: 3 }] : [{ type: 'discard', tile: 0 }], huDiagnostic: { canHu: postHu, code: postHu ? 'AVAILABLE' : 'SHAPE', message: postHu ? '当前可以胡牌。' : '当前牌型还不满足胡牌条件。' } } };
+  return { id: 'ABCDEF23', revision: 3, you: 0, hostSeat: 0, phase: 'playing', seats: players.map(player => ({ seat: player.seat, name: `牌友${player.seat + 1}`, connected: true })), game: { schemaVersion: legacy ? 1 : 2, players, phase: 'turn', turnStep: legacy ? 'draw' : 'discard', currentSeat: 0, drawnTile: legacy ? null : 3, wallCount: 70, discards: [], history: [], lockedWaits: [], legalActions: legacy ? [{ type: 'draw' }] : postHu ? [{ type: 'hu' }, { type: 'pass' }, { type: 'discard', tile: 3 }] : [{ type: 'discard', tile: 0 }], huDiagnostic: { canHu: postHu, code: postHu ? 'AVAILABLE' : 'SHAPE', message: postHu ? '当前可以胡牌。' : '当前牌型还不满足胡牌条件。' } } };
 }
 function setup(state) {
   browser();
   const scope = App.setup({}, { expose() {} });
-  scope.session.value = { roomId: 'ABCDEF', token: 'test-token' };
+  scope.session.value = credential();
   scope.state.value = state;
   return scope;
 }
@@ -61,11 +77,12 @@ test('new board uses frozen-hand decisions, a visible win pile and own private d
   assert.doesNotMatch(html, /选牌后打出|摸一张/);
 });
 
-test('legacy board keeps draw control and an isolated new-table link', async () => {
+test('legacy board keeps draw control and switches tables in the same tab', async () => {
   const scope = setup(fixture({ legacy: true }));
   const html = await render(scope);
   assert.match(html, /本桌已开局，继续使用旧规则/);
-  assert.match(html, /href="https:\/\/example.test\/play" target="_blank" rel="noopener"/);
+  assert.match(html, /离开旧桌，返回大厅换新桌/);
+  assert.doesNotMatch(html, /target="_blank"/);
   assert.match(html, /摸一张/);
   assert.doesNotMatch(html, /胡后固定|查看当前胡牌判断/);
   scope.showRules.value = true;
@@ -111,7 +128,7 @@ test('unchanged polling preserves the hand snapshot and only applies connection 
   let requested;
   globalThis.fetch = async url => { requested = url; return { ok: true, json: async () => ({ unchanged: true, revision: 3, connections: [true, false, true] }) }; };
   await scope.refresh();
-  assert.equal(requested, '/api/rooms/ABCDEF?since=3');
+  assert.equal(requested, '/api/rooms/ABCDEF23?since=3');
   assert.equal(scope.state.value.game, gameBefore);
   assert.equal(scope.seats.value[1].connected, false);
   assert.ok(scheduled.at(-1).delay >= 80 && scheduled.at(-1).delay <= 350);
@@ -184,4 +201,234 @@ test('uncertain action outcome is read back, never automatically repeated', asyn
   assert.equal(scope.syncing.value, false);
   assert.equal(scope.game.value.currentSeat, 1);
   assert.equal(scope.error.value, '牌局已同步，请查看最新牌面后继续。');
+});
+
+test('root with a saved legacy session renders the lobby immediately, never resumes or polls it', async () => {
+  const storage = browser({ active: credential() }); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }); };
+  const scope = lobby(); await scope.initialize();
+  assert.equal(scope.inRoom.value, false); assert.equal(scope.restoring.value, false); assert.equal(scope.busy.value, false);
+  await settle();
+  assert.deepEqual(calls.map(call => call.url), ['/api/profile', '/api/rooms/ABCDEF23/leave', '/api/profile/history']);
+  assert.equal(scope.session.value, null); assert.equal(scope.roomCode.value, '');
+  assert.equal(storage.sessionItems.has('huajian-mahjong-session-v1'), false);
+  assert.equal(JSON.parse(storage.sessionItems.get('huajian-mahjong-rooms-v2')).ABCDEF23.token, credential().token);
+  const html = await render(scope); assert.match(html, /创建一张牌桌/); assert.doesNotMatch(html, /恢复上一桌|正在回到牌桌/);
+});
+
+test('an invitation for B takes precedence over the saved active A, with no accidental A resume', async () => {
+  browser({ active: credential(), search: '?room=GHJKLM23' }); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }); };
+  const scope = lobby(); await scope.initialize(); await settle();
+  assert.equal(scope.entryMode.value, 'join'); assert.equal(scope.roomCode.value, 'GHJKLM23'); assert.equal(scope.inRoom.value, false);
+  assert.equal(calls.filter(call => call.url.includes('/resume')).length, 0);
+  assert.deepEqual(calls.filter(call => call.url.includes('/rooms/')).map(call => call.url), ['/api/rooms/ABCDEF23/leave']);
+  scope.name.value = '另一名字';
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); const state = fixture(); state.id = 'GHJKLM23'; return response({ roomId: state.id, token: 'c'.repeat(64), state }); };
+  await scope.enterRoom(); assert.equal(scope.session.value.roomId, 'GHJKLM23'); assert.equal(window.location.search, '?room=GHJKLM23');
+  assert.equal(calls.at(-1).options.headers.Authorization, undefined);
+});
+
+test('explicit same-room refresh resumes only its exact stored seat token', async () => {
+  const correct = credential(); const wrong = credential('GHJKLM23', 'c'.repeat(64));
+  browser({ active: wrong, rooms: { ABCDEF23: correct, GHJKLM23: wrong }, search: '?room=abcdef23' }); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/resume') ? { state: fixture() } : { left: true }); };
+  const scope = lobby(); await scope.initialize(); await settle();
+  assert.equal(scope.inRoom.value, true); assert.equal(scope.session.value.token, correct.token);
+  assert.deepEqual(calls.filter(call => call.url !== '/api/profile').map(call => call.url), ['/api/rooms/GHJKLM23/leave', '/api/rooms/ABCDEF23/resume']);
+  assert.equal(calls[1].options.headers.Authorization, `Bearer ${wrong.token}`);
+  assert.equal(calls[2].options.headers.Authorization, `Bearer ${correct.token}`);
+});
+
+test('returning to the lobby closes overlays, releases focus, resets controls, and retains only explicit reconnect credentials', async () => {
+  const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); scope.saveSession(credential());
+  let blurred = false; document.activeElement = { blur() { blurred = true; } }; document.body.style.overflow = 'hidden';
+  scope.showRules.value = true; scope.showInvite.value = true; scope.copyDone.value = true; scope.busy.value = true; scope.syncing.value = true; scope.offline.value = true;
+  scope.error.value = 'old error'; scope.selectedTile.value = 0; scope.selectedHandIndex.value = 0;
+  const calls = []; globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }); };
+  await scope.newTable(); await settle();
+  for (const key of ['showRules', 'showInvite', 'copyDone', 'busy', 'syncing', 'offline', 'restoring', 'inRoom']) assert.equal(scope[key].value, false, key);
+  assert.equal(scope.error.value, ''); assert.equal(scope.selectedTile.value, null); assert.equal(scope.selectedHandIndex.value, null); assert.equal(document.body.style.overflow, ''); assert.equal(blurred, true);
+  assert.equal(scope.savedRooms.get('ABCDEF23').token, credential().token);
+  assert.equal(calls[0].url, '/api/rooms/ABCDEF23/leave');
+  assert.equal(calls[0].options.headers.Authorization, `Bearer ${credential().token}`);
+});
+
+test('late polling response cannot restore a table after returning to the lobby', async () => {
+  const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); let release; let signal;
+  globalThis.fetch = (url, options) => {
+    if (options.method === 'GET' && url.includes('/rooms/')) { signal = options.signal; return new Promise(resolve => { release = resolve; }); }
+    return Promise.resolve(response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }));
+  };
+  const pending = scope.refresh(); await scope.newTable(); await settle();
+  assert.equal(signal.aborted, true);
+  release(response({ state: fixture() })); await pending;
+  assert.equal(scope.state.value, null); assert.equal(scope.session.value, null); assert.equal(scope.inRoom.value, false);
+  assert.equal(scheduled.filter(task => !task.cancelled && task.callback === scope.refresh).length, 0);
+});
+
+test('late mutation success and failure cannot reset a newer lobby state or restart polling', async () => {
+  for (const succeeds of [true, false]) {
+    const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); let release; let reject; let signal;
+    globalThis.fetch = (url, options) => {
+      if (url.endsWith('/action')) { signal = options.signal; return new Promise((resolve, fail) => { release = resolve; reject = fail; }); }
+      return Promise.resolve(response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }));
+    };
+    const pending = scope.mutate({ type: 'discard', tile: 0 }); await scope.newTable(); await settle();
+    scope.error.value = 'new lobby feedback'; scope.busy.value = true;
+    if (succeeds) release(response({ state: fixture() })); else reject(new TypeError('late network failure'));
+    await pending;
+    assert.equal(signal.aborted, true); assert.equal(scope.state.value, null); assert.equal(scope.busy.value, true); assert.equal(scope.error.value, 'new lobby feedback'); assert.equal(scope.offline.value, false);
+    assert.equal(scheduled.filter(task => !task.cancelled && task.callback === scope.refresh).length, 0);
+  }
+});
+
+test('late create response is detached instead of opening an unwanted table', async () => {
+  browser(); const scope = lobby(); scope.name.value = '我的名字'; scope.playerToken.value = 'a'.repeat(64);
+  let release; let signal; const calls = [];
+  globalThis.fetch = (url, options) => {
+    calls.push({ url, options });
+    if (url === '/api/rooms') { signal = options.signal; return new Promise(resolve => { release = resolve; }); }
+    return Promise.resolve(response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true }));
+  };
+  const entering = scope.enterRoom(); await settle(); await scope.newTable(); await settle();
+  assert.equal(signal.aborted, true);
+  release(response({ roomId: 'ABCDEF23', token: credential().token, state: fixture() })); await entering; await settle();
+  assert.equal(scope.inRoom.value, false); assert.equal(window.location.search, ''); assert.equal(scope.busy.value, false);
+  assert.equal(calls.filter(call => call.url.endsWith('/leave')).length, 1);
+  assert.equal(calls.at(-1).options.headers.Authorization, `Bearer ${credential().token}`);
+});
+
+test('browser Back and Forward between root and explicit room use leave then authenticated resume', async () => {
+  const storage = browser({ search: '?room=ABCDEF23', active: credential() }); const scope = lobby(); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/resume') ? { state: fixture() } : url.endsWith('/history') ? emptyHistory() : { left: true }); };
+  await scope.initialize(); assert.equal(scope.inRoom.value, true);
+  storage.setLocation('/play'); scope.onPopState(); await settle(); assert.equal(scope.inRoom.value, false);
+  storage.setLocation('/play?room=ABCDEF23'); scope.onPopState(); await settle(); assert.equal(scope.inRoom.value, true);
+  assert.deepEqual(calls.filter(call => call.url.includes('/rooms/')).map(call => call.url), ['/api/rooms/ABCDEF23/resume', '/api/rooms/ABCDEF23/leave', '/api/rooms/ABCDEF23/resume']);
+});
+
+test('late resume after navigating to root is ignored and explicitly detached', async () => {
+  const storage = browser({ search: '?room=ABCDEF23', active: credential() }); const scope = lobby(); let release; const calls = [];
+  globalThis.fetch = (url, options) => { calls.push({ url, options }); if (url.endsWith('/resume')) return new Promise(resolve => { release = resolve; }); return Promise.resolve(response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true })); };
+  const initializing = scope.initialize(); await settle(); assert.equal(scope.restoring.value, true);
+  storage.setLocation('/play'); scope.onPopState(); await settle();
+  release(response({ state: fixture() })); await initializing; await settle();
+  assert.equal(scope.inRoom.value, false); assert.equal(scope.restoring.value, false); assert.equal(window.location.search, '');
+  assert.equal(calls.filter(call => call.url.endsWith('/leave')).length, 2); // Immediate detach plus compensation for the late successful resume.
+});
+
+test('blocked or malformed browser storage never crashes or traps the root in restoring', async () => {
+  for (const options of [{ blocked: true }, { malformed: true, profile: null }]) {
+    browser(options); const scope = lobby();
+    globalThis.fetch = async url => response(url === '/api/profile' ? { playerToken: 'd'.repeat(64) } : emptyHistory());
+    await scope.initialize(); await settle();
+    assert.equal(scope.inRoom.value, false); assert.equal(scope.restoring.value, false); assert.equal(scope.busy.value, false); assert.equal(scope.historyLoading.value, false);
+    assert.match(scope.storageWarning.value, /浏览器/); assert.equal(scope.playerToken.value.length, 64);
+  }
+});
+
+test('history shows own finalized totals separately from provisional games and never exposes credentials', async () => {
+  browser(); const scope = lobby(); scope.playerToken.value = 'a'.repeat(64); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response({ summary: { settledGames: 1, totalScore: 18 }, records: [
+    { gameId: 'g2', roomId: 'GHJKLM23', seat: 0, name: '改名以后', status: 'detached', score: 7, huCount: 1, startedAt: Date.now(), players: [{ seat: 0, name: '改名以后', score: 7 }], events: [{ type: 'hu', message: '自摸计分', delta: 7 }] },
+    { gameId: 'g1', roomId: 'ABCDEF23', seat: 0, name: '原来的名字', status: 'finished', score: 18, huCount: 2, startedAt: Date.now(), players: [], events: [] }
+  ] }); };
+  await scope.loadHistory(); const html = await render(scope);
+  assert.match(html, /累计已结算虚拟积分/); assert.match(html, /\+18/); assert.match(html, /已离桌 · 未结算/); assert.match(html, /不计入累计已结算积分/); assert.match(html, /改名以后/); assert.match(html, /原来的名字/); assert.match(html, /自摸计分/);
+  assert.doesNotMatch(html, /恢复上一桌|href="[^\"]*room=|aaaaaaaaaaaaaaaa|bbbbbbbbbbbbbbbb/);
+  assert.equal(calls[0].url, '/api/profile/history'); assert.equal(calls[0].options.headers.Authorization, `Bearer ${'a'.repeat(64)}`); assert.equal(calls[0].options.headers['X-Player-Token'], undefined);
+});
+
+test('new table entry waits for old leave confirmation, with retryable feedback on failure', async () => {
+  const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); let failLeave = true; const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); if (url.endsWith('/leave') && failLeave) throw new TypeError('offline'); return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : url === '/api/rooms' ? { roomId: 'GHJKLM23', token: 'c'.repeat(64), state: { ...fixture(), id: 'GHJKLM23' } } : { left: true }); };
+  await scope.newTable(); await settle(); scope.name.value = '新桌玩家'; await scope.enterRoom();
+  assert.equal(calls.some(call => call.url === '/api/rooms'), false); assert.match(scope.error.value, /离桌通知尚未确认/); assert.equal(scope.busy.value, false);
+  failLeave = false; await scope.enterRoom(); assert.equal(scope.inRoom.value, true); assert.equal(scope.session.value.roomId, 'GHJKLM23');
+});
+
+test('released lobby credentials are removed and a later invitation allows a new join', async () => {
+  const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); scope.saveSession(credential()); const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return response(url.endsWith('/leave') ? { left: true, detached: false } : url.endsWith('/history') ? emptyHistory() : { roomId: 'ABCDEF23', token: 'c'.repeat(64), state: fixture() }); };
+  await scope.newTable(); await settle(); assert.equal(scope.savedRooms.has('ABCDEF23'), false);
+  scope.entryMode.value = 'join'; scope.roomCode.value = 'ABCDEF23'; scope.name.value = '再加入'; await scope.enterRoom();
+  assert.equal(calls.at(-1).url, '/api/rooms/ABCDEF23/join'); assert.equal(scope.session.value.token, 'c'.repeat(64));
+});
+
+test('expired stored seat is cleared after explicit resume failure, then next click joins normally', async () => {
+  browser(); const scope = lobby(); scope.playerToken.value = 'a'.repeat(64); scope.saveSession(credential()); scope.session.value = null;
+  scope.entryMode.value = 'join'; scope.roomCode.value = 'ABCDEF23'; scope.name.value = '再落座'; const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, options }); return url.endsWith('/resume') ? response({ error: '座位凭证失效' }, 401) : response({ roomId: 'ABCDEF23', token: 'c'.repeat(64), state: fixture() }); };
+  await scope.enterRoom(); assert.equal(scope.savedRooms.has('ABCDEF23'), false); assert.equal(scope.inRoom.value, false);
+  await scope.enterRoom(); assert.equal(scope.inRoom.value, true); assert.deepEqual(calls.map(call => call.url), ['/api/rooms/ABCDEF23/resume', '/api/rooms/ABCDEF23/join']);
+});
+
+test('pending departure survives root reload and must finish before a new room is created', async () => {
+  const storage = browser({ active: credential() }); const first = lobby(); let failLeave = true; const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options }); if (url.endsWith('/leave') && failLeave) throw new TypeError('offline');
+    return response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : url === '/api/rooms' ? { roomId: 'GHJKLM23', token: 'c'.repeat(64), state: { ...fixture(), id: 'GHJKLM23' } } : { left: true, detached: true });
+  };
+  await first.initialize(); await settle();
+  assert.equal(storage.sessionItems.has('huajian-mahjong-session-v1'), false);
+  assert.equal(JSON.parse(storage.sessionItems.get('huajian-mahjong-departures-v1')).ABCDEF23.token, credential().token);
+  const reloaded = lobby(); await reloaded.initialize(); await settle(); reloaded.name.value = '新桌'; await reloaded.enterRoom();
+  assert.equal(calls.some(call => call.url === '/api/rooms'), false); assert.equal(reloaded.inRoom.value, false);
+  failLeave = false; await reloaded.enterRoom();
+  assert.equal(reloaded.session.value.roomId, 'GHJKLM23'); assert.equal(storage.sessionItems.has('huajian-mahjong-departures-v1'), false);
+  assert.equal(calls.filter(call => call.url.includes('/rooms/') && !call.url.endsWith('/leave')).length, 0);
+});
+
+test('stale resume compensation never detaches the same seat selected again by newer navigation', async () => {
+  const storage = browser({ search: '?room=ABCDEF23', active: credential() }); const scope = lobby(); const calls = []; let releaseOld; let resumes = 0;
+  globalThis.fetch = (url, options) => {
+    calls.push({ url, options });
+    if (url.endsWith('/resume')) { resumes++; if (resumes === 1) return new Promise(resolve => { releaseOld = resolve; }); return Promise.resolve(response({ state: fixture() })); }
+    return Promise.resolve(response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true, detached: true }));
+  };
+  const old = scope.initialize(); await settle(); storage.setLocation('/play'); scope.onPopState(); await settle();
+  storage.setLocation('/play?room=ABCDEF23'); scope.onPopState(); await settle(); assert.equal(scope.inRoom.value, true);
+  const leavesBefore = calls.filter(call => call.url.endsWith('/leave')).length;
+  releaseOld(response({ state: fixture() })); await old; await settle();
+  assert.equal(scope.inRoom.value, true); assert.equal(scope.session.value.token, credential().token);
+  assert.equal(calls.filter(call => call.url.endsWith('/leave')).length, leavesBefore);
+});
+
+test('identity bootstrap is persisted before registration and reused by concurrent tabs and failed retries', async () => {
+  const storage = browser({ profile: null }); const first = lobby(); const second = lobby(); const submitted = []; let fail = true;
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url, '/api/profile'); const candidate = JSON.parse(options.body).playerToken; submitted.push(candidate);
+    assert.match(candidate, /^[a-f0-9]{64}$/); assert.equal(JSON.parse(storage.localItems.get('huajian-mahjong-player-v1')), candidate);
+    assert.equal(options.headers['X-Player-Token'], undefined);
+    if (fail) throw new TypeError('registration interrupted'); return response({ playerToken: candidate });
+  };
+  const results = await Promise.allSettled([first.ensureProfile(), second.ensureProfile()]); assert.equal(results.every(result => result.status === 'rejected'), true);
+  assert.equal(new Set(submitted).size, 1); fail = false; await first.ensureProfile();
+  assert.equal(first.playerToken.value, submitted[0]); assert.equal(new Set(submitted).size, 1);
+});
+
+test('room mutations carry the identity in the body and never in an unredacted custom header or URL', async () => {
+  const scope = setup(fixture()); scope.playerToken.value = 'a'.repeat(64); let request;
+  globalThis.fetch = async (url, options) => { request = { url, options }; return response({ state: fixture() }); };
+  await scope.mutate({ type: 'discard', tile: 0 });
+  assert.equal(JSON.parse(request.options.body).profileToken, scope.playerToken.value);
+  assert.equal(request.options.headers.Authorization, `Bearer ${credential().token}`);
+  assert.equal(request.options.headers['X-Player-Token'], undefined); assert.equal(request.url.includes(scope.playerToken.value), false);
+});
+
+test('replacement occupant does not inherit a finished player hand or score, while result keeps original names', async () => {
+  const state = fixture(); state.phase = 'finished'; state.game.phase = 'finished'; state.game.legalActions = [];
+  state.game.participantNames = ['原玩家', '老牌友二', '老牌友三'];
+  state.seats[0] = { seat: 0, name: '新玩家', connected: true, isCurrentParticipant: false, score: 0 };
+  state.game.players[0].score = 24; state.game.players[1].score = -12; state.game.players[2].score = -12;
+  const scope = setup(state); const html = await render(scope);
+  assert.equal(scope.me.value.score, 0); assert.equal(scope.hand.value.length, 0); assert.equal(scope.scoreSeats.value[0].name, '原玩家'); assert.equal(scope.scoreSeats.value[0].score, 24);
+  assert.match(html, /已落座，等待下一局/); assert.match(html, /上一局结算/); assert.match(html, /原玩家/); assert.doesNotMatch(html, /aria-label="我的手牌与操作"/);
+});
+
+test('malformed optional nickname in saved credentials does not break the lobby form', async () => {
+  browser({ active: { ...credential(), name: { unexpected: true } } }); const scope = lobby();
+  globalThis.fetch = async url => response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : url.endsWith('/history') ? emptyHistory() : { left: true, detached: true });
+  await scope.initialize(); await settle(); assert.equal(scope.name.value, ''); await scope.enterRoom(); assert.match(scope.error.value, /落座名/); assert.equal(scope.busy.value, false);
 });
