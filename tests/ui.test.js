@@ -541,7 +541,7 @@ test('schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
 
 test('current lobby rules explain six-copy fan, shared radishes, consecutive hu and separate final dragon counts', async () => {
   browser(); const scope = lobby(); scope.showRules.value = true; const html = await render(scope);
-  assert.match(html, /朋友内测版 · v0.6.2/); assert.match(html, /规则原型 v0.6.2/);
+  assert.match(html, /朋友内测版 · v0.6.3/); assert.match(html, /规则原型 v0.6.3/);
   assert.match(html, /六张加 3 番/); assert.match(html, /六张同牌加到 4 番/);
   assert.match(html, /七张加 4 番，八张加 5 番/); assert.match(html, /逐张加杠至八张/);
   assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
@@ -726,4 +726,12 @@ test('pre-first-win kong radishes show only pending count, not imaginary reveale
   assert.match(html,/首胡待翻 \+5 张杠萝卜/);
   assert.match(html,/6 张基础 \+ 5 张已成杠累计/);
   assert.doesNotMatch(html,/每杠添 1 张；全桌第一次胡牌添 6 张/);
+});
+
+test('dealer marker follows server dealer independently of host', async () => {
+  const state=fixture({schemaVersion:3}); state.game.dealerSeat=1;
+  const scope=setup(state);const html=await render(scope);
+  assert.match(html,/dealer-tag/);
+  assert.match(html,/庄/);
+  assert.match(html,/房主/);
 });

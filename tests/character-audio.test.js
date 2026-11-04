@@ -5,8 +5,8 @@ const state = (history, revision = history.length, id = 'game-1') => ({ id: 'roo
 test('23 correct clips per character, only confirmed discard/peng/hu/kong', () => {
   for (let seat = 0; seat < 3; seat++) {
     const clips = new Set(Array.from({length:18}, (_,tile) => clipForEvent({type:'discard',tile,seat})))
-    for (const type of ['peng','hu','anGang']) clips.add(clipForEvent({type,seat}))
-    for (const source of ['selfDraw','discard','kongDiscard']) for (const clip of clipsForEvent({type:'hu',seat,source})) clips.add(clip)
+    for (const type of ['peng','anGang']) clips.add(clipForEvent({type,seat}))
+    for (const source of ['selfDraw','discard','kongDiscard','robKong']) for (const clip of clipsForEvent({type:'hu',seat,source})) clips.add(clip)
     assert.equal(clips.size,23)
     assert.ok([...clips].every(url => url.startsWith(`/voices/${CHARACTERS[seat].id}/`)))
   }
@@ -19,10 +19,12 @@ test('23 correct clips per character, only confirmed discard/peng/hu/kong', () =
 test('wins announce their committed source in the winning character, for every seat and viewer', () => {
   const characters = ['sunny','sweet','elegant']
   for (let seat = 0; seat < 3; seat++) {
-    for (const [source,prefix] of [['selfDraw','zimo'],['discard','fangpao'],['kongDiscard','fangpao'],['robKong','fangpao']]) {
+    for (const [source,prefix] of [['selfDraw','zimo'],['discard','fangpao'],['kongDiscard','fangpao'],['robKong','qianggang']]) {
       const event = {type:'hu',seat,source,from:(seat+1)%3}
-      const expected = [`/voices/${characters[seat]}/${prefix}.mp3`,`/voices/${characters[seat]}/hu.mp3`]
+      const expected = [`/voices/${characters[seat]}/${prefix}.mp3`]
       assert.deepEqual(clipsForEvent(event,characters),expected)
+      assert.equal(clipForEvent(event,characters),expected[0])
+      assert.equal(expected.some(path=>path.endsWith('/hu.mp3')),false)
       for (let viewer = 0; viewer < 3; viewer++) {
         const cursor = new ActionVoiceCursor()
         cursor.consume({...state([]),seat:viewer})
@@ -30,10 +32,10 @@ test('wins announce their committed source in the winning character, for every s
         assert.deepEqual(cursor.consume({...state([event]),seat:viewer}),[])
       }
     }
-    for (const source of [undefined,null,'unknown','selfdraw']) {
-      assert.deepEqual(clipsForEvent({type:'hu',seat,source},characters),[`/voices/${characters[seat]}/hu.mp3`])
+    for (const source of [undefined,null,'unknown','selfdraw','__proto__','constructor']) {
+      assert.deepEqual(clipsForEvent({type:'hu',seat,source},characters),[])
     }
-    assert.deepEqual(clipsForEvent({type:'hu',seat,source:'selfDraw'},['invalid']),[`/voices/${CHARACTERS[seat].id}/zimo.mp3`,`/voices/${CHARACTERS[seat].id}/hu.mp3`])
+    assert.deepEqual(clipsForEvent({type:'hu',seat,source:'selfDraw'},['invalid']),[`/voices/${CHARACTERS[seat].id}/zimo.mp3`])
   }
   for (const seat of [undefined,null,-1,3,1.5,'1']) assert.deepEqual(clipsForEvent({type:'hu',seat,source:'selfDraw'}),[])
   for (const type of ['draw','pass','claim','finish']) assert.deepEqual(clipsForEvent({type,seat:0,source:'selfDraw'}),[])
@@ -53,7 +55,7 @@ test('cursor never replays initial/reconnected/new-game history or duplicate upd
 test('same-revision batch events all played once in order, including automatic discard', () => {
   const c=new ActionVoiceCursor(); c.consume(state([],1))
   const events=[{type:'hu',seat:1,source:'discard'},{type:'hu',seat:2,source:'kongDiscard'},{type:'draw',seat:0},{type:'discard',seat:0,tile:9,automatic:true}]
-  assert.deepEqual(c.consume(state(events,2)),['/voices/sweet/fangpao.mp3','/voices/sweet/hu.mp3','/voices/elegant/fangpao.mp3','/voices/elegant/hu.mp3','/voices/sunny/tong-1.mp3'])
+  assert.deepEqual(c.consume(state(events,2)),['/voices/sweet/fangpao.mp3','/voices/elegant/fangpao.mp3','/voices/sunny/tong-1.mp3'])
   assert.deepEqual(c.consume(state(events,2)),[])
 })
 function audioFixture(options = {}) {
@@ -105,7 +107,7 @@ test('simultaneous wins stay serial and adjacent, with duplicate updates ignored
   engine.enqueue(cursor.consume(state(events))); await tick()
   engine.enqueue(cursor.consume(state(events)))
   engine.enqueue(['/voices/sunny/tong-1.mp3'])
-  const expected=['/voices/sweet/fangpao.mp3','/voices/sweet/hu.mp3','/voices/elegant/fangpao.mp3','/voices/elegant/hu.mp3','/voices/sunny/tong-1.mp3']
+  const expected=['/voices/sweet/fangpao.mp3','/voices/elegant/fangpao.mp3','/voices/sunny/tong-1.mp3']
   for(let index=0;index<expected.length;index++) {
     assert.deepEqual(played,['silent',...expected.slice(0,index+1)])
     sources.at(-1).onended(); await tick()
@@ -113,10 +115,10 @@ test('simultaneous wins stay serial and adjacent, with duplicate updates ignored
   assert.deepEqual(played,['silent',...expected]); engine.dispose()
 })
 
-test('queue limit drops an entire pending win instead of leaving an orphan hu',async()=>{
+test('queue limit drops the oldest pending single win',async()=>{
   const {engine,played,sources}=audioFixture()
   await engine.unlock(); engine.enqueue(['blocker']); await tick()
-  const later=Array.from({length:11},(_,index)=>`later-${index}`)
+  const later=Array.from({length:12},(_,index)=>`later-${index}`)
   engine.enqueue([...clipsForEvent({type:'hu',seat:0,source:'selfDraw'}),...later])
   assert.deepEqual(engine.queue.flatMap(item=>item.urls),later)
   for(let index=0;index<=later.length;index++) { sources.at(-1).onended(); await tick() }
@@ -134,8 +136,6 @@ test('a started win completes after expiry and queue eviction without interleavi
   engine.enqueue(later)
   assert.deepEqual(engine.queue.flatMap(item=>item.urls),later.slice(1))
   sources.at(-1).onended(); await tick()
-  assert.deepEqual(played,['silent',...win])
-  sources.at(-1).onended(); await tick()
   assert.deepEqual(played,['silent',...win,'later-1']); engine.dispose()
 })
 
@@ -149,21 +149,21 @@ test('an unstarted expired win is skipped as a whole',async()=>{
   assert.deepEqual(played,['silent','blocker','fresh']); engine.dispose()
 })
 
-test('both win clips load before speaking and expiry is checked before the pair starts',async()=>{
+test('a single win clip loads before speaking and expiry is checked before it starts',async()=>{
   let now=0, resolveHu
   const {engine,played}=audioFixture({now:()=>now})
   const win=clipsForEvent({type:'hu',seat:0,source:'selfDraw'})
-  engine.fetchAudio=async url=>({ok:true,headers:{get:()=> 'audio/mpeg'},arrayBuffer:()=>url===win[1] ? new Promise(resolve=>{resolveHu=resolve}) : Promise.resolve(url)})
+  engine.fetchAudio=async url=>({ok:true,headers:{get:()=> 'audio/mpeg'},arrayBuffer:()=>url===win[0] ? new Promise(resolve=>{resolveHu=resolve}) : Promise.resolve(url)})
   await engine.unlock(); engine.enqueue(win); await tick()
   assert.deepEqual(played,['silent'])
-  now=6001; resolveHu(win[1]); await tick()
+  now=6001; resolveHu(win[0]); await tick()
   assert.deepEqual(played,['silent'])
   engine.enqueue(['fresh']); await tick()
   assert.deepEqual(played,['silent','fresh']); engine.dispose()
 })
 
 test('a win with an unavailable clip is skipped without splitting it or blocking later events',async()=>{
-  for(const unavailable of ['zimo','hu']) {
+  for(const unavailable of ['zimo']) {
     const {engine,played}=audioFixture()
     engine.fetchAudio=async url=>({ok:!url.endsWith(`/${unavailable}.mp3`),headers:{get:()=> 'audio/mpeg'},arrayBuffer:async()=>url})
     await engine.unlock(); engine.enqueue([...clipsForEvent({type:'hu',seat:0,source:'selfDraw'}),'good']); await tick()
@@ -184,7 +184,7 @@ for(const interruption of ['mute','clear','context loss']) {
     if(interruption==='mute') engine.setMuted(false)
     else if(interruption==='context loss') { context.resume=async()=>{context.state='running'}; await engine.unlock() }
     engine.enqueue(['fresh']); await tick()
-    assert.equal(played.includes(win[1]),false)
+    assert.equal(played.filter(clip=>clip===win[0]).length,1)
     assert.equal(played.includes('old-pending'),false)
     assert.equal(played.at(-1),'fresh'); engine.dispose()
   })
@@ -198,3 +198,16 @@ test('muted confirmed wins are consumed without replaying when sound is enabled 
   engine.setMuted(false); engine.enqueue(cursor.consume(state(events))); await tick()
   assert.deepEqual(played,['silent']); engine.dispose()
 })
+
+
+test('rob-kong attempts stay silent; confirmed rob wins play one matching call and never replay', () => {
+  const cursor = new ActionVoiceCursor();
+  cursor.consume(state([]));
+  const attempt = {type:'robKongAttempt',seat:0,tile:12};
+  assert.deepEqual(cursor.consume(state([attempt])),[]);
+  const win = {type:'hu',seat:2,source:'robKong'};
+  assert.deepEqual(cursor.consume(state([attempt,win])),['/voices/elegant/qianggang.mp3']);
+  assert.deepEqual(cursor.consume(state([attempt,win])),[]);
+  cursor.reset();
+  assert.deepEqual(cursor.consume(state([attempt,win])),[]);
+});

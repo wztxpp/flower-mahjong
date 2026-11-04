@@ -1,4 +1,4 @@
-import { createGame, applyAction, getPlayerView } from '../shared/game.js';
+import { createGame, dealerForNextGame, applyAction, getPlayerView } from '../shared/game.js';
 import { applyAction as applyV2Action, getPlayerView as getV2View } from '../shared/v2-game.js';
 import { applyAction as applyLegacyAction, getPlayerView as getLegacyView } from '../shared/legacy-game.js';
 import { ensureGameMetadata, newGameMetadata, archiveFinishedGame, recordsForProfile } from './history.js';
@@ -254,7 +254,7 @@ export function createApi(store) {
       if (room.game && room.game.phase !== 'finished') fail(409, 'PLAYING', '这一局还没结束');
       const next = structuredClone(room); await bindProfile(store, next, seat, playerHash); ensureGameMetadata(next);
       if (next.game) (next.archivedGames ||= []).push(archiveFinishedGame(next));
-      const now = Date.now(); next.game = createGame(); next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now); next.seats[seat].lastSeen = now;
+      const now = Date.now(); next.game = createGame({ dealerSeat: dealerForNextGame(next.game) }); next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now); next.seats[seat].lastSeen = now;
       next.gameMeta.characters = assignCharacters(next.seats.map(person => person.preferredCharacter));
       await commit(store, room, next); return json({ state: publicRoom(next, seat) });
     }

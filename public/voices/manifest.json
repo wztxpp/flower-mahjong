@@ -188,15 +188,6 @@
           "transcript": "碰!",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         },
-        "hu": {
-          "text": "胡",
-          "src": "/voices/sweet/hu.mp3",
-          "durationSeconds": 0.6,
-          "sha256": "6b21c6f03c33b6ac9be869cdfd13f06ded3f99a33cb8d134d2070efb35529883",
-          "mp3Bytes": 8108,
-          "transcript": "呼?",
-          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
-        },
         "gang": {
           "text": "杠",
           "src": "/voices/sweet/gang.mp3",
@@ -222,6 +213,15 @@
           "sha256": "056d0b7f8df9666b79d9b03ff33d9a6de73fd4a81000bab820740e602c89c6b1",
           "mp3Bytes": 15308,
           "transcript": "放炮",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
+        },
+        "qianggang": {
+          "text": "抢杠",
+          "src": "/voices/sweet/qianggang.mp3",
+          "durationSeconds": 1.2,
+          "sha256": "8e0e09d2f349b942a0bcaa3fc4a38140aba992c920383e0d229d0325afed920e",
+          "mp3Bytes": 15308,
+          "transcript": "搶钢",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         }
       },
@@ -260,6 +260,51 @@
             "zimo",
             "fangpao"
           ]
+        },
+        "robKongCall": {
+          "date": "2026-11-04",
+          "reference": {
+            "text": "一条。二条。三条。",
+            "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+            "sourceClips": [
+              {
+                "call": "tiao-1",
+                "src": "/voices/sweet/tiao-1.mp3",
+                "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+                "text": "一条"
+              },
+              {
+                "call": "tiao-2",
+                "src": "/voices/sweet/tiao-2.mp3",
+                "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+                "text": "二条"
+              },
+              {
+                "call": "tiao-3",
+                "src": "/voices/sweet/tiao-3.mp3",
+                "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+                "text": "三条"
+              }
+            ],
+            "durationSeconds": 5.66,
+            "interClipSilenceSeconds": 0.15,
+            "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+          },
+          "calls": [
+            "qianggang"
+          ]
+        }
+      },
+      "legacyClips": {
+        "hu": {
+          "text": "胡",
+          "src": "/voices/sweet/hu.mp3",
+          "durationSeconds": 0.6,
+          "sha256": "6b21c6f03c33b6ac9be869cdfd13f06ded3f99a33cb8d134d2070efb35529883",
+          "mp3Bytes": 8108,
+          "transcript": "呼?",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified",
+          "usage": "Compatibility file only; not a current winning announcement."
         }
       }
     },
@@ -444,15 +489,6 @@
           "transcript": "碰",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         },
-        "hu": {
-          "text": "胡",
-          "src": "/voices/elegant/hu.mp3",
-          "durationSeconds": 1.52,
-          "sha256": "85cd3b0cc6c9a72ba29d720ca68c781a92849470a77eaa3d8a8683790586ad07",
-          "mp3Bytes": 19340,
-          "transcript": "虎",
-          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
-        },
         "gang": {
           "text": "杠",
           "src": "/voices/elegant/gang.mp3",
@@ -478,6 +514,15 @@
           "sha256": "e84cc16c7d9afee819f55fb347e441cde033bb3e090d155101e7dd334325dc10",
           "mp3Bytes": 12428,
           "transcript": "放炮",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
+        },
+        "qianggang": {
+          "text": "抢杠",
+          "src": "/voices/elegant/qianggang.mp3",
+          "durationSeconds": 1.52,
+          "sha256": "a7fcbfc0cbc630bb76ed92308c44889734527e663d6a69dd48a545b42d939709",
+          "mp3Bytes": 19340,
+          "transcript": "搶鋼",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         }
       },
@@ -516,6 +561,51 @@
             "zimo",
             "fangpao"
           ]
+        },
+        "robKongCall": {
+          "date": "2026-11-04",
+          "reference": {
+            "text": "一条。二条。三条。",
+            "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+            "sourceClips": [
+              {
+                "call": "tiao-1",
+                "src": "/voices/elegant/tiao-1.mp3",
+                "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+                "text": "一条"
+              },
+              {
+                "call": "tiao-2",
+                "src": "/voices/elegant/tiao-2.mp3",
+                "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+                "text": "二条"
+              },
+              {
+                "call": "tiao-3",
+                "src": "/voices/elegant/tiao-3.mp3",
+                "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+                "text": "三条"
+              }
+            ],
+            "durationSeconds": 3.98,
+            "interClipSilenceSeconds": 0.15,
+            "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+          },
+          "calls": [
+            "qianggang"
+          ]
+        }
+      },
+      "legacyClips": {
+        "hu": {
+          "text": "胡",
+          "src": "/voices/elegant/hu.mp3",
+          "durationSeconds": 1.52,
+          "sha256": "85cd3b0cc6c9a72ba29d720ca68c781a92849470a77eaa3d8a8683790586ad07",
+          "mp3Bytes": 19340,
+          "transcript": "虎",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified",
+          "usage": "Compatibility file only; not a current winning announcement."
         }
       }
     },
@@ -700,15 +790,6 @@
           "transcript": "词曲 李宗盛",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         },
-        "hu": {
-          "text": "胡",
-          "src": "/voices/sunny/hu.mp3",
-          "durationSeconds": 1.36,
-          "sha256": "a619c71fe85dffd3f33706c1f022d52da053f31e1e9045ca356440c8ccc16967",
-          "mp3Bytes": 17324,
-          "transcript": "符",
-          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
-        },
         "gang": {
           "text": "杠",
           "src": "/voices/sunny/gang.mp3",
@@ -734,6 +815,15 @@
           "sha256": "f05104e7ae2d845d29ca6dc6860d3cbfb551a0938d01226879b69050c6d0d756",
           "mp3Bytes": 23948,
           "transcript": "放炮",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified"
+        },
+        "qianggang": {
+          "text": "抢杠",
+          "src": "/voices/sunny/qianggang.mp3",
+          "durationSeconds": 2.0,
+          "sha256": "8bb618f3903e3862db395bd85708ecb7ece115f40a17637ffacdea55918dec6e",
+          "mp3Bytes": 25100,
+          "transcript": "搶槓",
           "pronunciationReview": "context-asr-reviewed-not-listening-certified"
         }
       },
@@ -772,6 +862,51 @@
             "zimo",
             "fangpao"
           ]
+        },
+        "robKongCall": {
+          "date": "2026-11-04",
+          "reference": {
+            "text": "一条。二条。三条。",
+            "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+            "sourceClips": [
+              {
+                "call": "tiao-1",
+                "src": "/voices/sunny/tiao-1.mp3",
+                "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+                "text": "一条"
+              },
+              {
+                "call": "tiao-2",
+                "src": "/voices/sunny/tiao-2.mp3",
+                "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+                "text": "二条"
+              },
+              {
+                "call": "tiao-3",
+                "src": "/voices/sunny/tiao-3.mp3",
+                "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+                "text": "三条"
+              }
+            ],
+            "durationSeconds": 4.38,
+            "interClipSilenceSeconds": 0.15,
+            "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+          },
+          "calls": [
+            "qianggang"
+          ]
+        }
+      },
+      "legacyClips": {
+        "hu": {
+          "text": "胡",
+          "src": "/voices/sunny/hu.mp3",
+          "durationSeconds": 1.36,
+          "sha256": "a619c71fe85dffd3f33706c1f022d52da053f31e1e9045ca356440c8ccc16967",
+          "mp3Bytes": 17324,
+          "transcript": "符",
+          "pronunciationReview": "context-asr-reviewed-not-listening-certified",
+          "usage": "Compatibility file only; not a current winning announcement."
         }
       }
     }
@@ -804,7 +939,23 @@
       "mp3DecodeChecked": true,
       "asr": "faster-whisper small / CPU int8 / Chinese / beam_size=5",
       "subjectiveListeningCompleted": false
+    },
+    "robKongExtension": {
+      "date": "2026-11-04",
+      "clipCount": 3,
+      "mp3DecodeChecked": true,
+      "asr": "faster-whisper small / CPU int8 / Chinese / beam_size=5",
+      "subjectiveListeningCompleted": false
     }
   },
-  "updatedDate": "2026-11-04"
+  "updatedDate": "2026-11-04",
+  "storedClipCount": 72,
+  "legacyClipCount": 3,
+  "winAnnouncements": {
+    "selfDraw": "zimo",
+    "discard": "fangpao",
+    "robKong": "qianggang",
+    "appendHu": false,
+    "kongDiscard": "fangpao"
+  }
 }

@@ -1597,3 +1597,37 @@ test('v3 HTTP old exposed pre-first-hu radishes stay exposed and are not counted
   assert.equal(after.pendingKongRadishes,0);
   assertLatest(after);
 });
+
+test('next hand gives dealer to first previous winner while host authorization and archived scores remain intact',async t=>{
+ for(const winner of [0,1,2]) {
+  const api=await table(t);const room=await api.store.get(api.roomId);
+  room.game.phase='finished';room.game.turnStep=null;room.game.finishReason='wallExhausted';
+  room.game.history=[{type:'start'},{type:'hu',seat:winner,revision:3,message:'首胡'},{type:'hu',seat:(winner+1)%3,revision:3,message:'双响第二家'}];
+  room.game.players[winner].score=9;room.game.players[(winner+1)%3].score=-9;
+  await api.store.compareAndSwap(room,room.revision);
+  const before=structuredClone(room.game);
+  assertError(await api.clients[1].start(room.revision),403,'HOST_ONLY');
+  const start=await api.host.start(room.revision);assert.equal(start.status,200,JSON.stringify(start.body));
+  assert.equal(start.body.state.game.dealerSeat,winner);assert.equal(start.body.state.game.currentSeat,winner);
+  const stored=await api.store.get(api.roomId);assert.equal(stored.hostSeat,0);
+  assert.deepEqual(stored.archivedGames.at(-1).game.players.map(p=>p.score),before.players.map(p=>p.score));
+  assert.deepEqual(stored.archivedGames.at(-1).game.history,before.history);
+  assert.deepEqual(stored.game.players.map(p=>p.hand.length),[0,1,2].map(s=>s===winner?14:13));
+  assert.equal(stored.game.lastDraw.seat,winner);
+  for(const c of api.clients){const reconnect=await c.get();assert.equal(reconnect.body.state.game.dealerSeat,winner);assert.equal(reconnect.body.state.game.legalActions.length>0,c.seat===winner);}
+  assertError(await api.host.start(room.revision),409,'STALE_STATE');
+  const revision=(await api.host.get()).body.state.revision;
+  assertError(await api.host.start(revision),409,'PLAYING');
+ }
+});
+
+test('next hand with no previous hu keeps original seat-zero opening; starting legacy finished rounds uses their first hu',async t=>{
+ for(const schemaVersion of [undefined,1,2,3]){
+  const api=await table(t);let room=await api.store.get(api.roomId);
+  room.game.schemaVersion=schemaVersion;room.game.phase='finished';room.game.turnStep=null;room.game.dealerSeat=2;
+  room.game.history=[{type:'hu',seat:1,revision:1}];await api.store.compareAndSwap(room,room.revision);
+  let result=await api.host.start(room.revision);assert.equal(result.status,200,JSON.stringify(result.body));assert.equal(result.body.state.game.dealerSeat,1);
+  room=await api.store.get(api.roomId);room.game.phase='finished';room.game.turnStep=null;room.game.history=[{type:'finish',reason:'wallExhausted'}];await api.store.compareAndSwap(room,room.revision);
+  result=await api.host.start(room.revision);assert.equal(result.status,200);assert.equal(result.body.state.game.dealerSeat,0);
+ }
+});

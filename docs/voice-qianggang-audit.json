@@ -1,0 +1,208 @@
+{
+  "date": "2026-11-04",
+  "method": "Local Qwen3-TTS 0.6B Base, recovered original character references; faster-whisper small / CPU int8 / Chinese / beam_size=5",
+  "paidServiceUsed": false,
+  "realPersonVoiceSampleUsed": false,
+  "subjectiveListeningCompleted": false,
+  "limitations": "ASR is not human listening or a guarantee of persona consistency, pronunciation, or tone. Existing audio is unchanged.",
+  "recordings": {
+    "sweet": {
+      "text": "抢杠",
+      "voice": "sweet",
+      "call": "qianggang",
+      "modelInputText": "抢杠。",
+      "sha256": "8e0e09d2f349b942a0bcaa3fc4a38140aba992c920383e0d229d0325afed920e",
+      "wavSha256": "ef1bcbba1010b9fa5049a01c22974466aa9e6d4c5c12b6704d6258bd56a6234d",
+      "seed": 676103,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.2,
+      "sampleRate": 24000,
+      "mp3Bytes": 15308,
+      "generationSeconds": 17.313390493392944,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "搶钢",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0
+    },
+    "elegant": {
+      "text": "抢杠",
+      "voice": "elegant",
+      "call": "qianggang",
+      "modelInputText": "抢杠。",
+      "sha256": "a7fcbfc0cbc630bb76ed92308c44889734527e663d6a69dd48a545b42d939709",
+      "wavSha256": "b78553fb71c406559d4254a91d40d61861c4a2058a97ce01038c2cd2b7435c0d",
+      "seed": 676207,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.52,
+      "sampleRate": 24000,
+      "mp3Bytes": 19340,
+      "generationSeconds": 49.59322786331177,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "搶鋼",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0
+    },
+    "sunny": {
+      "text": "抢杠",
+      "voice": "sunny",
+      "call": "qianggang",
+      "modelInputText": "抢杠。",
+      "sha256": "8bb618f3903e3862db395bd85708ecb7ece115f40a17637ffacdea55918dec6e",
+      "wavSha256": "49aa405f385cc6a4fbef3b991c2bed561f0c232614357f6c9a93a4bb086838a2",
+      "seed": 676309,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 2.0,
+      "sampleRate": 24000,
+      "mp3Bytes": 25100,
+      "generationSeconds": 20.25739097595215,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "搶槓",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0
+    }
+  },
+  "contextualChecks": {
+    "sweet": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "qianggang"
+      ],
+      "transcript": "一条，二条，三条，自摸，放炮，抢杠。",
+      "initialPrompt": "麻将报牌，自摸，放炮，抢杠。",
+      "expectedNewCallMatched": true
+    },
+    "elegant": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "qianggang"
+      ],
+      "transcript": "一条，二条，三条，自摸，放炮，抢杠。",
+      "initialPrompt": "麻将报牌，自摸，放炮，抢杠。",
+      "expectedNewCallMatched": true
+    },
+    "sunny": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "qianggang"
+      ],
+      "transcript": "一条，二条，三条，自摸，放炮，抢杠。",
+      "initialPrompt": "麻将报牌，自摸，放炮，抢杠。",
+      "expectedNewCallMatched": true
+    }
+  },
+  "runtime": {
+    "torch": "2.8.0+cpu",
+    "qwen-tts": "0.1.1",
+    "transformers": "4.57.3",
+    "faster-whisper": "1.2.1",
+    "soundfile": "0.14.0",
+    "numpy": "2.5.4"
+  },
+  "referenceMatchesPreviousWinCalls": {
+    "sweet": true,
+    "elegant": true,
+    "sunny": true
+  }
+}

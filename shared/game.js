@@ -83,7 +83,14 @@ function secureRandom() {
   return bytes[0] / 4294967296;
 }
 
-export function createGame({ seed, rules: inputRules } = {}) {
+export function dealerForNextGame(previousGame) {
+  const valid = seat => Number.isInteger(seat) && seat >= 0 && seat <= 2;
+  const firstHu = Array.isArray(previousGame?.history) ? previousGame.history.find(event => event?.type === 'hu' && valid(event.seat)) : null;
+  return firstHu ? firstHu.seat : 0;
+}
+
+export function createGame({ seed, rules: inputRules, dealerSeat = 0 } = {}) {
+  if (!Number.isInteger(dealerSeat) || dealerSeat < 0 || dealerSeat > 2) throw new Error('庄家座位无效');
   const rules = normalizeRules(inputRules);
   const wall = Array.from({ length: 144 }, (_, i) => i % TILE_COUNT);
   const random = seed === undefined ? secureRandom : seededRandom(seed);
@@ -97,16 +104,16 @@ export function createGame({ seed, rules: inputRules } = {}) {
   }));
   for (let i = 0; i < 13; i++) for (const player of players) player.hand.push(wall.shift());
   const initialTile = wall.shift();
-  players[0].hand.push(initialTile);
+  players[dealerSeat].hand.push(initialTile);
   for (const player of players) player.hand.sort((a, b) => a - b);
   const game = {
-    schemaVersion: 3, phase: 'turn', turnStep: 'discard', currentSeat: 0,
+    schemaVersion: 3, phase: 'turn', turnStep: 'discard', currentSeat: dealerSeat, dealerSeat,
     wall, players, discards: [], retiredTiles: [], history: [], revision: 0,
     rules, claim: null, drawKind: 'normal', firstHuRadishesRevealed: false, pendingKongRadishes: 0,
     dragonSettlement: { settled: false, entries: [] },
-    lastDraw: { seat: 0, tile: initialTile, source: 'initial' }, finishReason: null,
+    lastDraw: { seat: dealerSeat, tile: initialTile, source: 'initial' }, finishReason: null,
   };
-  log(game, { type: 'start', message: '三位牌友已就位，东家先出牌。' });
+  log(game, { type: 'start', seat: dealerSeat, message: `三位牌友已就位，${dealerSeat + 1}号位坐庄，庄家先出牌。` });
   assertGameInvariants(game);
   return game;
 }
@@ -645,7 +652,7 @@ export function getPlayerView(game, seat) {
   if (!Number.isInteger(seat) || seat < 0 || seat > 2) throw new Error('座位无效');
   const me = game.players[seat];
   return {
-    schemaVersion: 3, phase: game.phase, turnStep: game.turnStep, currentSeat: game.currentSeat,
+    schemaVersion: 3, phase: game.phase, turnStep: game.turnStep, currentSeat: game.currentSeat, dealerSeat: game.dealerSeat ?? 0,
     wallCount: game.wall.length, revision: game.revision, rules: clone(game.rules), mySeat: seat,
     sharedRadishes: game.players.flatMap(player => player.radishes), firstHuRadishesRevealed: game.firstHuRadishesRevealed, pendingKongRadishes: game.pendingKongRadishes ?? 0,
     dragonSettlement: clone(game.dragonSettlement),
@@ -671,6 +678,7 @@ export function getPlayerView(game, seat) {
 
 /** Logical win piles reference existing physical tiles, and are never extra physical copies. */
 export function assertGameInvariants(game) {
+  if (game.dealerSeat !== undefined && (!Number.isInteger(game.dealerSeat) || game.dealerSeat < 0 || game.dealerSeat > 2)) throw new Error('庄家座位无效');
   if (game.schemaVersion !== 3 || typeof game.firstHuRadishesRevealed !== 'boolean'
     || typeof game.dragonSettlement?.settled !== 'boolean' || !Array.isArray(game.dragonSettlement.entries)) throw new Error('牌局版本状态无效');
   if (game.pendingKongRadishes !== undefined && (!Number.isSafeInteger(game.pendingKongRadishes) || game.pendingKongRadishes < 0

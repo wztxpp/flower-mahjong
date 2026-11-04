@@ -65,3 +65,9 @@
 - Own-draw meld upgrades first wait for hu/pass only. Unwon upgrade sources are immediately robbable; won ordinary sources are protected, while subsequent replacement-draw upgrades are robbable. A robbed upgrade has no kong fee, kong radish or replacement, only the upgrader pays the win. Ordinary rob-kong adds one fan; seven pairs does not.
 - Before the first table win, successful kongs accrue pending radishes without revealing or removing them. First hu reveals six plus the pending count, later kongs reveal one immediately. Old revealed radishes and recorded scores remain intact.
 - Release follows verified GitHub main first, then builds the same tracked source for the existing Site.
+
+## v0.6.3
+
+同桌下一局取上局首胡玩家坐庄，庄家初始十四张并先出，房主权限保持不变。四筒未胡报告仍在核对历史触发条件，未擅改普通弃牌的重复胡锁口规则。
+
+胡牌语音改为按实际来源仅播“自摸”“放炮”或“抢杠”之一，不再追加“胡”；新增三角色真实抢杠录音。未提交的补杠尝试不播杠或胡。

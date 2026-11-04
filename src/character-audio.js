@@ -9,7 +9,8 @@ export function clipForEvent(event, characters) {
   if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat > 2) return null
   let clip
   if (event.type === 'discard' && Number.isInteger(event.tile) && event.tile >= 0 && event.tile < 18) clip = `${event.tile < 9 ? 'tiao' : 'tong'}-${event.tile % 9 + 1}`
-  else if (event.type === 'peng' || event.type === 'hu') clip = event.type
+  else if (event.type === 'peng') clip = 'peng'
+  else if (event.type === 'hu') clip = event.source === 'selfDraw' ? 'zimo' : ['discard', 'kongDiscard'].includes(event.source) ? 'fangpao' : event.source === 'robKong' ? 'qianggang' : null
   else if (['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type)) clip = 'gang'
   return clip ? `/voices/${(CHARACTERS.find(character => character.id === characters?.[event.seat]) || characterForSeat(event.seat)).id}/${clip}.mp3` : null
 }
@@ -18,8 +19,7 @@ export function clipForEvent(event, characters) {
 export function clipsForEvent(event, characters) {
   const clip = clipForEvent(event, characters)
   if (!clip) return []
-  const prefix = event.type === 'hu' && (event.source === 'selfDraw' ? 'zimo' : ['discard', 'kongDiscard', 'robKong'].includes(event.source) ? 'fangpao' : null)
-  return prefix ? [clip.replace(/hu\.mp3$/, `${prefix}.mp3`), clip] : [clip]
+  return [clip]
 }
 
 /** Observe committed server history, not speculative button clicks or pending claims. */
@@ -74,8 +74,6 @@ export class CharacterAudio {
     const at = this.now()
     for (let index = 0; index < urls.length; index++) {
       const url = urls[index], group = [url]
-      // Keep the cursor's flat URL API, but make each win an indivisible queue item.
-      if (/\/(?:zimo|fangpao)\.mp3$/.test(url) && urls[index + 1] === url.replace(/(?:zimo|fangpao)\.mp3$/, 'hu.mp3')) group.push(urls[++index])
       this.queue.push({ urls: group, at })
     }
     let queuedClips = this.queue.reduce((count, item) => count + item.urls.length, 0)
