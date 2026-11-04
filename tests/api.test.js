@@ -1631,3 +1631,73 @@ test('next hand with no previous hu keeps original seat-zero opening; starting l
   result=await api.host.start(room.revision);assert.equal(result.status,200);assert.equal(result.body.state.game.dealerSeat,0);
  }
 });
+
+async function repeatedFourDotsHttpFixture({ sourceWon = false, schemaVersion = 3 } = {}) {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const game = apiFixture({
+    hands: [[0,0,1,2,3,4,6,7,8,9,12,14,15,16], [1,2,3,10,11,12,12], WAITING_HAND],
+    melds: [[], [{type:'mingGang',tile:13,tiles:[13,13,13,13],fromSeat:0}, {type:'peng',tile:5,tiles:[5,5,5],fromSeat:0}], []],
+    wins: [sourceWon ? [8] : [], [12], []], locks: [[],[9,12],[]], drawTile:12, head:[6,8],
+  });
+  game.history = [{revision:0,type:'hu',seat:1,tile:12,source:'discard',fromSeat:2,message:'保存的首次四筒胡牌记录'}, {revision:0,type:'draw',seat:1,source:'continuation',message:'2号位胡后补摸。'}];
+  if (schemaVersion === 3) {
+    game.schemaVersion=3;game.rules=structuredClone(DEFAULT_RULES);game.firstHuRadishesRevealed=true;game.dragonSettlement={settled:false,entries:[]};assertLatest(game);
+  }
+  return game;
+}
+
+test('v3 HTTP reported ordinary four-dot discard offers repeat hu before natural draw and reconnect/retries charge once', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api=await table(t);const initial=await repeatedFourDotsHttpFixture();
+  const views=await installFixture(api,initial);
+  const discard=await api.host.action(views[0].revision,{type:'discard',tile:12});assert.equal(discard.status,200);
+  let states=await snapshots(api.clients);
+  assert.equal(states[1].game.phase,'claim');assert.equal(states[1].game.huDiagnostic.code,'AVAILABLE');
+  assert.deepEqual(states[1].game.legalActions.map(action=>action.type),['hu','pass']);
+  assert.equal(states[1].game.huLockActive,true,'saved lock metadata may remain but cannot reject repeat hu');
+  assert.equal(states[1].game.history.some(event=>event.type==='draw'&&event.seat===1&&event.source==='normal'),false);
+  const reconnect=client(api,api.roomId,api.clients[1].token,1);const current=(await reconnect.get()).body.state;
+  assert.deepEqual(current.game.legalActions,states[1].game.legalActions);
+  const answers=await Promise.all([reconnect.action(current.revision,{type:'hu'}),api.clients[1].action(current.revision,{type:'hu'})]);
+  assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
+  const stored=(await api.store.get(api.roomId)).game;assertLatest(stored);
+  const events=stored.history.filter(event=>event.type==='hu');assert.equal(events.length,2);
+  assert.deepEqual(stored.history.slice(0,initial.history.length),initial.history);
+  assert.equal(events.at(-1).source,'discard');assert.equal(events.at(-1).tile,12);assert.equal(events.at(-1).fromSeat,0);
+  assert.deepEqual(events.at(-1).payments,[{seat:0,delta:-events.at(-1).points},{seat:1,delta:events.at(-1).points}]);
+  assert.equal(stored.players[1].huCount,2);assert.equal(stored.players[2].score,0);
+  states=await snapshots(api.clients);for(const state of states) assert.deepEqual(state.game.history,stored.history);
+});
+
+test('v3 HTTP repeat-discard change preserves won-source protection and frozen v2 lock', async t => {
+  for (const options of [{sourceWon:true},{schemaVersion:2}]) {
+    const api=await table(t);const initial=await repeatedFourDotsHttpFixture(options);
+    const views=await installFixture(api,initial);const result=await api.host.action(views[0].revision,{type:'discard',tile:12});
+    assert.equal(result.status,200);
+    const stored=(await api.store.get(api.roomId)).game;
+    assert.equal(stored.discards[0].tile,12);assert.equal(stored.discards[0].huSeats,undefined);
+    assert.equal(stored.players[1].huCount,1);
+    assert.equal(stored.history.filter(event=>event.type==='hu').length,1);
+    const state=(await api.clients[1].get()).body.state;
+    assert.equal(state.game.legalActions.some(action=>action.type==='hu'),false);
+  }
+});
+
+test('v3 HTTP two already-won players can both claim ordinary discard with stable priority and one settlement', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const reverse of [false,true]) {
+    const api=await table(t);
+    const initial=apiFixture({wins:[[],[17],[17]],locks:[[],[17],[17]],head:[6,8]});
+    initial.schemaVersion=3;initial.rules=structuredClone(DEFAULT_RULES);initial.firstHuRadishesRevealed=true;initial.dragonSettlement={settled:false,entries:[]};assertLatest(initial);
+    const views=await installFixture(api,initial);const opened=await api.host.action(views[0].revision,{type:'discard',tile:17});assert.equal(opened.status,200);
+    const order=reverse?[2,1]:[1,2];const first=await api.clients[order[0]].action(opened.body.state.revision,{type:'hu'});assert.equal(first.status,200);
+    assert.equal(first.body.state.game.history.filter(event=>event.type==='hu').length,0);
+    const fresh=await snapshots(api.clients);assert.equal(fresh[order[0]].game.legalActions.length,0);
+    const answers=await Promise.all([api.clients[order[1]].action(first.body.state.revision,{type:'hu'}),api.clients[order[1]].action(first.body.state.revision,{type:'hu'})]);
+    assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
+    const stored=(await api.store.get(api.roomId)).game;assertLatest(stored);const events=stored.history.filter(event=>event.type==='hu');
+    assert.deepEqual(events.map(event=>event.seat),[1,2]);assert.deepEqual(events.map(event=>event.source),['discard','discard']);
+    for(const event of events)assert.deepEqual(event.payments,[{seat:0,delta:-event.points},{seat:event.seat,delta:event.points}]);
+    assert.equal(stored.players[1].huCount,2);assert.equal(stored.players[2].huCount,2);
+  }
+});

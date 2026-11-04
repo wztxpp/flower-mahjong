@@ -541,7 +541,7 @@ test('schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
 
 test('current lobby rules explain six-copy fan, shared radishes, consecutive hu and separate final dragon counts', async () => {
   browser(); const scope = lobby(); scope.showRules.value = true; const html = await render(scope);
-  assert.match(html, /朋友内测版 · v0.6.3/); assert.match(html, /规则原型 v0.6.3/);
+  assert.match(html, /朋友内测版 · v0.6.4/); assert.match(html, /规则原型 v0.6.4/);
   assert.match(html, /六张加 3 番/); assert.match(html, /六张同牌加到 4 番/);
   assert.match(html, /七张加 4 番，八张加 5 番/); assert.match(html, /逐张加杠至八张/);
   assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
@@ -734,4 +734,11 @@ test('dealer marker follows server dealer independently of host', async () => {
   assert.match(html,/dealer-tag/);
   assert.match(html,/庄/);
   assert.match(html,/房主/);
+});
+
+test('latest rules permit ordinary repeat discard hu without waiting for natural draw', async () => {
+  browser(); const scope=lobby();scope.showRules.value=true;const html=await render(scope);
+  assert.match(html,/自己已经胡过不限制接炮/);
+  assert.match(html,/可以再次胡，不必等自己下一次正常摸牌/);
+  assert.match(html,/普通弃牌也不能接胡/);
 });

@@ -197,9 +197,9 @@ function huWaits(game, seat, tile, fromHand, kongDiscard = false) {
   if (fromHand) removeTile(base, tile);
   const waits = contextualWaitTiles(game, player, base);
   if (!waits.includes(tile)) return null;
-  // Self-draws and the immediate kong-discard exception can repeat a win.
-  // Keep the provisional lock only for ordinary discard claims.
-  if (!fromHand && !kongDiscard && player.huLockActive && (!game.rules.allowChangedWaitDuringLock || waits.some(wait => player.lockedWaits.includes(wait)))) return null;
+  // Winning once does not block a later legal discard win before a natural draw.
+  // Legacy lock fields remain readable for saved-state compatibility only; source
+  // protection (ordinary discards by an already-won player) stays in claimOptions.
   return waits;
 }
 
@@ -297,14 +297,6 @@ export function getHuDiagnostic(game, seat) {
   const extra = { tile, waitTiles };
   if (!waitTiles.includes(tile)) {
     return reply('SHAPE', waitTiles.length ? `这张${label(tile)}不在你的听口；可胡${waitTiles.map(label).join('、')}。` : '当前牌形还未凑成四组加一对（或已启用的七对），暂时不能胡。', extra);
-  }
-  if (!huWaits(game, seat, tile, fromHand, !fromHand && (game.discards[game.claim.discardIndex]?.afterKong === true || game.claim.kind === 'robKong'))) {
-    const message = game.rules.repeatHuLock === 'untilNaturalDraw'
-      ? '本次弃牌仍命中锁定听口，需等下一次正常轮到你摸牌才可再次接胡；自摸可继续胡。'
-      : game.rules.allowChangedWaitDuringLock
-        ? '本次仍命中锁定听口；按本局设置，需要完全更换原听口后才能再次胡牌。'
-        : '本局设置会持续锁定重复胡牌；当前不能再次胡牌。';
-    return reply('WAIT_LOCK', message, extra);
   }
   if (game.phase === 'claim' && !game.claim.eligibleSeats.includes(seat)) return reply('NOT_ELIGIBLE', '本次弃牌没有你的可用接牌操作，请等待下一次机会。', extra);
   return reply('AVAILABLE', game.claim?.kind === 'robKong' ? '这张补杠牌可以抢杠胡；只有胡或过，所有回应后一起结算。' : fromHand ? '这张牌可以自摸胡牌。' : '这张弃牌可以接胡；所有有资格的玩家回应后一起结算。', extra);

@@ -147,14 +147,14 @@ test('normal draw clears the provisional discard lock while continuation selfdra
   assert.equal(getPlayerView(game, 0).sharedRadishes.length, 6); assert.equal(game.retiredTiles.length, 2);
 });
 
-test('selfdraw ignores every temporary lock setting; overlapping discard waits stay locked', () => {
+test('selfdraw and ordinary discard wins ignore prior temporary wait-lock settings', () => {
   for (const rules of [{}, { allowChangedWaitDuringLock: false }, { repeatHuLock: 'untilWaitChange' }]) {
     const game = fixture({ huCounts: [1, 0, 0], locks: [[16, 17], [], []], activeLocks: [true, false, false], rules });
     assert.equal(has(game, 0, 'hu'), true); assert.equal(getHuDiagnostic(game, 0).code, 'AVAILABLE');
   }
   const source = fixture({ huCounts: [0, 1, 0], locks: [[], [17], []], activeLocks: [false, true, false] });
   const game = doAction(source, 0, 'discard', 17);
-  assert.equal(has(game, 1, 'hu'), false); assert.equal(getHuDiagnostic(game, 1).code, 'WAIT_LOCK');
+  assert.equal(has(game, 1, 'hu'), true); assert.equal(getHuDiagnostic(game, 1).code, 'AVAILABLE');
   assert.equal(has(game, 2, 'hu'), true);
 });
 
@@ -482,16 +482,16 @@ test('diagnostic positively identifies both actual selfdraw and discard wins', (
   assert.equal(getHuDiagnostic(game, 0).code, 'WRONG_TURN');
 });
 
-test('diagnostics explain shape, claim lock, wrong turn and pending response privately', () => {
+test('diagnostics explain shape and repeat discard availability privately', () => {
   let game = fixture({ hands: [[...waiting, 16], waiting, waiting], drawTile: 16 });
   assert.equal(getHuDiagnostic(game, 0).code, 'SHAPE'); assert.deepEqual(getHuDiagnostic(game, 0).waitTiles, [17]);
   assert.equal(getHuDiagnostic(game, 1).code, 'WRONG_TURN');
   game = doAction(fixture({ huCounts: [0, 1, 0], locks: [[], [17], []], activeLocks: [false, true, false] }), 0, 'discard', 17);
-  assert.equal(getHuDiagnostic(game, 1).code, 'WAIT_LOCK');
-  assert.match(getHuDiagnostic(game, 1).message, /弃牌.*自摸可继续胡/);
+  assert.equal(getHuDiagnostic(game, 1).code, 'AVAILABLE');
+  assert.match(getHuDiagnostic(game, 1).message, /弃牌可以接胡/);
   assert.ok(game.history.every(event => !Object.hasOwn(event, 'huDiagnostic')));
   const view = getPlayerView(game, 1);
-  assert.equal(view.huDiagnostic.code, 'WAIT_LOCK'); assert.equal(view.players[0].huDiagnostic, undefined);
+  assert.equal(view.huDiagnostic.code, 'AVAILABLE'); assert.equal(view.players[0].huDiagnostic, undefined);
 });
 
 test('private view hides wall, opposing hands/draws/locks and diagnostic is independent of them', () => {
@@ -736,7 +736,7 @@ test('reported 2/5/8 circles hand can repeat-hu a kong discard before its next n
   assertGameInvariants(game);
 });
 
-test('kong-discard repeat hu bypasses every provisional lock but ordinary discards do not', () => {
+test('kong-discard and ordinary repeat hu ignore locks but won ordinary sources remain protected', () => {
   const receiver = [4, 5, 6, 6, 7, 7, 7, 8, 11, 12, 13, 14, 15];
   const source = [0, 0, 0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 17];
   for (const sourceHu of [0, 1]) for (const repeatHuLock of ['untilNaturalDraw', 'untilWaitChange']) for (const allowChangedWaitDuringLock of [true, false]) {
@@ -756,7 +756,7 @@ test('kong-discard repeat hu bypasses every provisional lock but ordinary discar
     assert.equal(game.discards[0].afterKong, false);
     assert.equal(game.discards[0].huSeats, undefined);
     assert.equal(game.players[1].huCount, 1);
-    assert.equal(game.phase === 'claim' && game.claim.tile === 13 && has(game, 1, 'hu'), false);
+    assert.equal(game.phase === 'claim' && game.claim.tile === 13 && has(game, 1, 'hu'), sourceHu === 0);
     assertGameInvariants(game);
   }
 });
@@ -1080,6 +1080,56 @@ test('reported automatic seven-circles kong discard pays 34 not 68 and never cha
     assert.deepEqual(game.players.map((player, seat) => player.score - beforeHuScores[seat]), [0, -34, 34]);
     assert.equal(game.players[0].huCount, unrelatedHuCount);
     if (unrelatedHuCount) assert.equal(game.finishReason, 'allPlayersHu');
+    assertGameInvariants(game);
+  }
+});
+
+test('reported four-dot chronology allows repeat one-dot and four-dot claims before the next natural draw', () => {
+  const hand = [1, 2, 3, 10, 11, 12, 12];
+  const groups = [meld(13, 'mingGang'), meld(5)];
+  let game = fixture({hands:[waiting,hand,[...waiting,12]],melds:[[],groups,[]],currentSeat:2,drawTile:12,head:[10,9,12,10,9],rules:{specialHuPatterns:true}});
+  assert.deepEqual(getWaitTiles(hand,groups),[9,12]);
+  game=doAction(game,2,'discard',12);
+  game=passAll(doAction(game,1,'hu'));
+  assert.equal(game.players[1].huCount,1);
+  assert.equal(game.players[1].huLockActive,true);
+  assert.equal(game.currentSeat,2);
+  assert.equal(game.lastDraw.tile,9);
+  // The only draw by seat two since its first hu was continuation, not natural.
+  assert.deepEqual(game.history.filter(e=>e.type==='draw'&&e.seat===1).map(e=>e.source),['continuation']);
+  game=doAction(game,2,'discard',9);
+  assert.equal(has(game,1,'hu'),true);
+  assert.equal(getHuDiagnostic(game,1).code,'AVAILABLE');
+  // Declining this tile does not erase the next eligible ordinary discard.
+  game=passAll(game);
+  assert.equal(game.currentSeat,0);
+  assert.equal(game.lastDraw.tile,12);
+  game=doAction(game,0,'discard',12);
+  assert.equal(has(game,1,'hu'),true);
+  assert.equal(getHuDiagnostic(game,1).code,'AVAILABLE');
+  const reconnected=JSON.parse(JSON.stringify(game));
+  assert.equal(has(reconnected,1,'hu'),true);
+  game=passAll(doAction(reconnected,1,'hu'));
+  const wins=game.history.filter(e=>e.type==='hu'&&e.seat===1);
+  assert.deepEqual(wins.map(e=>e.tile),[12,12]);
+  assert.equal(wins[1].source,'discard');
+  assert.equal(wins[1].fromSeat,0);
+  assert.deepEqual(wins[1].payments.filter(p=>p.delta<0).map(p=>p.seat),[0]);
+  assertGameInvariants(game);
+});
+
+test('both prior winners can claim an ordinary discard atomically in stable clockwise order', () => {
+  for (const order of [[1,2],[2,1]]) {
+    let game=fixture({huCounts:[0,1,1],priorWins:[[],[17],[17]],locks:[[],[17],[17]],activeLocks:[false,true,true],head:[6]});
+    game=doAction(game,0,'discard',17);
+    assert.deepEqual(game.claim.eligibleSeats,[1,2]);
+    game=doAction(game,order[0],'hu');
+    assert.equal(game.history.some(e=>e.type==='hu'),false);
+    game=doAction(game,order[1],'hu');
+    const wins=game.history.filter(e=>e.type==='hu');
+    assert.deepEqual(wins.map(e=>e.seat),[1,2]);
+    assert.ok(wins.every(e=>e.source==='discard'&&e.fromSeat===0));
+    assert.deepEqual(game.players.map(p=>p.huCount),[0,2,2]);
     assertGameInvariants(game);
   }
 });

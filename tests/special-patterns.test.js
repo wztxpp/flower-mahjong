@@ -172,12 +172,12 @@ test('expanded waits survive serialization and private views do not expose anoth
   assertGameInvariants(game);
 });
 
-test('expanded discard hu preserves ordinary locks, protected sources and the immediate kong-discard exception', () => {
+test('expanded discard hu ignores stale locks but preserves protected sources and the kong-discard exception', () => {
   const pattern = sevenPattern();
   const pengTwo = waiting.map((tile, index) => index === 0 ? 2 : tile);
   for (const scenario of [
     { locked: false, sourceHu: false, afterKong: false, allowed: true },
-    { locked: true, sourceHu: false, afterKong: false, allowed: false },
+    { locked: true, sourceHu: false, afterKong: false, allowed: true },
     { locked: true, sourceHu: true, afterKong: true, allowed: true },
     { locked: false, sourceHu: true, afterKong: false, allowed: false },
   ]) {
@@ -188,7 +188,7 @@ test('expanded discard hu preserves ordinary locks, protected sources and the im
     game = doAction(game, 0, 'discard', 2);
     const claimHu = game.phase === 'claim' && getLegalActions(game, 1).some(action => action.type === 'hu');
     assert.equal(claimHu, scenario.allowed);
-    if (scenario.locked && !scenario.afterKong) assert.equal(getHuDiagnostic(game, 1).code, 'WAIT_LOCK');
+    if (scenario.allowed) assert.equal(getHuDiagnostic(game, 1).code, 'AVAILABLE');
     if (scenario.allowed) {
       game = doAction(game, 1, 'hu'); game = passAll(game);
       const event = huEvent(game, 1);
