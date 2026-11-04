@@ -99,6 +99,7 @@ const shareUrl = computed(() => { const url = new URL(window.location.href); url
 const statusTitle = computed(() => {
   if (phase.value === 'finished') return ['allPlayersHu', 'allThreeHu', 'all_players_hu'].includes(game.value?.finishReason) ? '三家都胡了，本局结束' : '本局圆满结束'
   if (phase.value === 'lobby') return filledSeats.value === 3 ? '牌友已到齐' : '等牌友，一起开局'
+  if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong') return legalActions.value.length ? '可以抢杠，等你回应' : '补杠待确认，等待牌友回应'
   if (game.value?.phase === 'claim') return legalActions.value.length ? '这张牌，等你回应' : '等待牌友回应'
   if (isMyTurn.value && postHu.value) return canHu.value ? '这张可以胡，请你决定' : '手牌已固定，选择杠或过'
   if (isMyTurn.value) return game.value?.turnStep === 'draw' ? (isLegacy.value ? '轮到你摸牌' : '正在自动摸牌') : '牌已摸好，选一张出手'
@@ -109,6 +110,7 @@ const statusDetail = computed(() => {
   if (offline.value) return '连接暂时中断，正在尝试重新连接'
   if (phase.value === 'playing' && currentPlayer.value?.detached) return `${currentPlayer.value.name}已离桌，本局等待该牌友重连；已记积分不会清除。`
   if (phase.value === 'finished') return finishText.value
+  if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong') return legalActions.value.length ? '本次只能抢杠胡或过，不能碰、杠；所有人过后才形成补杠。' : '补杠尚未成立，暂不收杠分、不翻萝卜；等待有资格的牌友回应。'
   if (game.value?.phase === 'claim') return legalActions.value.length ? (canHu.value ? (legalActions.value.some(action => action.type === 'peng') ? '这张可胡，也可碰；你可以选择胡、碰或过。' : '这张可以胡。胡牌优先于碰、杠。') : '请选择可用操作；胡牌优先，明杠其次，再到碰。') : '所有需要回应的牌友选择后，继续下一轮。'
   if (phase.value === 'lobby') return filledSeats.value === 3 ? (isHost.value ? '你是房主，随时可以开始。' : '请等待房主开始牌局。') : `还差 ${3 - filledSeats.value} 位牌友，把邀请链接发给他们吧。`
   if (isMyTurn.value && game.value?.turnStep === 'draw') return isLegacy.value ? '本桌沿用旧规则，点击“摸一张”继续。' : '自动发牌，无需点击摸牌。'
@@ -134,17 +136,18 @@ function initials(player) { return [...(player?.name || '待')][0] }
 function scoreLabel(score) { return score > 0 ? `+${score}` : `${score || 0}` }
 function discardsFor(seat) { return game.value?.discards?.filter(discard => discard.seat === seat) || [] }
 function actionLabel(action) {
-  return ({ draw: '摸一张', hu: '胡牌', pass: postHu.value && isMyTurn.value ? (canHu.value ? '不胡 / 过 · 打出新牌' : '过 · 打出新牌') : '过', peng: '碰', mingGang: '明杠', anGang: `暗杠 · ${tileLabel(action.tile)}`, buGang: `补杠 · ${tileLabel(action.tile)}`, addGang: `加第 5 张 · ${tileLabel(action.tile)}` })[action.type] || action.type
+  const extended = action.type === 'addGang' ? me.value?.melds?.find(meld => meld.type !== 'peng' && meld.tile === action.tile && meld.tiles?.length >= 4 && meld.tiles.length < 8) : null
+  return ({ draw: '摸一张', hu: '胡牌', pass: postHu.value && isMyTurn.value ? (canHu.value ? '不胡 / 过 · 打出新牌' : '过 · 打出新牌') : '过', peng: '碰', mingGang: '明杠', anGang: `暗杠 · ${tileLabel(action.tile)}`, buGang: `补杠 · ${tileLabel(action.tile)}`, addGang: `加第 ${(extended?.tiles?.length || 4) + 1} 张 · ${tileLabel(action.tile)}` })[action.type] || action.type
 }
-function meldLabel(meld) { const base = ({ peng: '碰', mingGang: '明杠', anGang: '暗杠', buGang: '补杠', addGang: '加杠' })[meld.type] || '副露'; return `${base}${meld.tiles?.length === 5 ? ' · 5 张' : ''}` }
-function winLabel(win) { return `${tileLabel(win.tile)} · ${win.source === 'selfDraw' ? '自摸' : win.source === 'kongDiscard' ? '杠后接胡' : '接炮'}${win.virtual ? ' · 共胡记牌，不另算实物牌' : ''}` }
+function meldLabel(meld) { const base = ({ peng: '碰', mingGang: '明杠', anGang: '暗杠', buGang: '补杠', addGang: '加杠' })[meld.type] || '副露'; return `${base}${meld.tiles?.length >= 5 ? ` · ${meld.tiles.length} 张` : ''}` }
+function winLabel(win) { return `${tileLabel(win.tile)} · ${win.source === 'selfDraw' ? '自摸' : win.source === 'robKong' ? '抢杠胡' : win.source === 'kongDiscard' ? '杠后接胡' : '接炮'}${win.virtual ? ' · 共胡记牌，不另算实物牌' : ''}` }
 function scoreSummary(score, payments = []) {
   if (!score) return ''
   const payers = paymentSummary({ payments })
   const paidBy = payers ? `；${payers}` : payments.length ? '；本次无付款方，收入 0 分' : ''
   if (score.fan == null) return `基础 ${score.base} + 萝卜 ${score.radishBonus} + 神龙 ${score.dragonBonus} = ${score.total} 分 / 家${paidBy}`
   if (score.bigSingle && score.overlapPolicy === 'exclusive') return `大单钓：${score.total} 分 / 付款方（本次不叠加番分、萝卜${isLatest.value ? '；神龙局末另结' : '、神龙'}）${paidBy}`
-  const patterns = (score.patternBonuses || []).map(item => item.type === 'sevenPairs' && score.sevenPairsFixed ? `七对固定${item.fan}番` : `${({ bigSingle: '大单吊', allTriplets: '对对胡', pureSuit: '清一色', sevenPairs: '七对' })[item.type] || item.type} +${item.fan}番`).join('、')
+  const patterns = (score.patternBonuses || (score.robKongBonus ? [{ type: 'robKong', fan: score.robKongBonus }] : [])).map(item => item.type === 'sevenPairs' && score.sevenPairsFixed ? `七对固定${item.fan}番` : `${({ bigSingle: '大单吊', allTriplets: '对对胡', pureSuit: '清一色', robKong: '抢杠', sevenPairs: '七对' })[item.type] || item.type} +${item.fan}番`).join('、')
   const prefix = patterns ? `${patterns} · ` : ''
   return `${prefix}${score.fan} 番 ${score.fanPoints} 分 + ${isLatest.value ? '共享萝卜' : '萝卜'} ${score.radishBonus}${isLatest.value ? '' : ` + 神龙 ${score.dragonBonus}`}${score.bigSinglePoints > 0 ? ` + 大单钓 ${score.bigSinglePoints}` : ''} = ${score.total} 分 / 付款方${paidBy}`
 }
@@ -521,7 +524,7 @@ onUnmounted(() => {
       </div>
       <div class="header-actions">
         <button class="text-button voice-toggle" :aria-pressed="voiceStatus === 'ready' && !voiceMuted" @click="toggleVoice"><Icon name="soundoff" :size="17"/>{{ voiceMuted ? '语音已关' : voiceStatus === 'ready' ? '角色语音已开' : voiceStatus === 'unavailable' ? '语音加载失败 · 重试' : '开启角色语音' }}</button>
-        <span class="prototype-pill"><span></span> 朋友内测版 · v0.6.1</span>
+        <span class="prototype-pill"><span></span> 朋友内测版 · v0.6.2</span>
         <button v-if="inRoom || roomCode || restoring || busy" class="text-button leave-table-button" @click="newTable">返回大厅 / 换桌</button>
         <button class="text-button rules-trigger" @click="showRules = true"><Icon name="book" :size="17"/><span>玩法说明</span></button>
       </div>
@@ -589,7 +592,7 @@ onUnmounted(() => {
         </ul>
         <p class="history-disclaimer">只记录虚拟积分，不含充值、支付或现金输赢。</p>
       </section>
-      <footer class="welcome-footer"><span>一桌好朋友，一局好时光。</span><span>规则原型 v0.6.1 · 不含充值、支付或现金输赢</span></footer>
+      <footer class="welcome-footer"><span>一桌好朋友，一局好时光。</span><span>规则原型 v0.6.2 · 不含充值、支付或现金输赢</span></footer>
     </main>
 
     <main v-else class="room-layout">
@@ -632,10 +635,10 @@ onUnmounted(() => {
             </div>
             <div v-else class="playing-center">
               <div class="game-status" aria-live="polite"><div><span class="turn-indicator" :class="{ 'your-turn': isMyTurn || legalActions.length }"></span><strong>{{ statusTitle }}</strong></div><div class="wall-counter"><span>余牌</span><b>{{ game.wallCount }}</b><span>张</span></div></div>
-              <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"><MahjongTile :tile="game.claim.tile" small/><span><b>{{ seatLabel(game.claim.discardSeat) }}</b> 打出了 {{ tileLabel(game.claim.tile) }}</span></div>
+              <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"><MahjongTile :tile="game.claim.tile" small/><span><b>{{ seatLabel(game.claim.discardSeat) }}</b> {{ game.claim.kind === 'robKong' ? '正在补杠' : '打出了' }} {{ tileLabel(game.claim.tile) }}</span></div>
               <section v-if="isLatest" class="shared-radish-pool" aria-labelledby="shared-radish-title">
-                <div class="shared-radish-heading"><h2 id="shared-radish-title">全桌共享萝卜</h2><span>共 {{ sharedRadishes.length }} 张</span><small v-if="latestSharedRadishes" class="radish-increment">{{ sharedRadishIncrementLabel(latestSharedRadishes) }}</small></div>
-                <div class="radish-tiles shared-radish-tiles"><MahjongTile v-for="(tile, ti) in sharedRadishes" :key="ti" :tile="tile" small/><span v-if="!sharedRadishes.length" class="public-zone-empty">每杠添 1 张；全桌第一次胡牌添 6 张。</span></div>
+                <div class="shared-radish-heading"><h2 id="shared-radish-title">全桌共享萝卜</h2><span>共 {{ sharedRadishes.length }} 张</span><small v-if="!game.firstHuRadishesRevealed && game.pendingKongRadishes" class="radish-increment">首胡待翻 +{{ game.pendingKongRadishes }} 张杠萝卜</small><small v-if="latestSharedRadishes" class="radish-increment">{{ sharedRadishIncrementLabel(latestSharedRadishes) }}</small></div>
+                <div class="radish-tiles shared-radish-tiles"><MahjongTile v-for="(tile, ti) in sharedRadishes" :key="ti" :tile="tile" small/><span v-if="!sharedRadishes.length" class="public-zone-empty">首胡才翻萝卜：6 张基础 + {{ game.pendingKongRadishes || 0 }} 张已成杠累计。</span></div>
                 <p>三家共用这一池，后续胡牌不再加六张。</p>
               </section>
               <div class="discard-area"><div v-for="player in seats" :key="player.seat" class="discard-group"><div class="discard-label"><span>{{ player.seat === mySeat && me.isCurrentParticipant !== false ? '我的牌河' : `${seatLabel(player.seat)}的牌河` }}</span><small>{{ discardsFor(player.seat).length }} 条记录</small></div><div class="discard-tiles"><template v-if="discardsFor(player.seat).length"><span v-for="(discard, di) in discardsFor(player.seat)" :key="di" class="discard-tile" :class="{ 'latest-discard': discard === game.discards[game.discards.length - 1], 'claimed-discard': discard.huSeats?.length, 'taken-discard': discard.claimedBy != null || discard.huSeats?.length }"><MahjongTile :tile="discard.tile" small/><span v-if="discard.huSeats?.length" class="hu-mark" title="胡牌记录，和胡牌区对应同一张实体牌">胡</span><span v-else-if="discard.claimedBy != null" class="hu-mark" title="已移入碰杠区，牌河仅保留记录">{{ discard.claimedAs === 'peng' ? '碰' : '杠' }}</span></span></template><span v-else class="empty-discard">尚未出牌</span></div></div></div>
@@ -680,13 +683,13 @@ onUnmounted(() => {
           <section><h3><span>四</span>胡牌、听口与付款方</h3><p>基础胡型为四组顺子或刻子加一对，也支持七对。普通自摸由另两家各付，普通接炮由出牌方付。胡后连续补摸及杠后补摸，原听口还有重合时不能再胡；全部换口可提前再胡，正常轮转后解除限制。</p><p>胡过的人普通出牌不能被接胡；杠后打出的那张仍可接胡，按自摸付款。当前是否可胡及原因，在自己的手牌区可查看，不会公开给牌友。</p></section>
           <section class="pending-rules"><h3><span>!</span>仍需一起核对的细节</h3><p>大单钓：胡牌前手里只剩一张牌，当前按另两家各付 50 分，暂不叠加番分、萝卜和神龙。三牌区同种牌六张及以上如何加番尚未确认，当前不额外加同牌番。</p><p>沿用的神龙暂定：本次成胡手牌、碰杠牌连同自己的萝卜（不含此前胡牌），同牌六张加 10 分、七张加 20 分、八张及以上加 40 分，普通胡牌时另计。以上未定细节不是自贡统一标准，以本桌服务端显示的结算为准。</p><p>只有出牌、碰、胡、杠会播放角色语音，可在右上角关闭。无机器人、无倒计时。正常选牌不会自动代打。带本桌房间号的页面刷新可重连原座位，主页只进入大厅。离桌不清除已有积分记录，也不会自动删除旧桌。只使用虚拟积分。</p></section>
         </div><div v-else class="rules-modal-body latest-rules">
-          <section><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3><p>三人，只用条、筒各 1–9，每种八张，共 144 张。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、加第五张，不必等一圈或换尽原听口。点“过”打出刚摸的新牌；没有胡、杠可选时自动摸打。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p><p>自己摸牌同时可胡又可杠时，先选胡或过。三家都至少胡过一次，或牌墙摸完，本局结束。</p></section>
+          <section><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3><p>三人，只用条、筒各 1–9，每种八张，共 144 张。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。点“过”打出刚摸的新牌；没有胡、杠可选时自动摸打。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p><p>自己摸牌同时可胡又可杠时，先选胡或过。三家都至少胡过一次，或牌墙摸完，本局结束。</p></section>
           <section><h3><span>二</span>接牌时，按实际选择回应</h3><p>未胡玩家打出的牌，若你可胡也可碰、但不可明杠，可选择胡、碰或过；同一张牌可胡又可明杠时，只提供胡或过。多人回应时，胡优先于明杠，明杠优先于碰。</p><p>已经胡过的人打出的牌，别人不能碰或明杠。普通弃牌也不能接胡；只有杠后打出的那张可以接胡，仅由实际出牌者付款，不按自摸结算。</p></section>
-          <section v-if="usesSpecialPatterns" class="special-pattern-rules"><h3><span>特</span>七对、大单吊与牌型加番</h3><p>七对首次胡后，初次完整牌型里的每一种牌都可作为后续听牌：普通七对听七种；一组四张听六种；两组四张或一组六张听五种。首次七对以 3 番为基础，每组四张及以上另加“张数 − 3”番；清一色再加 2 番，普通清七对就是 5 番 10 分。后续胡牌固定在这个总档位（保留已有清一色番），不因胡牌区积累再加番，萝卜仍每次重新计算。</p><p>大单吊先胡一次后，原单张和自己的碰杠区牌种均可胡。同种牌可以碰两次，算两组独立碰牌。大单吊或对对胡各加 2 番，两者不重复计算；清一色另加 2 番。大单吊不再固定 50 分，按番分、同牌加番与萝卜计算。</p></section><section><h3><span>三</span>普通加番，按三个牌区计算</h3><p>自己的手牌区、碰杠区、胡牌区合计：同种牌恰好四张加 1 番，五张加 2 番，六张加 3 番。基础为 1 番，例如六张同牌加到 4 番。七张及以上同牌如何加番尚未确认，当前不额外加同牌番。</p><p>胡牌区每胡一次添一张；一炮多响的“共胡”只作本人的计分记录，不增加实体牌总量。</p><p class="fan-scale">1 番 1 分 · 2 番 2 分 · 3 番 4 分 · 4 番 8 分<br/>5 番 10 分 · 6 番 12 分 · 7 番 14 分，之后每番加 2 分。</p></section>
-          <section><h3><span>四</span>全桌萝卜，共享一池</h3><p>全桌第一次胡牌只翻一次 6 张萝卜；任何玩家每次合法杠再添 1 张。之前翻出的牌全部保留，三家共用，不分个人萝卜。牌墙不足时只翻余下的牌。</p><p>每次胡牌重新计算番分与共享萝卜匹配分。同牌数量相乘，例如计分牌有两张二筒，共享萝卜有两张二筒，加 4 分。<template v-if="game?.rules?.radishCountsWinPile === false">本局保留开局时 v0.4.0 的萝卜规则，不计历史胡牌区；下一局使用修正规则。</template><template v-else>自己的胡牌区（含共胡）、碰杠区、手牌区全部参与匹配，本次胡牌只算一次。例如七筒 2 张×萝卜 1 张，加四筒 1 张×萝卜 2 张，共 4 分。</template></p></section>
-          <section><h3><span>五</span>即时杠分与胡牌付款</h3><p>明杠由出牌者付 2 分；暗杠另外两家各付 2 分；碰后补杠、四张杠加第五张，另外两家各付 1 分。杠分立即结算。</p><p><template v-if="game?.rules?.selfDrawOnlyUnwon === undefined && game">本局保留开局时的自摸付款规则；下一局使用修正规则。</template><template v-else>普通摸牌或胡后续摸自摸，只由本次胡之前还未胡的其他玩家付款，已经胡过的不付。<template v-if="game && !game.rules?.finalHuPaymentExceptions">本局保留开局时的终局付款规则。</template><template v-else>但第三家首胡结束牌局时特殊：自摸仍由另外两家各付；接已经胡过者的杠后弃牌，只由出牌者付。多人同次胡先全部处理再结束，终局例外只用于本次首次胡的赢家。</template></template>普通接炮、杠后补摸及接胡、即时杠分和局末神龙保留各自规则。每次操作记录显示实际付款方。<template v-if="usesSpecialPatterns">大单吊改为加 2 番，与对对胡不重复计；清一色可另加 2 番，萝卜仍另算。局末神龙独立结算。</template><template v-else>本桌保留旧大单钓：每个付款方 50 分，本次不叠加番分和萝卜；局末神龙独立结算。下一局使用新牌型规则。</template></p></section>
+          <section class="rob-kong-rules"><h3><span>抢</span>补杠先等抢杠</h3><p>碰后补杠、已有杠再加一张，都先给别人抢杠胡的机会，只能胡或过，不能碰或杠。无人抢胡才形成杠、收杠分、翻萝卜并补摸；有人抢胡则不形成这次杠，胡牌仅由补杠者付款，普通抢杠加 1 番；七对抢杠不加番，萝卜仍计算。</p><p>补杠者还没胡过，第一手即可被抢；已经胡过者的普通摸牌补杠不能被抢，但杠后补摸再补杠，别人无论胡过与否都可按合法听牌抢胡。</p></section><section v-if="usesSpecialPatterns" class="special-pattern-rules"><h3><span>特</span>七对、大单吊与牌型加番</h3><p>七对首次胡后，初次完整牌型里的每一种牌都可作为后续听牌：普通七对听七种；一组四张听六种；两组四张或一组六张听五种。首次七对以 3 番为基础，每组四张及以上另加“张数 − 3”番；清一色再加 2 番，普通清七对就是 5 番 10 分。后续胡牌固定在这个总档位（保留已有清一色番），不因胡牌区积累再加番，萝卜仍每次重新计算。</p><p>大单吊先胡一次后，原单张和自己的碰杠区牌种均可胡。同种牌可以碰两次，算两组独立碰牌。大单吊或对对胡各加 2 番，两者不重复计算；清一色另加 2 番。大单吊不再固定 50 分，按番分、同牌加番与萝卜计算。</p></section><section><h3><span>三</span>普通加番，按三个牌区计算</h3><p>自己的手牌区、碰杠区、胡牌区合计：同种牌恰好四张加 1 番，五张加 2 番，六张加 3 番，七张加 4 番，八张加 5 番。基础为 1 番，例如六张同牌加到 4 番。八张以上的逻辑同牌统计尚未确认，保持原处理；实体每种仍只有八张。</p><p>胡牌区每胡一次添一张；一炮多响的“共胡”只作本人的计分记录，不增加实体牌总量。</p><p class="fan-scale">1 番 1 分 · 2 番 2 分 · 3 番 4 分 · 4 番 8 分<br/>5 番 10 分 · 6 番 12 分 · 7 番 14 分，之后每番加 2 分。</p></section>
+          <section><h3><span>四</span>全桌萝卜，共享一池</h3><p>萝卜从全桌第一次胡牌才开始翻：首胡翻 6 张，加上首胡前每次成功杠累计的 1 张。首胡前只记次数，不提前翻牌；首胡后每次成功杠再翻 1 张。被抢的补杠不算成功杠。已翻萝卜全部保留，三家共用，牌墙不足只翻余下的牌。</p><p>每次胡牌重新计算番分与共享萝卜匹配分。同牌数量相乘，例如计分牌有两张二筒，共享萝卜有两张二筒，加 4 分。<template v-if="game?.rules?.radishCountsWinPile === false">本局保留开局时 v0.4.0 的萝卜规则，不计历史胡牌区；下一局使用修正规则。</template><template v-else>自己的胡牌区（含共胡）、碰杠区、手牌区全部参与匹配，本次胡牌只算一次。例如七筒 2 张×萝卜 1 张，加四筒 1 张×萝卜 2 张，共 4 分。</template></p></section>
+          <section><h3><span>五</span>即时杠分与胡牌付款</h3><p>明杠由出牌者付 2 分；暗杠另外两家各付 2 分；碰后补杠，以及逐张加到第五至第八张，另外两家每次各付 1 分，每次计 1 张萝卜并补 1 张牌，首胡前的萝卜留到首胡一起翻。杠分立即结算。</p><p><template v-if="game?.rules?.selfDrawOnlyUnwon === undefined && game">本局保留开局时的自摸付款规则；下一局使用修正规则。</template><template v-else>普通摸牌或胡后续摸自摸，只由本次胡之前还未胡的其他玩家付款，已经胡过的不付。<template v-if="game && !game.rules?.finalHuPaymentExceptions">本局保留开局时的终局付款规则。</template><template v-else>但第三家首胡结束牌局时特殊：普通自摸仍由另外两家各付（明杠后补摸另按下述规则）；接已经胡过者的杠后弃牌，只由出牌者付。多人同次胡先全部处理再结束，终局例外只用于本次首次胡的赢家。</template></template>接别人弃牌明杠后，本次补摸胡只由该明杠的出牌者付款；自己摸来的暗杠、补杠、加杠后补摸胡才由另外两家付款。杠后打出的牌被胡，仍只由该张牌的出牌者付款。即时杠分和局末神龙独立结算。每次操作记录显示实际付款方。<template v-if="usesSpecialPatterns">大单吊改为加 2 番，与对对胡不重复计；清一色可另加 2 番，萝卜仍另算。局末神龙独立结算。</template><template v-else>本桌保留旧大单钓：每个付款方 50 分，本次不叠加番分和萝卜；局末神龙独立结算。下一局使用新牌型规则。</template></p></section>
           <section><h3><span>六</span>神龙留到局末，只结一次</h3><p>本人的手牌区、碰杠区、胡牌区，加上全桌共享萝卜：同牌六张 10 分、七张 20 分、八张及以上 40 分。神龙不再加入每次胡牌分，而在本局结束时单独结算一次，记录与即时杠分分开展示。</p><p>普通加番只计算自己的三个牌区，不含萝卜；萝卜匹配分另算。神龙才合并全桌共享萝卜计数，由另外两家各付。多种神龙相加、八张以上按 40 分封顶、流局及未胡者也参与，暂按这些方式处理，资格细节仍待核对。</p></section>
-          <section class="pending-rules"><h3><span>!</span>未确认的边界会明确保留</h3><p>七张及以上同牌加番仍待核对，不代表自贡各地统一打法。请以本桌显示的实际结算为准。</p><p>只有出牌、碰、胡、杠会播放角色语音，可在右上角关闭。无机器人、无倒计时。正常选牌不会自动代打。带本桌房间号的页面刷新可重连原座位，主页只进入大厅。离桌不会清除积分记录。只使用虚拟积分。</p></section>
+          <section class="pending-rules"><h3><span>!</span>未确认的边界会明确保留</h3><p>超过八张的逻辑同牌加番仍待核对，不代表自贡各地统一打法。请以本桌显示的实际结算为准。</p><p>只有出牌、碰、胡、杠会播放角色语音，可在右上角关闭。无机器人、无倒计时。正常选牌不会自动代打。带本桌房间号的页面刷新可重连原座位，主页只进入大厅。离桌不会清除积分记录。只使用虚拟积分。</p></section>
         </div><button class="button primary modal-confirm" @click="showRules = false">明白了，坐下玩一局</button></template>
         <template v-else><span class="eyebrow">好朋友，坐一桌</span><h2 id="invite-title">复制牌桌邀请</h2><p class="invite-modal-note">浏览器未允许自动复制，请选中下方链接并复制，发给两位朋友。</p><label class="field-label" for="invite-link">房间 {{ state.id }}</label><input id="invite-link" ref="inviteInput" :value="shareUrl" readonly @focus="$event.target.select()"/><button class="button primary modal-confirm" @click="showInvite = false">完成</button></template>
       </section>

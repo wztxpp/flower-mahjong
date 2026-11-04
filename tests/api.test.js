@@ -977,12 +977,18 @@ test('v3 HTTP exposes and settles locked repeat hu on the reported kong-discard 
   let views=await installFixture(api,game);
   let answer=await api.host.action(views[0].revision,{type:'buGang',tile:10});
   assert.equal(answer.status,200);
+  while (answer.body.state.game.phase === 'claim' && answer.body.state.game.claim.kind === 'robKong') {
+    const claim = answer.body.state.game.claim;
+    const seat = claim.eligibleSeats.find(seat => !claim.respondedSeats.includes(seat));
+    answer = await api.clients[seat].action(answer.body.state.revision, { type: 'pass' });
+    assert.equal(answer.status, 200);
+  }
   answer=await api.host.action(answer.body.state.revision,{type:'discard',tile:13});
   assert.equal(answer.status,200);
   views=await snapshots(api.clients);
   assert.equal(views[1].game.huDiagnostic.code,'AVAILABLE');
   assert.ok(views[1].game.legalActions.some(action=>action.type==='hu'));
-  assert.equal(views[1].game.discards[0].afterKong,true);
+  assert.equal(views[1].game.discards.at(-1).afterKong,true);
   const revision=views[1].revision;
   const answers=await Promise.all([api.clients[1].action(revision,{type:'hu'}),api.clients[1].action(revision,{type:'hu'})]);
   assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
@@ -1069,6 +1075,215 @@ test('v3 HTTP mandatory post-hu kongs reject old-client pass and discard without
   }
 });
 
+test('v3 HTTP extends a saved five-tile kong through six, seven and eight exactly once per paid replacement', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const meldType of ['anGang', 'buGang']) {
+    const api = await table(t);
+    const noTwo = WAITING_HAND.map(tile => tile === 2 ? 6 : tile);
+    const game = apiFixture({ hands: [[2, 3, 4, 5, 6, 7, 8, 10, 11, 17, 17], noTwo, noTwo],
+      melds: [[{ type: meldType, tile: 2, tiles: Array(5).fill(2), extended: true }], [], []],
+      wins: [[9], [], []], drawTile: 2, head: [2, 2, 9], tail: [15, 16, 8] });
+    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+    game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
+    game.players[0].kongCount = 2;
+    assertLatest(game);
+    let views = await installFixture(api, game);
+    for (const size of [6, 7, 8]) {
+      assert.deepEqual(views[0].game.legalActions, [{ type: 'addGang', tile: 2 }]);
+      const revision = views[0].revision;
+      const answers = await Promise.all([api.host.action(revision, { type: 'addGang', tile: 2 }), api.host.action(revision, { type: 'addGang', tile: 2 })]);
+      assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+      assertError(answers.find(answer => answer.status === 409), 409, 'STALE_STATE');
+      const after = (await api.store.get(api.roomId)).game;
+      assertError(await api.host.action(revision, { type: 'addGang', tile: 2 }), 409, 'STALE_STATE');
+      assert.deepEqual((await api.store.get(api.roomId)).game, after);
+      views = await snapshots(api.clients);
+      const count = size - 5;
+      for (const view of views) {
+        assertPrivateView(view, view.you, api.clients.map(player => player.token));
+        assert.deepEqual(view.game.players.map(player => player.score), [count * 2, -count, -count]);
+        assert.deepEqual(view.game.players[0].radishes, [8, 16, 15].slice(0, count));
+        assert.equal(view.game.players[0].kongCount, 2 + count);
+        assert.equal(view.game.wallCount, game.wall.length - count * 2);
+        const meld = view.game.players[0].melds[0];
+        assert.equal(meld.type, meldType);
+        assert.deepEqual(meld.tiles, Array(size).fill(meldType === 'anGang' && view.you !== 0 ? null : 2));
+        assert.equal(meld.tile, meldType === 'anGang' && view.you !== 0 ? null : 2);
+        const events = view.game.history.filter(event => event.type === 'addGang');
+        assert.equal(events.length, count);
+        assert.deepEqual(events.at(-1).payments, [{ seat: 1, delta: -1 }, { seat: 2, delta: -1 }, { seat: 0, delta: 2 }]);
+        assert.equal(events.at(-1).tile, meldType === 'anGang' ? undefined : 2);
+        const replacements = view.game.history.filter(event => event.type === 'draw' && event.source === 'replacement');
+        assert.equal(replacements.length, count);
+        assert.ok(replacements.every(event => event.tile === undefined));
+      }
+      assertLatest(after);
+      const restored = client(api, api.roomId, api.host.token, 0);
+      assert.deepEqual((await restored.get()).body.state.game, views[0].game);
+    }
+    assert.equal(views[0].game.players[0].melds[0].tiles.length, 8);
+    assert.equal(views[0].game.legalActions.some(action => action.type === 'addGang'), false);
+    const beforeNinth = (await api.store.get(api.roomId)).game;
+    assertError(await api.host.action(views[0].revision, { type: 'addGang', tile: 2 }), 422, 'ILLEGAL_ACTION');
+    assert.deepEqual((await api.store.get(api.roomId)).game, beforeNinth);
+    const won = await api.host.action(views[0].revision, { type: 'hu' });
+    assert.equal(won.status, 200);
+    const score = won.body.state.game.history.find(event => event.type === 'hu').score;
+    assert.equal(score.copyFanBonus, 5);
+    assert.equal(score.fan, 6);
+    assertLatest((await api.store.get(api.roomId)).game);
+  }
+});
+
+test('HTTP saved legacy and v2 games retain the five-tile kong limit rather than routing through v3', async t => {
+  const { DEFAULT_RULES: LEGACY_RULES } = await import('../shared/legacy-game.js');
+  for (const schemaVersion of [undefined, 1, 2]) {
+    const api = await table(t);
+    const noTwo = WAITING_HAND.map(tile => tile === 2 ? 6 : tile);
+    const game = apiFixture({ hands: [[2, 3, 4, 5, 6, 7, 8, 10, 11, 17, 17], noTwo, noTwo],
+      melds: [[{ type: 'anGang', tile: 2, tiles: Array(5).fill(2), extended: true }], [], []], drawTile: 2 });
+    if (schemaVersion === undefined) delete game.schemaVersion;
+    else game.schemaVersion = schemaVersion;
+    if (schemaVersion !== 2) game.rules = structuredClone(LEGACY_RULES);
+    const views = await installFixture(api, game);
+    assert.equal(views[0].game.schemaVersion, schemaVersion === 2 ? 2 : 1);
+    assert.equal(views[0].game.legalActions.some(action => action.type === 'addGang'), false);
+    const before = (await api.store.get(api.roomId)).game;
+    assertError(await api.host.action(views[0].revision, { type: 'addGang', tile: 2 }), 422, 'ILLEGAL_ACTION');
+    assert.deepEqual((await api.store.get(api.roomId)).game, before);
+    const restored = client(api, api.roomId, api.host.token, 0);
+    assert.deepEqual((await restored.get()).body.state.game, views[0].game);
+  }
+});
+
+test('v3 HTTP exposed-kong replacement hu charges only its source, survives old-state reconnect and clears on continuation', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const savedWithoutProvenance of [false, true]) for (const thirdHasHu of [false, true]) {
+    const api = await table(t);
+    const receiver = [2, 2, 2, 3, 4, 5, 6, 7, 8, 10, 11, 17, 17];
+    const game = apiFixture({ hands: [[...WAITING_HAND, 2], receiver, WAITING_HAND],
+      wins: [[], [], thirdHasHu ? [16] : []], drawTile: 2, head: [9, 9, 6], tail: [15] });
+    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+    game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
+    assertLatest(game);
+    let views = await installFixture(api, game);
+    let result = await api.host.action(views[0].revision, { type: 'discard', tile: 2 });
+    assert.equal(result.status, 200);
+    result = await api.clients[1].action(result.body.state.revision, { type: 'mingGang', tile: 2 });
+    assert.equal(result.status, 200);
+    const pending = (await api.store.get(api.roomId)).game;
+    assert.deepEqual(pending.lastDraw.kongSource, { type: 'mingGang', fromSeat: 0 });
+    assert.equal(pending.lastDraw.tile, 9);
+    if (savedWithoutProvenance) {
+      delete pending.lastDraw.kongSource;
+      await installFixture(api, pending);
+    }
+    const restored = client(api, api.roomId, api.clients[1].token, 1);
+    const reconnected = (await restored.get()).body.state;
+    assert.ok(reconnected.game.legalActions.some(action => action.type === 'hu'));
+    const scores = reconnected.game.players.map(player => player.score);
+    assert.deepEqual(scores, [-2, 2, 0]);
+    const revision = reconnected.revision;
+    const answers = await Promise.all([restored.action(revision, { type: 'hu' }), restored.action(revision, { type: 'hu' })]);
+    assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+    assertError(answers.find(answer => answer.status === 409), 409, 'STALE_STATE');
+    views = await snapshots(api.clients);
+    for (const view of views) {
+      const events = view.game.history.filter(event => event.type === 'hu');
+      assert.equal(events.length, 1);
+      const event = events[0];
+      assert.equal(event.source, 'selfDraw');
+      assert.equal(event.fromSeat, null);
+      assert.deepEqual(event.kongSource, { type: 'mingGang', fromSeat: 0 });
+      assert.deepEqual(event.payments, [{ seat: 0, delta: -event.points }, { seat: 1, delta: event.points }]);
+      assert.deepEqual(view.game.players.map((player, seat) => player.score - scores[seat]), [-event.points, event.points, 0]);
+    }
+    const continued = (await api.store.get(api.roomId)).game;
+    assert.equal(continued.lastDraw.source, 'continuation');
+    assert.equal(continued.lastDraw.kongSource, undefined);
+    result = await restored.action(views[1].revision, { type: 'hu' });
+    assert.equal(result.status, 200);
+    const second = result.body.state.game.history.filter(event => event.type === 'hu')[1];
+    assert.equal(second.kongSource, undefined);
+    assert.deepEqual(second.payments.filter(payment => payment.delta < 0).map(payment => payment.seat), thirdHasHu ? [0] : [0, 2]);
+    assertLatest((await api.store.get(api.roomId)).game);
+  }
+});
+
+test('v3 HTTP own-kong replacement hu charges both opponents even when one has already won', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const type of ['anGang', 'buGang', 'addGang']) {
+    const api = await table(t);
+    const game = postHuKongGame({ type });
+    const priorTile = 13;
+    game.wall.splice(game.wall.indexOf(priorTile), 1);
+    game.retiredTiles.push({ seat: 1, tile: priorTile });
+    game.players[1].huCount = 1;
+    game.players[1].winPile = [{ tile: priorTile, source: 'selfDraw', virtual: false }];
+    assertLatest(game);
+    let views = await installFixture(api, game);
+    let result = await api.host.action(views[0].revision, { type, tile: game.lastDraw.tile });
+    assert.equal(result.status, 200);
+    const pending = (await api.store.get(api.roomId)).game;
+    assert.deepEqual(pending.lastDraw.kongSource, { type, fromSeat: null });
+    const scores = result.body.state.game.players.map(player => player.score);
+    const restored = client(api, api.roomId, api.host.token, 0);
+    const revision = (await restored.get()).body.state.revision;
+    const answers = await Promise.all([restored.action(revision, { type: 'hu' }), restored.action(revision, { type: 'hu' })]);
+    assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+    views = await snapshots(api.clients);
+    for (const view of views) {
+      const events = view.game.history.filter(event => event.type === 'hu');
+      assert.equal(events.length, 1);
+      const event = events[0];
+      assert.equal(event.source, 'selfDraw');
+      assert.deepEqual(event.kongSource, { type, fromSeat: null });
+      assert.deepEqual(event.payments, [{ seat: 1, delta: -event.points }, { seat: 2, delta: -event.points }, { seat: 0, delta: event.points * 2 }]);
+      assert.deepEqual(view.game.players.map((player, seat) => player.score - scores[seat]), [event.points * 2, -event.points, -event.points]);
+    }
+    assertLatest((await api.store.get(api.roomId)).game);
+  }
+});
+
+test('v3 HTTP pending final first-hu after exposed-kong still has one payer and preserves safe provenance in profile history', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const receiver = [3, 4, 5, 6, 7, 8, 9, 10, 11, 17, 17];
+  const game = apiFixture({ hands: [WAITING_HAND, receiver, WAITING_HAND],
+    melds: [[], [{ type: 'mingGang', tile: 2, tiles: [2, 2, 2, 2], fromSeat: 0 }], []],
+    wins: [[16], [], [16]], currentSeat: 1, drawTile: 9, head: [6] });
+  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+  game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
+  game.drawKind = 'replacement'; game.lastDraw.source = 'replacement';
+  game.lastDraw.kongSource = { type: 'mingGang', fromSeat: 0 };
+  assertLatest(game);
+  let views = await installFixture(api, game);
+  const result = await api.clients[1].action(views[1].revision, { type: 'hu' });
+  assert.equal(result.status, 200);
+  views = await snapshots(api.clients);
+  for (const view of views) {
+    assert.equal(view.game.finishReason, 'allPlayersHu');
+    assert.equal(view.game.wallCount, game.wall.length);
+    const event = view.game.history.find(item => item.type === 'hu');
+    assert.deepEqual(event.kongSource, { type: 'mingGang', fromSeat: 0 });
+    assert.deepEqual(event.payments, [{ seat: 0, delta: -event.points }, { seat: 1, delta: event.points }]);
+    assert.equal(view.game.players[2].score, 0);
+  }
+  const profile = await api.request('/api/profile', { method: 'POST', body: {} });
+  assert.equal(profile.status, 201);
+  const profileToken = profile.body.playerToken;
+  const bound = await api.request(`/api/rooms/${api.roomId}/resume`, { method: 'POST', token: api.clients[1].token, body: { profileToken } });
+  assert.equal(bound.status, 200);
+  const history = await api.request('/api/profile/history', { token: profileToken });
+  assert.equal(history.status, 200);
+  assert.equal(history.body.records.length, 1);
+  assert.deepEqual(history.body.records[0].events.find(event => event.type === 'hu').kongSource, { type: 'mingGang', fromSeat: 0 });
+  const serialized = JSON.stringify(history.body);
+  for (const secret of [profileToken, ...api.clients.map(player => player.token)]) assert.equal(serialized.includes(secret), false);
+  assert.doesNotMatch(serialized, /"(?:hand|wall|lastDraw|drawnTile|tokenHash|playerHash)":/);
+  assertLatest((await api.store.get(api.roomId)).game);
+});
+
 test('v3 special seven-pairs repeat exposes expanded waits only to its owner and persists through reconnect', async t => {
   const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
   const api = await table(t);
@@ -1096,4 +1311,289 @@ test('v3 special seven-pairs repeat exposes expanded waits only to its owner and
   assert.equal(snapshotsNow[0].game.players[0].winPile.at(-1).tile,2);
   assert.equal(snapshotsNow[0].game.players[0].hand.length,13);
   assertLatest((await api.store.get(api.roomId)).game);
+});
+
+async function robKongHttpFixture({ sourceWon = false, replacement = false, receiverWon = false, type = 'buGang', currentSeat = 0 } = {}) {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const hands = [WAITING_HAND, WAITING_HAND, WAITING_HAND].map(hand => [...hand]);
+  hands[currentSeat] = [0, 1, 2, 3, 4, 5, 9, 10, 11, 15, 17];
+  const melds = [[], [], []];
+  melds[currentSeat] = [{ type: type === 'buGang' ? 'peng' : 'buGang', tile: 17, tiles: Array(type === 'buGang' ? 3 : 4).fill(17) }];
+  const wins = [[], [], []];
+  if (sourceWon) wins[currentSeat] = [15];
+  if (receiverWon) wins[(currentSeat + 1) % 3] = [16];
+  const game = apiFixture({ hands, melds, wins, currentSeat, drawTile: 17, head: [15, 8], tail: [7] });
+  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+  game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
+  if (replacement) {
+    game.lastDraw.source = 'replacement'; game.drawKind = 'replacement';
+    game.lastDraw.kongSource = { type: 'anGang', fromSeat: null };
+    game.players[currentSeat].pendingKongDiscard = true;
+  }
+  if (receiverWon) {
+    const receiver = game.players[(currentSeat + 1) % 3];
+    receiver.huLockActive = true; receiver.lockedWaits = [17];
+  }
+  assertLatest(game);
+  return game;
+}
+
+test('v3 HTTP rob-kong opens a persistent hu-only window without committing fees, radishes or the meld', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const type of ['buGang', 'addGang']) {
+    const api = await table(t);
+    const initial = await robKongHttpFixture({ type });
+    const views = await installFixture(api, initial);
+    const revision = views[0].revision;
+    const answers = await Promise.all([api.host.action(revision, { type, tile: 17 }), api.host.action(revision, { type, tile: 17 })]);
+    assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+    let states = await snapshots(api.clients);
+    assert.equal(states[0].game.phase, 'claim');
+    assert.deepEqual(states[0].game.legalActions, []);
+    for (const seat of [1, 2]) assert.deepEqual(states[seat].game.legalActions.map(action => action.type).sort(), ['hu', 'pass']);
+    let stored = (await api.store.get(api.roomId)).game;
+    assert.deepEqual(stored.players.map(player => player.score), [0, 0, 0]);
+    assert.deepEqual(stored.players[0].melds, initial.players[0].melds);
+    assert.deepEqual(stored.players.map(player => player.radishes), [[], [], []]);
+    assert.equal(stored.wall.length, initial.wall.length);
+    assert.equal(stored.history.filter(event => event.type === type).length, 0);
+    assertLatest(stored);
+    const restored = client(api, api.roomId, api.clients[1].token, 1);
+    assert.deepEqual((await restored.get()).body.state.game, states[1].game);
+    for (const action of [{ type: 'peng', tile: 17 }, { type: 'mingGang', tile: 17 }]) {
+      assertError(await restored.action(states[1].revision, action), 422, 'ILLEGAL_ACTION');
+      assert.deepEqual((await api.store.get(api.roomId)).game, stored);
+    }
+    const passed = await restored.action(states[1].revision, { type: 'pass' });
+    assert.equal(passed.status, 200);
+    states = await snapshots(api.clients);
+    assert.equal(states[0].game.phase, 'claim');
+    assert.deepEqual(states[1].game.legalActions, []);
+    assert.equal(states[0].game.wallCount, initial.wall.length);
+    const committed = await api.clients[2].action(states[2].revision, { type: 'pass' });
+    assert.equal(committed.status, 200);
+    stored = (await api.store.get(api.roomId)).game;
+    assert.equal(stored.players[0].melds[0].tiles.length, initial.players[0].melds[0].tiles.length + 1);
+    assert.deepEqual(stored.players.map(player => player.score), [2, -1, -1]);
+    assert.deepEqual(stored.players[0].radishes, [7]);
+    assert.equal(stored.wall.length, initial.wall.length - 2);
+    assert.equal(stored.history.filter(event => event.type === type).length, 1);
+    assert.equal(stored.history.filter(event => event.type === 'draw' && event.source === 'replacement').length, 1);
+    assertLatest(stored);
+  }
+});
+
+test('v3 HTTP rob-kong settles both winners clockwise regardless of response order and charges only the upgrader once', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const sourceSeat of [0, 1, 2]) for (const reverse of [false, true]) {
+    const api = await table(t);
+    const initial = await robKongHttpFixture({ currentSeat: sourceSeat });
+    const views = await installFixture(api, initial);
+    const opened = await api.clients[sourceSeat].action(views[sourceSeat].revision, { type: 'buGang', tile: 17 });
+    assert.equal(opened.status, 200);
+    const clockwise = [(sourceSeat + 1) % 3, (sourceSeat + 2) % 3];
+    const responseOrder = reverse ? [...clockwise].reverse() : clockwise;
+    let revision = opened.body.state.revision;
+    const first = await api.clients[responseOrder[0]].action(revision, { type: 'hu' });
+    assert.equal(first.status, 200);
+    assert.equal(first.body.state.game.history.filter(event => event.type === 'hu').length, 0);
+    revision = first.body.state.revision;
+    const answers = await Promise.all([api.clients[responseOrder[1]].action(revision, { type: 'hu' }), api.clients[responseOrder[1]].action(revision, { type: 'hu' })]);
+    assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+    const stored = (await api.store.get(api.roomId)).game;
+    const events = stored.history.filter(event => event.type === 'hu');
+    assert.deepEqual(events.map(event => event.seat), clockwise);
+    for (const event of events) {
+      assert.equal(event.source, 'robKong');
+      assert.equal(event.fromSeat, sourceSeat);
+      assert.equal(event.score.fan, 2);
+      assert.deepEqual(event.payments, [{ seat: sourceSeat, delta: -event.points }, { seat: event.seat, delta: event.points }]);
+    }
+    assert.deepEqual(stored.players[sourceSeat].melds, initial.players[sourceSeat].melds);
+    assert.equal(stored.players[sourceSeat].kongCount, initial.players[sourceSeat].kongCount);
+    assert.deepEqual(stored.players.map(player => player.radishes), [[], [], []]);
+    assert.equal(stored.history.some(event => event.type === 'buGang'), false);
+    assert.equal(stored.history.some(event => event.type === 'draw' && event.source === 'replacement'), false);
+    assert.equal(stored.players[sourceSeat].score, -events.reduce((sum, event) => sum + event.points, 0));
+    assertLatest(stored);
+    const states = await snapshots(api.clients);
+    for (const state of states) assert.deepEqual(state.game.history.filter(event => event.type === 'hu'), events);
+    assertError(await api.clients[responseOrder[1]].action(revision, { type: 'hu' }), 409, 'STALE_STATE');
+    assert.deepEqual((await api.store.get(api.roomId)).game, stored);
+  }
+});
+
+test('v3 HTTP already-won upgrader is protected on ordinary draw but replacement upgrade is robbable by locked previous winners', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const replacement of [false, true]) {
+    const api = await table(t);
+    const initial = await robKongHttpFixture({ sourceWon: true, replacement, receiverWon: true });
+    const views = await installFixture(api, initial);
+    const result = await api.host.action(views[0].revision, { type: 'buGang', tile: 17 });
+    assert.equal(result.status, 200);
+    const states = await snapshots(api.clients);
+    if (!replacement) {
+      assert.equal(states[0].game.phase, 'turn');
+      assert.equal(states[0].game.players[0].melds[0].tiles.length, 4);
+      assert.deepEqual(states[0].game.players.map(player => player.score), [2, -1, -1]);
+    } else {
+      assert.equal(states[0].game.phase, 'claim');
+      for (const seat of [1, 2]) assert.deepEqual(states[seat].game.legalActions.map(action => action.type).sort(), ['hu', 'pass']);
+      const passed = await api.clients[2].action(states[2].revision, { type: 'pass' });
+      assert.equal(passed.status, 200);
+      const won = await api.clients[1].action(passed.body.state.revision, { type: 'hu' });
+      assert.equal(won.status, 200);
+      const event = won.body.state.game.history.find(item => item.type === 'hu');
+      assert.equal(event.source, 'robKong');
+      assert.deepEqual(event.payments, [{ seat: 0, delta: -event.points }, { seat: 1, delta: event.points }]);
+      assert.equal(won.body.state.game.players[0].melds[0].tiles.length, 3);
+    }
+    assertLatest((await api.store.get(api.roomId)).game);
+  }
+});
+
+test('HTTP legacy and v2 upgrades keep their original immediate-commit behavior', async t => {
+  const { DEFAULT_RULES: LEGACY_RULES } = await import('../shared/legacy-game.js');
+  const { DEFAULT_RULES: V2_RULES } = await import('../shared/v2-game.js');
+  for (const schemaVersion of [undefined, 1, 2]) {
+    const api = await table(t);
+    const game = await robKongHttpFixture();
+    if (schemaVersion === undefined) delete game.schemaVersion;
+    else game.schemaVersion = schemaVersion;
+    game.rules = structuredClone(schemaVersion === 2 ? V2_RULES : LEGACY_RULES);
+    const views = await installFixture(api, game);
+    const result = await api.host.action(views[0].revision, { type: 'buGang', tile: 17 });
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    assert.notEqual(result.body.state.game.claim?.kind, 'robKong');
+    assert.equal(result.body.state.game.players[0].melds[0].tiles.length, 4);
+    assert.deepEqual(result.body.state.game.players.map(player => player.score), schemaVersion === 2 ? [2, -1, -1] : [0, 0, 0]);
+    assert.equal(result.body.state.game.history.filter(event => event.type === 'buGang').length, 1);
+  }
+});
+
+test('v3 HTTP final rob-kong wins remain atomic and preserve public history without private pending state', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const initial = await robKongHttpFixture({ sourceWon: true, replacement: true });
+  const views = await installFixture(api, initial);
+  const opened = await api.host.action(views[0].revision, { type: 'buGang', tile: 17 });
+  assert.equal(opened.status, 200);
+  assert.equal(opened.body.state.game.claim.kind, 'robKong');
+  assert.equal(opened.body.state.game.claim.kongType, 'buGang');
+  const first = await api.clients[2].action(opened.body.state.revision, { type: 'hu' });
+  assert.equal(first.status, 200);
+  assert.equal(first.body.state.game.phase, 'claim');
+  const last = await api.clients[1].action(first.body.state.revision, { type: 'hu' });
+  assert.equal(last.status, 200);
+  assert.equal(last.body.state.game.finishReason, 'allPlayersHu');
+  const finished = (await api.store.get(api.roomId)).game;
+  assert.equal(finished.wall.length, initial.wall.length);
+  assert.deepEqual(finished.history.filter(event => event.type === 'hu').map(event => event.seat), [1, 2]);
+  assert.equal(finished.history.some(event => event.type === 'draw'), false);
+  assertLatest(finished);
+  const profile = await api.request('/api/profile', { method: 'POST', body: {} });
+  const profileToken = profile.body.playerToken;
+  assert.equal((await api.request(`/api/rooms/${api.roomId}/resume`, { method: 'POST', token: api.host.token, body: { profileToken } })).status, 200);
+  const history = await api.request('/api/profile/history', { token: profileToken });
+  assert.equal(history.status, 200);
+  const wins = history.body.records[0].events.filter(event => event.type === 'hu');
+  assert.deepEqual(wins.map(event => event.source), ['robKong', 'robKong']);
+  assert.ok(wins.every(event => event.score.robKongBonus === 1));
+  const serialized = JSON.stringify(history.body);
+  for (const token of [profileToken, ...api.clients.map(player => player.token)]) assert.equal(serialized.includes(token), false);
+  assert.doesNotMatch(serialized, /"(?:hand|wall|lastDraw|drawnTile|tokenHash|playerHash|responses|options)":/);
+});
+
+async function deferredRadishHttpFixture(options = {}) {
+  const game = await robKongHttpFixture(options);
+  game.firstHuRadishesRevealed = false;
+  game.pendingKongRadishes = 0;
+  return game;
+}
+
+test('v3 HTTP pre-first-hu kong accrues a public count without revealing or drawing radishes, then first hu flips seven once', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const initial = await deferredRadishHttpFixture();
+  const views = await installFixture(api, initial);
+  const opened = await api.host.action(views[0].revision, {type:'buGang',tile:17});
+  assert.equal(opened.status,200);
+  assert.equal(opened.body.state.game.pendingKongRadishes,0);
+  const {states} = await passClaims(api.clients);
+  const beforeHu = (await api.store.get(api.roomId)).game;
+  assert.equal(beforeHu.pendingKongRadishes,1);
+  assert.equal(beforeHu.wall.length,initial.wall.length-1);
+  assert.deepEqual(beforeHu.players.map(player=>player.radishes),[[],[],[]]);
+  assert.equal(beforeHu.lastDraw.tile,initial.wall[0]);
+  const event=beforeHu.history.find(event=>event.type==='buGang');
+  assert.equal(event.radishDeferred,true);
+  assert.equal(event.pendingKongRadishes,1);
+  assert.equal(Object.hasOwn(event,'radish'),false);
+  assertLatest(beforeHu);
+  for(const state of states) {
+    assert.equal(state.game.pendingKongRadishes,1);
+    assert.deepEqual(state.game.sharedRadishes,[]);
+    assert.equal(state.game.wallCount,initial.wall.length-1);
+  }
+  const resumed=client(api,api.roomId,api.host.token,0);
+  assert.deepEqual((await resumed.get()).body.state.game,states[0].game);
+  assert.ok(states[0].game.legalActions.some(action=>action.type==='hu'));
+  const answers=await Promise.all([resumed.action(states[0].revision,{type:'hu'}),resumed.action(states[0].revision,{type:'hu'})]);
+  assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
+  const after=(await api.store.get(api.roomId)).game;
+  assert.equal(after.firstHuRadishesRevealed,true);
+  assert.equal(after.pendingKongRadishes,0);
+  assert.equal(after.players.flatMap(player=>player.radishes).length,7);
+  assert.deepEqual(after.history.find(event=>event.type==='hu').newRadishes,beforeHu.wall.slice(-7).reverse());
+  assert.equal(after.history.filter(event=>event.type==='hu').length,1);
+  assertLatest(after);
+});
+
+test('v3 HTTP first simultaneous hu flips base six plus five pending kongs only once and robbed kong adds nothing', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api=await table(t);
+  const initial=await deferredRadishHttpFixture();
+  initial.pendingKongRadishes=5;initial.players[0].kongCount=5;
+  const views=await installFixture(api,initial);
+  const opened=await api.host.action(views[0].revision,{type:'buGang',tile:17});
+  assert.equal(opened.status,200);
+  assert.equal(opened.body.state.game.pendingKongRadishes,5);
+  const first=await api.clients[2].action(opened.body.state.revision,{type:'hu'});
+  assert.equal(first.status,200);
+  assert.equal(first.body.state.game.sharedRadishes.length,0);
+  const last=await api.clients[1].action(first.body.state.revision,{type:'hu'});
+  assert.equal(last.status,200);
+  const after=(await api.store.get(api.roomId)).game;
+  const hu=after.history.filter(event=>event.type==='hu');
+  assert.deepEqual(hu.map(event=>event.seat),[1,2]);
+  assert.deepEqual(hu.map(event=>event.newRadishes.length),[11,0]);
+  assert.equal(after.pendingKongRadishes,0);
+  assert.equal(after.players.flatMap(player=>player.radishes).length,11);
+  assert.equal(after.players[0].kongCount,5);
+  assert.equal(after.players[0].melds[0].tiles.length,3);
+  assert.equal(after.history.some(event=>event.type==='buGang'),false);
+  const restored=await snapshots(api.clients);
+  for(const state of restored){assert.equal(state.game.sharedRadishes.length,11);assert.equal(state.game.pendingKongRadishes,0);}
+  assertLatest(after);
+});
+
+test('v3 HTTP old exposed pre-first-hu radishes stay exposed and are not counted again on first hu', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest }=await import('../shared/game.js');
+  const api=await table(t);
+  const initial=apiFixture({radishes:[[7,8],[],[]],head:[17,6],tail:[15,15,15,16,16,16]});
+  initial.schemaVersion=3;initial.rules=structuredClone(DEFAULT_RULES);
+  initial.firstHuRadishesRevealed=false;initial.dragonSettlement={settled:false,entries:[]};
+  initial.players[0].kongCount=2;delete initial.pendingKongRadishes;
+  assertLatest(initial);
+  const views=await installFixture(api,initial);
+  assert.deepEqual(views[0].game.sharedRadishes,[7,8]);
+  assert.equal(views[0].game.pendingKongRadishes,0);
+  const answer=await api.host.action(views[0].revision,{type:'hu'});
+  assert.equal(answer.status,200);
+  const after=(await api.store.get(api.roomId)).game;
+  assert.deepEqual(after.players[0].radishes.slice(0,2),[7,8]);
+  assert.equal(after.players.flatMap(player=>player.radishes).length,8);
+  assert.equal(after.history.find(event=>event.type==='hu').newRadishes.length,6);
+  assert.equal(after.pendingKongRadishes,0);
+  assertLatest(after);
 });

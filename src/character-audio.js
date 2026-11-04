@@ -18,7 +18,7 @@ export function clipForEvent(event, characters) {
 export function clipsForEvent(event, characters) {
   const clip = clipForEvent(event, characters)
   if (!clip) return []
-  const prefix = event.type === 'hu' && (event.source === 'selfDraw' ? 'zimo' : ['discard', 'kongDiscard'].includes(event.source) ? 'fangpao' : null)
+  const prefix = event.type === 'hu' && (event.source === 'selfDraw' ? 'zimo' : ['discard', 'kongDiscard', 'robKong'].includes(event.source) ? 'fangpao' : null)
   return prefix ? [clip.replace(/hu\.mp3$/, `${prefix}.mp3`), clip] : [clip]
 }
 

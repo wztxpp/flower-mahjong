@@ -283,13 +283,13 @@ test('hu suppresses a simultaneous kong choice in hand and on another player dis
   assert.equal(has(game, 1, 'hu'), true); assert.equal(has(game, 1, 'mingGang', 0), false);
 });
 
-test('concealed kong pays each opponent 2, tail radish then head replacement; identity stays private', () => {
+test('concealed kong pays each opponent 2, defers its radish until first hu and draws head replacement', () => {
   let game = fixture({ hands: [nonWinningKong, waiting, waiting], head: [6], tail: [7], drawTile: 0 });
   const wall = game.wall.length;
   game = doAction(game, 0, 'anGang', 0);
   assert.deepEqual(game.players.map(player => player.score), [4, -2, -2]);
-  assert.deepEqual(game.players[0].radishes, [7]); assert.equal(game.lastDraw.tile, 6);
-  assert.equal(game.players[0].hand.length, 11); assert.equal(game.wall.length, wall - 2);
+  assert.deepEqual(game.players[0].radishes, []); assert.equal(game.pendingKongRadishes, 1); assert.equal(game.wall.at(-1), 7); assert.equal(game.lastDraw.tile, 6);
+  assert.equal(game.players[0].hand.length, 11); assert.equal(game.wall.length, wall - 1);
   assert.equal(game.players[0].pendingKongDiscard, true); assert.equal(game.players[0].kongCount, 1);
   const view = getPlayerView(game, 1);
   assert.deepEqual(view.players[0].melds[0].tiles, [null, null, null, null]);
@@ -298,28 +298,29 @@ test('concealed kong pays each opponent 2, tail radish then head replacement; id
   assertGameInvariants(game);
 });
 
-test('peng upgrade pays each opponent 1, preserves meld count and grants one radish', () => {
+test('peng upgrade pays each opponent 1, preserves meld count and accrues one pending radish', () => {
   const hand = [0, 1, 2, 3, 9, 10, 11, 12, 13, 16, 17];
   let game = fixture({ hands: [hand, waiting, waiting], melds: [[meld(0)], [], []], head: [6], tail: [7], drawTile: 0 });
   game = doAction(game, 0, 'buGang', 0);
   assert.deepEqual(game.players.map(player => player.score), [2, -1, -1]);
   assert.equal(game.players[0].melds.length, 1); assert.equal(game.players[0].melds[0].tiles.length, 4);
-  assert.deepEqual(game.players[0].radishes, [7]); assert.equal(game.lastDraw.tile, 6);
+  assert.deepEqual(game.players[0].radishes, []); assert.equal(game.pendingKongRadishes, 1); assert.equal(game.wall.at(-1), 7); assert.equal(game.lastDraw.tile, 6);
   assertGameInvariants(game);
 });
 
-test('existing kong can add exactly a fifth tile, with another 1 each, radish and replacement', () => {
+test('existing kong can add a fifth and sixth tile, with another 1 each, radish and replacement', () => {
   let game = fixture({ hands: [nonWinningKong, waiting, waiting], head: [0, 6], tail: [7, 8], drawTile: 0 });
   game = doAction(game, 0, 'anGang', 0); assert.equal(has(game, 0, 'addGang', 0), true);
   game = doAction(game, 0, 'addGang', 0);
   assert.deepEqual(game.players.map(player => player.score), [6, -3, -3]);
   assert.equal(game.players[0].melds[0].tiles.length, 5); assert.equal(game.players[0].melds.length, 1);
-  assert.deepEqual(game.players[0].radishes, [8, 7]); assert.equal(game.lastDraw.tile, 6); assert.equal(game.players[0].kongCount, 2);
+  assert.deepEqual(game.players[0].radishes, []); assert.equal(game.pendingKongRadishes, 2); assert.deepEqual(game.wall.slice(-2), [7, 8]); assert.equal(game.lastDraw.tile, 6); assert.equal(game.players[0].kongCount, 2);
   assert.equal(getPlayerView(game, 1).players[0].melds[0].tiles.length, 5);
   assert.equal(game.history.find(event => event.type === 'addGang').tile, undefined);
   const hand = [0, 1, 2, 3, 9, 10, 11, 12, 13, 16, 17];
   game = fixture({ hands: [hand, waiting, waiting], melds: [[meld(0, 'anGang', 5)], [], []], drawTile: 0 });
-  assert.equal(has(game, 0, 'addGang', 0), false); assert.throws(() => doAction(game, 0, 'addGang', 0));
+  assert.equal(has(game, 0, 'addGang', 0), true);
+  game = doAction(game, 0, 'addGang', 0); assert.equal(game.players[0].melds[0].tiles.length, 6);
 });
 
 test('post-hu concealed kong preserves whole wait set and replacement can hu immediately', () => {
@@ -336,7 +337,7 @@ test('post-hu concealed kong preserves whole wait set and replacement can hu imm
   assert.equal(has(game, 0, 'anGang', 0), false);
 });
 
-test('a kong requires both a tail radish and head replacement; rejection never transfers points', () => {
+test('a kong retains the two-wall-tile minimum; rejection never transfers points', () => {
   const game = fixture({ hands: [nonWinningKong, waiting, waiting], wallCount: 1 });
   assert.equal(has(game, 0, 'anGang', 0), false);
   const before = structuredClone(game); assert.throws(() => doAction(game, 0, 'anGang', 0)); assert.deepEqual(game, before);
@@ -382,7 +383,7 @@ test('claimed winning tile and original river reference do not double count in s
   assert.equal(game.players[1].winPile.length, 2); assertGameInvariants(game);
 });
 
-test('five-tile kong adds two fan; exactly six copies add three with no invented seven-plus bonus', () => {
+test('four-to-eight identical copies follow the confirmed additive fan schedule', () => {
   const hand = [1, 2, 3, 9, 10, 11, 12, 13, 14, 17, 17];
   let game = doAction(fixture({ hands: [hand, waiting, waiting], melds: [[meld(0, 'anGang', 5)], [], []], huCounts: [1, 0, 0] }), 0, 'hu');
   assert.equal(huEvent(game).score.copyFanBonus, 2);
@@ -392,9 +393,9 @@ test('five-tile kong adds two fan; exactly six copies add three with no invented
   assert.equal(huEvent(game).score.fanPoints, 8); assert.equal(huEvent(game).score.dragonBonus, 0);
   for (const count of [1, 2]) {
     game = doAction(fixture({ hands: [six, noZero, noZero], priorWins: [Array(count).fill(0), [], []], huCounts: [1, 0, 0] }), 0, 'hu');
-    assert.equal(huEvent(game).score.copyFanBonus, 0);
+    assert.equal(huEvent(game).score.copyFanBonus, count + 3);
     game = doAction(fixture({ hands: [six, noZero, noZero], priorWins: [Array(count).fill(0), [], []], huCounts: [1, 0, 0], rules: { sevenPlusCopyFan: 4 } }), 0, 'hu');
-    assert.equal(huEvent(game).score.copyFanBonus, 4);
+    assert.equal(huEvent(game).score.copyFanBonus, count + 3);
   }
 });
 
@@ -717,6 +718,8 @@ test('reported 2/5/8 circles hand can repeat-hu a kong discard before its next n
     locks: [[], [10, 13, 16], []], activeLocks: [false, true, false],
     drawTile: 10, head: [13, 0], tail: [16] });
   game = doAction(game, 0, 'buGang', 10);
+  // Decline the newly supported rob-kong window before exercising the later discard.
+  game = passAll(game);
   assert.equal(game.players[1].huLockActive, true);
   assert.equal(game.lastDraw.tile, 13);
   game = doAction(game, 0, 'discard', 13);

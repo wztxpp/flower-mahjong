@@ -10,7 +10,7 @@ test('23 correct clips per character, only confirmed discard/peng/hu/kong', () =
     assert.equal(clips.size,23)
     assert.ok([...clips].every(url => url.startsWith(`/voices/${CHARACTERS[seat].id}/`)))
   }
-  for (const type of ['draw','pass','start','finish','claim','dragonSettlement']) assert.equal(clipForEvent({type,seat:0}),null)
+  for (const type of ['draw','pass','start','finish','claim','robKongAttempt','dragonSettlement']) assert.equal(clipForEvent({type,seat:0}),null)
   assert.equal(clipForEvent({type:'discard',seat:0,tile:0}),'/voices/sweet/tiao-1.mp3')
   assert.equal(clipForEvent({type:'discard',seat:0,tile:17}),'/voices/sweet/tong-9.mp3')
   assert.equal(clipForEvent({type:'discard',seat:0,tile:null}),null)
@@ -19,7 +19,7 @@ test('23 correct clips per character, only confirmed discard/peng/hu/kong', () =
 test('wins announce their committed source in the winning character, for every seat and viewer', () => {
   const characters = ['sunny','sweet','elegant']
   for (let seat = 0; seat < 3; seat++) {
-    for (const [source,prefix] of [['selfDraw','zimo'],['discard','fangpao'],['kongDiscard','fangpao']]) {
+    for (const [source,prefix] of [['selfDraw','zimo'],['discard','fangpao'],['kongDiscard','fangpao'],['robKong','fangpao']]) {
       const event = {type:'hu',seat,source,from:(seat+1)%3}
       const expected = [`/voices/${characters[seat]}/${prefix}.mp3`,`/voices/${characters[seat]}/hu.mp3`]
       assert.deepEqual(clipsForEvent(event,characters),expected)

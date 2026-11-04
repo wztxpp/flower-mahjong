@@ -287,7 +287,7 @@ test('duplicate pengs count six physical tiles but only one expanded wait type',
   game = doAction(game, 0, 'hu');
   assert.deepEqual(game.players[0].melds, groups);
   assert.equal(game.players[0].winPile.at(-1).tile, 0);
-  assert.equal(huEvents(game).at(-1).score.copyFanBonus, 0); // Unconfirmed seven/eight-copy bonus stays unchanged.
+  assert.equal(huEvents(game).at(-1).score.copyFanBonus, 4); // Seven logical copies now add the confirmed four fan.
   assertGameInvariants(game);
 });
 

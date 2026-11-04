@@ -53,3 +53,15 @@
 一炮双响原实现已固定按放炮者下家、再上家排序，不受两人点胡先后影响；本次只增加覆盖全部座位及终局的回归测试，没有改动正确顺序。
 
 按用户更正，已经胡过且本次新牌不能胡时，存在合法暗杠、补杠或加第五张则必须选择杠，不再提供“过”或“出牌”。服务端也拒绝旧客户端发来的跳过/出牌请求；仍需玩家点击杠，不自动杠。真正可胡时的原有选择暂未改动。无合法杠时维持原自动摸打，旧schema1/2引擎不变。
+
+## 六至八张加杠与明杠补摸付款（待发布）
+
+确认扩展单组杠：四张后可逐张加到第五、六、七、八张；每次向另外两家各收 1 分，翻 1 张萝卜并补 1 张牌。每次仍检查牌墙至少两张、实体每种最多八张、胡后完整听口和必须杠规则。同牌不同副露保持独立。普通同牌七张加 4 番、八张加 5 番；七对首档及后续固定番不变。
+
+明杠后的本次补摸胡，只向该次明杠的出牌者收胡牌分；自己摸起来的暗杠、补杠或加杠后本次补摸胡仍向另外两家收取。即时明杠费仍只向出牌者收 2 分；补杠费独立。新补摸保存对应杠的 type/fromSeat，普通续摸不继承这次来源。旧 schema 3 存档只在紧邻杠与补摸日志能可靠确定来源时恢复；不能确定的保留旧行为。历史已结算账不回写，schema 1/2 冻结引擎不改。
+
+## v0.6.2
+
+- Own-draw meld upgrades first wait for hu/pass only. Unwon upgrade sources are immediately robbable; won ordinary sources are protected, while subsequent replacement-draw upgrades are robbable. A robbed upgrade has no kong fee, kong radish or replacement, only the upgrader pays the win. Ordinary rob-kong adds one fan; seven pairs does not.
+- Before the first table win, successful kongs accrue pending radishes without revealing or removing them. First hu reveals six plus the pending count, later kongs reveal one immediately. Old revealed radishes and recorded scores remain intact.
+- Release follows verified GitHub main first, then builds the same tracked source for the existing Site.

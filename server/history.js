@@ -20,7 +20,7 @@ export function newGameMetadata(room, id, at) {
 
 // Explicit public-event fields avoid copying a future engine's private fields.
 function publicEvents(game) {
-  const allowed = ['revision', 'type', 'seat', 'source', 'message', 'tile', 'fromSeat', 'points', 'payments', 'score', 'newRadishes', 'radish', 'reason', 'automatic', 'afterKong', 'dragons'];
+  const allowed = ['revision', 'type', 'seat', 'source', 'message', 'tile', 'fromSeat', 'points', 'payments', 'score', 'newRadishes', 'radish', 'reason', 'automatic', 'afterKong', 'dragons', 'kongSource', 'kongType', 'radishDeferred', 'pendingKongRadishes'];
   return (game.history || []).map(event => {
     const result = {};
     for (const key of allowed) if (event[key] !== undefined && !(event.type === 'draw' && key === 'tile')) result[key] = structuredClone(event[key]);

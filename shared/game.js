@@ -16,7 +16,7 @@ export const DEFAULT_RULES = Object.freeze({
   stackDragonBonus: true,
   radishScope: 'all', // Physical flip provenance stays per seat; scoring uses one table-wide pool.
   sixCopyFan: 3, // Exactly six identical tiles add three fan.
-  sevenPlusCopyFan: 0, // Seven/eight-copy fan bonuses are not confirmed.
+  sevenPlusCopyFan: 0, // Preserve the saved fallback only for unconfirmed logical counts above eight.
   bigSingleOverlap: 'exclusive', // Fixed 50 from each opponent; additive is provisional.
   repeatHuLock: 'untilNaturalDraw',
   allowChangedWaitDuringLock: true,
@@ -33,6 +33,7 @@ const countsOf = tiles => {
   return counts;
 };
 const meldTiles = player => player.melds.flatMap(meld => meld.tiles);
+const canExtendKong = meld => meld.type !== 'peng' && meld.tiles.length >= 4 && meld.tiles.length < 8;
 const sameSet = (a, b) => a.length === b.length && a.every((tile, i) => tile === b[i]);
 const removeTile = (hand, tile, count = 1) => {
   for (let i = 0; i < count; i++) {
@@ -101,7 +102,7 @@ export function createGame({ seed, rules: inputRules } = {}) {
   const game = {
     schemaVersion: 3, phase: 'turn', turnStep: 'discard', currentSeat: 0,
     wall, players, discards: [], retiredTiles: [], history: [], revision: 0,
-    rules, claim: null, drawKind: 'normal', firstHuRadishesRevealed: false,
+    rules, claim: null, drawKind: 'normal', firstHuRadishesRevealed: false, pendingKongRadishes: 0,
     dragonSettlement: { settled: false, entries: [] },
     lastDraw: { seat: 0, tile: initialTile, source: 'initial' }, finishReason: null,
   };
@@ -213,7 +214,7 @@ function canKong(game, seat, type, tile) {
     melds.push({ type, tile, tiles: Array(4).fill(tile) });
   } else {
     removeTile(hand, tile);
-    const meld = melds.find(item => item.tile === tile && (type === 'buGang' ? item.type === 'peng' : item.type !== 'peng' && item.tiles.length === 4));
+    const meld = melds.find(item => item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(item)));
     if (!meld) return false;
     meld.tiles.push(tile);
     if (type === 'buGang') meld.type = 'buGang';
@@ -255,7 +256,7 @@ export function getLegalActions(game, seat) {
     for (let tile = 0; tile < TILE_COUNT; tile++) {
       if (player.melds.length < 4 && counts[tile] >= 4 && canKong(game, seat, 'anGang', tile)) actions.push({ type: 'anGang', tile });
       if (counts[tile] && player.melds.some(meld => meld.type === 'peng' && meld.tile === tile) && canKong(game, seat, 'buGang', tile)) actions.push({ type: 'buGang', tile });
-      if (counts[tile] && player.melds.some(meld => meld.type !== 'peng' && meld.tile === tile && meld.tiles.length === 4) && canKong(game, seat, 'addGang', tile)) actions.push({ type: 'addGang', tile });
+      if (counts[tile] && player.melds.some(meld => meld.tile === tile && canExtendKong(meld)) && canKong(game, seat, 'addGang', tile)) actions.push({ type: 'addGang', tile });
     }
   }
   // Once the hand is locked after hu, a legal kong is mandatory when no hu is available.
@@ -277,7 +278,7 @@ export function getHuDiagnostic(game, seat) {
     if (game.claim.responses[seat]) return reply('ALREADY_RESPONDED', '你已回应，正在等其他有资格的玩家操作。');
     tile = game.claim.tile; fromHand = false;
     const discarded = game.discards[game.claim.discardIndex];
-    if (game.players[discarded.seat].huCount && !discarded.afterKong) return reply('PROTECTED_DISCARD', '对方已经胡过；其普通出牌不能接胡，杠后出牌除外。', { tile });
+    if (game.players[discarded.seat].huCount && !discarded.afterKong && !discarded.robKong) return reply('PROTECTED_DISCARD', '对方已经胡过；其普通出牌不能接胡，杠后出牌除外。', { tile });
   } else {
     if (game.currentSeat !== seat) return reply('WRONG_TURN', '还没轮到你；有可接胡的弃牌时会提示。');
     if (game.turnStep !== 'discard' || game.lastDraw?.seat !== seat) return reply('WRONG_TURN', '碰牌后需要先出牌，不能直接自摸胡牌。');
@@ -290,7 +291,7 @@ export function getHuDiagnostic(game, seat) {
   if (!waitTiles.includes(tile)) {
     return reply('SHAPE', waitTiles.length ? `这张${label(tile)}不在你的听口；可胡${waitTiles.map(label).join('、')}。` : '当前牌形还未凑成四组加一对（或已启用的七对），暂时不能胡。', extra);
   }
-  if (!huWaits(game, seat, tile, fromHand, !fromHand && game.discards[game.claim.discardIndex]?.afterKong === true)) {
+  if (!huWaits(game, seat, tile, fromHand, !fromHand && (game.discards[game.claim.discardIndex]?.afterKong === true || game.claim.kind === 'robKong'))) {
     const message = game.rules.repeatHuLock === 'untilNaturalDraw'
       ? '本次弃牌仍命中锁定听口，需等下一次正常轮到你摸牌才可再次接胡；自摸可继续胡。'
       : game.rules.allowChangedWaitDuringLock
@@ -299,7 +300,7 @@ export function getHuDiagnostic(game, seat) {
     return reply('WAIT_LOCK', message, extra);
   }
   if (game.phase === 'claim' && !game.claim.eligibleSeats.includes(seat)) return reply('NOT_ELIGIBLE', '本次弃牌没有你的可用接牌操作，请等待下一次机会。', extra);
-  return reply('AVAILABLE', fromHand ? '这张牌可以自摸胡牌。' : '这张弃牌可以接胡；所有有资格的玩家回应后一起结算。', extra);
+  return reply('AVAILABLE', game.claim?.kind === 'robKong' ? '这张补杠牌可以抢杠胡；只有胡或过，所有回应后一起结算。' : fromHand ? '这张牌可以自摸胡牌。' : '这张弃牌可以接胡；所有有资格的玩家回应后一起结算。', extra);
 }
 
 function log(game, event) { game.history.push({ revision: game.revision, ...event }); }
@@ -315,6 +316,26 @@ function startDraw(game, seat, kind = 'normal') {
   game.currentSeat = seat; game.phase = 'turn'; game.turnStep = 'draw';
   game.drawKind = kind; game.lastDraw = null; game.claim = null;
 }
+function kongSourceFromEvent(event, seat) {
+  if (event?.seat !== seat || !['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type)) return null;
+  if (event.type === 'mingGang'
+    ? !Number.isInteger(event.fromSeat) || event.fromSeat < 0 || event.fromSeat > 2 || event.fromSeat === seat
+    : event.fromSeat !== null) return null;
+  return { type: event.type, fromSeat: event.fromSeat };
+}
+
+function replacementKongSource(game, seat) {
+  const draw = game.lastDraw;
+  if (draw?.seat !== seat || draw.source !== 'replacement') return null;
+  if (Object.hasOwn(draw, 'kongSource')) return kongSourceFromEvent({ ...draw.kongSource, seat }, seat);
+  // Older schema-3 saves did not retain provenance. Only the adjacent, matching
+  // kong/draw pair proves which kong caused this draw; never reuse an older kong.
+  const drawn = game.history.at(-1), kong = game.history.at(-2);
+  if (drawn?.type !== 'draw' || drawn.seat !== seat || drawn.source !== 'replacement'
+    || !Number.isSafeInteger(drawn.revision) || drawn.revision < 0 || kong?.revision !== drawn.revision) return null;
+  return kongSourceFromEvent(kong, seat);
+}
+
 function draw(game) {
   if (!game.wall.length) return finish(game);
   const seat = game.currentSeat; const source = game.drawKind;
@@ -322,7 +343,9 @@ function draw(game) {
   if (source === 'normal' && game.rules.repeatHuLock === 'untilNaturalDraw') player.huLockActive = false;
   const tile = game.wall.shift();
   player.hand.push(tile); player.hand.sort((a, b) => a - b);
-  game.lastDraw = { seat, tile, source };
+  const latest = game.history.at(-1);
+  const kongSource = source === 'replacement' && latest?.revision === game.revision ? kongSourceFromEvent(latest, seat) : null;
+  game.lastDraw = { seat, tile, source, ...(kongSource ? { kongSource } : {}) };
   game.phase = 'turn'; game.turnStep = 'discard';
   log(game, { type: 'draw', seat, source, message: `${seat + 1}号位${source === 'replacement' ? '杠后补牌' : source === 'continuation' ? '胡后补摸' : '摸了一张牌'}。` });
 }
@@ -333,12 +356,12 @@ export function fanToPoints(fan) {
   return fan <= 4 ? 2 ** (fan - 1) : 2 * fan;
 }
 
-function scoreHu(game, seat, bigSingle, pattern) {
+function scoreHu(game, seat, bigSingle, pattern, robKongBonus = 0) {
   const player = game.players[seat];
   // The winning tile is now in winPile, not in hand. River references never join these counts.
   const handAndWins = [...player.hand, ...player.winPile.map(item => item.tile)];
   const owned = [...handAndWins, ...meldTiles(player)];
-  const rawCopyFanBonus = countsOf(owned).reduce((sum, count) => sum + (count === 4 ? 1 : count === 5 ? 2 : count === 6 ? game.rules.sixCopyFan : count >= 7 ? game.rules.sevenPlusCopyFan : 0), 0);
+  const rawCopyFanBonus = countsOf(owned).reduce((sum, count) => sum + (count === 4 ? 1 : count === 5 ? 2 : count === 6 ? game.rules.sixCopyFan : count === 7 ? 4 : count === 8 ? 5 : count > 8 ? game.rules.sevenPlusCopyFan : 0), 0);
   const special = game.rules.specialHuPatterns === true;
   // The first qualifying seven-pairs win freezes its full tier, including an existing pure suit.
   const sevenPairsFixed = special && pattern?.kind === 'sevenPairs';
@@ -352,7 +375,8 @@ function scoreHu(game, seat, bigSingle, pattern) {
     else if (pattern?.allTriplets) patternBonuses.push({ type: 'allTriplets', fan: 2 });
     if (pattern?.pureSuit) patternBonuses.push({ type: 'pureSuit', fan: 2 });
   }
-  const fan = sevenPairsFixed ? pattern.fixedFan : game.rules.baseFan + copyFanBonus + patternBonuses.reduce((sum, item) => sum + item.fan, 0);
+  const fan = (sevenPairsFixed ? pattern.fixedFan : game.rules.baseFan + copyFanBonus + patternBonuses.reduce((sum, item) => sum + item.fan, 0)) + robKongBonus;
+  if (robKongBonus) patternBonuses.push({ type: 'robKong', fan: robKongBonus });
   const fanPoints = fanToPoints(fan);
   const scoringRadishes = game.players.flatMap(other => other.radishes);
   const currentWin = player.winPile.at(-1).tile;
@@ -367,6 +391,7 @@ function scoreHu(game, seat, bigSingle, pattern) {
   const bigSinglePoints = bigSingle && !special ? 50 : 0;
   const total = bigSingle && !special ? (game.rules.bigSingleOverlap === 'exclusive' ? 50 : combined + 50) : combined;
   return { base: game.rules.baseFan, fan, fanPoints, copyFanBonus, radishBonus, dragonBonus, bigSingle, bigSinglePoints,
+    ...(robKongBonus ? { robKongBonus } : {}),
     overlapPolicy: special ? 'fan' : game.rules.bigSingleOverlap, total,
     ...(special ? { patternBonuses, sevenPairsFixed, specialHuPattern: pattern?.kind === 'standard' ? null : pattern?.kind ?? null } : {}) };
 }
@@ -403,11 +428,12 @@ function settleDragons(game) {
 /** Prepare every simultaneous winner before scoring or deciding that the hand is over. */
 function awardHuBatch(game, winners, tile, source, fromSeat = null, discardIndex = null) {
   const selfDraw = source === 'selfDraw';
+  const replacementKong = selfDraw ? replacementKongSource(game, winners[0]) : null;
   // Snapshot before the simultaneous batch. Only the specifically confirmed repeat-selfdraw case changes.
   const priorHuSeats = game.players.filter(player => player.huCount > 0).map(player => player.seat);
   const prepared = winners.map((seat, index) => {
     const player = game.players[seat];
-    const waits = huWaits(game, seat, tile, selfDraw, source === 'kongDiscard');
+    const waits = huWaits(game, seat, tile, selfDraw, source === 'kongDiscard' || source === 'robKong');
     if (!waits) throw new Error('当前不能胡牌');
     const bigSingle = player.hand.length - (selfDraw ? 1 : 0) === 1;
     const wasRepeat = player.huCount > 0;
@@ -422,7 +448,10 @@ function awardHuBatch(game, winners, tile, source, fromSeat = null, discardIndex
     const newRadishes = [];
     if (!game.firstHuRadishesRevealed) {
       game.firstHuRadishesRevealed = true;
-      for (let i = 0; i < 6 && game.wall.length; i++) newRadishes.push(game.wall.pop());
+      // Missing field means an older save whose kong radishes were already revealed.
+      const radishCount = 6 + (game.pendingKongRadishes ?? 0);
+      game.pendingKongRadishes = 0;
+      for (let i = 0; i < radishCount && game.wall.length; i++) newRadishes.push(game.wall.pop());
       player.radishes.push(...newRadishes);
     }
     if (selfDraw) {
@@ -433,14 +462,17 @@ function awardHuBatch(game, winners, tile, source, fromSeat = null, discardIndex
     player.huCount++;
     player.lockedWaits = game.rules.specialHuPatterns === true ? contextualWaitTiles(game, player, player.hand) : waits;
     player.huLockActive = true;
-    return { seat, newRadishes, bigSingle, pattern };
+    return { seat, newRadishes, bigSingle, pattern, wasRepeat };
   });
-  for (const { seat, newRadishes, bigSingle, pattern } of prepared) {
-    const score = scoreHu(game, seat, bigSingle, pattern);
+  for (const { seat, newRadishes, bigSingle, pattern, wasRepeat } of prepared) {
+    // Seven-pairs never adds the rob-kong event bonus, on either its first or repeat win.
+    const robKongBonus = source === 'robKong' && pattern?.kind !== 'sevenPairs' ? 1 : 0;
+    const score = scoreHu(game, seat, bigSingle, pattern, robKongBonus);
     const repeatSelfDrawWithOneUnhu = selfDraw && !bigSingle && priorHuSeats.length === 2 && priorHuSeats.includes(seat);
     const finalFirstHu = game.rules.finalHuPaymentExceptions === true && !priorHuSeats.includes(seat) && game.players.every(player => player.huCount > 0);
     // A discard after a kong is still a discard: only its actual source pays.
-    const payerSeats = source === 'kongDiscard' ? [fromSeat]
+    const payerSeats = source === 'kongDiscard' || source === 'robKong' ? [fromSeat]
+      : replacementKong ? (replacementKong.type === 'mingGang' ? [replacementKong.fromSeat] : [0, 1, 2].filter(other => other !== seat))
       : finalFirstHu && selfDraw ? [0, 1, 2].filter(other => other !== seat)
       : selfDraw && game.lastDraw?.source !== 'replacement' && game.rules.selfDrawOnlyUnwon === true ? [0, 1, 2].filter(other => other !== seat && !priorHuSeats.includes(other))
       : repeatSelfDrawWithOneUnhu ? [0, 1, 2].filter(other => !priorHuSeats.includes(other))
@@ -448,8 +480,11 @@ function awardHuBatch(game, winners, tile, source, fromSeat = null, discardIndex
     const payments = transfer(game, seat, payerSeats, score.total);
     game.players[seat].lastScoreBreakdown = clone(score);
     const payerLabel = payerSeats.length === 0 ? '无未胡付款方，本次不收取胡牌分' : payerSeats.length === 1 ? `${payerSeats[0] + 1}号位付${score.total}分` : `另外两家各付${score.total}分`;
-    const sourceLabel = source === 'kongDiscard' ? `${bigSingle ? '大单钓·' : ''}杠后接炮（仅出牌者付款）` : bigSingle ? '大单钓' : selfDraw ? '自摸' : '接炮';
-    log(game, { type: 'hu', seat, tile, source, fromSeat, points: score.total, score, payments, newRadishes,
+    const sourceLabel = source === 'robKong' ? `${bigSingle ? '大单钓·' : ''}抢杠胡（仅补杠者付款）`
+      : source === 'kongDiscard' ? `${bigSingle ? '大单钓·' : ''}杠后接炮（仅出牌者付款）`
+      : replacementKong?.type === 'mingGang' ? `${bigSingle ? '大单钓·' : ''}明杠后补摸胡（仅杠牌出牌者付款）`
+      : bigSingle ? '大单钓' : selfDraw ? '自摸' : '接炮';
+    log(game, { type: 'hu', seat, tile, source, fromSeat, ...(replacementKong ? { kongSource: clone(replacementKong) } : {}), points: score.total, score, payments, newRadishes,
       message: `${seat + 1}号位${sourceLabel}${label(tile)}，${payerLabel}，本次收入${score.total * payerSeats.length}分${newRadishes.length ? `，翻出${newRadishes.length}张萝卜` : ''}。` });
   }
 }
@@ -461,12 +496,14 @@ function continueAfterHu(game, seat) {
 function kong(game, seat, type, tile, fromSeat = null) {
   const player = game.players[seat];
   let concealed = type === 'anGang';
+  let kongSize = 4;
   if (type === 'buGang' || type === 'addGang') {
     removeTile(player.hand, tile);
-    const meld = player.melds.find(item => item.tile === tile && (type === 'buGang' ? item.type === 'peng' : item.type !== 'peng' && item.tiles.length === 4));
+    const meld = player.melds.find(item => item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(item)));
     concealed = meld.type === 'anGang';
     if (type === 'buGang') meld.type = 'buGang';
     meld.tiles.push(tile);
+    kongSize = meld.tiles.length;
     if (type === 'addGang') meld.extended = true;
   } else {
     removeTile(player.hand, tile, type === 'mingGang' ? 3 : 4);
@@ -475,12 +512,38 @@ function kong(game, seat, type, tile, fromSeat = null) {
   const amount = type === 'anGang' || type === 'mingGang' ? 2 : 1;
   const payerSeats = type === 'mingGang' ? [fromSeat] : [0, 1, 2].filter(other => other !== seat);
   const payments = transfer(game, seat, payerSeats, amount);
-  const radish = game.wall.pop();
-  player.radishes.push(radish); player.kongCount++; player.pendingKongDiscard = true;
+  const radishDeferred = !game.firstHuRadishesRevealed;
+  let radish;
+  if (radishDeferred) game.pendingKongRadishes = (game.pendingKongRadishes ?? 0) + 1;
+  else { radish = game.wall.pop(); player.radishes.push(radish); }
+  player.kongCount++; player.pendingKongDiscard = true;
   game.claim = null; game.lastDraw = null;
-  log(game, { type, seat, ...(concealed ? {} : { tile }), fromSeat, radish, points: amount, payments,
-    message: `${seat + 1}号位${{ anGang: '暗杠', buGang: '补杠', mingGang: '明杠', addGang: '加杠至五张' }[type]}，${payerSeats.length === 1 ? '出牌方' : '另外两家各'}付${amount}分，翻出萝卜${label(radish)}。` });
+  log(game, { type, seat, ...(concealed ? {} : { tile }), fromSeat, ...(radishDeferred ? { radishDeferred: true, pendingKongRadishes: game.pendingKongRadishes } : { radish }), points: amount, payments,
+    message: `${seat + 1}号位${{ anGang: '暗杠', buGang: '补杠', mingGang: '明杠', addGang: `加杠至${kongSize}张` }[type]}，${payerSeats.length === 1 ? '出牌方' : '另外两家各'}付${amount}分，${radishDeferred ? `累计待翻萝卜${game.pendingKongRadishes}张，首胡时一起翻` : `翻出萝卜${label(radish)}`}。` });
   startDraw(game, seat, 'replacement');
+}
+
+/** An upgrade offers only the new tile. The original meld and all kong effects stay untouched. */
+function offerKongUpgrade(game, seat, type, tile) {
+  const player = game.players[seat];
+  const afterKong = game.lastDraw?.seat === seat && game.lastDraw.source === 'replacement';
+  // A won player's ordinary draw is protected, just like its ordinary discard.
+  if (player.huCount && !afterKong) return kong(game, seat, type, tile);
+  const options = {};
+  for (const other of [1, 2].map(offset => (seat + offset) % 3)) {
+    // Rob-kong is its own repeat-win exception. It never offers peng or mingGang.
+    if (huWaits(game, other, tile, false, true)) options[other] = [{ type: 'hu' }];
+  }
+  const eligibleSeats = Object.keys(options).map(Number);
+  if (!eligibleSeats.length) return kong(game, seat, type, tile);
+  removeTile(player.hand, tile);
+  player.pendingKongDiscard = false;
+  game.discards.push({ seat, tile, claimable: true, afterKong, robKong: true });
+  game.lastDraw = null; game.phase = 'claim'; game.turnStep = null;
+  game.claim = { kind: 'robKong', kongType: type, discardIndex: game.discards.length - 1,
+    discardSeat: seat, tile, eligibleSeats, options, responses: {} };
+  log(game, { type: 'robKongAttempt', seat, tile, kongType: type, afterKong,
+    message: `${seat + 1}号位尝试补杠${label(tile)}，等待其他玩家抢杠胡或过。` });
 }
 
 function resolveClaims(game) {
@@ -493,8 +556,16 @@ function resolveClaims(game) {
   if (!game.rules.multipleWinners) winners = winners.slice(0, 1);
   if (winners.length) {
     discarded.huSeats = winners;
-    awardHuBatch(game, winners, discarded.tile, discarded.afterKong ? 'kongDiscard' : 'discard', discarded.seat, claim.discardIndex);
+    awardHuBatch(game, winners, discarded.tile, claim.kind === 'robKong' ? 'robKong' : discarded.afterKong ? 'kongDiscard' : 'discard', discarded.seat, claim.discardIndex);
     continueAfterHu(game, winners[0]);
+    return;
+  }
+  if (claim.kind === 'robKong') {
+    // Move the offered physical tile into its original meld only once everyone passed.
+    discarded.claimedBy = discarded.seat; discarded.claimedAs = claim.kongType;
+    game.players[discarded.seat].hand.push(discarded.tile);
+    game.players[discarded.seat].hand.sort((a, b) => a - b);
+    kong(game, discarded.seat, claim.kongType, discarded.tile);
     return;
   }
   // Wait for everyone first; kong outranks peng, equal claims use clockwise proximity.
@@ -563,7 +634,8 @@ export function applyAction(game, seat, action) {
   } else if (action.type === 'hu') {
     awardHuBatch(next, [seat], next.lastDraw.tile, 'selfDraw');
     continueAfterHu(next, seat);
-  } else if (['anGang', 'buGang', 'addGang'].includes(action.type)) kong(next, seat, action.type, action.tile);
+  } else if (['buGang', 'addGang'].includes(action.type)) offerKongUpgrade(next, seat, action.type, action.tile);
+  else if (action.type === 'anGang') kong(next, seat, action.type, action.tile);
   settleAutomatic(next);
   assertGameInvariants(next);
   return next;
@@ -575,7 +647,7 @@ export function getPlayerView(game, seat) {
   return {
     schemaVersion: 3, phase: game.phase, turnStep: game.turnStep, currentSeat: game.currentSeat,
     wallCount: game.wall.length, revision: game.revision, rules: clone(game.rules), mySeat: seat,
-    sharedRadishes: game.players.flatMap(player => player.radishes), firstHuRadishesRevealed: game.firstHuRadishesRevealed,
+    sharedRadishes: game.players.flatMap(player => player.radishes), firstHuRadishesRevealed: game.firstHuRadishesRevealed, pendingKongRadishes: game.pendingKongRadishes ?? 0,
     dragonSettlement: clone(game.dragonSettlement),
     players: game.players.map((player, index) => ({
       seat: index, ...(index === seat ? { hand: [...player.hand] } : {}), handCount: player.hand.length,
@@ -587,6 +659,7 @@ export function getPlayerView(game, seat) {
     })),
     discards: clone(game.discards), retiredTiles: clone(game.retiredTiles), history: clone(game.history),
     claim: game.claim ? { discardSeat: game.claim.discardSeat, tile: game.claim.tile,
+      ...(game.claim.kind === 'robKong' ? { kind: 'robKong', kongType: game.claim.kongType } : {}),
       eligibleSeats: [...game.claim.eligibleSeats], respondedSeats: Object.keys(game.claim.responses).map(Number) } : null,
     legalActions: getLegalActions(game, seat), huDiagnostic: getHuDiagnostic(game, seat), scoreBreakdown: clone(me.lastScoreBreakdown),
     waitTiles: contextualWaitTiles(game, me, beforeDrawHand(game, seat)),
@@ -600,6 +673,22 @@ export function getPlayerView(game, seat) {
 export function assertGameInvariants(game) {
   if (game.schemaVersion !== 3 || typeof game.firstHuRadishesRevealed !== 'boolean'
     || typeof game.dragonSettlement?.settled !== 'boolean' || !Array.isArray(game.dragonSettlement.entries)) throw new Error('牌局版本状态无效');
+  if (game.pendingKongRadishes !== undefined && (!Number.isSafeInteger(game.pendingKongRadishes) || game.pendingKongRadishes < 0
+    || game.pendingKongRadishes > game.players.reduce((sum, player) => sum + player.kongCount, 0)
+    || (game.firstHuRadishesRevealed && game.pendingKongRadishes !== 0))) throw new Error('待翻萝卜状态无效');
+  if (game.lastDraw && Object.hasOwn(game.lastDraw, 'kongSource')
+    && (game.lastDraw.source !== 'replacement' || !kongSourceFromEvent({ ...game.lastDraw.kongSource, seat: game.lastDraw.seat }, game.lastDraw.seat))) throw new Error('杠后补摸来源无效');
+  if (game.claim?.kind === 'robKong') {
+    const claim = game.claim, offered = game.discards[claim.discardIndex];
+    const player = game.players[claim.discardSeat];
+    if (game.phase !== 'claim' || !['buGang', 'addGang'].includes(claim.kongType)
+      || !offered?.robKong || offered.tile !== claim.tile || offered.seat !== claim.discardSeat
+      || !offered.claimable || offered.claimedBy !== undefined || game.lastDraw !== null
+      || !player?.melds.some(meld => meld.tile === claim.tile && (claim.kongType === 'buGang' ? meld.type === 'peng' : canExtendKong(meld)))
+      || !claim.eligibleSeats.length || claim.eligibleSeats.some(seat => ![0, 1, 2].includes(seat) || seat === claim.discardSeat
+        || claim.options[seat]?.length !== 1 || claim.options[seat][0].type !== 'hu')
+      || Object.entries(claim.responses).some(([seat, response]) => !claim.eligibleSeats.includes(Number(seat)) || !['hu', 'pass'].includes(response.type))) throw new Error('抢杠状态无效');
+  }
   const tiles = [...game.wall, ...game.retiredTiles.map(item => item.tile),
     ...game.discards.filter(item => item.claimedBy === undefined).map(item => item.tile),
     ...game.players.flatMap(player => [...player.hand, ...meldTiles(player), ...player.radishes])];
@@ -621,10 +710,10 @@ export function assertGameInvariants(game) {
     }
     for (const meld of player.melds) {
       if (!['peng', 'mingGang', 'anGang', 'buGang'].includes(meld.type) || !isTile(meld.tile) || !meld.tiles.every(tile => tile === meld.tile)
-        || (meld.type === 'peng' ? meld.tiles.length !== 3 : ![4, 5].includes(meld.tiles.length))) throw new Error('副露状态无效');
+        || (meld.type === 'peng' ? meld.tiles.length !== 3 : (meld.tiles.length < 4 || meld.tiles.length > 8))) throw new Error('副露状态无效');
     }
     for (const win of player.winPile) {
-      if (!isTile(win.tile) || !['selfDraw', 'discard', 'kongDiscard'].includes(win.source) || typeof win.virtual !== 'boolean') throw new Error('胡牌堆状态无效');
+      if (!isTile(win.tile) || !['selfDraw', 'discard', 'kongDiscard', 'robKong'].includes(win.source) || typeof win.virtual !== 'boolean') throw new Error('胡牌堆状态无效');
       if (win.source !== 'selfDraw' && (!Number.isInteger(win.discardIndex) || game.discards[win.discardIndex]?.tile !== win.tile)) throw new Error('胡牌引用无效');
       if (win.source === 'selfDraw' && win.virtual) throw new Error('自摸不能是虚拟牌');
     }

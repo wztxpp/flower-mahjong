@@ -455,7 +455,7 @@ test('schema 3 renders one central shared pool and never repeats flip provenance
 test('schema 3 empty pool and first table hu are explicit, with no personal first-hu labels', async () => {
   const state = fixture({ schemaVersion: 3 }); state.game.sharedRadishes = [];
   const scope = setup(state); let html = await render(scope);
-  assert.match(html, /每杠添 1 张；全桌第一次胡牌添 6 张/);
+  assert.match(html, /首胡才翻萝卜：6 张基础 \+ 0 张已成杠累计/);
   state.game.sharedRadishes = [0, 1, 2, 3, 4, 5];
   state.game.history = [{ type: 'hu', seat: 1, newRadishes: [...state.game.sharedRadishes], message: '首胡' }];
   scope.state.value = { ...state, game: { ...state.game } }; html = await render(scope);
@@ -541,10 +541,10 @@ test('schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
 
 test('current lobby rules explain six-copy fan, shared radishes, consecutive hu and separate final dragon counts', async () => {
   browser(); const scope = lobby(); scope.showRules.value = true; const html = await render(scope);
-  assert.match(html, /朋友内测版 · v0.6.1/); assert.match(html, /规则原型 v0.6.1/);
+  assert.match(html, /朋友内测版 · v0.6.2/); assert.match(html, /规则原型 v0.6.2/);
   assert.match(html, /六张加 3 番/); assert.match(html, /六张同牌加到 4 番/);
-  assert.match(html, /七张及以上同牌如何加番尚未确认/); assert.match(html, /仍可连续自摸和合法暗杠、补杠、加第五张/);
-  assert.match(html, /全桌第一次胡牌只翻一次 6 张萝卜/);
+  assert.match(html, /七张加 4 番，八张加 5 番/); assert.match(html, /逐张加杠至八张/);
+  assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
   assert.match(html, /本人的手牌区、碰杠区、胡牌区，加上全桌共享萝卜/);
   assert.match(html, /普通加番只计算自己的三个牌区，不含萝卜/);
   assert.match(html, /只由本次胡之前还未胡的其他玩家付款/);
@@ -673,4 +673,57 @@ test('new score summary labels pattern fan and omits misleading zero-point big-s
   assert.match(summary,/5 番 10 分/);
   assert.doesNotMatch(summary,/大单钓 0/);
   assert.match(scope.scoreSummary({fan:5,fanPoints:10,radishBonus:0,total:10,sevenPairsFixed:true,patternBonuses:[{type:'sevenPairs',fan:5}]}),/七对固定5番/);
+});
+
+test('extended kong actions and meld labels show sixth through eighth tiles without merging duplicate pengs', async () => {
+  for (const count of [5, 6, 7]) {
+    const state = fixture();
+    state.game.players[0].melds = [{ type: 'peng', tile: 12, tiles: [12, 12, 12] }, { type: 'buGang', tile: 16, tiles: Array(count).fill(16) }];
+    state.game.legalActions = [{type:'addGang', tile:16}];
+    const scope = setup(state);
+    assert.equal(scope.actionLabel({type:'addGang',tile:16}), `加第 ${count+1} 张 · 8筒`);
+    assert.equal(scope.meldLabel(state.game.players[0].melds[1]), `补杠 · ${count} 张`);
+    const html=await render(scope);
+    assert.match(html,new RegExp(`加第 ${count+1} 张 · 8筒`));
+  }
+  const duplicate=fixture(); duplicate.game.players[0].melds=[{type:'peng',tile:16,tiles:[16,16,16]},{type:'mingGang',tile:16,tiles:[16,16,16,16]}];
+  assert.equal(setup(duplicate).actionLabel({type:'addGang',tile:16}),'加第 5 张 · 8筒');
+  const scope=setup(fixture());
+  assert.equal(scope.meldLabel({type:'anGang',hidden:true,tile:null,tiles:Array(8).fill(null)}),'暗杠 · 8 张');
+});
+
+test('latest rules distinguish exposed-kong replacement hu from own-kong replacement hu and discarded tiles', async () => {
+  browser();const scope=lobby();scope.showRules.value=true;const html=await render(scope);
+  assert.match(html,/本次补摸胡只由该明杠的出牌者付款/);
+  assert.match(html,/自己摸来的暗杠、补杠、加杠后补摸胡才由另外两家付款/);
+  assert.match(html,/杠后打出的牌被胡，仍只由该张牌的出牌者付款/);
+});
+
+test('rob-kong response distinguishes pending upgrade from completed kong or ordinary discard', async () => {
+  const state=fixture({schemaVersion:3});
+  state.game.phase='claim';
+  state.game.claim={kind:'robKong',discardSeat:1,tile:16,eligibleSeats:[0],respondedSeats:[]};
+  state.game.legalActions=[{type:'hu'},{type:'pass'}];
+  const scope=setup(state);
+  assert.match(scope.statusTitle.value,/可以抢杠/);
+  assert.match(scope.statusDetail.value,/只能抢杠胡或过/);
+  let html=await render(scope);
+  assert.match(html,/正在补杠/);
+  assert.equal(scope.winLabel({tile:16,source:'robKong'}),'8筒 · 抢杠胡');
+  assert.match(scope.scoreSummary({fan:2,fanPoints:2,total:2,radishBonus:0,patternBonuses:[{type:'robKong',fan:1}]}),/抢杠 \+1番/);
+  state.game.legalActions=[];
+  const waiting=setup(state);
+  assert.match(waiting.statusDetail.value,/暂不收杠分、不翻萝卜/);
+});
+
+test('pre-first-win kong radishes show only pending count, not imaginary revealed tiles', async () => {
+  const state=fixture({schemaVersion:3});
+  state.game.sharedRadishes=[];
+  state.game.firstHuRadishesRevealed=false;
+  state.game.pendingKongRadishes=5;
+  const scope=setup(state);
+  const html=await render(scope);
+  assert.match(html,/首胡待翻 \+5 张杠萝卜/);
+  assert.match(html,/6 张基础 \+ 5 张已成杠累计/);
+  assert.doesNotMatch(html,/每杠添 1 张；全桌第一次胡牌添 6 张/);
 });
