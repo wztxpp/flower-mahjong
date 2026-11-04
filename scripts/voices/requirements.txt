@@ -1,0 +1,7 @@
+# Install CPU-only torch/torchaudio from https://download.pytorch.org/whl/cpu first.
+torch==2.8.0
+torchaudio==2.8.0
+qwen-tts==0.1.1
+faster-whisper==1.2.1
+soundfile>=0.13,<0.15
+numpy>=2,<3

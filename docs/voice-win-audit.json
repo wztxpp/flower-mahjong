@@ -1,0 +1,353 @@
+{
+  "date": "2026-11-04",
+  "method": "Local Qwen3-TTS 0.6B Base, recovered original character references; faster-whisper small / CPU int8 / Chinese / beam_size=5",
+  "paidServiceUsed": false,
+  "realPersonVoiceSampleUsed": false,
+  "subjectiveListeningCompleted": false,
+  "limitations": "ASR is not human listening or a guarantee of persona consistency, pronunciation, or tone. Original clips are unchanged.",
+  "recordings": {
+    "sweet/zimo": {
+      "voice": "sweet",
+      "call": "zimo",
+      "text": "自摸",
+      "modelInputText": "自摸。",
+      "sha256": "f7479694a8abfeb7429d4e29b2cf72bfdaabc4a549bfc47526d5572fff4a36b4",
+      "wavSha256": "416aeb0a9951039f31eef888893bb06a0c7ed0e84579ca23370af919b19cd771",
+      "seed": 675103,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.84,
+      "sampleRate": 24000,
+      "mp3Bytes": 23084,
+      "generationSeconds": 9.216568946838379,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "字幕",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    },
+    "sweet/fangpao": {
+      "voice": "sweet",
+      "call": "fangpao",
+      "text": "放炮",
+      "modelInputText": "放炮。",
+      "sha256": "056d0b7f8df9666b79d9b03ff33d9a6de73fd4a81000bab820740e602c89c6b1",
+      "wavSha256": "48c6a35e27703fb4ef0fce16882cfbc08a6a45930fa422a8f095eccc73e882d9",
+      "seed": 675104,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.2,
+      "sampleRate": 24000,
+      "mp3Bytes": 15308,
+      "generationSeconds": 6.461284399032593,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "放炮",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    },
+    "elegant/zimo": {
+      "voice": "elegant",
+      "call": "zimo",
+      "text": "自摸",
+      "modelInputText": "自摸。",
+      "sha256": "b3320771baac4cffd43237ad55fedd8a247844f8e0348f8047bf11035ca21aac",
+      "wavSha256": "c0fca5458f862396b160b537d79e30241849160cc0f30c86e9f82d162d63577e",
+      "seed": 675207,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.28,
+      "sampleRate": 24000,
+      "mp3Bytes": 16460,
+      "generationSeconds": 6.303941011428833,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "字幕",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    },
+    "elegant/fangpao": {
+      "voice": "elegant",
+      "call": "fangpao",
+      "text": "放炮",
+      "modelInputText": "放炮。",
+      "sha256": "e84cc16c7d9afee819f55fb347e441cde033bb3e090d155101e7dd334325dc10",
+      "wavSha256": "df4924d0dddb3878da17006e52da95643a8c52ee89a304f298fb1bdc894fd59a",
+      "seed": 675208,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 0.96,
+      "sampleRate": 24000,
+      "mp3Bytes": 12428,
+      "generationSeconds": 4.8985419273376465,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "放炮",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    },
+    "sunny/zimo": {
+      "voice": "sunny",
+      "call": "zimo",
+      "text": "自摸",
+      "modelInputText": "自摸。",
+      "sha256": "8da543dedb7b7483580ded3e7ce72c0f2b7e8733624b2a6fc5b5f20141f88703",
+      "wavSha256": "9f51badce5b14b98381c6b1ffa1c0631f802678fdcd28fc9f18779c6d5152cb4",
+      "seed": 675309,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 0.88,
+      "sampleRate": 24000,
+      "mp3Bytes": 11564,
+      "generationSeconds": 4.802132606506348,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "字幕",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    },
+    "sunny/fangpao": {
+      "voice": "sunny",
+      "call": "fangpao",
+      "text": "放炮",
+      "modelInputText": "放炮。",
+      "sha256": "f05104e7ae2d845d29ca6dc6860d3cbfb551a0938d01226879b69050c6d0d756",
+      "wavSha256": "54b51413a6cf9b4b5d3bdb06c7c0f02dc4df5ec4af6583731ed73b08a7ccd86d",
+      "seed": 675310,
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+      "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+      "qwenTtsVersion": "0.1.1",
+      "durationSeconds": 1.92,
+      "sampleRate": 24000,
+      "mp3Bytes": 23948,
+      "generationSeconds": 8.975260257720947,
+      "generationDate": "2026-11-04",
+      "wavClippingFraction": 0.0,
+      "transcript": "放炮",
+      "mp3DecodeChecked": true,
+      "mp3ClippingFraction": 0.0,
+      "contextualNewCallsMatched": true
+    }
+  },
+  "contextualChecks": {
+    "sweet": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "hu"
+      ],
+      "transcript": "一条，二条，三条，自摸，放炮，胡。",
+      "initialPrompt": "麻将报牌，自摸，放炮，胡牌。",
+      "expectedNewCallsMatched": true
+    },
+    "elegant": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "hu"
+      ],
+      "transcript": "一条，二条，三条，自摸，放炮，胡。",
+      "initialPrompt": "麻将报牌，自摸，放炮，胡牌。",
+      "expectedNewCallsMatched": true
+    },
+    "sunny": {
+      "calls": [
+        "tiao-1",
+        "tiao-2",
+        "tiao-3",
+        "zimo",
+        "fangpao",
+        "hu"
+      ],
+      "transcript": "一条﹐二条﹐三条﹌自摸，放炮，胡。",
+      "initialPrompt": "麻将报牌，自摸，放炮，胡牌。",
+      "expectedNewCallsMatched": true
+    }
+  },
+  "runtime": {
+    "torch": "2.8.0+cpu",
+    "qwen-tts": "0.1.1",
+    "transformers": "4.57.3",
+    "faster-whisper": "1.2.1",
+    "soundfile": "0.14.0",
+    "numpy": "2.5.4"
+  }
+}

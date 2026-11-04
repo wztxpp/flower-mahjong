@@ -6,7 +6,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { MemoryStore } from '../server/store.js';
 import { FileStore, apiMiddleware } from '../server/node.js';
-import { createGame, assertGameInvariants } from '../shared/game.js';
+import { createGame, assertGameInvariants } from '../shared/v2-game.js';
+import { createGame as createLegacyGame, assertGameInvariants as assertLegacyInvariants } from '../shared/legacy-game.js';
+import { postHuKongGame } from './fixtures/post-hu-kong.js';
 
 // Every player below owns an independently issued bearer credential and makes
 // real HTTP requests. The only direct store writes are explicit game fixtures;
@@ -40,7 +42,7 @@ async function harness(t, store = new MemoryStore()) {
 function client(api, roomId, token, seat) {
   return {
     roomId, token, seat,
-    get: () => api.request(`/api/rooms/${roomId}`, { token }),
+    get: since => api.request(`/api/rooms/${roomId}${since === undefined ? '' : `?since=${encodeURIComponent(since)}`}`, { token }),
     start: revision => api.request(`/api/rooms/${roomId}/start`, { method: 'POST', token, body: { revision } }),
     action: (revision, action, extra = {}) => api.request(`/api/rooms/${roomId}/action`, {
       method: 'POST', token, body: { revision, action, ...extra },
@@ -173,6 +175,8 @@ test('health and API responses are JSON, non-cacheable, and same-origin protecte
   const healthy = await api.request('/api/health', { headers: { origin: api.origin } });
   assert.equal(healthy.status, 200);
   assert.equal(healthy.body.ok, true);
+  assert.equal(healthy.body.version, '0.4.2');
+  assert.equal(healthy.body.rulesVersion, 3);
   assert.match(healthy.headers.get('content-type'), /application\/json/);
   assert.match(healthy.headers.get('cache-control'), /no-store/);
   assert.equal(healthy.headers.get('x-content-type-options'), 'nosniff');
@@ -383,40 +387,39 @@ test('every mutation requires the exact integer revision, and retries cannot app
   assert.equal(states[0].game.discards.length, 1);
 });
 
-test('draw, discard, and pass rotate through all three clients without revealing drawn tiles', async t => {
+test('server draws after all responses and rotates three clients without a manual draw action', async t => {
   const api = await table(t, { seed: 0 });
-  // This reproducible deal lets seat 1 claim the first 8 (九条), so passing is
-  // exercised rather than merely assumed to have occurred during random play.
+  const before = (await api.store.get(api.roomId)).game;
   const first = await api.host.action(api.state.revision, { type: 'discard', tile: 8 });
   assert.equal(first.status, 200);
   assert.equal(first.body.state.game.phase, 'claim');
+  assert.equal(first.body.state.game.wallCount, before.wall.length, 'no draw while claims are outstanding');
   const claim = await passClaims(api.clients);
   assert.ok(claim.passes > 0);
   let states = claim.states;
   assert.equal(states[0].game.currentSeat, 1);
+  assert.equal(states[0].game.wallCount, before.wall.length - 1);
   for (const seat of [1, 2, 0]) {
     assert.equal(states[seat].game.currentSeat, seat);
-    assert.equal(states[seat].game.turnStep, 'draw');
-    assert.deepEqual(states[seat].game.legalActions, [{ type: 'draw' }]);
-    const wallBefore = states[seat].game.wallCount;
-    const previousRevision = states[seat].revision;
-    const drawn = await api.clients[seat].action(previousRevision, { type: 'draw' });
-    assert.equal(drawn.status, 200, JSON.stringify(drawn.body));
-    states = await snapshots(api.clients);
-    assert.equal(states[seat].revision, previousRevision + 1);
-    assert.equal(states[seat].game.wallCount, wallBefore - 1);
+    assert.equal(states[seat].game.turnStep, 'discard');
+    assert.equal(states[seat].game.legalActions.some(action => action.type === 'draw'), false);
     assert.equal(typeof states[seat].game.drawnTile, 'number');
+    const previousRevision = states[seat].revision;
+    assertError(await api.clients[seat].action(previousRevision, { type: 'draw' }), 422, 'ILLEGAL_ACTION');
     states.forEach((state, index) => {
       if (index !== seat) assert.equal(state.game.drawnTile, null);
       const latest = state.game.history.at(-1);
       assert.equal(latest.type, 'draw');
       assert.equal('tile' in latest, false);
     });
+    const wallBefore = states[seat].game.wallCount;
     const discard = states[seat].game.legalActions.find(action => action.type === 'discard');
-    const discarded = await api.clients[seat].action(states[seat].revision, discard);
+    const discarded = await api.clients[seat].action(previousRevision, discard);
     assert.equal(discarded.status, 200);
+    assert.equal(discarded.body.state.revision, previousRevision + 1);
     states = (await passClaims(api.clients)).states;
     assert.equal(states[0].game.currentSeat, (seat + 1) % 3);
+    assert.equal(states[0].game.wallCount, wallBefore - 1);
   }
 });
 
@@ -546,8 +549,8 @@ test('FileStore reload preserves game, revision, and authenticated reconnect wit
   assert.equal(discarded.status, 200);
   await passClaims(first.clients);
   let before = await snapshots(first.clients);
-  assert.equal((await first.clients[1].action(before[1].revision, { type: 'draw' })).status, 200);
-  before = await snapshots(first.clients);
+  assert.equal(before[1].game.turnStep, 'discard');
+  assert.equal(before[1].game.schemaVersion, 2);
   const disk = await readFile(join(directory, 'rooms.json'), 'utf8');
   first.clients.forEach(player => assert.equal(disk.includes(player.token), false));
   assert.ok(disk.includes('tokenHash'));
@@ -560,4 +563,537 @@ test('FileStore reload preserves game, revision, and authenticated reconnect wit
   assert.equal(resumed.status, 200, JSON.stringify(resumed.body));
   assert.equal(resumed.body.state.revision, before[1].revision + 1);
   assertError(await reconnected[1].action(after[1].revision, discard), 409, 'STALE_STATE');
+});
+
+class CountingStore extends MemoryStore {
+  gets = 0;
+  touches = 0;
+  async get(id) { this.gets++; return super.get(id); }
+  async touch(...args) { this.touches++; return super.touch(...args); }
+  resetCounts() { this.gets = 0; this.touches = 0; }
+}
+
+test('revision polling authenticates, returns a tiny unchanged envelope, and uses one read with throttled heartbeat', async t => {
+  const store = new CountingStore();
+  const api = await table(t, { store });
+  store.resetCounts();
+  const same = await api.host.get(api.state.revision);
+  assert.equal(same.status, 200);
+  assert.deepEqual(same.body, { unchanged: true, revision: api.state.revision, connections: [true, true, true] });
+  assert.equal(store.gets, 1);
+  assert.equal(store.touches, 0);
+  assert.ok(Buffer.byteLength(JSON.stringify(same.body)) < 100);
+  assertError(await api.request(`/api/rooms/${api.roomId}?since=${api.state.revision}`), 401, 'UNAUTHORIZED');
+  assertError(await api.request(`/api/rooms/${api.roomId}?since=${api.state.revision}`, { token: '0'.repeat(64) }), 401, 'UNAUTHORIZED');
+  for (const since of [api.state.revision - 1, api.state.revision + 1, -1, '3.5', 'NaN', '', 'Infinity']) {
+    store.resetCounts();
+    const full = await api.host.get(since);
+    assert.equal(full.status, 200);
+    assert.equal(full.body.unchanged, undefined);
+    assert.equal(full.body.state.revision, api.state.revision);
+    assertPrivateView(full.body.state, 0, api.clients.map(player => player.token));
+    assert.equal(store.gets, 1);
+    assert.equal(store.touches, 0);
+  }
+  const room = store.rooms.get(api.roomId);
+  room.seats[0].lastSeen = Date.now() - 11000;
+  room.seats[1].lastSeen = Date.now() - 31000;
+  store.resetCounts();
+  const reconnected = await api.host.get(api.state.revision);
+  assert.deepEqual(reconnected.body.connections, [true, false, true]);
+  assert.equal(store.gets, 1);
+  assert.equal(store.touches, 1);
+  await api.host.get(api.state.revision);
+  assert.equal(store.gets, 2);
+  assert.equal(store.touches, 1, 'a second rapid poll must not write another heartbeat');
+  assert.equal(store.rooms.get(api.roomId).revision, api.state.revision, 'heartbeat must not advance game revision');
+});
+
+test('mutation response is authoritative and the next conditional poll detects peers without another action GET', async t => {
+  const api = await table(t, { seed: 0 });
+  const oldRevision = api.state.revision;
+  const acted = await api.host.action(oldRevision, { type: 'discard', tile: 8 });
+  assert.equal(acted.status, 200);
+  assert.equal(acted.body.state.revision, oldRevision + 1);
+  const ownPoll = await api.host.get(acted.body.state.revision);
+  assert.equal(ownPoll.body.unchanged, true);
+  for (const peer of api.clients.slice(1)) {
+    const poll = await peer.get(oldRevision);
+    assert.equal(poll.body.state.revision, acted.body.state.revision);
+    assertPrivateView(poll.body.state, peer.seat, api.clients.map(player => player.token));
+  }
+});
+
+for (const version of [undefined, 1]) {
+  test(`saved legacy schema ${version ?? 'absent'} reconnects byte-for-byte, retains manual draw, and starts v3 only after completion`, async t => {
+    const directory = await mkdtemp(join(tmpdir(), 'flower-mahjong-legacy-'));
+    t.after(() => rm(directory, { recursive: true, force: true }));
+    const api = await table(t, { store: new FileStore(directory) });
+    const room = await api.store.get(api.roomId);
+    const game = createLegacyGame({ seed: 13 });
+    if (version !== undefined) game.schemaVersion = version;
+    game.retiredTiles.push({ seat: 0, tile: game.lastDraw.tile });
+    game.players[0].hand.splice(game.players[0].hand.indexOf(game.lastDraw.tile), 1);
+    game.retiredTiles.push(...game.wall.splice(1).map(tile => ({ seat: 0, tile })));
+    game.turnStep = 'draw'; game.lastDraw = null;
+    assertLegacyInvariants(game);
+    room.game = game;
+    assert.equal(await api.store.compareAndSwap(room, room.revision), true);
+    const gameBytes = JSON.stringify(game);
+    const reloaded = await harness(t, new FileStore(directory));
+    const peers = api.clients.map(player => client(reloaded, api.roomId, player.token, player.seat));
+    const views = await snapshots(peers);
+    for (const view of views) {
+      assert.equal(view.game.schemaVersion, 1);
+      assert.equal(view.rulesVersion, 1);
+    }
+    assert.equal(JSON.stringify((await reloaded.store.get(api.roomId)).game), gameBytes, 'read/reconnect migrated or mutated legacy game');
+    assert.deepEqual(views[0].game.legalActions, [{ type: 'draw' }]);
+    assertError(await peers[0].start(views[0].revision), 409, 'PLAYING');
+    const drawn = await peers[0].action(views[0].revision, { type: 'draw' });
+    assert.equal(drawn.status, 200);
+    assert.equal(drawn.body.state.game.schemaVersion, 1);
+    assert.equal(drawn.body.state.game.wallCount, 0);
+    const discarded = await peers[0].action(drawn.body.state.revision, drawn.body.state.game.legalActions.find(action => action.type === 'discard'));
+    assert.equal(discarded.status, 200);
+    const ended = (await passClaims(peers)).states[0];
+    assert.equal(ended.game.phase, 'finished');
+    assert.equal(ended.game.schemaVersion, 1);
+    const restarted = await peers[0].start(ended.revision);
+    assert.equal(restarted.status, 200);
+    assert.equal(restarted.body.state.game.schemaVersion, 3);
+    assert.equal(restarted.body.state.rulesVersion, 3);
+    assert.equal(restarted.body.state.game.wallCount, 104);
+  });
+}
+
+test('unknown saved game version fails closed without altering the stored game', async t => {
+  const api = await table(t);
+  const room = await api.store.get(api.roomId);
+  room.game.schemaVersion = 999;
+  assert.equal(await api.store.compareAndSwap(room, room.revision), true);
+  const before = JSON.stringify(room.game);
+  assertError(await api.host.get(), 409, 'UNSUPPORTED_GAME_VERSION');
+  assertError(await api.host.action(room.revision, { type: 'discard', tile: room.game.players[0].hand[0] }), 409, 'UNSUPPORTED_GAME_VERSION');
+  assert.equal(JSON.stringify((await api.store.get(api.roomId)).game), before);
+});
+
+const WAITING_HAND = [0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17];
+const WINNING_HAND = [...WAITING_HAND, 17];
+const PAIR_CLAIM_HAND = [17, 17, 0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15];
+const KONG_CLAIM_HAND = [17, 17, 17, 0, 1, 3, 4, 6, 7, 9, 10, 12, 13];
+
+// Independent physical accounting deliberately does NOT count logical winPile
+// references. A multi-winner tile remains exactly one physical river tile.
+function checkPhysicalConservation(game) {
+  const physical = [...game.wall, ...game.retiredTiles.map(record => record.tile),
+    ...game.discards.filter(record => record.claimedBy === undefined).map(record => record.tile),
+    ...game.players.flatMap(player => [...player.hand, ...player.melds.flatMap(meld => meld.tiles), ...player.radishes])];
+  assert.equal(physical.length, 144);
+  for (let tile = 0; tile < 18; tile++) assert.equal(physical.filter(value => value === tile).length, 8, `physical copies of ${tile}`);
+  assert.equal(game.players.reduce((sum, player) => sum + player.score, 0), 0);
+  assertGameInvariants(game);
+}
+
+function apiFixture({ hands = [WINNING_HAND, WAITING_HAND, WAITING_HAND], melds = [[], [], []],
+  wins = [[], [], []], radishes = [[], [], []], currentSeat = 0, drawTile = hands[currentSeat].at(-1),
+  head = [], tail = [], kongSeats = [], locks = [[], [], []], wallCount, rules = {} } = {}) {
+  const game = createGame({ seed: 'independent-http-fixture', rules });
+  game.history = []; game.discards = []; game.retiredTiles = [];
+  game.players.forEach((player, seat) => {
+    player.hand = [...hands[seat]].sort((a, b) => a - b);
+    player.melds = structuredClone(melds[seat]);
+    player.winPile = wins[seat].map(tile => ({ tile, source: 'selfDraw', virtual: false }));
+    game.retiredTiles.push(...wins[seat].map(tile => ({ seat, tile })));
+    player.huCount = wins[seat].length;
+    player.radishes = [...radishes[seat]];
+    player.pendingKongDiscard = kongSeats.includes(seat);
+    player.lockedWaits = [...locks[seat]]; player.huLockActive = locks[seat].length > 0;
+  });
+  game.currentSeat = currentSeat;
+  game.lastDraw = drawTile === null ? null : { seat: currentSeat, tile: drawTile, source: 'normal' };
+  const counts = Array(18).fill(8);
+  function use(tile) { assert.ok(Number.isInteger(tile) && tile >= 0 && tile < 18); assert.ok(--counts[tile] >= 0, `fixture overused ${tile}`); }
+  game.retiredTiles.forEach(record => use(record.tile));
+  game.players.forEach(player => [...player.hand, ...player.melds.flatMap(meld => meld.tiles), ...player.radishes].forEach(use));
+  [...head, ...tail].forEach(use);
+  const rest = counts.flatMap((count, tile) => Array(count).fill(tile));
+  if (wallCount !== undefined) {
+    assert.ok(wallCount >= head.length + tail.length);
+    game.retiredTiles.push(...rest.splice(wallCount - head.length - tail.length).map(tile => ({ seat: 0, tile })));
+  }
+  game.wall = [...head, ...rest, ...tail];
+  checkPhysicalConservation(game);
+  return game;
+}
+
+async function installFixture(api, game) {
+  const room = await api.store.get(api.roomId);
+  room.game = game;
+  assert.equal(await api.store.compareAndSwap(room, room.revision), true);
+  return snapshots(api.clients);
+}
+
+async function checkStored(api) {
+  const room = await api.store.get(api.roomId);
+  checkPhysicalConservation(room.game);
+  return room.game;
+}
+
+test('duplicate concurrent self-hu is charged once, flips six radishes once, and keeps the public winning pile', async t => {
+  const api = await table(t);
+  const game = apiFixture({ head: [6, 8], tail: [7, 7, 8, 8, 15, 15] });
+  let views = await installFixture(api, game);
+  const revision = views[0].revision;
+  const answers = await Promise.all([api.host.action(revision, { type: 'hu' }), api.host.action(revision, { type: 'hu' })]);
+  assert.deepEqual(answers.map(answer => answer.status).sort(), [200, 409]);
+  assertError(answers.find(answer => answer.status === 409), 409, 'STALE_STATE');
+  views = await snapshots(api.clients);
+  for (const view of views) {
+    const player = view.game.players[0];
+    assert.equal(player.huCount, 1);
+    assert.equal(player.radishes.length, 6);
+    assert.deepEqual(player.winPile, [{ tile: 17, source: 'selfDraw', virtual: false }]);
+    assert.deepEqual(view.seats[0].winPile, player.winPile);
+    assert.equal(view.game.history.filter(event => event.type === 'hu').length, 1);
+    assert.deepEqual(view.game.players.map(player => player.score), [2, -1, -1]);
+    assert.equal(player.lastScoreBreakdown.fan, 1);
+    assert.equal(player.lastScoreBreakdown.total, 1);
+    assert.equal(view.game.history.filter(event => event.type === 'discard' && event.automatic).length, 1);
+    assert.equal(view.game.history.find(event => event.automatic).tile, 6, 'automatic discard must use continuation draw, not another hand tile');
+  }
+  assert.deepEqual((await checkStored(api)).players[0].hand, WAITING_HAND);
+  assertError(await api.host.action(revision, { type: 'hu' }), 409, 'STALE_STATE');
+});
+
+for (const { name, near, far, responses, winner, claimType, expectedScores } of [
+  { name: 'farther kong outranks nearer peng', near: PAIR_CLAIM_HAND, far: KONG_CLAIM_HAND, responses: ['peng', 'mingGang'], winner: 2, claimType: 'mingGang', expectedScores: [-2, 0, 2] },
+  { name: 'equal peng chooses nearer seat', near: PAIR_CLAIM_HAND, far: PAIR_CLAIM_HAND, responses: ['peng', 'peng'], winner: 1, claimType: 'peng', expectedScores: [0, 0, 0] },
+  { name: 'equal kong chooses nearer seat', near: KONG_CLAIM_HAND, far: KONG_CLAIM_HAND, responses: ['mingGang', 'mingGang'], winner: 1, claimType: 'mingGang', expectedScores: [-2, 2, 0] },
+]) {
+  test(`claim arbitration: ${name}, even when farther response arrives first`, async t => {
+    const api = await table(t);
+    let views = await installFixture(api, apiFixture({ hands: [WINNING_HAND, near, far], head: [8], tail: [16] }));
+    assert.equal((await api.host.action(views[0].revision, { type: 'discard', tile: 17 })).status, 200);
+    views = await snapshots(api.clients);
+    assert.deepEqual(views[0].game.claim.eligibleSeats, [1, 2]);
+    const wallBefore = views[0].game.wallCount;
+    const first = await api.clients[2].action(views[2].revision, { type: responses[1], tile: 17 });
+    assert.equal(first.status, 200);
+    assert.equal(first.body.state.game.phase, 'claim');
+    assert.equal(first.body.state.game.wallCount, wallBefore);
+    assert.deepEqual(first.body.state.game.players.map(player => player.score), [0, 0, 0]);
+    views = await snapshots(api.clients);
+    const duplicateFinal = await Promise.all([1, 2].map(() => api.clients[1].action(views[1].revision, { type: responses[0], tile: 17 })));
+    assert.deepEqual(duplicateFinal.map(answer => answer.status).sort(), [200, 409]);
+    views = await snapshots(api.clients);
+    for (const view of views) {
+      assert.equal(view.game.currentSeat, winner);
+      assert.equal(view.game.players[winner].melds[0].type, claimType);
+      assert.equal(view.game.players[3 - winner].melds.length, 0);
+      assert.deepEqual(view.game.players.map(player => player.score), expectedScores);
+      assert.equal(view.game.players[winner].radishes.length, claimType === 'mingGang' ? 1 : 0);
+      assert.equal(view.game.wallCount, wallBefore - (claimType === 'mingGang' ? 2 : 0));
+      assert.equal(view.game.history.filter(event => event.type === claimType).length, 1);
+    }
+    await checkStored(api);
+  });
+}
+
+test('hu outranks an already submitted kong and does not charge or draw for the losing kong', async t => {
+  const api = await table(t);
+  let views = await installFixture(api, apiFixture({ hands: [WINNING_HAND, WAITING_HAND, KONG_CLAIM_HAND], head: [8, 8], tail: [7, 7, 8, 8, 15, 15] }));
+  assert.equal((await api.host.action(views[0].revision, { type: 'discard', tile: 17 })).status, 200);
+  views = await snapshots(api.clients);
+  const kong = await api.clients[2].action(views[2].revision, { type: 'mingGang', tile: 17 });
+  assert.equal(kong.status, 200);
+  assert.equal(kong.body.state.game.phase, 'claim');
+  const hu = await api.clients[1].action(kong.body.state.revision, { type: 'hu' });
+  assert.equal(hu.status, 200);
+  views = await snapshots(api.clients);
+  assert.equal(views[0].game.players[1].huCount, 1);
+  assert.equal(views[0].game.players[2].melds.length, 0);
+  assert.equal(views[0].game.players[2].radishes.length, 0);
+  assert.equal(views[0].game.players[2].score, 0);
+  assert.equal(views[0].game.history.some(event => event.type === 'mingGang'), false);
+  await checkStored(api);
+});
+
+for (const type of ['anGang', 'buGang', 'addGang']) {
+  test(`${type} immediately pays the exact amount once under concurrent retries`, async t => {
+    const api = await table(t);
+    const upgrade = type !== 'anGang';
+    const hand = upgrade ? [17, 0, 1, 2, 3, 4, 5, 9, 10, 11, 12] : [17, 17, 17, 17, 0, 1, 2, 3, 4, 5, 9, 10, 11, 12];
+    const meld = { type: type === 'buGang' ? 'peng' : 'anGang', tile: 17, tiles: Array(type === 'buGang' ? 3 : 4).fill(17) };
+    const fixture = apiFixture({ hands: [hand, WAITING_HAND, WAITING_HAND], melds: [upgrade ? [meld] : [], [], []], head: [8], tail: [16] });
+    const views = await installFixture(api, fixture);
+    const action = { type, tile: 17 };
+    const results = await Promise.all([api.host.action(views[0].revision, action), api.host.action(views[0].revision, action)]);
+    assert.deepEqual(results.map(result => result.status).sort(), [200, 409]);
+    const after = await snapshots(api.clients);
+    const amount = type === 'anGang' ? 2 : 1;
+    for (const view of after) {
+      assert.deepEqual(view.game.players.map(player => player.score), [amount * 2, -amount, -amount]);
+      assert.equal(view.game.players[0].radishes.length, 1);
+      assert.equal(view.game.players[0].kongCount, 1);
+      assert.equal(view.game.wallCount, fixture.wall.length - 2);
+      assert.equal(view.game.players[0].melds[0].tiles.length, type === 'addGang' ? 5 : 4);
+      assert.equal(view.game.history.filter(event => event.type === type).length, 1);
+    }
+    if (type !== 'buGang') for (const view of after.slice(1)) assert.deepEqual(view.game.players[0].melds[0].tiles, Array(type === 'addGang' ? 5 : 4).fill(null));
+    await checkStored(api);
+  });
+}
+
+test('the final simultaneous two-winner batch fully settles before all-three-hu finish, without an extra draw', async t => {
+  const api = await table(t);
+  const fixture = apiFixture({ wins: [[16], [], []], kongSeats: [0], head: [8], tail: [6, 6, 7, 7, 8, 8, 15, 15, 16, 16, 6, 7] });
+  let views = await installFixture(api, fixture);
+  const discard = await api.host.action(views[0].revision, { type: 'discard', tile: 17 });
+  assert.equal(discard.status, 200);
+  views = await snapshots(api.clients);
+  const responses = await Promise.all([api.clients[1].action(views[1].revision, { type: 'hu' }), api.clients[2].action(views[2].revision, { type: 'hu' })]);
+  assert.deepEqual(responses.map(response => response.status).sort(), [200, 409]);
+  const losingIndex = responses.findIndex(response => response.status === 409);
+  views = await snapshots(api.clients);
+  assert.equal(views[0].game.phase, 'claim');
+  assert.deepEqual(views[0].game.players.map(player => player.huCount), [1, 0, 0], 'no winner settled until all replies arrive');
+  assert.equal(views[0].game.wallCount, fixture.wall.length);
+  const finalSeat = losingIndex + 1;
+  const finals = await Promise.all([api.clients[finalSeat].action(views[finalSeat].revision, { type: 'hu' }), api.clients[finalSeat].action(views[finalSeat].revision, { type: 'hu' })]);
+  assert.deepEqual(finals.map(response => response.status).sort(), [200, 409]);
+  views = await snapshots(api.clients);
+  for (const view of views) {
+    assert.equal(view.phase, 'finished');
+    assert.equal(view.game.finishReason, 'allPlayersHu');
+    assert.deepEqual(view.game.players.map(player => player.huCount), [1, 1, 1]);
+    assert.deepEqual(view.game.players.map(player => player.radishes.length), [0, 6, 6]);
+    assert.deepEqual(view.game.players.map(player => player.score), [-2, 1, 1]);
+    assert.equal(view.game.wallCount, fixture.wall.length - 12);
+    assert.equal(view.game.history.filter(event => event.type === 'draw').length, 0);
+    assert.deepEqual(view.game.history.slice(-3).map(event => event.type), ['hu', 'hu', 'finish']);
+    assert.equal(view.game.players[1].winPile[0].virtual, false);
+    assert.equal(view.game.players[2].winPile[0].virtual, true);
+    assert.equal(view.game.players[1].winPile[0].tile, 17);
+    assert.equal(view.game.players[2].winPile[0].tile, 17);
+    assert.deepEqual(view.game.discards[0].huSeats, [1, 2]);
+    assert.deepEqual(view.game.legalActions, []);
+  }
+  await checkStored(api);
+  const before = JSON.stringify((await api.store.get(api.roomId)).game);
+  assertError(await api.host.action(views[0].revision, { type: 'discard', tile: 0 }), 422, 'ILLEGAL_ACTION');
+  assert.equal(JSON.stringify((await api.store.get(api.roomId)).game), before);
+});
+
+for (const [fan, expected] of [[1, 1], [2, 2], [3, 4], [4, 8], [5, 10], [6, 12], [7, 14], [10, 20]]) {
+  test(`HTTP scoring breakdown maps ${fan} fan to ${expected} points`, async t => {
+    const api = await table(t);
+    const fixture = apiFixture({ rules: { baseFan: fan }, head: [6, 8], tail: [7, 7, 8, 8, 15, 15] });
+    const views = await installFixture(api, fixture);
+    const scored = await api.host.action(views[0].revision, { type: 'hu' });
+    assert.equal(scored.status, 200);
+    const score = scored.body.state.game.players[0].lastScoreBreakdown;
+    assert.equal(score.fan, fan);
+    assert.equal(score.copyFanBonus, 0);
+    assert.equal(score.fanPoints, expected);
+    assert.equal(score.radishBonus, 0);
+    assert.equal(score.dragonBonus, 0);
+    assert.equal(score.total, expected);
+    assert.deepEqual(scored.body.state.game.players.map(player => player.score), [expected * 2, -expected, -expected]);
+    await checkStored(api);
+  });
+}
+
+test('four and five identical tiles count across own hand, open meld and historical win pile, excluding opponents', async t => {
+  for (const [priorWins, expectedFan, expectedPoints] of [[0, 2, 2], [1, 3, 4]]) {
+    const api = await table(t);
+    const hand = [0, 1, 2, 6, 7, 8, 9, 10, 11, 17, 17];
+    const opponent = [6, ...WAITING_HAND.slice(1)];
+    const fixture = apiFixture({ hands: [hand, opponent, opponent], melds: [[{ type: 'peng', tile: 6, tiles: [6, 6, 6] }], [], []],
+      wins: [Array(priorWins).fill(6), [], []], head: [15, 15], tail: [3, 3, 4, 4, 5, 5], drawTile: 17 });
+    const views = await installFixture(api, fixture);
+    const answer = await api.host.action(views[0].revision, { type: 'hu' });
+    assert.equal(answer.status, 200);
+    const score = answer.body.state.game.players[0].lastScoreBreakdown;
+    assert.equal(score.fan, expectedFan);
+    assert.equal(score.copyFanBonus, priorWins + 1);
+    assert.equal(score.fanPoints, expectedPoints);
+    assert.equal(score.total, expectedPoints);
+    assert.deepEqual(answer.body.state.game.players.map(player => player.score), [expectedPoints * 2, -expectedPoints, -expectedPoints]);
+    await checkStored(api);
+  }
+});
+
+test('after a win only the drawn tile can be discarded and an available hu suppresses kong', async t => {
+  const api = await table(t);
+  const hand = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5];
+  const fixture = apiFixture({ hands: [hand, WAITING_HAND, WAITING_HAND], wins: [[16], [], []], drawTile: 5 });
+  const views = await installFixture(api, fixture);
+  const legal = views[0].game.legalActions;
+  assert.ok(legal.some(action => action.type === 'hu'));
+  assert.equal(legal.some(action => action.type.endsWith('Gang')), false);
+  assert.deepEqual(legal.filter(action => action.type === 'discard'), [{ type: 'discard', tile: 5 }]);
+  assertError(await api.host.action(views[0].revision, { type: 'discard', tile: 0 }), 422, 'ILLEGAL_ACTION');
+  assertError(await api.host.action(views[0].revision, { type: 'anGang', tile: 0 }), 422, 'ILLEGAL_ACTION');
+  assertError(await api.host.action(views[0].revision, { type: 'draw' }), 422, 'ILLEGAL_ACTION');
+  const passed = await api.host.action(views[0].revision, { type: 'pass' });
+  assert.equal(passed.status, 200);
+  assert.equal(passed.body.state.game.discards[0].tile, 5);
+  await checkStored(api);
+});
+
+test('v3 HTTP selfdraw uses all personal radish zones, excludes already-hu payer and rejects duplicate charge', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const hand = [0,1,2,3,4,5,9,10,11,15,16,17,6,6];
+  const game = apiFixture({ hands: [hand, WAITING_HAND, WAITING_HAND], wins: [[15,12],[7],[]], radishes: [[],[15,12,12],[]], drawTile: 6, head: [8] });
+  game.schemaVersion = 3; game.rules = structuredClone(DEFAULT_RULES); game.firstHuRadishesRevealed = true;
+  game.dragonSettlement = { settled: false, entries: [] }; assertLatest(game);
+  let views = await installFixture(api,game); const rev = views[0].revision;
+  const responses = await Promise.all([api.host.action(rev,{type:'hu'}),api.host.action(rev,{type:'hu'})]);
+  assert.deepEqual(responses.map(r=>r.status).sort(),[200,409]);
+  views = await snapshots(api.clients);
+  for (const view of views) {
+    const event = view.game.history.find(e=>e.type==='hu');
+    assert.equal(event.score.radishBonus,4); assert.equal(event.score.fan,1);
+    assert.deepEqual(event.payments,[{seat:2,delta:-5},{seat:0,delta:5}]);
+    assert.deepEqual(view.game.players.map(p=>p.score),[5,0,-5]);
+    assert.equal(view.game.history.filter(e=>e.type==='hu').length,1);
+  }
+  assertLatest((await api.store.get(api.roomId)).game);
+});
+
+test('v3 HTTP exposes and settles locked repeat hu on the reported kong-discard five circles exactly once', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const receiver = [4, 5, 6, 6, 7, 7, 7, 8, 11, 12, 13, 14, 15];
+  const source = [2, 3, 5, 6, 7, 8, 8, 8, 10, 14, 14];
+  const game = apiFixture({ hands: [source, receiver, WAITING_HAND],
+    melds: [[{type:'peng',tile:10,tiles:[10,10,10]}],[],[]],
+    wins: [[],[16,10,16,13,16],[]], locks: [[],[10,13,16],[]], drawTile:10, head:[13,0], tail:[16] });
+  game.schemaVersion=3; game.rules=structuredClone(DEFAULT_RULES);
+  game.firstHuRadishesRevealed=true; game.dragonSettlement={settled:false,entries:[]};
+  assertLatest(game);
+  let views=await installFixture(api,game);
+  let answer=await api.host.action(views[0].revision,{type:'buGang',tile:10});
+  assert.equal(answer.status,200);
+  answer=await api.host.action(answer.body.state.revision,{type:'discard',tile:13});
+  assert.equal(answer.status,200);
+  views=await snapshots(api.clients);
+  assert.equal(views[1].game.huDiagnostic.code,'AVAILABLE');
+  assert.ok(views[1].game.legalActions.some(action=>action.type==='hu'));
+  assert.equal(views[1].game.discards[0].afterKong,true);
+  const revision=views[1].revision;
+  const answers=await Promise.all([api.clients[1].action(revision,{type:'hu'}),api.clients[1].action(revision,{type:'hu'})]);
+  assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
+  views=await snapshots(api.clients);
+  for(const view of views){
+    assert.equal(view.game.players[1].huCount,6);
+    const events=view.game.history.filter(event=>event.type==='hu');
+    assert.equal(events.length,1);
+    assert.equal(events[0].tile,13); assert.equal(events[0].source,'kongDiscard');
+    assert.deepEqual(events[0].payments,[{seat:0,delta:-events[0].points},{seat:1,delta:events[0].points}]);
+    assert.equal(events[0].fromSeat,0);
+    assert.equal(view.game.players[2].score,-1,'bystander pays its original kong fee but no kong-discard hu fee');
+    assert.match(events[0].message,/仅出牌者付款/);
+    assert.doesNotMatch(events[0].message,/按自摸/);
+  }
+  assertLatest((await api.store.get(api.roomId)).game);
+});
+
+test('v3 HTTP seat-three eight-point kong-discard win charges only seat one, survives reconnect and rejects duplicate charges', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  for (const paymentFlags of ['enabled', 'disabled', 'absent']) {
+    const api = await table(t);
+    const game = apiFixture({ wins: [[7], [], []], kongSeats: [0], head: [6] });
+    game.schemaVersion = 3;
+    game.rules = { ...structuredClone(DEFAULT_RULES), baseFan: 4, specialHuPatterns: false };
+    for (const key of ['selfDrawOnlyUnwon', 'finalHuPaymentExceptions']) {
+      if (paymentFlags === 'absent') delete game.rules[key];
+      else game.rules[key] = paymentFlags === 'enabled';
+    }
+    game.firstHuRadishesRevealed = true;
+    game.dragonSettlement = { settled: false, entries: [] };
+    assertLatest(game);
+    let views = await installFixture(api, game);
+    let answer = await api.host.action(views[0].revision, { type: 'discard', tile: 17 });
+    assert.equal(answer.status, 200);
+    answer = await api.clients[1].action(answer.body.state.revision, { type: 'pass' });
+    assert.equal(answer.status, 200);
+    const revision = answer.body.state.revision;
+    const answers = await Promise.all([api.clients[2].action(revision, { type: 'hu' }), api.clients[2].action(revision, { type: 'hu' })]);
+    assert.deepEqual(answers.map(result => result.status).sort(), [200, 409]);
+    assertError(answers.find(result => result.status === 409), 409, 'STALE_STATE');
+    views = await snapshots(api.clients);
+    const reconnected = client(api, api.roomId, api.clients[2].token, 2);
+    views.push((await reconnected.get()).body.state);
+    for (const view of views) {
+      const events = view.game.history.filter(event => event.type === 'hu');
+      assert.equal(events.length, 1);
+      assert.equal(events[0].seat, 2);
+      assert.equal(events[0].tile, 17);
+      assert.equal(events[0].source, 'kongDiscard');
+      assert.equal(events[0].fromSeat, 0);
+      assert.equal(events[0].points, 8);
+      assert.deepEqual(events[0].payments, [{ seat: 0, delta: -8 }, { seat: 2, delta: 8 }]);
+      assert.deepEqual(view.game.players.map(player => player.score), [-8, 0, 8]);
+      assert.match(events[0].message, /仅出牌者付款/);
+      assert.doesNotMatch(events[0].message, /按自摸|另外两家/);
+    }
+    assertLatest((await api.store.get(api.roomId)).game);
+  }
+});
+
+test('v3 HTTP mandatory post-hu kongs reject old-client pass and discard without mutation and survive reconnect', async t => {
+  for (const type of ['anGang', 'buGang', 'addGang']) {
+    const api = await table(t);
+    const game = postHuKongGame({ type });
+    const tile = game.lastDraw.tile;
+    const views = await installFixture(api, game);
+    const before = await api.store.get(api.roomId);
+    assert.deepEqual(views[0].game.legalActions, [{ type, tile }]);
+    for (const action of [{ type: 'pass' }, { type: 'discard', tile }]) {
+      assertError(await api.host.action(views[0].revision, action), 422, 'ILLEGAL_ACTION');
+      assert.deepEqual(await api.store.get(api.roomId), before);
+    }
+    const restored = client(api, api.roomId, api.host.token, 0);
+    const reconnected = (await restored.get()).body.state;
+    assert.equal(reconnected.revision, views[0].revision);
+    assert.deepEqual(reconnected.game, views[0].game);
+    const result = await restored.action(reconnected.revision, { type, tile });
+    assert.equal(result.status, 200);
+    assert.equal(result.body.state.game.history.filter(event => event.type === type).length, 1);
+    assert.equal(result.body.state.game.history.filter(event => event.type === 'draw' && event.source === 'replacement').length, 1);
+    assert.ok(result.body.state.game.legalActions.some(action => action.type === 'hu'));
+    assert.ok(result.body.state.game.legalActions.some(action => action.type === 'pass'));
+  }
+});
+
+test('v3 special seven-pairs repeat exposes expanded waits only to its owner and persists through reconnect', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api = await table(t);
+  const hand=[0,0,2,2,4,4,6,6,9,9,11,11,13,13];
+  const game=apiFixture({hands:[hand,WAITING_HAND,WAITING_HAND],drawTile:13,head:[2,7],tail:[8,8,8,15,15,15]});
+  game.schemaVersion=3;game.rules=structuredClone(DEFAULT_RULES);game.firstHuRadishesRevealed=false;
+  game.dragonSettlement={settled:false,entries:[]};assertLatest(game);
+  const views=await installFixture(api,game);
+  let answer=await api.host.action(views[0].revision,{type:'hu'});
+  assert.equal(answer.status,200);
+  let snapshotsNow=await snapshots(api.clients);
+  assert.deepEqual(snapshotsNow[0].game.waitTiles,[0,2,4,6,9,11,13]);
+  assert.equal(snapshotsNow[0].game.specialHuPattern.kind,'sevenPairs');
+  assert.equal(snapshotsNow[0].game.drawnTile,2);
+  assert.ok(snapshotsNow[0].game.legalActions.some(action=>action.type==='hu'));
+  assert.equal(snapshotsNow[1].game.specialHuPattern,null);
+  assert.equal(snapshotsNow[2].game.specialHuPattern,null);
+  for(const snapshot of snapshotsNow)for(const player of snapshot.game.players)assert.equal(player.firstHuPattern,undefined);
+  const reconnected=client(api,api.roomId,api.host.token,0);
+  assert.deepEqual((await reconnected.get()).body.state.game.specialHuPattern,snapshotsNow[0].game.specialHuPattern);
+  answer=await api.host.action(snapshotsNow[0].revision,{type:'hu'});
+  assert.equal(answer.status,200);
+  snapshotsNow=await snapshots(api.clients);
+  assert.equal(snapshotsNow[0].game.players[0].huCount,2);
+  assert.equal(snapshotsNow[0].game.players[0].winPile.at(-1).tile,2);
+  assert.equal(snapshotsNow[0].game.players[0].hand.length,13);
+  assertLatest((await api.store.get(api.roomId)).game);
 });

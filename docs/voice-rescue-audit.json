@@ -1,0 +1,226 @@
+{
+  "method": "Same original reference voice; Qwen 0.6B Base carrier phrase, explicit pause-bounded target extraction; faster-whisper medium before/after review.",
+  "subjectiveListeningCompleted": false,
+  "carrierInspection": {
+    "sunny/tong-9-carrier.wav": {
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 1.0,
+          "text": "麻将",
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.58,
+              "word": "麻",
+              "probability": 0.9410830140113831
+            },
+            {
+              "start": 0.58,
+              "end": 1.1099999999999999,
+              "word": "将",
+              "probability": 0.6593806743621826
+            }
+          ]
+        },
+        {
+          "start": 1.72,
+          "end": 2.62,
+          "text": "酒桶",
+          "words": [
+            {
+              "start": 1.72,
+              "end": 2.2,
+              "word": "酒",
+              "probability": 0.4036486744880676
+            },
+            {
+              "start": 2.2,
+              "end": 2.62,
+              "word": "桶",
+              "probability": 0.9650109112262726
+            }
+          ]
+        }
+      ],
+      "silenceIntervals": [
+        [
+          0.0,
+          0.36
+        ],
+        [
+          0.75,
+          1.87
+        ],
+        [
+          2.56,
+          2.73
+        ]
+      ],
+      "silenceThresholdRms": 0.010412370115518571,
+      "durationSeconds": 2.7200416666666665
+    },
+    "sweet/gang-carrier.wav": {
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 1.58,
+          "text": "麻将,GO!",
+          "words": [
+            {
+              "start": 0.0,
+              "end": 0.86,
+              "word": "麻",
+              "probability": 0.8636159300804138
+            },
+            {
+              "start": 0.86,
+              "end": 1.2,
+              "word": "将,",
+              "probability": 0.5888711810112
+            },
+            {
+              "start": 1.5,
+              "end": 1.58,
+              "word": "GO!",
+              "probability": 0.3460719883441925
+            }
+          ]
+        }
+      ],
+      "silenceIntervals": [
+        [
+          0.0,
+          0.18
+        ],
+        [
+          0.23,
+          0.61
+        ],
+        [
+          1.05,
+          1.37
+        ],
+        [
+          1.57,
+          2.08
+        ]
+      ],
+      "silenceThresholdRms": 0.01265486553311348,
+      "durationSeconds": 2.08
+    },
+    "sweet/hu-carrier.wav": {
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 2.28,
+          "text": "麻将 术",
+          "words": [
+            {
+              "start": 0.0,
+              "end": 1.02,
+              "word": "麻",
+              "probability": 0.9516644477844238
+            },
+            {
+              "start": 1.02,
+              "end": 1.58,
+              "word": "将",
+              "probability": 0.4367586374282837
+            },
+            {
+              "start": 2.16,
+              "end": 2.28,
+              "word": " 术",
+              "probability": 0.0001277146911888849
+            }
+          ]
+        }
+      ],
+      "silenceIntervals": [
+        [
+          0.0,
+          0.77
+        ],
+        [
+          1.19,
+          1.96
+        ],
+        [
+          2.21,
+          3.04
+        ]
+      ],
+      "silenceThresholdRms": 0.012845025509595872,
+      "durationSeconds": 3.04
+    }
+  },
+  "adopted": [
+    {
+      "voice": "sweet",
+      "call": "hu",
+      "sha256": "6b21c6f03c33b6ac9be869cdfd13f06ded3f99a33cb8d134d2070efb35529883",
+      "carrier": {
+        "voice": "sweet",
+        "call": "hu",
+        "targetText": "胡",
+        "modelInputText": "麻将。胡！",
+        "seed": 674103,
+        "referenceSha256": "3a2e8a96f11e7cb2b4809590ded74785a38f989f940a89ce208866956fff486a",
+        "carrierSha256": "66056ba165e3414160f51748c9e2799661d4f3c94a687828485ccfacaa8ba15f",
+        "durationSeconds": 3.04,
+        "generationSeconds": 14.71768069267273,
+        "sampleRate": 24000
+      },
+      "crop": {
+        "startSeconds": 1.8,
+        "endSeconds": 2.4,
+        "method": "Explicit bounds chosen from carrier ASR word timestamps and waveform silence; target call only."
+      }
+    },
+    {
+      "voice": "sweet",
+      "call": "gang",
+      "sha256": "e817d78ed353d545bb8995b472f4b68d0fce35949304e8e293b0c2ae2e5d5f15",
+      "carrier": {
+        "voice": "sweet",
+        "call": "gang",
+        "targetText": "杠",
+        "modelInputText": "麻将。杠！",
+        "seed": 674104,
+        "referenceSha256": "3a2e8a96f11e7cb2b4809590ded74785a38f989f940a89ce208866956fff486a",
+        "carrierSha256": "99cf56de009de57ffd40f221a134d615e481d6e7cca3fee4db2ed80352fd9264",
+        "durationSeconds": 2.08,
+        "generationSeconds": 10.895295858383179,
+        "sampleRate": 24000
+      },
+      "crop": {
+        "startSeconds": 1.25,
+        "endSeconds": 1.75,
+        "method": "Explicit bounds chosen from carrier ASR word timestamps and waveform silence; target call only."
+      }
+    },
+    {
+      "voice": "sunny",
+      "call": "tong-9",
+      "sha256": "7ca7f57b40adafdc98bf29f39858e5a13c8d2d876851aaa0afe8f7484647fb80",
+      "carrier": {
+        "voice": "sunny",
+        "call": "tong-9",
+        "targetText": "九筒",
+        "modelInputText": "麻将。九筒！",
+        "seed": 674311,
+        "referenceSha256": "417234f66ccf8782fa8eae1c5b56fa4511a4023e5854fc26b9fc2c7f6f51b112",
+        "carrierSha256": "17a488b6f6337931d5bea17488547fb04dc150e612061320aa3ef47c727cae25",
+        "durationSeconds": 2.7200416666666665,
+        "generationSeconds": 13.422589302062988,
+        "sampleRate": 24000
+      },
+      "crop": {
+        "startSeconds": 1.65,
+        "endSeconds": 2.72,
+        "method": "Explicit bounds chosen from carrier ASR word timestamps and waveform silence; target call only."
+      }
+    }
+  ]
+}
