@@ -40,9 +40,11 @@ VOICES = {
     },
 }
 NUMBERS = "一二三四五六七八九"
-CALLS = {**{f"tiao-{i}": f"{n}条" for i,n in enumerate(NUMBERS,1)},
+ALL_CALLS = {**{f"tiao-{i}": f"{n}条" for i,n in enumerate(NUMBERS,1)},
          **{f"tong-{i}": f"{n}筒" for i,n in enumerate(NUMBERS,1)},
-         "peng": "碰", "hu": "胡", "gang": "杠", "zimo": "自摸", "fangpao": "放炮"}
+         "peng": "碰", "hu": "胡", "gang": "杠", "zimo": "自摸", "fangpao": "放炮", "qianggang": "抢杠"}
+LEGACY_CALLS = {"hu": "胡"}
+CALLS = {key: text for key, text in ALL_CALLS.items() if key not in LEGACY_CALLS}
 
 
 def sha256(path):
@@ -60,7 +62,7 @@ def write_json(path, data):
 def generation_identity(style, call=None):
     return {"voice": style, "direction": VOICES[style]["direction"],
             "referenceText": REFERENCE_TEXT, "designRevision": DESIGN_REVISION,
-            "baseRevision": BASE_REVISION, "text": CALLS.get(call) if call else REFERENCE_TEXT}
+            "baseRevision": BASE_REVISION, "text": ALL_CALLS.get(call) if call else REFERENCE_TEXT}
 
 
 def load_model(path, torch, dtype):
@@ -103,7 +105,7 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "public/voices")
     parser.add_argument("--phase", choices=["references", "clips"], required=True)
     parser.add_argument("--voice", choices=list(VOICES))
-    parser.add_argument("--call", choices=list(CALLS), nargs="+")
+    parser.add_argument("--call", choices=list(ALL_CALLS), nargs="+")
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--dtype", choices=["bfloat16", "float32"], default="bfloat16")
     parser.add_argument("--seed-offset", type=int, default=0)
@@ -152,7 +154,8 @@ def main():
         ref_audio, ref_sr = sf.read(ref_path, dtype="float32")
         prompt = model.create_voice_clone_prompt(ref_audio=(ref_audio, ref_sr),
                                                  ref_text=REFERENCE_TEXT, x_vector_only_mode=False)
-        for index,(call, text) in enumerate(CALLS.items()):
+        for index,(call, text) in enumerate(ALL_CALLS.items()):
+            if not args.call and call in LEGACY_CALLS: continue
             if args.call and call not in args.call: continue
             wav_path = args.work_dir / style / f"{call}.wav"
             meta_path = wav_path.with_suffix(".json")

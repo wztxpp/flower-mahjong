@@ -2,7 +2,7 @@
 
 此工具使用与《十二证词》相同的方法：Qwen3-TTS VoiceDesign 先设计三个原创声线，再由 0.6B Base 使用自行生成的参考录音保持声音一致。所有推理在本地 CPU 运行，不使用浏览器朗读、付费 API、真人声纹、云端计费语音服务或简单变调替代声线。
 
-每个角色 23 条：一至九条、一至九筒、碰、胡、杠、自摸、放炮。总共 69 条，输出至 `public/voices/{sweet,elegant,sunny}/`。模型权重、虚拟环境、WAV 中间文件不要加入网页仓库。
+每个角色 23 条：一至九条、一至九筒、碰、杠、自摸、放炮、抢杠。总共 69 条当前可播放语音；另保留三条旧“胡”兼容文件，总计 72 个 MP3，输出至 `public/voices/{sweet,elegant,sunny}/`。模型权重、虚拟环境、WAV 中间文件不要加入网页仓库。
 
 ## 安装与下载
 
@@ -91,4 +91,17 @@ python scripts/voices/extend_win_calls.py --phase audit \
   --model-root /tmp/mahjong-models --work-dir /tmp/mahjong-win-voices
 ```
 
-此增量流程只需既有固定修订的 0.6B Base 与本地 faster-whisper-small。审计会核对六条新音频的解码、静音、削波、独立哈希，保留逐条及上下文转写，并验证原有 63 个文件哈希不变。它不部署网站。播放顺序由游戏控制：先播所选“自摸”或“放炮”，再播放原有“胡”；六个文件内不包含额外词语。
+此增量流程只需既有固定修订的 0.6B Base 与本地 faster-whisper-small。审计会核对六条新音频的解码、静音、削波、独立哈希，保留逐条及上下文转写，并验证原有 63 个文件哈希不变。它不部署网站。六个文件内不包含额外词语。当前三种胡法的对应关系见下一节，已不再追加旧“胡”。
+
+## 三种胡法分别报牌（抢杠扩展）
+
+当前三个胜利语音是“自摸”“放炮”“抢杠”，每种只播对应的一条，不再追加通用“胡”。`extend_qianggang.py` 仅新增每个角色的 `qianggang.mp3`，沿用 `extend_win_calls.py` 的现有角色录音恢复参考方法。
+
+```bash
+python scripts/voices/extend_qianggang.py --phase generate \
+  --model-root /tmp/mahjong-models --work-dir /tmp/mahjong-qianggang
+python scripts/voices/extend_qianggang.py --phase audit \
+  --model-root /tmp/mahjong-models --work-dir /tmp/mahjong-qianggang
+```
+
+清单的 `clips` 为每角色 23 条可播放语音，共 69 条。旧 `hu` 记录移到 `legacyClips`，对应三个 MP3 原样保留以兼容旧客户端，但不是当前报牌路径；磁盘共 72 个 MP3。新增三条的原文严格为“抢杠”，不附加“胡”。检查详情保存在 `docs/voice-qianggang-audit.json`。

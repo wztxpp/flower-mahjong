@@ -40,6 +40,8 @@ def main():
     audit_path=args.work_dir/"audit.json"
     old=json.loads(audit_path.read_text()) if audit_path.exists() else {}
     rows=old.get("recordings",{})
+    previous_path=args.output/"manifest.json"
+    previous=json.loads(previous_path.read_text()) if previous_path.exists() else {}
     manifest={"schemaVersion":1,"language":"zh-CN","status":"generated",
        "generatedDate":args.date, "expectedClipCount":len(VOICES)*len(CALLS),"clipCount":len(VOICES)*len(CALLS),
        "engine":"Qwen3-TTS local CPU", "voices":{},
@@ -98,6 +100,13 @@ def main():
                 "durationSeconds":round(duration,4),"sha256":digest,"mp3Bytes":path.stat().st_size,
                 "transcript":rows[key]["transcript"]}
             print(f"{key}: {text} -> {rows[key]['transcript']}",flush=True)
+        old_voice=previous.get("voices",{}).get(style,{})
+        legacy=dict(old_voice.get("legacyClips",{}))
+        if "hu" in old_voice.get("clips",{}): legacy["hu"]=old_voice["clips"]["hu"]
+        for legacy_call,clip in legacy.items():
+            path=args.output/style/f"{legacy_call}.mp3"
+            assert path.exists() and sha256(path)==clip["sha256"], f"Changed legacy file: {path}"
+        if legacy: voice["legacyClips"]=legacy
         manifest["voices"][style]=voice
     # Keep a separately reviewed context report only while every recorded hash
     # still matches. Never carry old review status onto regenerated audio.
@@ -122,6 +131,8 @@ def main():
                 for call,clip in voice["clips"].items():
                     clip["pronunciationReview"]=("uncertain" if f"{style}/{call}" in uncertain
                         else "context-asr-reviewed-not-listening-certified")
+    manifest["legacyClipCount"]=sum(len(voice.get("legacyClips",{})) for voice in manifest["voices"].values())
+    manifest["storedClipCount"]=len(hashes)+manifest["legacyClipCount"]
     if not args.partial:
         assert len(hashes)==len(VOICES)*len(CALLS)
     if len(hashes)==len(VOICES)*len(CALLS):
