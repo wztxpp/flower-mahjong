@@ -1701,3 +1701,70 @@ test('v3 HTTP two already-won players can both claim ordinary discard with stabl
     assert.equal(stored.players[1].huCount,2);assert.equal(stored.players[2].huCount,2);
   }
 });
+
+async function bigSingleReadyHttpFixture({ legacy = false, beforePeng = false } = {}) {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const groups = [0,3,9,12].map(tile => ({ type:'peng', tile, tiles:Array(3).fill(tile), fromSeat:1 }));
+  const initial = apiFixture(beforePeng ? {
+    hands:[[12,12,8,16],[6,0,1,2,3,4,5,9,10,11,12,13,14,17],WAITING_HAND],
+    melds:[groups.slice(0,3),[],[]],currentSeat:1,drawTile:6,head:[6],
+  } : { hands:[[8,16],WAITING_HAND,WAITING_HAND],melds:[groups,[],[]],drawTile:16,head:[6] });
+  initial.schemaVersion=3; initial.rules=structuredClone(DEFAULT_RULES);
+  initial.firstHuRadishesRevealed=false; initial.pendingKongRadishes=0; initial.dragonSettlement={settled:false,entries:[]};
+  if (legacy) delete initial.rules.bigSingleReadyPayment;
+  assertLatest(initial);
+  return initial;
+}
+
+test('v3 HTTP ready single payment is atomic, visible to all, and cannot be duplicated by retry or reconnect', async t => {
+  const { assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const api=await table(t); assert.equal(api.state.game.rules.bigSingleReadyPayment,true);
+  const initial=await bigSingleReadyHttpFixture(); const views=await installFixture(api,initial);
+  assert.deepEqual((await api.store.get(api.roomId)).game.players.map(p=>p.score),[0,0,0]);
+  const answers=await Promise.all([api.host.action(views[0].revision,{type:'discard',tile:16}),api.host.action(views[0].revision,{type:'discard',tile:16})]);
+  assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
+  const stored=(await api.store.get(api.roomId)).game; assertLatest(stored);
+  const ready=stored.history.filter(event=>event.type==='bigSingleReady');
+  assert.equal(ready.length,1); assert.equal(ready[0].seat,0); assert.equal(ready[0].points,50);
+  assert.deepEqual(ready[0].payments,[{seat:1,delta:-50},{seat:2,delta:-50},{seat:0,delta:100}]);
+  assert.deepEqual(stored.players.map(p=>p.score),[100,-50,-50]);
+  assert.equal(stored.players[0].bigSingleReadyPaid,true); assert.equal(stored.players[0].huCount,0);
+  assert.equal(stored.firstHuRadishesRevealed,false); assert.deepEqual(stored.players.flatMap(p=>p.radishes),[]);
+  const after=await snapshots(api.clients);
+  for (const state of after) {
+    assert.equal(state.revision,views[0].revision+1);
+    assert.deepEqual(state.game.history,stored.history);
+    assert.deepEqual(state.game.players.map(p=>p.score),[100,-50,-50]);
+  }
+  const reconnected=client(api,api.roomId,api.host.token,0);
+  assert.deepEqual((await reconnected.get()).body.state.game,after[0].game);
+  assertError(await reconnected.action(views[0].revision,{type:'discard',tile:16}),409,'STALE_STATE');
+  assert.deepEqual((await api.store.get(api.roomId)).game,stored);
+});
+
+test('v3 HTTP fourth peng does not award ready payment until the caller actually discards', async t => {
+  const api=await table(t); const views=await installFixture(api,await bigSingleReadyHttpFixture({beforePeng:true}));
+  const discard=await api.clients[1].action(views[1].revision,{type:'discard',tile:12}); assert.equal(discard.status,200,JSON.stringify(discard.body));
+  const fresh=(await api.host.get()).body.state;
+  assert.ok(fresh.game.legalActions.some(action=>action.type==='peng'));
+  const peng=await api.host.action(fresh.revision,{type:'peng',tile:12}); assert.equal(peng.status,200,JSON.stringify(peng.body));
+  await passClaims(api.clients);
+  const before=(await api.host.get()).body.state;
+  assert.equal(before.game.players[0].hand.length,2);
+  assert.equal(before.game.history.some(event=>event.type==='bigSingleReady'),false);
+  assert.deepEqual(before.game.players.map(p=>p.score),[0,0,0]);
+  const ready=await api.host.action(before.revision,{type:'discard',tile:16}); assert.equal(ready.status,200,JSON.stringify(ready.body));
+  assert.equal(ready.body.state.game.history.filter(event=>event.type==='bigSingleReady').length,1);
+  assert.deepEqual(ready.body.state.game.players.map(p=>p.score),[100,-50,-50]);
+});
+
+test('v3 HTTP legacy game without ready-payment flag retains its ledger and does not retroactively charge', async t => {
+  const api=await table(t); const initial=await bigSingleReadyHttpFixture({legacy:true});
+  const views=await installFixture(api,initial);
+  const result=await api.host.action(views[0].revision,{type:'discard',tile:16}); assert.equal(result.status,200);
+  const stored=(await api.store.get(api.roomId)).game;
+  assert.equal(stored.history.some(event=>event.type==='bigSingleReady'),false);
+  assert.deepEqual(stored.players.map(p=>p.score),[0,0,0]);
+  assert.equal(stored.players[0].bigSingleReadyPaid,undefined);
+  assert.deepEqual((await api.host.get()).body.state.game.history,stored.history);
+});

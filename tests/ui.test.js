@@ -541,7 +541,7 @@ test('schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
 
 test('current lobby rules explain six-copy fan, shared radishes, consecutive hu and separate final dragon counts', async () => {
   browser(); const scope = lobby(); scope.showRules.value = true; const html = await render(scope);
-  assert.match(html, /朋友内测版 · v0.6.4/); assert.match(html, /规则原型 v0.6.4/);
+  assert.match(html, /朋友内测版 · v0.6.5/); assert.match(html, /规则原型 v0.6.5/);
   assert.match(html, /六张加 3 番/); assert.match(html, /六张同牌加到 4 番/);
   assert.match(html, /七张加 4 番，八张加 5 番/); assert.match(html, /逐张加杠至八张/);
   assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
@@ -657,7 +657,7 @@ test('a delayed hidden request cannot consume the foreground audio baseline',asy
 test('new special rules show scoring explanation while pre-feature games retain the old-rate notice', async () => {
   browser(); let scope=lobby(); scope.showRules.value=true;
   let html=await render(scope);
-  assert.match(html,/七对首次胡后/); assert.match(html,/大单吊不再固定 50 分/);
+  assert.match(html,/七对首次胡后/); assert.match(html,/立即向另外两家各收 50 分/);
   scope=setup(fixture({schemaVersion:3})); scope.showRules.value=true;
   html=await render(scope);
   assert.match(html,/本桌保留开局时的牌型计分/);

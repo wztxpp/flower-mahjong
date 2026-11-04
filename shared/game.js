@@ -2,6 +2,7 @@
 export const TILE_COUNT = 18;
 export const DEFAULT_RULES = Object.freeze({
   sevenPairs: true,
+  bigSingleReadyPayment: true, // New games only: one ready-state payment, never retroactive.
   specialHuPatterns: true, // New games only; saved games without this flag retain their original scoring.
   baseFan: 1,
   dragonPoints: Object.freeze({ 6: 10, 7: 20, 8: 40 }),
@@ -49,7 +50,7 @@ function normalizeRules(input = {}) {
   if (unknown.length) throw new Error(`未知规则：${unknown.join('、')}`);
   if (input.dragonPoints !== undefined && (!input.dragonPoints || typeof input.dragonPoints !== 'object' || Array.isArray(input.dragonPoints))) throw new Error('神龙分值无效');
   const rules = { ...DEFAULT_RULES, ...input, dragonPoints: { ...DEFAULT_RULES.dragonPoints, ...(input.dragonPoints || {}) } };
-  for (const key of ['sevenPairs', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
+  for (const key of ['sevenPairs', 'bigSingleReadyPayment', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
     if (typeof rules[key] !== 'boolean') throw new Error(`规则 ${key} 必须为布尔值`);
   }
   for (const key of ['baseFan', 'sixCopyFan', 'sevenPlusCopyFan']) {
@@ -100,6 +101,7 @@ export function createGame({ seed, rules: inputRules, dealerSeat = 0 } = {}) {
   }
   const players = Array.from({ length: 3 }, (_, seat) => ({
     seat, hand: [], melds: [], winPile: [], radishes: [], score: 0, huCount: 0, kongCount: 0,
+    bigSingleReadyPaid: false,
     lockedWaits: [], huLockActive: false, pendingKongDiscard: false, lastScoreBreakdown: null, firstHuPattern: null,
   }));
   for (let i = 0; i < 13; i++) for (const player of players) player.hand.push(wall.shift());
@@ -401,6 +403,18 @@ function transfer(game, seat, payerSeats, amount) {
   return payments;
 }
 
+/** Award only an actual stable ready shape, never a speculative claim or a read. */
+function awardBigSingleReady(game, seat) {
+  const player = game.players[seat];
+  if (game.rules.bigSingleReadyPayment !== true || game.rules.specialHuPatterns !== true || player.bigSingleReadyPaid === true
+    || player.melds.length !== 4 || player.hand.length !== 1
+    || getWaitTiles(player.hand, player.melds, game.rules).length === 0) return;
+  player.bigSingleReadyPaid = true;
+  const payments = transfer(game, seat, [0, 1, 2].filter(other => other !== seat), 50);
+  log(game, { type: 'bigSingleReady', seat, points: 50, payments,
+    message: `${seat + 1}号位大单吊听牌，另外两家各付50分，本局仅收取一次，后续胡牌分另算。` });
+}
+
 /** End-of-game transfers are independently guarded so serialization/retries cannot re-charge them. */
 function settleDragons(game) {
   if (game.dragonSettlement.settled) return;
@@ -508,6 +522,8 @@ function kong(game, seat, type, tile, fromSeat = null) {
     removeTile(player.hand, tile, type === 'mingGang' ? 3 : 4);
     player.melds.push({ type, tile, tiles: Array(4).fill(tile), ...(fromSeat === null ? {} : { fromSeat }) });
   }
+  // Keep the kong event immediately before its replacement draw for provenance.
+  awardBigSingleReady(game, seat);
   const amount = type === 'anGang' || type === 'mingGang' ? 2 : 1;
   const payerSeats = type === 'mingGang' ? [fromSeat] : [0, 1, 2].filter(other => other !== seat);
   const payments = transfer(game, seat, payerSeats, amount);
@@ -590,6 +606,7 @@ function discard(game, seat, tile, automatic = false) {
   game.discards.push(discarded); game.lastDraw = null;
   log(game, { type: 'discard', seat, tile, automatic, afterKong: discarded.afterKong,
     message: `${seat + 1}号位${automatic ? '摸后自动打出' : '打出'}${label(tile)}${discarded.afterKong ? '（杠后出牌，接胡仅出牌者付款）' : ''}。` });
+  awardBigSingleReady(game, seat);
   const options = {};
   for (const other of [0, 1, 2].filter(other => other !== seat)) {
     const available = claimOptions(game, other, discarded);
@@ -695,6 +712,7 @@ export function assertGameInvariants(game) {
   if (tiles.length !== 144 || !tiles.every(isTile) || countsOf(tiles).some(count => count !== 8)) throw new Error('牌张守恒检查失败');
   if (game.players.length !== 3 || game.players.reduce((sum, player) => sum + player.score, 0) !== 0) throw new Error('积分守恒检查失败');
   for (const player of game.players) {
+    if (player.bigSingleReadyPaid !== undefined && typeof player.bigSingleReadyPaid !== 'boolean') throw new Error('大单吊听牌收分状态无效');
     if (!Number.isSafeInteger(player.score) || player.melds.length > 4 || !Number.isSafeInteger(player.huCount) || player.huCount < 0) throw new Error('玩家状态无效');
     if (player.firstHuPattern != null) {
       const pattern = player.firstHuPattern;

@@ -77,3 +77,10 @@ Final v0.6.3 integration: 441 tests pass with zero failures/skips after single-c
 ## v0.6.4 repeat-discard verification
 
 447 tests pass with zero failures/skips, and production build passes. The exact reported hand and event order now offer repeated one/four-dot discard wins before the winner's next natural draw. Choosing pass on the first offered repeat does not block the later four dots. Reconnect, duplicate HTTP responses and simultaneous winners remain deterministic and charged once. Previously-won discarders' ordinary tile protection remains in force; schema1/2 engines preserve their old behavior. Existing history, balances and already-resolved actions are not rewritten.
+
+## v0.6.5 大单吊听牌收分
+
+- 第四次碰后尚有两张手牌不收费，完成弃牌才收两家各50；第四组杠成立后、补摸前收取。
+- 新增听牌事件与现有杠分、胡牌、萝卜、神龙分别记账，杠补摸来源保持正确。
+- 每玩家每局仅一次；重连只读、序列化与重复请求不重复记账。
+- 旧局缺少启用字段不补收，下一局默认启用。
