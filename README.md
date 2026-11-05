@@ -19,10 +19,10 @@ Vue 3 + Vite 的三人联机本地候选版（0.6.1，部署状态以站点为�
 
 ```sh
 npm run build
-npm start
+node server/start.js
 ```
 
-生产服务也默认使用 5182，可通过 `PORT` 环境变量修改。Windows PowerShell：`$env:PORT=5182; npm start`。
+生产服务也默认使用 5182，可通过 `PORT` 环境变量修改。Windows PowerShell：`$env:PORT=5182; node server/start.js`。`npm start` 则是 Wrangler 本地 Worker 入口。公网临时分享见 [本机公网演示](docs/PUBLIC-DEMO.md)。
 
 ## 三个人怎么开始
 

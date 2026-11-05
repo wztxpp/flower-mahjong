@@ -1,0 +1,32 @@
+worker_processes 1;
+pid nginx.pid;
+error_log logs/nginx-error.log warn;
+events { worker_connections 256; }
+http {
+    include "__MIME_TYPES__";
+    default_type application/octet-stream;
+    # 不记录房间参数、身份凭证或请求体。
+    log_format demo '$request_method $uri $status $body_bytes_sent';
+    access_log logs/nginx-access.log demo;
+    sendfile on;
+    map $http_x_forwarded_proto $origin_scheme {
+        default $scheme;
+        https https;
+    }
+    server {
+        listen 127.0.0.1:8089;
+        server_name _;
+        root "__WEB_ROOT__";
+        index index.html;
+        location /api/ {
+            proxy_pass http://127.0.0.1:5182;
+            proxy_http_version 1.1;
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto $origin_scheme;
+            proxy_buffering off;
+        }
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    }
+}

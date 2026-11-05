@@ -2,9 +2,11 @@
 
 ## 最简单：单进程 Node
 
-`npm ci && npm run build && npm start`。通过反向代理提供 HTTPS，并将 5182 转发到该服务。配置持久目录 `MAHJONG_DATA_DIR`。如 TLS 由可信反向代理终止，设置 `TRUST_PROXY=1`，并由代理覆盖 `X-Forwarded-Proto: https`；不要把该配置用于直接暴露的 HTTP 服务。服务不要求任何第三方登录或付费账号。
+依次执行 `npm ci`、`npm run build`、`node server/start.js`（`npm start` 是 Wrangler 入口）。通过反向代理提供 HTTPS，并将 5182 转发到该服务。静态文件读取 `dist/client`；可用 `HOST=127.0.0.1` 仅监听本机，配置持久目录 `MAHJONG_DATA_DIR`。如 TLS 由可信反向代理终止，设置 `TRUST_PROXY=1`，并由代理覆盖 `X-Forwarded-Proto: https`；不要把该配置用于直接暴露的 HTTP 服务。服务不要求任何第三方登录或付费账号。
 
 不能只托管静态前端：`/api/rooms`、加入、开局和操作接口必须连到同一后端。
+
+临时公网分享使用独立 Nginx 与 Cloudflare Quick Tunnel，具体启停、数据隔离和验收见 [本机公网演示](PUBLIC-DEMO.md)。
 
 ## Cloudflare Workers / D1 适配器
 
