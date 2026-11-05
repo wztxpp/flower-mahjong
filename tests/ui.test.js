@@ -541,7 +541,8 @@ test('schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
 
 test('current lobby rules explain six-copy fan, shared radishes, consecutive hu and separate final dragon counts', async () => {
   browser(); const scope = lobby(); scope.showRules.value = true; const html = await render(scope);
-  assert.match(html, /朋友内测版 · v0.6.5/); assert.match(html, /规则原型 v0.6.5/);
+  const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+  assert.ok(html.includes(`朋友内测版 · v${version}`)); assert.ok(html.includes(`规则原型 v${version}`));
   assert.match(html, /六张加 3 番/); assert.match(html, /六张同牌加到 4 番/);
   assert.match(html, /七张加 4 番，八张加 5 番/); assert.match(html, /逐张加杠至八张/);
   assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
@@ -741,4 +742,187 @@ test('latest rules permit ordinary repeat discard hu without waiting for natural
   assert.match(html,/自己已经胡过不限制接炮/);
   assert.match(html,/可以再次胡，不必等自己下一次正常摸牌/);
   assert.match(html,/普通弃牌也不能接胡/);
+});
+
+function startFixture(phase = 'lobby') {
+  const state = fixture({ schemaVersion: 3 });
+  state.phase = phase;
+  if (phase === 'lobby') state.game = null;
+  else { state.game.phase = 'finished'; state.game.legalActions = []; }
+  return state;
+}
+
+test('host gets an accessible checked option before first start and same-room next game only', async () => {
+  for (const phase of ['lobby', 'finished']) {
+    const scope = setup(startFixture(phase));
+    const html = await render(scope);
+    assert.match(html, /for="auto-discard-after-hu"/);
+    assert.match(html, /id="auto-discard-after-hu"[^>]*checked/);
+    assert.match(html, /aria-describedby="auto-discard-help"/);
+    assert.match(html, phase === 'finished' ? /下一局选项/ : /开局选项/);
+    scope.state.value.you = 1;
+    assert.doesNotMatch(await render(scope), /id="auto-discard-after-hu"/);
+  }
+  assert.doesNotMatch(await render(setup(fixture({ schemaVersion: 3 }))), /id="auto-discard-after-hu"/);
+});
+
+test('start submits the selected boolean for first and next games without changing the old game rule', async () => {
+  for (const phase of ['lobby', 'finished']) for (const choice of [true, false]) {
+    const scope = setup(startFixture(phase));
+    if (scope.game.value) scope.game.value.rules = { autoDiscardAfterHu: !choice };
+    scope.autoDiscardAfterHu.value = choice;
+    const calls = [];
+    globalThis.fetch = async (url, options) => {
+      calls.push({ url, body: JSON.parse(options.body) });
+      const state = fixture({ schemaVersion: 3 }); state.revision = 4;
+      state.game.rules = { autoDiscardAfterHu: choice };
+      return response({ state });
+    };
+    if (scope.game.value) assert.equal(scope.gameAutoDiscardAfterHu.value, !choice);
+    await scope.mutate(null, true);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, '/api/rooms/ABCDEF23/start');
+    assert.deepEqual(calls[0].body.options, { autoDiscardAfterHu: choice });
+    assert.equal(calls[0].body.revision, 3);
+    assert.equal(calls[0].body.action, undefined);
+    assert.equal(scope.gameAutoDiscardAfterHu.value, choice);
+    assert.doesNotMatch(await render(scope), /id="auto-discard-after-hu"/);
+  }
+});
+
+test('persisted current game option is read-only for all seats and missing old option means automatic', async () => {
+  for (const you of [0, 1, 2]) for (const choice of [false, true, undefined]) {
+    const state = fixture({ schemaVersion: 3 }); state.you = you;
+    state.game.rules = choice === undefined ? {} : { autoDiscardAfterHu: choice };
+    const scope = setup(state); scope.autoDiscardAfterHu.value = choice === false;
+    const html = await render(scope);
+    assert.match(html, choice === false ? /已关闭，需点“过”继续/ : /已开启/);
+    assert.doesNotMatch(html, /id="auto-discard-after-hu"/);
+  }
+});
+
+test('manual post-hu no-hu no-kong state renders only pass and keeps every hand tile locked', async () => {
+  const state = fixture({ schemaVersion: 3, postHu: true });
+  state.game.rules = { autoDiscardAfterHu: false }; state.game.legalActions = [{ type: 'pass' }];
+  const scope = setup(state); const html = await render(scope);
+  assert.deepEqual(scope.primaryActions.value, [{ type: 'pass' }]);
+  assert.match(html, /手牌已固定，点过继续/);
+  assert.match(html, /原手牌不能换打；点“过”打出新牌/);
+  assert.match(html, /过 · 打出新牌<\/button>/);
+  assert.doesNotMatch(html, /选牌后打出|不胡 \/ 过|当前必须杠牌/);
+  const hand = html.match(/<div class="my-hand">([\s\S]*?)<\/div><\/div>/)[1];
+  const buttons = hand.match(/<button\b[^>]*>/g);
+  assert.equal(buttons.length, state.game.players[0].hand.length);
+  assert.ok(buttons.every(button => /\bdisabled\b/.test(button)));
+});
+
+test('checkbox and start are disabled while busy offline or syncing, and invalid callers cannot start', async () => {
+  for (const flag of ['busy', 'offline', 'syncing']) {
+    const scope = setup(startFixture()); scope[flag].value = true;
+    assert.match(await render(scope), /id="auto-discard-after-hu"[^>]*disabled/);
+    globalThis.fetch = () => { assert.fail('blocked start must not submit'); };
+    await scope.mutate(null, true);
+  }
+  for (const change of [state => { state.you = 1; }, state => { state.seats[2] = null; }, state => { state.phase = 'playing'; }]) {
+    const state = startFixture(); change(state); const scope = setup(state);
+    globalThis.fetch = () => { assert.fail('invalid start must not submit'); };
+    await scope.mutate(null, true);
+  }
+});
+
+test('in-flight start snapshots choice, rejects repeated clicks and applies authoritative result', async () => {
+  const scope = setup(startFixture()); scope.autoDiscardAfterHu.value = false;
+  let release; const requests = [];
+  globalThis.fetch = (url, options) => { requests.push(JSON.parse(options.body)); return new Promise(resolve => { release = resolve; }); };
+  const pending = scope.mutate(null, true);
+  assert.match(await render(scope), /id="auto-discard-after-hu"[^>]*disabled/);
+  scope.autoDiscardAfterHu.value = true;
+  await scope.mutate(null, true);
+  assert.equal(requests.length, 1); assert.deepEqual(requests[0].options, { autoDiscardAfterHu: false });
+  const next = fixture({ schemaVersion: 3 }); next.revision = 4; next.game.rules = { autoDiscardAfterHu: false };
+  release(response({ state: next })); await pending;
+  assert.equal(scope.gameAutoDiscardAfterHu.value, false);
+  assert.match(await render(scope), /已关闭，需点“过”继续/);
+});
+
+test('stale start reads current rules without retrying or overwriting the server choice', async () => {
+  const scope = setup(startFixture()); scope.autoDiscardAfterHu.value = false;
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push(options.method);
+    if (options.method === 'POST') return response({ error: 'stale' }, 409);
+    assert.equal(scope.syncing.value, true);
+    await scope.mutate(null, true);
+    const state = fixture({ schemaVersion: 3 }); state.revision = 5; state.game.rules = { autoDiscardAfterHu: true };
+    return response({ state });
+  };
+  await scope.mutate(null, true);
+  assert.deepEqual(calls, ['POST', 'GET']);
+  assert.equal(scope.gameAutoDiscardAfterHu.value, true);
+  assert.doesNotMatch(await render(scope), /id="auto-discard-after-hu"/);
+});
+
+test('new room resets the draft option and current rules explain both start choices', async () => {
+  const scope = setup(startFixture()); scope.autoDiscardAfterHu.value = false;
+  scope.resetRoomContext();
+  assert.equal(scope.autoDiscardAfterHu.value, true);
+  scope.showRules.value = true;
+  const html = await render(scope);
+  assert.match(html, /默认勾选/);
+  assert.match(html, /不勾选则需点“过”才能过回合，局中不能更改/);
+  assert.match(html, /有合法杠必须杠，不能跳过或打出新牌/);
+});
+
+test('explicit reload restores manual rule from server rather than the default checked draft', async () => {
+  browser({ rooms: { ABCDEF23: credential() }, search: '?room=ABCDEF23' });
+  const restored = fixture({ schemaVersion: 3 }); restored.game.rules = { autoDiscardAfterHu: false };
+  globalThis.fetch = async url => response(url === '/api/profile' ? { playerToken: 'a'.repeat(64) } : { state: restored });
+  const scope = lobby(); await scope.initialize();
+  assert.equal(scope.autoDiscardAfterHu.value, true);
+  assert.equal(scope.gameAutoDiscardAfterHu.value, false);
+  const html = await render(scope);
+  assert.match(html, /已关闭，需点“过”继续/);
+  assert.doesNotMatch(html, /id="auto-discard-after-hu"/);
+});
+
+test('manual option cannot bypass server-mandated post-hu kong or change hu-plus-pass decisions', async () => {
+  for (const winningDraw of [false, true]) {
+    const engineGame = postHuKongGame({ winningDraw }); engineGame.rules.autoDiscardAfterHu = false;
+    const state = fixture({ schemaVersion: 3, postHu: true }); state.game = getPlayerView(engineGame, 0);
+    const scope = setup(state); const html = await render(scope);
+    if (winningDraw) {
+      assert.deepEqual(scope.primaryActions.value.map(action => action.type), ['hu', 'pass']);
+      assert.match(html, /不胡 \/ 过 · 打出新牌/);
+    } else {
+      assert.deepEqual(scope.primaryActions.value, []);
+      assert.deepEqual(scope.gangActions.value, [{ type: 'buGang', tile: 2 }]);
+      assert.match(html, /当前必须杠牌/);
+      assert.doesNotMatch(html, /过 · 打出新牌|选牌后打出/);
+    }
+  }
+});
+
+test('finished-room polling preserves the edited next-game option without changing last-game display', async () => {
+  const state = startFixture('finished'); state.game.rules = { autoDiscardAfterHu: true };
+  const scope = setup(state); scope.autoDiscardAfterHu.value = false;
+  globalThis.fetch = async () => response({ state: { ...state, revision: 4 } });
+  await scope.refresh();
+  assert.equal(scope.autoDiscardAfterHu.value, false);
+  assert.equal(scope.gameAutoDiscardAfterHu.value, true);
+  const html = await render(scope);
+  assert.match(html, /上一局胡后自动打出：<strong>已开启/);
+  assert.doesNotMatch(html, /id="auto-discard-after-hu"[^>]*checked/);
+});
+
+test('late start result cannot revive an exited room or overwrite a new room draft', async () => {
+  const scope = setup(startFixture()); scope.autoDiscardAfterHu.value = false;
+  let release;
+  globalThis.fetch = () => new Promise(resolve => { release = resolve; });
+  const pending = scope.mutate(null, true);
+  scope.resetRoomContext();
+  const next = fixture({ schemaVersion: 3 }); next.game.rules = { autoDiscardAfterHu: false };
+  release(response({ state: next })); await pending;
+  assert.equal(scope.state.value, null);
+  assert.equal(scope.session.value, null);
+  assert.equal(scope.autoDiscardAfterHu.value, true);
 });

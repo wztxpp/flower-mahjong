@@ -66,3 +66,5 @@
 .preference-preview span { color:#786d5c; font-size:12px; }
 .preference-preview small { color:#8b8476; font-size:10px; line-height:1.5; margin-top:6px; }
 .special-hand-note { margin:8px 0 4px; color:#7a6e50; font-size:11px; line-height:1.7; }
+
+.start-options{padding:14px 18px;margin-bottom:14px;border:1px solid #d9cdaa;border-radius:12px;background:#faf8ed;color:#526546}.start-options>strong{display:block;font-size:12px;margin-bottom:8px}.start-options label{display:flex;align-items:center;gap:9px;width:fit-content;min-height:44px;cursor:pointer;font-size:14px}.start-options input[type=checkbox]{width:20px;height:20px;accent-color:#456b4b;flex-shrink:0}.start-options input:focus-visible{outline:2px solid #456b4b;outline-offset:3px}.start-options label:has(input:disabled){opacity:.6;cursor:not-allowed}.start-options p{font-size:12px;line-height:1.7;margin:5px 0 0;color:#6b765c}.game-rule-choice{font-size:12px;line-height:1.7;margin:0 0 14px;color:#657451}.game-rule-choice strong{font-weight:600}

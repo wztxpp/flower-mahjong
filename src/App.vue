@@ -16,6 +16,7 @@ let lastVoiceSync = 0
 let voiceNeedsBaseline = false
 let voiceVisibilityEpoch = 0
 const preferredCharacter = ref('')
+const autoDiscardAfterHu = ref(true)
 const name = ref('')
 const roomCode = ref(roomFromLocation())
 const entryMode = ref(roomCode.value ? 'join' : 'create')
@@ -76,6 +77,8 @@ const me = computed(() => seats.value[mySeat.value])
 const opponents = computed(() => [seats.value[(mySeat.value + 1) % 3], seats.value[(mySeat.value + 2) % 3]])
 const filledSeats = computed(() => seats.value.filter(seat => seat.name).length)
 const isHost = computed(() => mySeat.value === (state.value?.hostSeat ?? 0))
+const canConfigureStart = computed(() => isHost.value && ['lobby', 'finished'].includes(phase.value))
+const gameAutoDiscardAfterHu = computed(() => game.value?.rules?.autoDiscardAfterHu !== false)
 const legalActions = computed(() => game.value?.legalActions || [])
 const hand = computed(() => {
   const sorted = [...(me.value?.hand || [])].sort((a, b) => a - b)
@@ -101,7 +104,7 @@ const statusTitle = computed(() => {
   if (phase.value === 'lobby') return filledSeats.value === 3 ? '牌友已到齐' : '等牌友，一起开局'
   if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong') return legalActions.value.length ? '可以抢杠，等你回应' : '补杠待确认，等待牌友回应'
   if (game.value?.phase === 'claim') return legalActions.value.length ? '这张牌，等你回应' : '等待牌友回应'
-  if (isMyTurn.value && postHu.value) return canHu.value ? '这张可以胡，请你决定' : '手牌已固定，选择杠或过'
+  if (isMyTurn.value && postHu.value) return canHu.value ? '这张可以胡，请你决定' : gangActions.value.length ? '手牌已固定，请选择杠牌' : '手牌已固定，点过继续'
   if (isMyTurn.value) return game.value?.turnStep === 'draw' ? (isLegacy.value ? '轮到你摸牌' : '正在自动摸牌') : '牌已摸好，选一张出手'
   return `等待${currentPlayer.value?.name || '牌友'}${game.value?.turnStep === 'draw' ? '摸牌' : '出牌'}`
 })
@@ -262,6 +265,7 @@ function resetRoomContext() {
   document.activeElement?.blur?.()
   showRules.value = false; showInvite.value = false; document.body.style.overflow = ''
   connectingSession = null; state.value = null; saveSession(null)
+  autoDiscardAfterHu.value = true
   busy.value = false; restoring.value = false; offline.value = false; syncing.value = false
   error.value = ''; notice.value = ''; copyDone.value = false; selectedTile.value = null; selectedHandIndex.value = null
   return epoch
@@ -429,6 +433,8 @@ async function enterRoom() {
 }
 async function mutate(action, start = false) {
   if (busy.value || offline.value || syncing.value || !state.value || !session.value) return
+  if (start && (!canConfigureStart.value || filledSeats.value < 3)) return
+  const startOptions = start ? { autoDiscardAfterHu: autoDiscardAfterHu.value } : null
   busy.value = true; error.value = ''
   clearTimeout(pollTimer)
   epoch++; pollController?.abort(); pollController = null
@@ -438,7 +444,7 @@ async function mutate(action, start = false) {
   const voiceEpoch = voiceVisibilityEpoch
   let needsSync = false
   try {
-    const data = await api(`/api/rooms/${encodeURIComponent(credential.roomId)}/${start ? 'start' : 'action'}`, { method: 'POST', token: credential.token, body: { revision, ...(start ? {} : { action }) } })
+    const data = await api(`/api/rooms/${encodeURIComponent(credential.roomId)}/${start ? 'start' : 'action'}`, { method: 'POST', token: credential.token, body: { revision, ...(start ? { options: startOptions } : { action }) } })
     if (currentEpoch !== epoch) return
     applyState(data.state, voiceEpoch)
     selectedTile.value = null; selectedHandIndex.value = null
@@ -524,7 +530,7 @@ onUnmounted(() => {
       </div>
       <div class="header-actions">
         <button class="text-button voice-toggle" :aria-pressed="voiceStatus === 'ready' && !voiceMuted" @click="toggleVoice"><Icon name="soundoff" :size="17"/>{{ voiceMuted ? '语音已关' : voiceStatus === 'ready' ? '角色语音已开' : voiceStatus === 'unavailable' ? '语音加载失败 · 重试' : '开启角色语音' }}</button>
-        <span class="prototype-pill"><span></span> 朋友内测版 · v0.6.5</span>
+        <span class="prototype-pill"><span></span> 朋友内测版 · v0.6.6</span>
         <button v-if="inRoom || roomCode || restoring || busy" class="text-button leave-table-button" @click="newTable">返回大厅 / 换桌</button>
         <button class="text-button rules-trigger" @click="showRules = true"><Icon name="book" :size="17"/><span>玩法说明</span></button>
       </div>
@@ -592,7 +598,7 @@ onUnmounted(() => {
         </ul>
         <p class="history-disclaimer">只记录虚拟积分，不含充值、支付或现金输赢。</p>
       </section>
-      <footer class="welcome-footer"><span>一桌好朋友，一局好时光。</span><span>规则原型 v0.6.5 · 不含充值、支付或现金输赢</span></footer>
+      <footer class="welcome-footer"><span>一桌好朋友，一局好时光。</span><span>规则原型 v0.6.6 · 不含充值、支付或现金输赢</span></footer>
     </main>
 
     <main v-else class="room-layout">
@@ -607,6 +613,13 @@ onUnmounted(() => {
       <div v-if="phase === 'playing' && seats.some(player => player.detached)" class="connection-banner departed-banner" role="status"><Icon name="info" :size="17"/><span>有牌友已离桌，原手牌与已发生的计分仍保留。需要该牌友操作时，等待原座位重连。</span></div>
       <div v-if="offline" class="connection-banner" role="status"><span class="spinner"></span><span>连接暂时中断，正在自动重连。牌局同步前暂不能操作。</span><button @click="refresh">立即重连</button></div>
       <div v-if="error" class="room-error" role="alert"><Icon name="info" :size="17"/><span>{{ error }}</span><button class="icon-button" aria-label="关闭提示" @click="error = ''"><Icon name="close" :size="16"/></button></div>
+
+      <section v-if="canConfigureStart" class="start-options" aria-labelledby="start-options-title">
+        <strong id="start-options-title">{{ phase === 'finished' ? '下一局选项' : '开局选项' }}</strong>
+        <label for="auto-discard-after-hu"><input id="auto-discard-after-hu" v-model="autoDiscardAfterHu" type="checkbox" :disabled="busy || offline || syncing" aria-describedby="auto-discard-help"/><span>胡后自动打出</span></label>
+        <p id="auto-discard-help">仅在胡后没有胡、杠可选时自动打出新牌；不勾选则需点“过”继续。有合法杠仍必须杠。开局后不可更改。</p>
+      </section>
+      <p v-if="game && !isLegacy" class="game-rule-choice">{{ phase === 'finished' ? '上一局' : '本局' }}胡后自动打出：<strong>{{ gameAutoDiscardAfterHu ? '已开启' : '已关闭，需点“过”继续' }}</strong> · 开局时确定</p>
 
       <div class="play-layout">
         <section class="table-column" aria-label="三人麻将牌桌">
@@ -642,7 +655,7 @@ onUnmounted(() => {
                 <p>三家共用这一池，后续胡牌不再加六张。</p>
               </section>
               <div class="discard-area"><div v-for="player in seats" :key="player.seat" class="discard-group"><div class="discard-label"><span>{{ player.seat === mySeat && me.isCurrentParticipant !== false ? '我的牌河' : `${seatLabel(player.seat)}的牌河` }}</span><small>{{ discardsFor(player.seat).length }} 条记录</small></div><div class="discard-tiles"><template v-if="discardsFor(player.seat).length"><span v-for="(discard, di) in discardsFor(player.seat)" :key="di" class="discard-tile" :class="{ 'latest-discard': discard === game.discards[game.discards.length - 1], 'claimed-discard': discard.huSeats?.length, 'taken-discard': discard.claimedBy != null || discard.huSeats?.length }"><MahjongTile :tile="discard.tile" small/><span v-if="discard.huSeats?.length" class="hu-mark" title="胡牌记录，和胡牌区对应同一张实体牌">胡</span><span v-else-if="discard.claimedBy != null" class="hu-mark" title="已移入碰杠区，牌河仅保留记录">{{ discard.claimedAs === 'peng' ? '碰' : '杠' }}</span></span></template><span v-else class="empty-discard">尚未出牌</span></div></div></div>
-              <div v-if="phase === 'finished'" class="finished-banner"><Icon name="trophy" :size="21"/><span>{{ finishText }}</span><button v-if="isHost" class="button gold" :disabled="busy || offline || syncing" @click="mutate(null, true)">同桌再来一局<Icon name="arrow" :size="16"/></button><span v-else>等待房主再开一局</span><button class="button" @click="newTable">返回大厅换桌</button></div>
+              <div v-if="phase === 'finished'" class="finished-banner"><Icon name="trophy" :size="21"/><span>{{ finishText }}</span><button v-if="isHost" class="button gold" :disabled="filledSeats < 3 || busy || offline || syncing" @click="mutate(null, true)">同桌再来一局<Icon name="arrow" :size="16"/></button><span v-else>等待房主再开一局</span><button class="button" @click="newTable">返回大厅换桌</button></div>
               <div v-else class="table-watermark">花间 <span>自贡花麻将</span></div>
             </div>
 
@@ -683,7 +696,7 @@ onUnmounted(() => {
           <section><h3><span>四</span>胡牌、听口与付款方</h3><p>基础胡型为四组顺子或刻子加一对，也支持七对。普通自摸由另两家各付，普通接炮由出牌方付。胡后连续补摸及杠后补摸，原听口还有重合时不能再胡；全部换口可提前再胡，正常轮转后解除限制。</p><p>胡过的人普通出牌不能被接胡；杠后打出的那张仍可接胡，按自摸付款。当前是否可胡及原因，在自己的手牌区可查看，不会公开给牌友。</p></section>
           <section class="pending-rules"><h3><span>!</span>仍需一起核对的细节</h3><p>大单钓：胡牌前手里只剩一张牌，当前按另两家各付 50 分，暂不叠加番分、萝卜和神龙。三牌区同种牌六张及以上如何加番尚未确认，当前不额外加同牌番。</p><p>沿用的神龙暂定：本次成胡手牌、碰杠牌连同自己的萝卜（不含此前胡牌），同牌六张加 10 分、七张加 20 分、八张及以上加 40 分，普通胡牌时另计。以上未定细节不是自贡统一标准，以本桌服务端显示的结算为准。</p><p>只有出牌、碰、胡、杠会播放角色语音，可在右上角关闭。自摸、放炮、抢杠各播对应的一条语音，不再追加“胡”。无机器人、无倒计时。正常选牌不会自动代打。带本桌房间号的页面刷新可重连原座位，主页只进入大厅。离桌不清除已有积分记录，也不会自动删除旧桌。只使用虚拟积分。</p></section>
         </div><div v-else class="rules-modal-body latest-rules">
-          <section><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3><p>三人，只用条、筒各 1–9，每种八张，共 144 张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。点“过”打出刚摸的新牌；没有胡、杠可选时自动摸打。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p><p>自己摸牌同时可胡又可杠时，先选胡或过。三家都至少胡过一次，或牌墙摸完，本局结束。</p></section>
+          <section><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3><p>三人，只用条、筒各 1–9，每种八张，共 144 张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。点“过”打出刚摸的新牌。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p><p>自己摸牌同时可胡又可杠时，先选胡或过。三家都至少胡过一次，或牌墙摸完，本局结束。</p></section>
           <section><h3><span>二</span>接牌时，按实际选择回应</h3><p>未胡玩家打出的牌，若你可胡也可碰、但不可明杠，可选择胡、碰或过；同一张牌可胡又可明杠时，只提供胡或过。多人回应时，胡优先于明杠，明杠优先于碰。</p><p>已经胡过的人打出的牌，别人不能碰或明杠。普通弃牌也不能接胡；只有杠后打出的那张可以接胡，仅由实际出牌者付款，不按自摸结算。自己已经胡过不限制接炮：未胡者正常打出听牌时，可以再次胡，不必等自己下一次正常摸牌。</p></section>
           <section class="rob-kong-rules"><h3><span>抢</span>补杠先等抢杠</h3><p>碰后补杠、已有杠再加一张，都先给别人抢杠胡的机会，只能胡或过，不能碰或杠。无人抢胡才形成杠、收杠分、翻萝卜并补摸；有人抢胡则不形成这次杠，胡牌仅由补杠者付款，普通抢杠加 1 番；七对抢杠不加番，萝卜仍计算。</p><p>补杠者还没胡过，第一手即可被抢；已经胡过者的普通摸牌补杠不能被抢，但杠后补摸再补杠，别人无论胡过与否都可按合法听牌抢胡。</p></section><section v-if="usesSpecialPatterns" class="special-pattern-rules"><p v-if="!game || game.rules?.bigSingleReadyPayment === true">大单吊听牌：四组碰杠完成、出牌后只剩一张手牌并能听牌时，立即向另外两家各收 50 分，每人每局只收一次；第四组杠成立时在补摸前结算。后续胡牌、杠分、萝卜与神龙另算。</p><p v-else>本局保留原计分，不补收听牌分；下一局起，大单吊听牌时向另外两家各收 50 分，每人每局一次，胡牌分另算。</p><h3><span>特</span>七对、大单吊与牌型加番</h3><p>七对首次胡后，初次完整牌型里的每一种牌都可作为后续听牌：普通七对听七种；一组四张听六种；两组四张或一组六张听五种。首次七对以 3 番为基础，每组四张及以上另加“张数 − 3”番；清一色再加 2 番，普通清七对就是 5 番 10 分。后续胡牌固定在这个总档位（保留已有清一色番），不因胡牌区积累再加番，萝卜仍每次重新计算。</p><p>大单吊先胡一次后，原单张和自己的碰杠区牌种均可胡。同种牌可以碰两次，算两组独立碰牌。大单吊或对对胡各加 2 番，两者不重复计算；清一色另加 2 番。大单吊胡牌按番分、同牌加番与萝卜计算。</p></section><section><h3><span>三</span>普通加番，按三个牌区计算</h3><p>自己的手牌区、碰杠区、胡牌区合计：同种牌恰好四张加 1 番，五张加 2 番，六张加 3 番，七张加 4 番，八张加 5 番。基础为 1 番，例如六张同牌加到 4 番。八张以上的逻辑同牌统计尚未确认，保持原处理；实体每种仍只有八张。</p><p>胡牌区每胡一次添一张；一炮多响的“共胡”只作本人的计分记录，不增加实体牌总量。</p><p class="fan-scale">1 番 1 分 · 2 番 2 分 · 3 番 4 分 · 4 番 8 分<br/>5 番 10 分 · 6 番 12 分 · 7 番 14 分，之后每番加 2 分。</p></section>
           <section><h3><span>四</span>全桌萝卜，共享一池</h3><p>萝卜从全桌第一次胡牌才开始翻：首胡翻 6 张，加上首胡前每次成功杠累计的 1 张。首胡前只记次数，不提前翻牌；首胡后每次成功杠再翻 1 张。被抢的补杠不算成功杠。已翻萝卜全部保留，三家共用，牌墙不足只翻余下的牌。</p><p>每次胡牌重新计算番分与共享萝卜匹配分。同牌数量相乘，例如计分牌有两张二筒，共享萝卜有两张二筒，加 4 分。<template v-if="game?.rules?.radishCountsWinPile === false">本局保留开局时 v0.4.0 的萝卜规则，不计历史胡牌区；下一局使用修正规则。</template><template v-else>自己的胡牌区（含共胡）、碰杠区、手牌区全部参与匹配，本次胡牌只算一次。例如七筒 2 张×萝卜 1 张，加四筒 1 张×萝卜 2 张，共 4 分。</template></p></section>

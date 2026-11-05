@@ -27,6 +27,15 @@ function characterPreference(value) {
   try { return preferredCharacter(value); }
   catch { fail(400, 'BAD_CHARACTER', '请选择有效的偏好角色，或留空随机分配'); }
 }
+function startRules(options) {
+  if (options === undefined) return {};
+  if (!options || typeof options !== 'object' || Array.isArray(options)
+    || Object.keys(options).some(key => key !== 'autoDiscardAfterHu')
+    || (Object.hasOwn(options, 'autoDiscardAfterHu') && typeof options.autoDiscardAfterHu !== 'boolean')) {
+    fail(400, 'BAD_START_OPTIONS', '开局选项无效，请重新选择胡后是否自动打出');
+  }
+  return Object.hasOwn(options, 'autoDiscardAfterHu') ? { autoDiscardAfterHu: options.autoDiscardAfterHu } : {};
+}
 const requestBodies = new WeakMap();
 async function bodyOf(request) {
   if (!requestBodies.has(request)) requestBodies.set(request, readBody(request));
@@ -252,9 +261,10 @@ export function createApi(store) {
       if (seat !== room.hostSeat) fail(403, 'HOST_ONLY', '只有房主可以开始');
       if (room.seats.some(person => !person || person.detached)) fail(409, 'NOT_FULL', '三位玩家都落座后才能开始');
       if (room.game && room.game.phase !== 'finished') fail(409, 'PLAYING', '这一局还没结束');
+      const rules = startRules(body.options);
       const next = structuredClone(room); await bindProfile(store, next, seat, playerHash); ensureGameMetadata(next);
       if (next.game) (next.archivedGames ||= []).push(archiveFinishedGame(next));
-      const now = Date.now(); next.game = createGame({ dealerSeat: dealerForNextGame(next.game) }); next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now); next.seats[seat].lastSeen = now;
+      const now = Date.now(); next.game = createGame({ dealerSeat: dealerForNextGame(next.game), rules }); next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now); next.seats[seat].lastSeen = now;
       next.gameMeta.characters = assignCharacters(next.seats.map(person => person.preferredCharacter));
       await commit(store, room, next); return json({ state: publicRoom(next, seat) });
     }

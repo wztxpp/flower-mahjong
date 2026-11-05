@@ -1768,3 +1768,111 @@ test('v3 HTTP legacy game without ready-payment flag retains its ledger and does
   assert.equal(stored.players[0].bigSingleReadyPaid,undefined);
   assert.deepEqual((await api.host.get()).body.state.game.history,stored.history);
 });
+
+test('start option is host-only, validated, atomic and saved for every authenticated player', async t => {
+  const api = await table(t, { start: false });
+  const start = (player, options, revision = api.state.revision) => api.request(`/api/rooms/${api.roomId}/start`, {
+    method: 'POST', token: player.token, body: { revision, options },
+  });
+  const before = await api.store.get(api.roomId);
+  assertError(await start(api.clients[1], { autoDiscardAfterHu: false }), 403, 'HOST_ONLY');
+  for (const options of [null, false, [], 'false', { autoDiscardAfterHu: 'false' }, { autoDiscardAfterHu: 0 }, { autoDiscardAfterHu: null }, { autoDiscardAfterHu: false, baseFan: 50 }, JSON.parse('{"__proto__": {"autoDiscardAfterHu":false}}')]) {
+    assertError(await start(api.host, options), 400, 'BAD_START_OPTIONS');
+    assert.deepEqual(await api.store.get(api.roomId), before);
+  }
+  const attempts = await Promise.all([start(api.host, { autoDiscardAfterHu: false }), start(api.host, { autoDiscardAfterHu: true })]);
+  assert.deepEqual(attempts.map(answer => answer.status).sort(), [200, 409]);
+  const accepted = attempts.find(answer => answer.status === 200).body.state;
+  const chosen = accepted.game.rules.autoDiscardAfterHu;
+  assert.equal(chosen, attempts[0].status === 200 ? false : true);
+  assertError(attempts.find(answer => answer.status === 409), 409, 'STALE_STATE');
+  const saved = await api.store.get(api.roomId);
+  assert.equal(saved.game.rules.autoDiscardAfterHu, chosen);
+  for (const state of await snapshots(api.clients)) {
+    assert.equal(state.game.rules.autoDiscardAfterHu, chosen);
+    assertPrivateView(state, state.you, api.clients.map(player => player.token));
+  }
+  assertError(await start(api.host, { autoDiscardAfterHu: !chosen }, accepted.revision), 409, 'PLAYING');
+  assert.deepEqual(await api.store.get(api.roomId), saved);
+});
+
+test('omitted start option defaults to automatic and next hand can change it without rewriting the prior game', async t => {
+  const api = await table(t);
+  assert.equal(api.state.game.rules.autoDiscardAfterHu, true);
+  const room = await api.store.get(api.roomId);
+  room.game.phase = 'finished'; room.game.turnStep = null; room.game.finishReason = 'wallExhausted';
+  room.game.history = [{ type: 'hu', seat: 2, revision: 1, message: '首胡' }];
+  room.game.players[2].score = 9; room.game.players[0].score = -9;
+  await api.store.compareAndSwap(room, room.revision);
+  const previousGame = structuredClone(room.game);
+  const result = await api.request(`/api/rooms/${api.roomId}/start`, {
+    method: 'POST', token: api.host.token, body: { revision: room.revision, options: { autoDiscardAfterHu: false } },
+  });
+  assert.equal(result.status, 200, JSON.stringify(result.body));
+  assert.equal(result.body.state.game.rules.autoDiscardAfterHu, false);
+  assert.equal(result.body.state.game.dealerSeat, 2);
+  const saved = await api.store.get(api.roomId);
+  assert.deepEqual(saved.archivedGames.at(-1).game.history, previousGame.history);
+  assert.deepEqual(saved.archivedGames.at(-1).game.players.map(player => player.score), previousGame.players.map(player => player.score));
+  assert.equal(saved.archivedGames.at(-1).game.finishReason, previousGame.finishReason);
+  assert.equal(saved.hostSeat, 0);
+});
+
+test('manual post-hu HTTP pause survives FileStore reload, ignores forged rule changes and accepts one concurrent pass', async t => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import('../shared/game.js');
+  const directory = await mkdtemp(join(tmpdir(), 'flower-post-hu-option-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const api = await table(t, { store: new FileStore(directory), start: false });
+  const started = await api.request(`/api/rooms/${api.roomId}/start`, {
+    method: 'POST', token: api.host.token, body: { revision: api.state.revision, options: { autoDiscardAfterHu: false } },
+  });
+  assert.equal(started.status, 200);
+  const game = apiFixture({ head: [6, 7], tail: [1, 2, 3, 4, 5, 6] });
+  game.schemaVersion = 3;
+  game.rules = { ...structuredClone(DEFAULT_RULES), autoDiscardAfterHu: started.body.state.game.rules.autoDiscardAfterHu, specialHuPatterns: false };
+  game.firstHuRadishesRevealed = false; game.pendingKongRadishes = 0; game.dragonSettlement = { settled: false, entries: [] };
+  const installed = await installFixture(api, game);
+  const won = await api.host.action(installed[0].revision, { type: 'hu' }, { rules: { autoDiscardAfterHu: true }, options: { autoDiscardAfterHu: true } });
+  assert.equal(won.status, 200); assert.equal(won.body.state.game.rules.autoDiscardAfterHu, false);
+  assert.equal(won.body.state.game.currentSeat, 0); assert.equal(won.body.state.game.discards.length, 0);
+  assert.deepEqual(won.body.state.game.legalActions, [{ type: 'pass' }]);
+  const waitingStates = await snapshots(api.clients);
+  const waitingRoom = await api.store.get(api.roomId);
+  const reloadedApi = await harness(t, new FileStore(directory));
+  const reconnected = api.clients.map(player => client(reloadedApi, player.roomId, player.token, player.seat));
+  const restored = await snapshots(reconnected);
+  assert.deepEqual(restored, waitingStates);
+  for (const state of restored) assertPrivateView(state, state.you, api.clients.map(player => player.token));
+  const current = restored[0];
+  for (const action of [{ type: 'discard', tile: 6 }, { type: 'discard', tile: 0 }]) assertError(await reconnected[0].action(current.revision, action, { options: { autoDiscardAfterHu: true } }), 422, 'ILLEGAL_ACTION');
+  assertError(await reconnected[1].action(current.revision, { type: 'pass' }, { seat: 0 }), 422, 'ILLEGAL_ACTION');
+  assert.deepEqual(await reloadedApi.store.get(api.roomId), waitingRoom);
+  const results = await Promise.all([reconnected[0].action(current.revision, { type: 'pass' }), reconnected[0].action(current.revision, { type: 'pass' })]);
+  assert.deepEqual(results.map(result => result.status).sort(), [200, 409]);
+  const after = await reloadedApi.store.get(api.roomId);
+  assert.equal(after.game.rules.autoDiscardAfterHu, false);
+  assert.equal(after.game.discards.length, 1); assert.equal(after.game.discards[0].tile, 6);
+  assert.equal(after.game.currentSeat, 1); assert.equal(after.game.lastDraw.tile, 7);
+  assert.deepEqual(after.game.players.map(player => player.score), waitingRoom.game.players.map(player => player.score));
+  assert.equal(after.game.players[0].huCount, 1);
+  assertLatest(after.game);
+  assertError(await reconnected[0].action(current.revision, { type: 'pass' }), 409, 'STALE_STATE');
+  assert.deepEqual(await reloadedApi.store.get(api.roomId), after);
+});
+
+test('unchecked option cannot bypass mandatory post-hu kongs through HTTP', async t => {
+  for (const type of ['anGang', 'buGang', 'addGang']) {
+    const api = await table(t);
+    const game = postHuKongGame({ type }); game.rules.autoDiscardAfterHu = false;
+    const views = await installFixture(api, game); const before = await api.store.get(api.roomId);
+    assert.deepEqual(views[0].game.legalActions, [{ type, tile: game.lastDraw.tile }]);
+    for (const action of [{ type: 'pass' }, { type: 'discard', tile: game.lastDraw.tile }]) {
+      assertError(await api.host.action(views[0].revision, action), 422, 'ILLEGAL_ACTION');
+      assert.deepEqual(await api.store.get(api.roomId), before);
+    }
+    const next = await api.host.action(views[0].revision, { type, tile: game.lastDraw.tile });
+    assert.equal(next.status, 200);
+    assert.deepEqual(next.body.state.game.legalActions, [{ type: 'hu' }, { type: 'pass' }]);
+    assert.equal(next.body.state.game.rules.autoDiscardAfterHu, false);
+  }
+});

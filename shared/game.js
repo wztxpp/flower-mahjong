@@ -2,6 +2,7 @@
 export const TILE_COUNT = 18;
 export const DEFAULT_RULES = Object.freeze({
   sevenPairs: true,
+  autoDiscardAfterHu: true, // Chosen at game start; missing flags keep saved games automatic.
   bigSingleReadyPayment: true, // New games only: one ready-state payment, never retroactive.
   specialHuPatterns: true, // New games only; saved games without this flag retain their original scoring.
   baseFan: 1,
@@ -50,7 +51,7 @@ function normalizeRules(input = {}) {
   if (unknown.length) throw new Error(`未知规则：${unknown.join('、')}`);
   if (input.dragonPoints !== undefined && (!input.dragonPoints || typeof input.dragonPoints !== 'object' || Array.isArray(input.dragonPoints))) throw new Error('神龙分值无效');
   const rules = { ...DEFAULT_RULES, ...input, dragonPoints: { ...DEFAULT_RULES.dragonPoints, ...(input.dragonPoints || {}) } };
-  for (const key of ['sevenPairs', 'bigSingleReadyPayment', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
+  for (const key of ['sevenPairs', 'autoDiscardAfterHu', 'bigSingleReadyPayment', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
     if (typeof rules[key] !== 'boolean') throw new Error(`规则 ${key} 必须为布尔值`);
   }
   for (const key of ['baseFan', 'sixCopyFan', 'sevenPlusCopyFan']) {
@@ -271,6 +272,9 @@ export function getLegalActions(game, seat) {
   // Once the hand is locked after hu, a legal kong is mandatory when no hu is available.
   // Filtering discard as well as pass prevents older clients from bypassing the choice.
   if (player.huCount && !actions.some(action => action.type === 'hu') && actions.some(action => action.type.endsWith('Gang'))) return actions.filter(action => action.type.endsWith('Gang'));
+  // Manual mode is a server-side decision, not a client timer. Only pass may
+  // release the drawn tile; an old/forged discard must not skip that confirmation.
+  if (player.huCount && drawn !== null && game.rules.autoDiscardAfterHu === false) return [...actions.filter(action => action.type !== 'discard'), { type: 'pass' }];
   if (player.huCount && actions.some(action => action.type === 'hu')) actions.push({ type: 'pass' });
   return actions;
 }
@@ -627,6 +631,7 @@ function settleAutomatic(game) {
     if (game.turnStep === 'draw') { draw(game); continue; }
     const seat = game.currentSeat; const player = game.players[seat];
     if (!player.huCount) return;
+    if (game.rules.autoDiscardAfterHu === false) return;
     if (getLegalActions(game, seat).some(action => action.type === 'hu' || action.type.endsWith('Gang'))) return;
     if (game.lastDraw?.seat !== seat) throw new Error('胡后缺少摸牌记录');
     discard(game, seat, game.lastDraw.tile, true);

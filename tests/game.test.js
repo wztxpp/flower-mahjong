@@ -1133,3 +1133,144 @@ test('both prior winners can claim an ordinary discard atomically in stable cloc
     assertGameInvariants(game);
   }
 });
+
+test('post-hu auto-discard is a validated per-game rule with backward-compatible default', () => {
+  assert.equal(createGame({ seed: 1 }).rules.autoDiscardAfterHu, true);
+  for (const value of [true, false]) assert.equal(createGame({ seed: 1, rules: { autoDiscardAfterHu: value } }).rules.autoDiscardAfterHu, value);
+  for (const value of [null, 0, 1, '', 'false', [], {}]) assert.throws(() => createGame({ rules: { autoDiscardAfterHu: value } }), /必须为布尔值/);
+  const automatic = fixture({ huCounts: [1, 1, 0], head: [6, 7] });
+  const legacy = structuredClone(automatic); delete legacy.rules.autoDiscardAfterHu;
+  const expected = doAction(automatic, 0, 'pass'); delete expected.rules.autoDiscardAfterHu;
+  assert.deepEqual(doAction(legacy, 0, 'pass'), expected);
+  assert.equal(legacy.rules.autoDiscardAfterHu, undefined, 'saved rules are not migrated');
+});
+
+test('unchecked option stops after a first hu continuation until the player presses pass', () => {
+  const initial = fixture({ head: [6, 7], tail: [1, 2, 3, 4, 5, 6], rules: { autoDiscardAfterHu: false } });
+  const won = doAction(initial, 0, 'hu');
+  assert.equal(won.currentSeat, 0); assert.equal(won.lastDraw.source, 'continuation');
+  assert.equal(won.lastDraw.tile, 6); assert.equal(won.players[0].huCount, 1);
+  assert.deepEqual(won.discards, []); assert.deepEqual(getLegalActions(won, 0), [{ type: 'pass' }]);
+  assert.deepEqual(won.players[0].hand, [...waiting, 6].sort((a, b) => a - b));
+  const before = structuredClone(won);
+  for (const [seat, action] of [[0, { type: 'discard', tile: 6 }], [0, { type: 'discard', tile: 0 }], [1, { type: 'pass' }], [0, { type: 'pass', tile: 6 }]]) {
+    assert.throws(() => applyAction(won, seat, action), /当前不能执行/);
+    assert.deepEqual(won, before);
+  }
+  const restored = JSON.parse(JSON.stringify(won));
+  for (let seat = 0; seat < 3; seat++) {
+    const view = getPlayerView(restored, seat);
+    assert.equal(view.rules.autoDiscardAfterHu, false);
+    assert.equal(view.drawnTile, seat === 0 ? 6 : null);
+    assert.deepEqual(view.legalActions, seat === 0 ? [{ type: 'pass' }] : []);
+    for (const player of view.players) assert.equal('hand' in player, player.seat === seat);
+  }
+  const next = doAction(restored, 0, 'pass');
+  assert.deepEqual(next.players[0].hand, waiting);
+  assert.equal(next.discards.length, 1); assert.equal(next.discards[0].tile, 6);
+  assert.equal(next.history.find(event => event.type === 'discard').automatic, false);
+  assert.equal(next.currentSeat, 1); assert.equal(next.lastDraw.tile, 7);
+  assert.deepEqual(next.players.map(player => player.score), won.players.map(player => player.score));
+  assert.equal(next.players.flatMap(player => player.radishes).length, 6);
+  assertGameInvariants(next);
+});
+
+test('manual post-hu mode stops for every natural draw instead of skipping consecutive won players', () => {
+  let game = fixture({ huCounts: [1, 1, 0], head: [6, 7], rules: { autoDiscardAfterHu: false } });
+  assert.deepEqual(getLegalActions(game, 0), [{ type: 'hu' }, { type: 'pass' }]);
+  game = doAction(game, 0, 'pass');
+  assert.equal(game.currentSeat, 1); assert.equal(game.lastDraw.source, 'normal');
+  assert.equal(game.lastDraw.tile, 6); assert.equal(game.discards.length, 1);
+  assert.deepEqual(getLegalActions(game, 1), [{ type: 'pass' }]);
+  assert.equal(game.players[1].hand.length, 14);
+  game = doAction(game, 1, 'pass');
+  assert.equal(game.currentSeat, 2); assert.equal(game.discards.length, 2);
+  assert.equal(game.lastDraw.tile, 7); assert.equal(game.players[1].hand.length, 13);
+  assertGameInvariants(game);
+});
+
+test('manual mode retains repeated hu choices and mandatory legal own kongs without a discard bypass', () => {
+  for (const type of ['anGang', 'buGang', 'addGang']) {
+    const game = postHuKongGame({ type }); game.rules.autoDiscardAfterHu = false;
+    assert.deepEqual(getLegalActions(game, 0), [{ type, tile: game.lastDraw.tile }]);
+    for (const action of [{ type: 'pass' }, { type: 'discard', tile: game.lastDraw.tile }]) assert.throws(() => applyAction(game, 0, action));
+    const replacement = doAction(game, 0, type, game.lastDraw.tile);
+    assert.deepEqual(getLegalActions(replacement, 0), [{ type: 'hu' }, { type: 'pass' }]);
+    assertGameInvariants(doAction(replacement, 0, 'hu'));
+    const winningGame = postHuKongGame({ type, winningDraw: true }); winningGame.rules.autoDiscardAfterHu = false;
+    assert.deepEqual(getLegalActions(winningGame, 0), [{ type: 'hu' }, { type: 'pass' }]);
+    assertGameInvariants(doAction(winningGame, 0, 'pass'));
+    const unwon = postHuKongGame({ type, huCount: 0 }); unwon.rules.autoDiscardAfterHu = false;
+    assert.ok(has(unwon, 0, type)); assert.ok(has(unwon, 0, 'discard'));
+  }
+  let repeated = fixture({ head: [17, 6], rules: { autoDiscardAfterHu: false } });
+  repeated = doAction(repeated, 0, 'hu');
+  assert.deepEqual(getLegalActions(repeated, 0), [{ type: 'hu' }, { type: 'pass' }]);
+  repeated = doAction(repeated, 0, 'hu');
+  assert.equal(repeated.players[0].huCount, 2); assert.equal(repeated.currentSeat, 0);
+  assert.deepEqual(getLegalActions(repeated, 0), [{ type: 'pass' }]);
+  assert.equal(repeated.discards.length, 0); assertGameInvariants(repeated);
+});
+
+test('manual kong replacement waits for pass and preserves after-kong claims and source-only payment', () => {
+  let game = postHuKongGame(); game.rules.autoDiscardAfterHu = false;
+  const index = game.wall.indexOf(17); [game.wall[0], game.wall[index]] = [game.wall[index], game.wall[0]];
+  game = doAction(game, 0, 'buGang', 2);
+  assert.equal(game.currentSeat, 0); assert.equal(game.lastDraw.tile, 17);
+  assert.equal(game.lastDraw.source, 'replacement'); assert.equal(game.players[0].pendingKongDiscard, true);
+  assert.deepEqual(getLegalActions(game, 0), [{ type: 'pass' }]); assert.equal(game.discards.length, 0);
+  game = doAction(game, 0, 'pass');
+  assert.equal(game.phase, 'claim'); assert.equal(game.discards[0].afterKong, true);
+  assert.equal(game.players[0].pendingKongDiscard, false);
+  assert.equal(game.history.find(event => event.type === 'discard').automatic, false);
+  assert.equal(has(game, 1, 'hu'), true); assert.equal(has(game, 1, 'peng'), false); assert.equal(has(game, 1, 'mingGang'), false);
+  game = doAction(game, 1, 'hu'); game = doAction(game, 2, 'pass');
+  const event = huEvent(game, 1);
+  assert.equal(event.source, 'kongDiscard');
+  assert.deepEqual(event.payments.map(item => item.seat), [0, 1]);
+  assertGameInvariants(game);
+});
+
+test('manual mode still waits when kong is illegal, and final wall/third-player hu settle exactly once', () => {
+  const source = postHuKongGame();
+  const baseHand = [...source.players[0].hand]; baseHand.splice(baseHand.indexOf(2), 1);
+  let game = fixture({ hands: [baseHand, waiting, [...waiting, 6]], melds: [source.players[0].melds, [], []],
+    huCounts: [1, 0, 0], currentSeat: 2, drawTile: 6, head: [2], wallCount: 1, rules: { autoDiscardAfterHu: false } });
+  game = doAction(game, 2, 'discard', 6);
+  assert.equal(game.wall.length, 0); assert.equal(game.phase, 'turn'); assert.equal(game.currentSeat, 0);
+  assert.deepEqual(getLegalActions(game, 0), [{ type: 'pass' }]);
+  game = doAction(game, 0, 'pass');
+  assert.equal(game.phase, 'finished'); assert.equal(game.finishReason, 'wallExhausted');
+  assert.equal(game.dragonSettlement.settled, true);
+  assert.equal(game.history.filter(event => event.type === 'finish').length, 1);
+  assert.throws(() => doAction(game, 0, 'pass')); assertGameInvariants(game);
+  const final = fixture({ hands: [waiting, waiting, winning], huCounts: [1, 1, 0], currentSeat: 2, rules: { autoDiscardAfterHu: false } });
+  const result = doAction(final, 2, 'hu');
+  assert.equal(result.phase, 'finished'); assert.equal(result.finishReason, 'allPlayersHu');
+  assert.equal(result.wall.length, final.wall.length); assert.equal(result.history.some(event => event.type === 'draw'), false);
+  assertGameInvariants(result);
+});
+
+test('100 paired full games keep identical tiles and scores with automatic versus manual post-hu discard', () => {
+  const play = (seed, autoDiscardAfterHu) => {
+    let game = createGame({ seed, rules: { autoDiscardAfterHu } });
+    let actions = 0;
+    while (game.phase !== 'finished') {
+      assert.ok(++actions < 1000, `Seed ${seed} did not finish`);
+      const seat = game.phase === 'claim' ? game.claim.eligibleSeats.find(value => !game.claim.responses[value]) : game.currentSeat;
+      const legal = getLegalActions(game, seat);
+      const action = legal.find(item => item.type === 'hu') || legal.find(item => item.type.endsWith('Gang')) || legal[0];
+      assert.ok(action, `No legal action at seed ${seed}`);
+      game = applyAction(game, seat, action);
+      assertGameInvariants(game);
+      assert.equal(game.players.reduce((sum, player) => sum + player.score, 0), 0);
+    }
+    return game;
+  };
+  for (let seed = 0; seed < 100; seed++) {
+    const automatic = play(seed, true), manual = play(seed, false);
+    for (const key of ['players', 'wall', 'discards', 'retiredTiles', 'finishReason', 'dragonSettlement']) {
+      assert.deepEqual(manual[key], automatic[key], `Seed ${seed}: ${key} changed with pacing`);
+    }
+  }
+});
