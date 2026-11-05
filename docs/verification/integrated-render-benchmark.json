@@ -1,0 +1,32 @@
+{
+  "baseline": "1de15e9a43ce373a4b408d3fd6b8cddd2aa9247c",
+  "method": "Vue 3 client component patch, synthetic in-memory host, 60 discards / 150 initial history events, one appended event per snapshot; six alternating runs; per-run warmup 40; milliseconds; same current tile component in before/after; excludes browser paint, layout, image decode, networking and audio",
+  "before": {
+    "selectionMs": {
+      "samples": 1200,
+      "p50": 1.358,
+      "p95": 2.307,
+      "max": 83.315
+    },
+    "snapshotMs": {
+      "samples": 480,
+      "p50": 3.453,
+      "p95": 12.507,
+      "max": 111.26
+    }
+  },
+  "after": {
+    "selectionMs": {
+      "samples": 1200,
+      "p50": 0.647,
+      "p95": 1.082,
+      "max": 25.826
+    },
+    "snapshotMs": {
+      "samples": 480,
+      "p50": 2.916,
+      "p95": 6.337,
+      "max": 34.446
+    }
+  }
+}

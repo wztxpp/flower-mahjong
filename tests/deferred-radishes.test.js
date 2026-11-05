@@ -6,7 +6,7 @@ const wait = [1,2,3,4,5,9,10,11,12,13,14,17,17];
 const move=(g,s,type,tile)=>applyAction(g,s,tile===undefined?{type}:{type,tile});
 const passAll=g=>{while(g.phase==='claim')g=move(g,g.claim.eligibleSeats.find(s=>!g.claim.responses[s]),'pass');return g;};
 function fixture({head=[0,0,0,0,17,6],first=false,oldRadishes=[],pending=0,wallLimit=null}={}){
-  const g=createGame({seed:'deferred-radishes'});
+  const g=createGame({seed:'deferred-radishes',rules:{allowPungUpgrade:true}});
   g.players.forEach((p,s)=>{p.hand=[...(s===0?own:wait)];p.melds=s===0?[{type:'peng',tile:0,tiles:[0,0,0]}]:[];});
   g.players[0].radishes=[...oldRadishes];g.players[0].kongCount=oldRadishes.length+pending;
   g.pendingKongRadishes=pending;g.firstHuRadishesRevealed=first;

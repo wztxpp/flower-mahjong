@@ -5,7 +5,7 @@ const waiting = [0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17];
 
 /** Conserved real-engine state for mandatory post-hu own-kong decisions. */
 export function postHuKongGame({ type = 'buGang', huCount = 1, winningDraw = false } = {}) {
-  const game = createGame({ seed: 'mandatory-post-hu-kong', rules: { specialHuPatterns: false } });
+  const game = createGame({ seed: 'mandatory-post-hu-kong', rules: { allowPungUpgrade: true, specialHuPatterns: false } });
   const tile = type === 'anGang' ? 0 : 2;
   const baseHand = type === 'anGang'
     ? [0, 0, 0, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17]

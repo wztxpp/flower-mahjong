@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as Vue from 'vue';
 import * as CharacterAudioModule from '../src/character-audio.js';
+import * as MahjongPhotoModule from '../src/mahjong-photo-faces.js';
 import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc';
 
 // Compile the shipped SFCs, as ui.test.js does. A small in-memory Vue renderer
@@ -21,7 +22,7 @@ function compileComponent(filename, dependencies = {}) {
   component.render = new Function('modules', `${load(template.code).replace('export function render', 'function render')}\nreturn render;`)(modules);
   return component;
 }
-const Tile = compileComponent('MahjongTile.vue');
+const Tile = compileComponent('MahjongTile.vue', { './mahjong-photo-faces.js': MahjongPhotoModule });
 const Icon = compileComponent('Icon.vue');
 const App = compileComponent('App.vue', { './MahjongTile.vue': Tile, './Icon.vue': Icon, './character-audio.js': CharacterAudioModule });
 const originalDescriptors = Object.fromEntries(['window', 'document', 'navigator', 'sessionStorage', 'localStorage', 'fetch', 'setTimeout', 'clearTimeout'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));

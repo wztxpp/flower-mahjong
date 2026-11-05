@@ -10,7 +10,7 @@ const gangEvents = game => game.history.filter(event => ['buGang', 'addGang', 'a
 function fixture({ count = 3, meldType = count === 3 ? 'peng' : 'buGang', seat = 0,
   sourceWon = false, receiverWon = false, replacement = false, head = [6], receivers = [waitZero, waitZero],
   rules = {}, firstHuRadishesRevealed = true, receiverMelds = [[], []], ownHand = sourceHand, drawTile = 0 } = {}) {
-  const game = createGame({ seed: 'rob-kong', rules });
+  const game = createGame({ seed: 'rob-kong', rules: { allowPungUpgrade: true, turnDirection: 'clockwise', ...rules } });
   const others = [1, 2].map(offset => (seat + offset) % 3);
   game.players.forEach((p, index) => {
     p.hand = [...(index === seat ? ownHand : receivers[others.indexOf(index)])].sort((a, b) => a - b);

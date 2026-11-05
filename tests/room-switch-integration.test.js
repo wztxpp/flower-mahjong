@@ -376,7 +376,9 @@ test('recovery D1: independent workers settle once and keep profile history afte
     assert.ok(mine.records.some(record => record.gameId === before.records[0].gameId && record.status === 'finished'));
     assert.ok(mine.records.some(record => record.status === 'detached'));
     assert.equal(JSON.stringify((await reloaded.store.get(roomId)).game), JSON.stringify(latest.game));
-    successful(await resume(reloaded, host));
+    const restoredTotals = successful(await resume(reloaded, host)).state.tableScores;
+    assert.deepEqual(restoredTotals.map(row => row.totalScore), [15, -6, -9]);
+    noPrivateData(restoredTotals, people.flatMap(person => [person.token, person.profile]));
     noPrivateData(await history(reloaded, host), people.flatMap(person => [person.token, person.profile]));
     const data = db.sqlite.prepare('SELECT state FROM mahjong_rooms').all().map(row => row.state).join('');
     for (const person of people) {
@@ -603,4 +605,40 @@ test('recovery: retries create only one departure/resume log and never log a pha
   assert.equal(JSON.stringify(stored.game), JSON.stringify(before.game));
   assert.equal((await history(api, host)).records.length, 1);
   noPrivateData(stored.lifecycleLog, [host.token, host.profile]);
+});
+
+test('table totals persist through FileStore restart, another game, repeated reads and same-name replacement', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'flower-total-score-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const api = harness(new FileStore(dir));
+  const { host, people, roomId } = await table(api);
+  let state = await snapshot(api, host);
+  assert.deepEqual(state.tableScores.map(row => row.totalScore), [0, 0, 0]);
+  assert.equal(state.game.rules.turnDirection, 'counterclockwise');
+  assert.equal(state.game.rules.allowPungUpgrade, false);
+  state = await finishTable(api, people, [8, -3, -5]);
+  assert.deepEqual(state.tableScores.map(row => row.totalScore), [8, -3, -5]);
+  assert.deepEqual(state.tableScores.map(row => row.settledScore), [8, -3, -5]);
+  assert.deepEqual(state.tableScores.map(row => row.provisionalScore), [0, 0, 0]);
+  successful(await api.request(roomPath(host, 'start'), { ...credentials(host), body: { revision: state.revision } }));
+  let saved = await api.store.get(roomId);
+  saved.game.players.forEach((player, index) => { player.score = [2, -1, -1][index]; });
+  assert.equal(await api.store.compareAndSwap(saved, saved.revision), true);
+  const restored = harness(new FileStore(dir));
+  for (const person of people) for (let i = 0; i < 2; i++) {
+    const fresh = await snapshot(restored, person);
+    assert.deepEqual(fresh.tableScores.map(row => row.totalScore), [10, -4, -6]);
+    assert.deepEqual(fresh.tableScores.map(row => row.settledScore), [8, -3, -5]);
+    assert.deepEqual(fresh.tableScores.map(row => row.provisionalScore), [2, -1, -1]);
+    noPrivateData(fresh.tableScores, people.flatMap(player => [player.token, player.profile]));
+  }
+  state = await finishTable(restored, people, [2, -1, -1]);
+  successful(await leave(restored, people[2], state.revision));
+  const replacement = await joinRoom(restored, roomId, people[2].state.seats[2].name, await identity(restored));
+  const totals = replacement.state.tableScores;
+  assert.deepEqual(totals.map(row => row.totalScore), [10, -4, -6, 0]);
+  assert.equal(totals[2].seat, null); assert.equal(totals[2].detached, true);
+  assert.equal(totals[3].seat, 2);
+  assert.equal(totals.reduce((sum, row) => sum + row.totalScore, 0), 0);
+  assert.equal((await history(restored, host)).summary.totalScore, 10);
 });

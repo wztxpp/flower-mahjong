@@ -1,0 +1,517 @@
+/* Original physical-table skin. Kept separate from rules and gameplay styles.
+   No third-party game assets: wood, felt, brass and lighting are CSS materials. */
+:root {
+  --table-cream: #fff4d8;
+  --table-gold: #e4bc72;
+  --table-felt: #17624f;
+  --table-dark: #092e29;
+  --table-wood: #70452d;
+}
+
+body { background: #201a17; }
+.app-shell {
+  color: #efe2c9;
+  background:
+    radial-gradient(ellipse at 50% -12%, #bb875b52, transparent 55%),
+    radial-gradient(ellipse at 15% 52%, #5a473530, transparent 50%),
+    repeating-linear-gradient(91deg, transparent 0 138px, #080b0b20 139px 141px, transparent 142px 280px),
+    linear-gradient(150deg, #302720, #171d1c 72%);
+}
+.site-header, .in-room .site-header {
+  max-width: 1560px;
+  height: 80px;
+  padding-inline: 44px;
+  border-bottom: 1px solid #c8a16c29;
+  background: linear-gradient(180deg, #1a17154d, transparent);
+}
+.brand-mark { stroke: #e8c585; filter: drop-shadow(0 2px 2px #0006); }
+.brand-mark circle { fill: #e8c585; }
+.brand-name { color: #ffedc9; text-shadow: 0 2px 3px #0009; }
+.brand-name > span { color: #cebd9f; }
+.prototype-pill { color: #d2c2a5; border-color: #ae865247; background: #171b1a8c; }
+.text-button { color: #ddccb0; min-height: 40px; }
+.text-button:hover { color: #fff0c7; }
+.voice-toggle, .rules-trigger { border: 1px solid #ba97613b; padding: 8px 12px; border-radius: 9px; background: #302b2480; }
+.leave-table-button { color: #e2c9a2; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid #ffd788;
+  outline-offset: 4px;
+}
+
+/* Lobby: the same table materials, in a softly lit club room. */
+.welcome-layout { max-width: 1320px; padding-top: 62px; gap: 0 86px; }
+.welcome-story .eyebrow { color: #dec18c; }
+.eyebrow > span { background: #ca9e5d; }
+.welcome-story h1 { color: #fff0d3; font-weight: 600; text-shadow: 0 3px 4px #120e0e66; }
+.gold-text { color: #efbe69; }
+.welcome-description { color: #d0bfa2; font-size: 14px; }
+.hero-illustration { height: 300px; margin-top: 28px; isolation: isolate; }
+.hero-illustration::before {
+  content: "";
+  position: absolute;
+  inset: 35px -8px 40px;
+  z-index: -1;
+  transform: rotate(-8deg);
+  border: 12px solid #795033;
+  border-radius: 48%;
+  background: radial-gradient(ellipse at 45% 20%, #3b8870, #15533f 75%);
+  box-shadow: 0 8px 0 #38271e, 0 10px 0 #ab7954, 0 26px 30px #0007, inset 0 0 0 2px #d2bc7b70, inset 0 7px 20px #082d2480;
+}
+.illustration-ring { border-color: #ebd18b30; width: 330px; height: 150px; top: 49%; }
+.ring-two { width: 370px; height: 177px; border-color: #d1b47226; }
+.hero-tile { filter: drop-shadow(1px 14px 7px #06251e70); top: 27px; }
+.hero-tile-left, .hero-tile-right { top: 52px; }
+.hero-tile .mahjong-tile { border: 1px solid #fff8e0; box-shadow: 0 6px 0 #d6cdb3, 0 11px 0 #177354, 1px 13px 0 #083f2e; }
+.art-flower { color: #f4c970; text-shadow: 0 2px 5px #000a; }
+.illustration-caption { bottom: 0; color: #d5bd93; }
+.illustration-caption > span { background: #c49a5a70; }
+.welcome-features { color: #d0bea0; font-size: 11px; gap: 19px; margin-top: 16px; }
+.welcome-features svg { color: #e6bd79; }
+.entry-card, .personal-history {
+  color: #493c2c;
+  background: linear-gradient(145deg, #fff9e9, #f2e6cb);
+  border: 1px solid #e4c795;
+  box-shadow: 0 10px 0 #120e0d24, 0 20px 50px #0004, inset 0 0 0 4px #fff7e54d;
+}
+.entry-card { border-radius: 20px; padding-top: 31px; }
+.card-topline { color: #877046; }
+.small-flower { color: #b98437; }
+.entry-card h2 { color: #3d523c; font-weight: 600; }
+.card-description, .character-preference-note, .entry-note { color: #72664e; }
+.entry-tabs { background: #ded3ba; box-shadow: inset 0 2px 4px #6c532f20; }
+.entry-tabs button { color: #6e634d; min-height: 44px; }
+.entry-tabs button.active { color: #fff3d3; background: linear-gradient(#35765a, #24583f); box-shadow: 0 2px 3px #21382b40, inset 0 1px #99bba56b; }
+.field-label { color: #625640; margin-top: 16px; }
+.field-label > span { color: #7e7158; }
+input, #preferred-character { color: #493f2f; background: #fffdf4; border: 1px solid #cfbe9d; box-shadow: inset 0 2px 4px #7464420c; }
+input::placeholder { color: #8c806c; }
+input:focus, #preferred-character:focus { border-color: #5f8060; box-shadow: 0 0 0 3px #52795a24; }
+#preferred-character { min-height: 48px; }
+.preference-preview { background: #e9dcc1; border: 1px solid #d8c29a; }
+.preference-preview strong { color: #31583f; }
+.preference-preview span, .preference-preview small { color: #6d5a42; }
+.card-bottom { background: #e7d8ba; border-color: #ccba976e; color: #786647; }
+.welcome-footer { color: #baa78b; }
+.personal-history .eyebrow, .personal-history .text-button { color: #6c6849; }
+.personal-history h2 { color: #44543d; }
+.identity-note, .history-summary span, .history-summary small, .history-empty, .history-disclaimer,
+.personal-game-details, .personal-game-result, .personal-game-topline > div > span { color: #786b54; }
+.personal-history .history-summary, .personal-game-record { border-color: #ccba9780; }
+.history-summary strong { color: #315d43; }
+
+/* Tangible, high-contrast controls. The gold button always means an action. */
+.button { border-radius: 10px; font-weight: 600; min-height: 44px; }
+.button.primary, .button.gold, .hu-button {
+  color: #4b2b13;
+  border: 1px solid #f1d293;
+  background: linear-gradient(180deg, #ffe3a1 0%, #edbd62 53%, #dda244 100%);
+  box-shadow: inset 0 1px #fff6c9, 0 3px 0 #906025, 0 5px 10px #080d0c33;
+  text-shadow: 0 1px #ffe8ab80;
+}
+.button.primary:hover:not(:disabled), .button.gold:hover:not(:disabled), .hu-button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffedb7, #f3c977 55%, #e9b14e);
+  box-shadow: inset 0 1px #fff9dc, 0 3px 0 #906025, 0 6px 16px #080d0c40;
+}
+.button:disabled { opacity: .7; text-shadow: none; }
+.button.primary:disabled, .button.gold:disabled { color: #c3c4ad; background: #405447; border-color: #71806b; box-shadow: inset 0 1px #9eac8c20; }
+.button.secondary, .button.invite-button {
+  color: #e9d4b0;
+  background: linear-gradient(#66513b, #43372c);
+  border: 1px solid #a38359;
+  box-shadow: inset 0 1px #e1c59824, 0 2px 0 #161b18;
+}
+.button.secondary:hover:not(:disabled), .button.invite-button:hover:not(:disabled) { background: linear-gradient(#786045, #554333); }
+.hu-button { color: #fff6dc; background: linear-gradient(#cd6941, #9e3c29); border-color: #f2a565; text-shadow: 0 1px #63331e; box-shadow: inset 0 1px #ffd2a470, 0 3px 0 #60261c, 0 5px 10px #080d0c33; }
+.hu-button:hover:not(:disabled) { background: linear-gradient(#e2814e, #b74c30); }
+
+/* A continuous felt surface with a polished wooden rail. */
+.room-layout, .in-game .room-layout { max-width: 1560px; padding: 24px 44px 28px; }
+.room-heading, .in-game .room-heading { margin-bottom: 20px; }
+.room-title .eyebrow { color: #c2a77c; font-size: 10px; }
+.room-title h1, .in-game .room-title h1 { color: #f6e6c8; font-weight: 600; }
+.room-code-badge { color: #baa88d; }
+.room-code-badge strong { color: #ffe5ad; font-weight: 700; font-variant-numeric: tabular-nums; }
+.play-layout { grid-template-columns: minmax(0, 1fr) 250px; gap: 22px; }
+.table-column { isolation: isolate; }
+.table-surface, .in-game .table-surface {
+  border: 10px solid #805633;
+  border-radius: 42px;
+  padding: 20px 25px 20px;
+  color: #fff2d6;
+  background:
+    radial-gradient(ellipse at 50% 18%, #4d967657, transparent 62%),
+    repeating-linear-gradient(0deg, #e2f1b902 0 1px, #092c2403 1px 3px),
+    radial-gradient(ellipse at 50% 46%, #236f55, #104435 100%);
+  box-shadow: inset 0 0 0 2px #b8ba7670, inset 0 0 0 7px #082f323d, inset 0 10px 24px #072a2a77, 0 0 0 1px #d6a970, 0 4px 0 2px #a97543, 0 11px 0 2px #342920, 0 23px 32px #0006;
+}
+.table-surface::before { opacity: .22; border-radius: 30px; mix-blend-mode: soft-light; }
+.table-surface::after { content: ""; position: absolute; inset: 9px; border: 1px solid #d6d39a20; border-radius: 25px; pointer-events: none; }
+.table-topline { color: #d0d7b7; font-size: 10px; padding: 0 4px 18px; }
+.table-topline i { background: #c1e292; box-shadow: 0 0 7px #b9db8a8c; }
+.table-top-divider { color: #92b18b; }
+.opponent-row, .in-game .opponent-row { gap: 24px; }
+.opponent-seat, .in-game .opponent-seat {
+  position: relative;
+  padding: 14px;
+  background: linear-gradient(150deg, #092f2859, #103f3220);
+  border: 1px solid #b6cc9f3d;
+  border-radius: 17px;
+  box-shadow: inset 0 1px #d5e4b215, 0 4px 8px #052e2720;
+}
+.opponent-seat.seat-current { border-color: #f3cf80; background: linear-gradient(145deg, #e6bc4f20, #113d2e35); box-shadow: inset 0 0 0 1px #ffd88926, 0 0 20px #e5b54b1c; }
+.character-portrait {
+  height: 124px;
+  margin: -7px -7px 12px;
+  background: radial-gradient(ellipse at 50% 100%, #c6a07050, #163f3410 75%);
+  border-radius: 12px;
+  border-bottom: 1px solid #b7c99547;
+}
+.character-elegant { background: radial-gradient(ellipse at 50% 100%, #a3b5c950, #163f3410 75%); }
+.character-sunny { background: radial-gradient(ellipse at 50% 100%, #dfc56450, #163f3410 75%); }
+.character-portrait > img { height: 210px; filter: drop-shadow(0 5px 6px #061c2666); }
+.character-portrait > span { bottom: 8px; left: 10px; padding: 6px 10px; color: #ffefce; background: linear-gradient(120deg, #362b23ee, #362b23bd); border: 1px solid #c29a5b70; border-radius: 7px; box-shadow: 0 2px 4px #001e1c40; }
+.character-portrait small { color: #dfc7a0; }
+.avatar { border: 2px solid #d8bc7a; box-shadow: 0 2px 6px #032c2766; background: #beae8d; }
+.player-name { color: #fff3d7; font-weight: 600; font-size: 13px; }
+.player-caption { color: #c0d2b4; font-size: 10px; }
+.host-tag, .connection-tag { color: #e7d5a9; border-color: #d7c4966e; background: #183b2d70; }
+.dealer-tag { color: #ffe0a1; border-color: #d5b66d99; }
+.you-tag { color: #245137; background: #f5d994; }
+.player-score { color: #ffe0a0; font-size: 24px; font-weight: 700; text-shadow: 0 2px #17372d; }
+.player-score.negative { color: #e1cab8; }
+.seat-empty { border-style: dashed; background: #0a302638; }
+.seat-empty .player-name, .seat-empty .player-caption, .lobby-seat-decoration { color: #bfd0b0; }
+.lobby-seat-decoration { border-color: #bfd0b02e; }
+.lobby-center h2 { color: #fff0c9; font-weight: 600; text-shadow: 0 2px 3px #092e2d; }
+.lobby-center > p { color: #d5dec0; font-size: 12px; }
+.table-emblem { border-color: #e5d39d60; background: #17463845; box-shadow: 0 0 0 7px #c6d2ad08, inset 0 2px 8px #11372a80; }
+.table-emblem svg { stroke: #e6ce91; }
+.table-emblem circle { fill: #e6ce91; }
+.table-link, .waiting-host, .own-seat-status { color: #e6d6a7; }
+.start-button { min-height: 50px; font-size: 14px; }
+.own-character-label { color: #e2d6ad; font-size: 11px; }
+.own-seat-summary { border-color: #d5dcb542; padding-top: 14px; }
+.own-score small { color: #cfdbb9; }
+
+/* Public tiles stay on the felt, rather than inside pale dashboard cards. */
+.game-status { min-height: 45px; padding: 8px 12px; background: #0b332ac2; border: 1px solid #a5c38b42; border-radius: 10px; }
+.game-status strong { color: #fff1c9; font-size: 13px; font-weight: 600; }
+.turn-indicator.your-turn { background: #ffd779; box-shadow: 0 0 0 4px #f0c96b20, 0 0 8px #f0c96b55; }
+.wall-counter { color: #d8dcb5; background: transparent; border: 0; padding: 0 2px; font-size: 10px; }
+.wall-counter b { color: #ffe4a7; font-size: 23px; font-weight: 700; }
+.shared-radish-pool { background: linear-gradient(110deg, #0e382b70, #254d3066); border: 1px solid #c0c99250; border-radius: 10px; box-shadow: inset 0 2px 7px #08291e40; }
+.shared-radish-heading h2 { color: #f6e8ba; font-weight: 600; }
+.shared-radish-heading > span, .shared-radish-pool > p, .public-zone-label, .public-zone-label b, .public-zone-empty { color: #c7d6b9; }
+.radish-increment { color: #ffe2a2; }
+.discard-area { gap: 12px; }
+.discard-group { border: 1px solid #bbcea43d; background: #0a372535; box-shadow: inset 0 2px 9px #07332635; border-radius: 12px; min-height: 135px; }
+.discard-label { color: #dce2c5; font-size: 10px; }
+.discard-label small { color: #c0cfae; font-size: 9px; }
+.empty-discard { color: #aec6a7; font-size: 10px; }
+.discard-tiles { padding-bottom: 7px; gap: 8px 4px; }
+.latest-discard::after { border: 2px solid #ffe6a2; inset: -3px; box-shadow: 0 0 9px #f5c96866; }
+.table-watermark { color: #e6d4a050; letter-spacing: 5px; }
+.claim-strip { color: #ffedc7; background: #71582b72; border-color: #e1c5839e; }
+.claim-strip b { color: #fff0c5; }
+.finished-banner { color: #ffefc8; border-color: #ddbe6c78; background: #14352acc; }
+.finished-banner > .button:not(.gold) { color: #f6dfb5; border-color: #bc9e64; background: #234d3b; }
+
+/* Bone-colored faces and thick jade backs give every tile a physical edge. */
+.mahjong-tile {
+  background: linear-gradient(130deg, #fffef4 4%, #fff7df 55%, #eadfc4);
+  border-color: #f4e6c4;
+  box-shadow: inset 1px 1px 0 #fffef4, inset -1px -1px 0 #d1c5a8, 0 3px 0 #c7bd9e, 0 5px 0 #207453, 0 7px 5px #05271f59;
+}
+.tile-small { box-shadow: inset 1px 1px #fffef4, 0 2px 0 #c9bc98, 0 3px 0 #267854, 0 5px 3px #05271f4d; }
+.tile-back { background: linear-gradient(120deg, #57965a, #247443 58%, #135331); border-color: #9cb871; box-shadow: inset 1px 1px #c1d59170, 0 2px 0 #d7cda7, 0 4px 0 #bcad8e, 0 6px 5px #072c2366; }
+.back-pattern { border-color: #dbdda35c; }
+.back-pattern svg { stroke: #d6d99470; }
+.tile-interactive:hover:not(:disabled) { border-color: #fff0b8; box-shadow: inset 1px 1px #fffef4, 0 3px 0 #c7bd9e, 0 6px 0 #207453, 0 12px 9px #001e1b70; }
+.tile-selected { border-color: #ffdb79; box-shadow: 0 0 0 2px #ffe097, 0 4px 0 #cfb878, 0 7px 0 #24764f, 0 13px 12px #082d236e; }
+.tile-selected::after { background: #ffe09a; bottom: -15px; box-shadow: 0 0 6px #ffd67480; }
+
+/* The hand rack belongs to the near edge of the table. */
+.hand-panel, .in-game .hand-panel {
+  color: #f3e9cd;
+  padding: 18px 23px 19px;
+  margin-top: 18px;
+  border: 1px solid #c29c65;
+  border-top: 5px solid #c29a62;
+  border-bottom: 7px solid #4c3224;
+  border-radius: 16px 16px 22px 22px;
+  background: linear-gradient(0deg, #30261e, #55402b);
+  box-shadow: inset 0 1px #e8c994, inset 0 -2px #b37a452b, 0 8px 16px #0004;
+}
+.hand-scroll { padding: 18px 6px 15px; scrollbar-color: #d1ab65 #1e3127; }
+.my-hand { gap: 5px; }
+.my-hand .mahjong-tile { width: clamp(38px, 3.6vw, 54px); height: clamp(54px, 5vw, 75px); border-radius: 6px; }
+.my-hand .tile-corner { font-size: 9px; }
+.my-hand .drawn-tile { margin-left: 14px; }
+.my-hand .drawn-tile::before { color: #ffe2a1; }
+.section-kicker { color: #f0d9a5; font-size: 12px; }
+.hand-hint { color: #e0d0ad; font-size: 11px; }
+.my-turn-pill { color: #183b2b; background: #f7d98a; font-size: 10px; font-weight: 600; }
+.frozen-hand-pill { color: #efd7a6; border-color: #ad8e55; font-size: 10px; }
+.own-public-cards { border-color: #d7bd7e33; }
+.own-public-cards .public-zone-label, .own-public-cards .public-zone-label b, .own-public-cards .public-zone-empty, .own-public-cards .meld small { color: #e1d1ad; }
+.own-public-cards > .radish-row { border-color: #d7bd7e33; }
+.waits-info, .locked-waits { color: #efdbb2; font-size: 11px; }
+.wait-label { background: #ae8c536b; color: #ffe8b4; }
+.muted-hand-caption { color: #d2c19d; font-size: 10px; }
+.action-button { min-height: 44px; font-size: 13px; padding: 10px 19px; }
+.discard-button { min-width: 146px; }
+.action-working, .waiting-action { color: #dfceac; font-size: 11px; }
+.hu-diagnostic, .own-score-detail { border-color: #d7bd7e33; color: #e0cda5; }
+.hu-diagnostic p, .hu-diagnostic > small, .hu-diagnostic summary > span, .own-score-detail > span, .special-hand-note { color: #d4c3a1; }
+.own-score-detail strong { color: #ffe0a2; }
+.table-footnote, .table-footnote button { color: #c7b695; font-size: 10px; }
+
+/* Score sheets and rules are warm paper, kept readable next to the felt. */
+.sidebar-card {
+  color: #51482f;
+  border: 1px solid #c5ad7e;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7eed9, #e9dcc0);
+  box-shadow: inset 0 1px #fff8e7, 0 5px 14px #0003;
+}
+.sidebar-title { color: #75613a; }
+.sidebar-title h2 { color: #59482e; font-size: 13px; font-weight: 600; }
+.subtle-label, .version-tag, .quiet-note, .score-footnote, .dragon-settlement-note { color: #7c6b49; }
+.sidebar-card .text-button, .rules-more { color: #5b6443; }
+.rule-snippets strong { color: #586043; }
+.rule-snippets p, .invite-card > p { color: #786b51; }
+.rule-number { color: #9b773d; }
+.score-line { border-color: #baa57b55; color: #65563b; font-size: 12px; }
+.score-line > strong { color: #5c6541; }
+.score-line > strong.positive-score { color: #8e641e; }
+.score-line > strong.negative-score { color: #95634b; }
+.score-line small { background: #d4dec0; color: #4a6538; }
+.score-footnote { border-color: #baa57b55; font-size: 10px; line-height: 1.6; }
+.history-list p, .history-list li:first-child p { color: #64583e; font-size: 11px; }
+.history-list li small { color: #866333; font-size: 10px; }
+.history-list li:not(:last-child)::before { background: #cdbb94; }
+.history-dot { background: #a8b183; border-color: #f6ebd2; box-shadow: 0 0 0 1px #c6b58b; }
+.history-badge { color: #916325; font-weight: 600; }
+.invite-code { border-color: #c6b68e66; }
+.invite-code > span { color: #80704e; }
+.invite-code strong { color: #3b6148; }
+.start-options { background: linear-gradient(120deg, #eee1c5, #d8c396); border-color: #d4b67c; color: #4b563a; }
+.start-options p { color: #666045; }
+.game-rule-choice { color: #c8b99a; }
+.game-rule-choice strong { color: #e5d3a9; }
+.legacy-banner { background: #4c4435; color: #ead8b0; border-color: #8a7952; }
+.legacy-banner .text-button { color: #ffe4a6; }
+.connection-banner, .room-error { border-color: #c9aa72; background: #f2dfb9; color: #704e2e; }
+.toast { background: #fff3d7; color: #415b37; border-color: #d7ba80; box-shadow: 0 7px 28px #0005; }
+.modal-backdrop { background: #0a1713a8; }
+.modal { color: #4c4935; background: linear-gradient(135deg, #fff8e8, #eee2c5); border-color: #d9bd87; box-shadow: 0 22px 90px #0007; }
+.modal .eyebrow, .modal-close { color: #8a713e; }
+.rules-modal-body p { color: #6d654d; }
+.rules-modal-body h3 { color: #4d6340; }
+.rules-provisional { background: #e9dab5; border-color: #d5bf8e; color: #7e6537; }
+.rules-provisional p { color: #755f38; }
+.rules-modal-body .fan-scale { color: #69633c !important; background: #e8dbb8; }
+.modal .field-label, .invite-modal-note { color: #746544; }
+
+/* Tablet: retain a real table, with the ledger beneath rather than squeezed. */
+@media (max-width: 1100px) {
+  .site-header, .in-room .site-header { padding-inline: 26px; }
+  .header-actions { gap: 12px; }
+  .prototype-pill { display: none; }
+  .room-layout, .in-game .room-layout { padding-inline: 26px; }
+  .play-layout { grid-template-columns: minmax(0, 1fr) 214px; gap: 18px; }
+  .table-surface, .in-game .table-surface { padding: 17px; border-width: 8px; border-radius: 32px; }
+  .opponent-row, .in-game .opponent-row { gap: 16px; }
+  .opponent-seat, .in-game .opponent-seat { padding: 11px; }
+  .character-portrait { height: 110px; }
+  .character-portrait > img { height: 190px; }
+  .welcome-layout { gap: 0 40px; }
+  .welcome-features { flex-wrap: wrap; }
+  .hero-illustration::before { inset-inline: 0; }
+  .my-hand { justify-content: flex-start; }
+}
+@media (max-width: 900px) {
+  .play-layout { grid-template-columns: minmax(0, 1fr); }
+  .room-sidebar, .in-game .room-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .sidebar-card { margin-bottom: 0; }
+  .in-game .rules-card { grid-column: 1 / -1; }
+  .in-game .rule-snippets { flex-direction: row; gap: 20px; }
+  .in-game .rule-snippets > div { flex: 1; }
+  .character-portrait { height: 115px; }
+  .my-hand .mahjong-tile, .in-game .my-hand .mahjong-tile { width: 43px; height: 61px; }
+}
+@media (max-width: 760px) {
+  .site-header, .in-room .site-header { min-height: 74px; height: auto; padding: 12px 20px; gap: 14px; flex-wrap: wrap; }
+  .header-actions { gap: 9px; margin-left: auto; }
+  .brand-name { font-size: 25px; }
+  .brand-name > span { font-size: 10px; }
+  .voice-toggle, .rules-trigger { min-height: 38px; padding: 7px 9px; font-size: 11px; }
+  .leave-table-button { font-size: 11px; }
+  .welcome-layout { padding-top: 35px; }
+  .welcome-story h1 { font-size: 40px; }
+  .welcome-description { font-size: 12px; }
+  .hero-illustration { height: 245px; }
+  .hero-illustration::before { inset: 26px -2px 33px; border-width: 10px; }
+  .hero-tile { top: 18px; }
+  .hero-tile-left, .hero-tile-right { top: 38px; }
+  .illustration-ring { width: 270px; height: 128px; }
+  .ring-two { width: 300px; height: 150px; }
+  .welcome-features { font-size: 10px; gap: 14px; }
+  .room-layout, .in-game .room-layout { padding: 20px 18px 24px; }
+  .room-title h1, .in-game .room-title h1 { font-size: 22px; }
+  .room-heading { gap: 14px; }
+  .room-code-badge { font-size: 10px; }
+  .room-code-badge strong { font-size: 13px; }
+  .invite-button { font-size: 11px; }
+  .table-surface, .in-game .table-surface { border-radius: 28px; padding: 15px; }
+  .character-portrait { height: 94px; }
+  .character-portrait > img { height: 172px; }
+  .character-portrait > span { font-size: 11px; padding: 4px 7px; left: 6px; }
+  .character-portrait small { font-size: 9px; }
+  .player-name, .in-game .player-name { font-size: 11px; }
+  .player-caption, .in-game .player-caption { font-size: 9px; }
+  .player-score, .in-game .player-score { font-size: 21px; }
+  .in-game .avatar { width: 32px; height: 32px; }
+  .own-character-label { font-size: 10px; }
+  .hand-panel, .in-game .hand-panel { position: relative; padding: 15px 17px 17px; margin-top: 17px; }
+  .hand-info-row { align-items: flex-start; }
+  .hand-hint { font-size: 10px; }
+  .hand-info-row > div:first-child { flex-wrap: wrap; gap: 6px; max-width: 50%; }
+  .action-button { min-height: 44px; font-size: 12px; }
+  .section-kicker { font-size: 11px; }
+  .hand-bottom-row { gap: 10px; }
+  .game-status strong { font-size: 12px; }
+  .discard-label, .discard-label small { font-size: 9px; }
+  .public-zone-label, .public-zone-label b, .public-zone-empty { font-size: 9px; }
+  .shared-radish-heading h2 { font-size: 11px; }
+  .shared-radish-heading > span, .shared-radish-pool > p { font-size: 9px; }
+  .table-footnote, .table-footnote button { font-size: 9px; }
+  .score-line, .in-game .score-line { font-size: 11px; }
+  .in-game .rule-snippets strong, .rule-snippets strong { font-size: 11px; }
+  .in-game .rule-snippets p, .rule-snippets p { font-size: 10px; }
+  .rules-more { font-size: 10px; }
+  .in-game .history-list { max-height: 220px; }
+  .modal .rules-modal-body p { font-size: 12px; }
+}
+@media (max-width: 480px) {
+  .site-header, .in-room .site-header { padding: 11px 15px; gap: 6px 12px; }
+  .brand-mark { width: 27px; height: 27px; }
+  .brand-name { font-size: 23px; letter-spacing: 3px; }
+  .brand-name > span { font-size: 9px; margin-left: 6px; }
+  .header-actions { flex-wrap: wrap; justify-content: flex-end; gap: 5px 8px; }
+  .in-room .header-actions { width: 100%; justify-content: space-between; }
+  .voice-toggle, .rules-trigger { font-size: 10px; min-height: 36px; padding: 6px 8px; }
+  .leave-table-button { font-size: 10px; min-height: 36px; }
+  .in-room .rules-trigger span { display: inline; }
+  .welcome-layout { padding: 30px 20px 22px; }
+  .welcome-story h1 { font-size: 35px; }
+  .welcome-description { font-size: 12px; }
+  .welcome-features { font-size: 9px; gap: 10px; }
+  .hero-illustration { height: 235px; width: min(290px, 100%); }
+  .hero-illustration::before { inset: 23px -1px 35px; border-width: 9px; }
+  .hero-tile .mahjong-tile { width: 75px; height: 107px; }
+  .illustration-ring { width: 230px; height: 108px; }
+  .ring-two { width: 255px; height: 130px; }
+  .entry-card { margin-top: 24px; padding-inline: 22px; }
+  .field-label { font-size: 12px; }
+  .field-label > span { font-size: 10px; }
+  .card-description, .character-preference-note, .entry-note { font-size: 11px; }
+  .card-bottom { margin-inline: -22px; font-size: 10px; gap: 10px; }
+  .entry-submit { font-size: 14px; height: 50px; }
+  .room-layout, .in-game .room-layout { padding: 16px 10px 22px; }
+  .room-heading, .in-game .room-heading { align-items: flex-start; gap: 8px; margin-bottom: 15px; }
+  .room-title h1, .in-game .room-title h1 { font-size: 19px; }
+  .room-title .eyebrow { font-size: 9px; }
+  .room-tools { flex-wrap: wrap; justify-content: flex-end; gap: 5px; max-width: 47%; }
+  .room-code-badge { font-size: 9px; gap: 6px; }
+  .room-code-badge span { font-size: 9px; }
+  .room-code-badge strong { font-size: 12px; }
+  .button.invite-button { min-height: 36px; padding: 6px 9px; font-size: 10px; }
+  .start-options { padding: 12px 13px; }
+  .start-options p { font-size: 11px; }
+  .game-rule-choice { font-size: 10px; }
+  .table-surface, .in-game .table-surface { padding: 13px 9px 14px; border: 6px solid #805633; border-radius: 24px; box-shadow: inset 0 0 0 1px #c9cc8770, inset 0 5px 12px #072a2a77, 0 0 0 1px #d6a970, 0 3px 0 1px #a97543, 0 8px 0 1px #342920, 0 12px 18px #0005; }
+  .table-surface::after { inset: 5px; border-radius: 14px; }
+  .table-topline { font-size: 9px; padding: 0 3px 12px; }
+  .opponent-row, .in-game .opponent-row, .lobby-table .opponent-row { gap: 9px; }
+  .opponent-seat, .in-game .opponent-seat, .lobby-table .opponent-seat { padding: 8px 7px; border-radius: 12px; }
+  .character-portrait { height: 92px; margin: -4px -3px 9px; border-radius: 8px; }
+  .character-portrait > img { height: 152px; }
+  .character-portrait > span { bottom: 4px; left: 4px; padding: 3px 6px; font-size: 10px; }
+  .character-portrait small { font-size: 8px; }
+  .player-topline, .in-game .player-topline { gap: 5px; flex-wrap: wrap; }
+  .opponent-seat .player-identity { min-width: 58px; }
+  .opponent-seat .avatar, .in-game .opponent-seat .avatar { width: 28px; height: 28px; }
+  .player-name, .in-game .player-name, .lobby-table .player-name { font-size: 11px; }
+  .player-caption, .in-game .player-caption, .lobby-table .player-caption { font-size: 9px; }
+  .player-score, .in-game .player-score { font-size: 19px; margin-left: auto; }
+  .host-tag, .you-tag, .dealer-tag { font-size: 8px; }
+  .opponent-hand { gap: 2px; margin-top: 9px; }
+  .opponent-hand .tile-back { height: 26px; box-shadow: 0 2px #d5c7a4, 0 3px #2b6445, 0 5px 2px #062e2460; }
+  .opponent-seat .win-pile { gap: 5px; flex-wrap: wrap; }
+  .public-zone-label, .public-zone-label b, .public-zone-empty { font-size: 9px; }
+  .public-zone-label b { display: inline; margin-left: 3px; }
+  .game-status { gap: 7px; padding: 8px; }
+  .game-status > div:first-child { gap: 6px; }
+  .game-status strong { font-size: 11px; line-height: 1.6; }
+  .wall-counter { font-size: 9px; flex-shrink: 0; }
+  .wall-counter b { font-size: 20px; }
+  .playing-center { padding: 14px 0 11px; }
+  .shared-radish-pool { padding: 9px; }
+  .discard-area { gap: 6px; }
+  .discard-group { padding: 8px 5px; border-radius: 8px; min-height: 132px; }
+  .discard-label { gap: 4px; flex-direction: column; align-items: flex-start; min-height: 29px; margin-bottom: 8px; font-size: 9px; }
+  .discard-label > span { max-width: 100%; }
+  .discard-label small { font-size: 8px; }
+  .discard-tiles { gap: 7px 3px; max-height: 192px; }
+  .discard-tiles .tile-small { width: 24px; height: 34px; }
+  .discard-tiles .tile-symbols { width: 22px; height: 29px; }
+  .discard-tile { height: 34px; }
+  .empty-discard { font-size: 9px; }
+  .own-seat-summary .player-topline { flex-wrap: nowrap; }
+  .in-game .own-seat-summary .avatar { width: 35px; height: 35px; }
+  .in-game .own-seat-summary .player-name { font-size: 12px; }
+  .in-game .own-seat-summary .player-caption { font-size: 10px; }
+  .in-game .own-score { font-size: 24px; }
+  .hand-panel, .in-game .hand-panel { padding: 14px 12px 16px; border-radius: 13px 13px 18px 18px; }
+  .hand-hint { font-size: 10px; max-width: 57%; }
+  .section-kicker { font-size: 11px; }
+  .my-turn-pill, .frozen-hand-pill { font-size: 9px; }
+  .my-hand { gap: 4px; }
+  .my-hand .mahjong-tile, .in-game .my-hand .mahjong-tile { width: 39px; height: 56px; }
+  .my-hand .tile-corner { font-size: 8px; }
+  .my-hand .drawn-tile { margin-left: 11px; }
+  .own-public-cards { gap: 10px; padding-bottom: 10px; }
+  .hand-bottom-row { align-items: flex-start; }
+  .waits-info { min-width: 105px; font-size: 10px; }
+  .muted-hand-caption { font-size: 9px; }
+  .action-button { min-height: 44px; font-size: 12px; padding: 10px 13px; }
+  .discard-button { min-width: 128px; }
+  .room-sidebar, .in-game .room-sidebar { gap: 12px; grid-template-columns: 1fr; }
+  .in-game .rules-card { grid-column: auto; }
+  .sidebar-card, .in-game .sidebar-card { padding: 17px; }
+  .sidebar-title h2 { font-size: 13px; }
+  .in-game .score-line { font-size: 12px; padding: 11px 0; }
+  .score-line > strong { font-size: 21px; }
+  .score-footnote { font-size: 10px; }
+  .history-list p { font-size: 12px; }
+  .history-list li small { font-size: 10px; }
+  .in-game .rule-snippets { flex-direction: column; gap: 15px; }
+  .in-game .rule-snippets > div { flex-direction: row; gap: 10px; }
+  .in-game .rule-snippets strong { font-size: 12px; }
+  .in-game .rule-snippets p { font-size: 11px; }
+  .quiet-note { font-size: 10px; }
+  .lobby-seat-decoration { font-size: 9px; }
+  .lobby-center h2 { font-size: 23px; }
+  .lobby-center > p { font-size: 11px; }
+  .table-link { min-height: 40px; font-size: 11px; }
+  .modal { padding-inline: 19px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile-interactive, .button { transition: none; }
+}
+
+/* Integrated cumulative ledger uses the same readable paper palette. */
+.table-total-line small { color: #75613a; }
+.table-total-line > strong.positive-score { color: #8e641e; }
+.table-total-line > strong.negative-score { color: #95634b; }

@@ -63,3 +63,40 @@ export function recordsForProfile(room, playerHash) {
   }
   return records;
 }
+
+/** Public scores for this room only. Never merge by nickname or replacement seat.
+ * Recomputed from the saved ledger, so reloads/retries cannot double-count a round. */
+export function tableScores(room) {
+  if (room.game && !room.gameMeta) { room = { ...room }; ensureGameMetadata(room); }
+  const entries = [...(room.archivedGames || []), ...(room.game && room.gameMeta
+    ? [{ game: room.game, meta: room.gameMeta }] : [])];
+  const totals = new Map();
+  const addPerson = person => {
+    if (!person?.tokenHash) return null;
+    if (!totals.has(person.tokenHash)) totals.set(person.tokenHash, {
+      id: `player-${totals.size + 1}`, name: person.name, seat: null,
+      totalScore: 0, settledScore: 0, provisionalScore: 0, settledGames: 0,
+    });
+    return totals.get(person.tokenHash);
+  };
+  const seen = new Set();
+  for (const { game, meta } of entries) {
+    for (const person of meta?.participants || []) {
+      if (!person) continue;
+      const key = `${meta.id}:${person.seat}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const row = addPerson(person);
+      if (!row) continue;
+      const score = game.players[person.seat]?.score ?? 0;
+      row.totalScore += score;
+      if (game.phase === 'finished') { row.settledScore += score; row.settledGames++; }
+      else row.provisionalScore += score;
+    }
+  }
+  for (const [seat, person] of room.seats.entries()) {
+    const row = addPerson(person);
+    if (row) { row.name = person.name; row.seat = seat; row.detached = Boolean(person.detached); }
+  }
+  return [...totals.values()].map(row => ({ ...row, detached: row.detached ?? true }));
+}

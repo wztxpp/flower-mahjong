@@ -15,7 +15,7 @@ function fixture({ hand, melds = [], priorWins = [], head = [6], tail = [],
   opponents = [noZero, noZero], rules = {}, currentSeat = 0,
   priorWinsBySeat = [priorWins, [], []],
   drawTile = currentSeat === 0 ? hand.at(-1) : opponents[currentSeat - 1].at(-1), wallCount } = {}) {
-  const game = createGame({ seed: 'extended-kong', rules: { specialHuPatterns: false, ...rules } });
+  const game = createGame({ seed: 'extended-kong', rules: { allowPungUpgrade: true, specialHuPatterns: false, ...rules } });
   game.players.forEach((player, seat) => {
     player.hand = [...(seat === 0 ? hand : opponents[seat - 1])].sort((a, b) => a - b);
     player.melds = seat === 0 ? structuredClone(melds) : [];
@@ -356,4 +356,20 @@ test('replacement provenance rejects wrong source, invalid payer and stale ordin
   const ordinary = structuredClone(original);
   ordinary.lastDraw.source = 'normal';
   assert.throws(() => assertGameInvariants(ordinary), /杠后补摸来源/);
+});
+
+for (const type of ['anGang', 'mingGang']) test(`new no-peng-upgrade rule still permits ${type} 4→5→6→7→8`, () => {
+  let game = fixture({ hand: [0, 1, 2, 3, 9, 10, 11, 12, 13, 16, 17],
+    melds: [meld(0, type, 4)], head: [0, 0, 0, 6], drawTile: 0, rules: { allowPungUpgrade: false } });
+  for (const count of [5, 6, 7, 8]) {
+    assert.ok(actions(game).some(action => action.type === 'addGang' && action.tile === 0));
+    assert.equal(actions(game).some(action => action.type === 'buGang'), false);
+    game = doAction(game, 'addGang', 0);
+    assert.equal(game.players[0].melds[0].tiles.length, count);
+    assert.equal(game.players[0].melds[0].type, type);
+    assert.deepEqual(game.players.map(player => player.score), [2 * (count - 4), -(count - 4), -(count - 4)]);
+    assert.equal(game.pendingKongRadishes, count - 4);
+    assertGameInvariants(game);
+  }
+  assert.equal(actions(game).some(action => action.type === 'addGang' && action.tile === 0), false);
 });

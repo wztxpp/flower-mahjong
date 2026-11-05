@@ -15,7 +15,7 @@ function fixture({ hands = [winning, waiting, waiting], melds = [[], [], []], ra
   huCounts = [0, 0, 0], priorWins = [[], [], []], locks = [[], [], []], activeLocks = [false, false, false],
   currentSeat = 0, turnStep = 'discard', drawTile = hands[currentSeat]?.at(-1), drawKind = 'normal',
   head = [], tail = [], rules = {}, wallCount, kongSeats = [], firstHuRadishesRevealed = huCounts.some(count => count > 0) } = {}) {
-  const game = createGame({ seed: 'fixture', rules });
+  const game = createGame({ seed: 'fixture', rules: { allowPungUpgrade: true, turnDirection: 'clockwise', ...rules } });
   game.players.forEach((player, seat) => {
     player.hand = [...hands[seat]].sort((a, b) => a - b);
     player.melds = structuredClone(melds[seat]); player.radishes = [...radishes[seat]];

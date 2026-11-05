@@ -211,3 +211,68 @@ test('rob-kong attempts stay silent; confirmed rob wins play one matching call a
   cursor.reset();
   assert.deepEqual(cursor.consume(state([attempt,win])),[]);
 });
+
+const live = events => events.map(event => ({ ...event, urls: clipsForEvent(event) }));
+test('live auto-discard burst announces only the latest public action, not six seconds of history', async () => {
+  const {engine, played} = audioFixture(); await engine.unlock();
+  const events = Array.from({length: 12}, (_, tile) => ({type:'discard', seat:tile % 3, tile, automatic:true}));
+  engine.enqueueLive(live(events)); await tick();
+  assert.deepEqual(played, ['silent', clipForEvent(events.at(-1))]);
+  assert.equal(engine.queue.length, 0); engine.dispose();
+});
+test('a live win interrupts an old discard and drops automatic discards in the same update', async () => {
+  const {engine, played, sources} = audioFixture(); await engine.unlock();
+  engine.enqueueLive(live([{type:'discard',seat:0,tile:1}])); await tick();
+  let stopped = false; const old = sources.at(-1); old.stop = () => { stopped = true; old.onended?.(); };
+  engine.enqueueLive(live([{type:'discard',seat:1,tile:4}, {type:'hu',seat:2,source:'discard'}, {type:'discard',seat:2,tile:7,automatic:true}])); await tick();
+  assert.equal(stopped, true);
+  assert.deepEqual(played, ['silent', '/voices/sweet/tiao-2.mp3', '/voices/sunny/fangpao.mp3']);
+  engine.enqueueLive(live([{type:'discard',seat:0,tile:8}]));
+  sources.at(-1).onended(); await tick();
+  assert.equal(engine.queue.length,0); assert.equal(played.length,3); engine.dispose();
+});
+test('live simultaneous wins remain adjacent and serial; a newer win replaces obsolete pending calls', async () => {
+  const {engine,played,sources} = audioFixture(); await engine.unlock();
+  engine.enqueueLive(live([{type:'hu',seat:0,source:'discard'},{type:'hu',seat:1,source:'discard'}])); await tick();
+  assert.equal(played.at(-1),'/voices/sweet/fangpao.mp3');
+  engine.enqueueLive(live([{type:'discard',seat:2,tile:4}]));
+  sources.at(-1).onended(); await tick();
+  assert.equal(played.at(-1),'/voices/elegant/fangpao.mp3');
+  engine.enqueueLive(live([{type:'hu',seat:2,source:'selfDraw'}])); await tick();
+  assert.equal(played.at(-1),'/voices/sunny/zimo.mp3'); assert.equal(engine.queue.length,0); engine.dispose();
+});
+test('slow live voice loads are dropped rather than played out of sync', async () => {
+  for (const event of [{type:'discard',seat:0,tile:2},{type:'hu',seat:0,source:'selfDraw'}]) {
+    let now=0, finish;
+    const {engine,played} = audioFixture({now:()=>now});
+    engine.fetchAudio=async url=>({ok:true,headers:{get:()=> 'audio/mpeg'},arrayBuffer:()=>new Promise(resolve=>{finish=()=>resolve(url)})});
+    await engine.unlock(); engine.enqueueLive(live([event])); await tick();
+    now=651; finish(); await tick(); assert.deepEqual(played,['silent']); engine.dispose();
+  }
+});
+test('interrupting an in-flight load can retry the same asset immediately without a stale rejection', async () => {
+  let calls=0;
+  const {engine,played} = audioFixture(); await engine.unlock();
+  engine.fetchAudio=async url=> ++calls === 1 ? new Promise(()=>{}) : ({ok:true,headers:{get:()=> 'audio/mpeg'},arrayBuffer:async()=>url});
+  const event={type:'discard',seat:0,tile:2};
+  engine.enqueueLive(live([event])); await tick(); engine.enqueueLive(live([event])); await tick();
+  assert.deepEqual(played,['silent','/voices/sweet/tiao-3.mp3']); engine.dispose();
+});
+test('cursor exposes committed event identity without replay on mute, reconnect, or game change', () => {
+  const cursor = new ActionVoiceCursor(); const event = {type:'hu',seat:1,source:'discard',tile:4,fromSeat:0};
+  assert.deepEqual(cursor.consumeEvents(state([])),[]);
+  const events=cursor.consumeEvents(state([event]));
+  assert.equal(events[0].eventKey,'room-1:game-1:0'); assert.equal(events[0].tile,4); assert.equal(events[0].fromSeat,0);
+  assert.deepEqual(cursor.consumeEvents(state([event])),[]);
+  assert.deepEqual(cursor.consumeEvents(state([event],2,'game-2')),[]);
+});
+
+test('win warming is bounded, deduplicated and silent; disabled audio sends no preload requests', async () => {
+  const {engine,played}=audioFixture(); let active=0,max=0,fetches=0;
+  engine.fetchAudio=async url=>{fetches++;active++;max=Math.max(max,active);await tick();active--;return {ok:true,headers:{get:()=> 'audio/mpeg'},arrayBuffer:async()=>url};};
+  await engine.warmWins(); assert.equal(fetches,0);
+  await engine.unlock(); await engine.warmWins(['sunny','sweet','elegant']);
+  assert.equal(fetches,9); assert.ok(max<=3); assert.deepEqual(played,['silent']);
+  await engine.warmWins(); assert.equal(fetches,9);
+  engine.setMuted(true);await engine.warmWins();assert.equal(fetches,9);engine.dispose();
+});

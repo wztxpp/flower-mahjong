@@ -2,6 +2,8 @@
 export const TILE_COUNT = 18;
 export const DEFAULT_RULES = Object.freeze({
   sevenPairs: true,
+  allowPungUpgrade: false, // New games prohibit upgrading a peng; missing flag retains saved rules.
+  turnDirection: 'counterclockwise', // New games; missing field preserves saved clockwise games.
   autoDiscardAfterHu: true, // Chosen at game start; missing flags keep saved games automatic.
   bigSingleReadyPayment: true, // New games only: one ready-state payment, never retroactive.
   specialHuPatterns: true, // New games only; saved games without this flag retain their original scoring.
@@ -51,12 +53,13 @@ function normalizeRules(input = {}) {
   if (unknown.length) throw new Error(`未知规则：${unknown.join('、')}`);
   if (input.dragonPoints !== undefined && (!input.dragonPoints || typeof input.dragonPoints !== 'object' || Array.isArray(input.dragonPoints))) throw new Error('神龙分值无效');
   const rules = { ...DEFAULT_RULES, ...input, dragonPoints: { ...DEFAULT_RULES.dragonPoints, ...(input.dragonPoints || {}) } };
-  for (const key of ['sevenPairs', 'autoDiscardAfterHu', 'bigSingleReadyPayment', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
+  for (const key of ['sevenPairs', 'allowPungUpgrade', 'autoDiscardAfterHu', 'bigSingleReadyPayment', 'specialHuPatterns', 'multipleWinners', 'finalHuPaymentExceptions', 'selfDrawOnlyUnwon', 'radishCountsMelds', 'dragonCountsMelds', 'radishCountsWinPile', 'dragonCountsWinPile', 'dragonCountsSharedRadishes', 'stackDragonBonus', 'allowChangedWaitDuringLock', 'preserveWaitsOnPostHuKong']) {
     if (typeof rules[key] !== 'boolean') throw new Error(`规则 ${key} 必须为布尔值`);
   }
   for (const key of ['baseFan', 'sixCopyFan', 'sevenPlusCopyFan']) {
     if (!Number.isSafeInteger(rules[key]) || rules[key] < (key === 'baseFan' ? 1 : 0) || rules[key] > 1000) throw new Error('番数规则无效');
   }
+  if (!['clockwise', 'counterclockwise'].includes(rules.turnDirection)) throw new Error('行牌方向无效');
   if (rules.radishScope !== 'all') throw new Error('萝卜归属规则无效');
   if (!['exclusive', 'additive'].includes(rules.bigSingleOverlap)) throw new Error('大单钓叠加规则无效');
   if (!['untilNaturalDraw', 'untilWaitChange'].includes(rules.repeatHuLock)) throw new Error('重复胡牌锁定规则无效');
@@ -83,6 +86,13 @@ function secureRandom() {
   const bytes = new Uint32Array(1);
   globalThis.crypto.getRandomValues(bytes);
   return bytes[0] / 4294967296;
+}
+
+/** Screen seats stay fixed: +1 is upper-left, +2 upper-right from each player's view.
+ * Missing direction is the legacy clockwise order; never retrofit a saved game. */
+export function turnOrderAfter(game, seat) {
+  const offsets = game.rules?.turnDirection === 'counterclockwise' ? [2, 1] : [1, 2];
+  return offsets.map(offset => (seat + offset) % 3);
 }
 
 export function dealerForNextGame(previousGame) {
@@ -265,7 +275,7 @@ export function getLegalActions(game, seat) {
     const counts = countsOf(player.hand);
     for (let tile = 0; tile < TILE_COUNT; tile++) {
       if (player.melds.length < 4 && counts[tile] >= 4 && canKong(game, seat, 'anGang', tile)) actions.push({ type: 'anGang', tile });
-      if (counts[tile] && player.melds.some(meld => meld.type === 'peng' && meld.tile === tile) && canKong(game, seat, 'buGang', tile)) actions.push({ type: 'buGang', tile });
+      if (game.rules.allowPungUpgrade !== false && counts[tile] && player.melds.some(meld => meld.type === 'peng' && meld.tile === tile) && canKong(game, seat, 'buGang', tile)) actions.push({ type: 'buGang', tile });
       if (counts[tile] && player.melds.some(meld => meld.tile === tile && canExtendKong(meld)) && canKong(game, seat, 'addGang', tile)) actions.push({ type: 'addGang', tile });
     }
   }
@@ -305,7 +315,7 @@ export function getHuDiagnostic(game, seat) {
     return reply('SHAPE', waitTiles.length ? `这张${label(tile)}不在你的听口；可胡${waitTiles.map(label).join('、')}。` : '当前牌形还未凑成四组加一对（或已启用的七对），暂时不能胡。', extra);
   }
   if (game.phase === 'claim' && !game.claim.eligibleSeats.includes(seat)) return reply('NOT_ELIGIBLE', '本次弃牌没有你的可用接牌操作，请等待下一次机会。', extra);
-  return reply('AVAILABLE', game.claim?.kind === 'robKong' ? '这张补杠牌可以抢杠胡；只有胡或过，所有回应后一起结算。' : fromHand ? '这张牌可以自摸胡牌。' : '这张弃牌可以接胡；所有有资格的玩家回应后一起结算。', extra);
+  return reply('AVAILABLE', game.claim?.kind === 'robKong' ? `这张${game.claim.kongType === 'addGang' ? '加杠' : '补杠'}牌可以抢杠胡；只有胡或过，所有回应后一起结算。` : fromHand ? '这张牌可以自摸胡牌。' : '这张弃牌可以接胡；所有有资格的玩家回应后一起结算。', extra);
 }
 
 function log(game, event) { game.history.push({ revision: game.revision, ...event }); }
@@ -549,11 +559,11 @@ function offerKongUpgrade(game, seat, type, tile) {
   // A won player's ordinary draw is protected, just like its ordinary discard.
   if (player.huCount && !afterKong) return kong(game, seat, type, tile);
   const options = {};
-  for (const other of [1, 2].map(offset => (seat + offset) % 3)) {
+  for (const other of turnOrderAfter(game, seat)) {
     // Rob-kong is its own repeat-win exception. It never offers peng or mingGang.
     if (huWaits(game, other, tile, false, true)) options[other] = [{ type: 'hu' }];
   }
-  const eligibleSeats = Object.keys(options).map(Number);
+  const eligibleSeats = turnOrderAfter(game, seat).filter(other => options[other]);
   if (!eligibleSeats.length) return kong(game, seat, type, tile);
   removeTile(player.hand, tile);
   player.pendingKongDiscard = false;
@@ -562,7 +572,7 @@ function offerKongUpgrade(game, seat, type, tile) {
   game.claim = { kind: 'robKong', kongType: type, discardIndex: game.discards.length - 1,
     discardSeat: seat, tile, eligibleSeats, options, responses: {} };
   log(game, { type: 'robKongAttempt', seat, tile, kongType: type, afterKong,
-    message: `${seat + 1}号位尝试补杠${label(tile)}，等待其他玩家抢杠胡或过。` });
+    message: `${seat + 1}号位尝试${type === 'addGang' ? '加杠' : '补杠'}${label(tile)}，等待其他玩家抢杠胡或过。` });
 }
 
 function resolveClaims(game) {
@@ -570,7 +580,7 @@ function resolveClaims(game) {
   if (!claim.eligibleSeats.every(seat => claim.responses[seat])) return;
   const discarded = game.discards[claim.discardIndex];
   discarded.claimable = false;
-  const order = [1, 2].map(offset => (discarded.seat + offset) % 3);
+  const order = turnOrderAfter(game, discarded.seat);
   let winners = order.filter(seat => claim.responses[seat]?.type === 'hu');
   if (!game.rules.multipleWinners) winners = winners.slice(0, 1);
   if (winners.length) {
@@ -587,9 +597,9 @@ function resolveClaims(game) {
     kong(game, discarded.seat, claim.kongType, discarded.tile);
     return;
   }
-  // Wait for everyone first; kong outranks peng, equal claims use clockwise proximity.
+  // Wait for everyone first; kong outranks peng, equal claims use the saved direction, never click order.
   const caller = order.find(seat => claim.responses[seat]?.type === 'mingGang') ?? order.find(seat => claim.responses[seat]?.type === 'peng');
-  if (caller === undefined) return startDraw(game, (discarded.seat + 1) % 3);
+  if (caller === undefined) return startDraw(game, order[0]);
   const type = claim.responses[caller].type;
   discarded.claimedBy = caller; discarded.claimedAs = type;
   if (type === 'mingGang') kong(game, caller, type, discarded.tile, discarded.seat);
@@ -612,15 +622,15 @@ function discard(game, seat, tile, automatic = false) {
     message: `${seat + 1}号位${automatic ? '摸后自动打出' : '打出'}${label(tile)}${discarded.afterKong ? '（杠后出牌，接胡仅出牌者付款）' : ''}。` });
   awardBigSingleReady(game, seat);
   const options = {};
-  for (const other of [0, 1, 2].filter(other => other !== seat)) {
+  for (const other of turnOrderAfter(game, seat)) {
     const available = claimOptions(game, other, discarded);
     if (available.length) options[other] = available;
   }
-  const eligibleSeats = Object.keys(options).map(Number);
+  const eligibleSeats = turnOrderAfter(game, seat).filter(other => options[other]);
   if (eligibleSeats.length) {
     discarded.claimable = true; game.phase = 'claim'; game.turnStep = null;
     game.claim = { discardIndex: game.discards.length - 1, discardSeat: seat, tile, eligibleSeats, options, responses: {} };
-  } else startDraw(game, (seat + 1) % 3);
+  } else startDraw(game, turnOrderAfter(game, seat)[0]);
 }
 
 /** No timing race or user draw action: stop only at a real player decision. */

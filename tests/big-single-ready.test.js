@@ -4,7 +4,7 @@ import { createGame, applyAction, getPlayerView, getLegalActions, assertGameInva
 const waiting = [1,2,3,4,5,6,10,11,12,13,14,15,17];
 const meld = (tile, type = 'peng', count = type === 'peng' ? 3 : 4) => ({ type, tile, tiles: Array(count).fill(tile) });
 function fixture({ seat = 0, hand = [16,17], melds = [meld(0),meld(3),meld(6),meld(9)], head = [8,8], rules = {}, waitingTurn = false } = {}) {
-  const game = createGame({ seed: 'ready-fee', rules });
+  const game = createGame({ seed: 'ready-fee', rules: { allowPungUpgrade: true, ...rules } });
   game.players.forEach((player, i) => { player.hand = [...(i === seat ? hand : waiting)]; player.melds = i === seat ? structuredClone(melds) : []; player.kongCount = player.melds.filter(m => m.type !== 'peng').length; });
   game.currentSeat = seat; game.lastDraw = { seat, tile: hand.at(-1), source: 'normal' };
   if (waitingTurn) { game.turnStep = 'draw'; game.lastDraw = null; }

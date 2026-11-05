@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as Vue from 'vue';
 import * as CharacterAudioModule from '../src/character-audio.js';
+import * as MahjongPhotoModule from '../src/mahjong-photo-faces.js';
 import * as Renderer from 'vue/server-renderer';
 import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc';
 import { getPlayerView } from '../shared/game.js';
@@ -23,7 +24,7 @@ function compileComponent(filename, dependencies = {}) {
   component.ssrRender = new Function('modules', `${load(template.code).replace('export function ssrRender', 'function ssrRender')}\nreturn ssrRender;`)(modules);
   return component;
 }
-const Tile = compileComponent('MahjongTile.vue');
+const Tile = compileComponent('MahjongTile.vue', { './mahjong-photo-faces.js': MahjongPhotoModule });
 const Icon = compileComponent('Icon.vue');
 const App = compileComponent('App.vue', { './MahjongTile.vue': Tile, './Icon.vue': Icon, './character-audio.js': CharacterAudioModule });
 const originals = Object.fromEntries(['window', 'document', 'sessionStorage', 'localStorage', 'fetch', 'setTimeout', 'clearTimeout'].map(key => [key, globalThis[key]]));
@@ -117,13 +118,17 @@ test('all-player hu ends distinctly and compact new rules contain confirmed fan 
   assert.match(html, /暂不叠加番分、萝卜和神龙/);
 });
 
-test('eight circles has eight explicitly black marks, and bamboo one is a bird', async () => {
+test('eight circles and the bamboo bird use the correct original photo faces', async () => {
   const circles = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile: 16 }));
-  assert.equal((circles.match(/class="tile-ink-black"/g) || []).length, 8);
-  assert.doesNotMatch(circles, /class="tile-ink-red"|class="tile-ink-green"/);
+  assert.match(circles, /href="\/assets\/tiles\/reference-mahjong\.jpg"/);
+  assert.ok(circles.includes(MahjongPhotoModule.photoFaceTransform(16)));
   assert.match(circles, /aria-label="8筒"/);
   const bamboo = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile: 0 }));
-  assert.match(bamboo, /class="bamboo-bird"/);
+  assert.ok(bamboo.includes(MahjongPhotoModule.photoFaceTransform(0)));
+  assert.match(bamboo, /aria-label="1条"/);
+  const back = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile: 16, back: true }));
+  assert.doesNotMatch(back, /reference-mahjong|<image/);
+  assert.match(back, /aria-label="背面牌"/);
 });
 
 test('unchanged polling preserves the hand snapshot and only applies connection flags', async () => {
@@ -338,7 +343,7 @@ test('history shows own finalized totals separately from provisional games and n
     { gameId: 'g1', roomId: 'ABCDEF23', seat: 0, name: '原来的名字', status: 'finished', score: 18, huCount: 2, startedAt: Date.now(), players: [], events: [] }
   ] }); };
   await scope.loadHistory(); const html = await render(scope);
-  assert.match(html, /累计已结算虚拟积分/); assert.match(html, /\+18/); assert.match(html, /已离桌 · 未结算/); assert.match(html, /不计入累计已结算积分/); assert.match(html, /改名以后/); assert.match(html, /原来的名字/); assert.match(html, /自摸计分/);
+  assert.match(html, /个人总积分 · 累计已结算/); assert.match(html, /\+18/); assert.match(html, /已离桌 · 未结算/); assert.match(html, /不计入累计已结算积分/); assert.match(html, /改名以后/); assert.match(html, /原来的名字/); assert.match(html, /自摸计分/);
   assert.doesNotMatch(html, /恢复上一桌|href="[^\"]*room=|aaaaaaaaaaaaaaaa|bbbbbbbbbbbbbbbb/);
   assert.equal(calls[0].url, '/api/profile/history'); assert.equal(calls[0].options.headers.Authorization, `Bearer ${'a'.repeat(64)}`); assert.equal(calls[0].options.headers['X-Player-Token'], undefined);
 });
@@ -696,7 +701,7 @@ test('extended kong actions and meld labels show sixth through eighth tiles with
 test('latest rules distinguish exposed-kong replacement hu from own-kong replacement hu and discarded tiles', async () => {
   browser();const scope=lobby();scope.showRules.value=true;const html=await render(scope);
   assert.match(html,/本次补摸胡只由该明杠的出牌者付款/);
-  assert.match(html,/自己摸来的暗杠、补杠、加杠后补摸胡才由另外两家付款/);
+  assert.match(html.replace(/<[^>]*>/g, ''),/自己摸来的暗杠、加杠后补摸胡才由另外两家付款/);
   assert.match(html,/杠后打出的牌被胡，仍只由该张牌的出牌者付款/);
 });
 
@@ -925,4 +930,152 @@ test('late start result cannot revive an exited room or overwrite a new room dra
   assert.equal(scope.state.value, null);
   assert.equal(scope.session.value, null);
   assert.equal(scope.autoDiscardAfterHu.value, true);
+});
+
+test('table total scoreboard remains distinct from per-round scores and lobby personal total', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.tableScores = [
+    { id: 'player-1', name: '本人', seat: 0, totalScore: 19, settledScore: 12, provisionalScore: 7 },
+    { id: 'player-2', name: '离桌的牌友', seat: null, detached: true, totalScore: -9, settledScore: -9, provisionalScore: 0 },
+    { id: 'player-3', name: '新来牌友', seat: 1, totalScore: 0, settledScore: 0, provisionalScore: 0 },
+  ];
+  state.game.players[0].score = 7;
+  const scope = setup(state);
+  const html = await render(scope);
+  assert.match(html, /本桌总积分/); assert.match(html, /本局积分/);
+  assert.match(html, /\+19/); assert.match(html, /已结算 \+12/); assert.match(html, /本局暂记 \+7/);
+  assert.match(html, /离桌的牌友.*已离桌/);
+  assert.match(html, /同桌再开、刷新、重连不清零/);
+  assert.match(html, /个人跨桌总积分见大厅/);
+  assert.equal(scope.tableScoreRows.value.length, 3);
+});
+
+test('fixed screen positions explain counterclockwise from every viewer without swapping seats', async () => {
+  for (const seat of [0, 1, 2]) {
+    const state = fixture({ schemaVersion: 3 }); state.you = seat;
+    state.game.rules = { turnDirection: 'counterclockwise', allowPungUpgrade: false };
+    const scope = setup(state);
+    assert.deepEqual(scope.opponents.value.map(player => player.seat), [(seat + 1) % 3, (seat + 2) % 3]);
+    assert.equal(scope.counterclockwise.value, true);
+    const html = await render(scope);
+    assert.match(html, /逆时针 · 自己 → 右手边 → 左手边/);
+    assert.match(html, /同级碰、杠、胡按此顺序，不按点击先后/);
+    delete scope.state.value.game.rules.turnDirection;
+    assert.equal(scope.counterclockwise.value, false);
+    assert.match(await render(scope), /本局保留原方向，下一局改为逆时针/);
+  }
+});
+
+test('new-rule board offers no peng upgrade and explains actual kong extension separately', async () => {
+  const raw = postHuKongGame({ huCount: 0 }); raw.rules.allowPungUpgrade = false;
+  const state = fixture({ schemaVersion: 3 }); state.game = getPlayerView(raw, 0);
+  const scope = setup(state);
+  assert.equal(scope.gangActions.value.some(action => action.type === 'buGang'), false);
+  assert.equal(scope.pungUpgradeAllowed.value, false);
+  scope.showRules.value = true;
+  const html = await render(scope);
+  assert.match(html, /碰后不能补杠/);
+  assert.match(html, /已成立的杠仍可逐张加至第五至八张/);
+  assert.match(html, /碰成的三张始终算碰/);
+  assert.doesNotMatch(html, /碰后补杠、已有杠再加一张/);
+  delete scope.state.value.game.rules.allowPungUpgrade;
+  assert.equal(scope.pungUpgradeAllowed.value, true);
+  assert.match(await render(scope), /本局保留原补杠规则/);
+});
+
+test('confirmed discard win highlights the exact river tile and win pile without delaying next legal action', async () => {
+  const initial=fixture({schemaVersion:3}); initial.game.id='presentation';
+  const scope=setup(initial); scope.applyState(initial);
+  const next=structuredClone(initial); next.revision++;
+  next.game.history=[{type:'hu',seat:1,tile:4,source:'discard',fromSeat:0}, {type:'draw',seat:0}];
+  next.game.discards=[{seat:0,tile:4,huSeats:[1]}];
+  next.game.players[1].winPile=[{tile:4,source:'discard',discardIndex:0}];
+  scope.applyState(next); await settle();
+  assert.equal(scope.state.value.revision,next.revision);
+  assert.deepEqual(scope.legalActions.value,next.game.legalActions);
+  assert.equal(scope.winningEvents.value.length,1);
+  assert.equal(scope.winningEvents.value[0].discardIndex,0);
+  assert.equal(scope.isWinningTile(1,0),true);
+  const html=await render(scope);
+  assert.match(html,/winning-discard/); assert.match(html,/winning-tile/);
+  assert.match(html,/role="status" aria-live="polite" aria-atomic="true"/);
+  assert.match(html,/牌友2接炮5条，来自牌友1/);
+  assert.match(html,/data-discard-index="0"/);
+  assert.match(html,/data-win-seat="1" data-win-index="0"/);
+  scope.applyState(next); assert.equal(scope.winningEvents.value.length,1);
+  const cleanup=scheduled.find(item=>item.delay===2800 && !item.cancelled);
+  assert.ok(cleanup); cleanup.callback(); assert.equal(scope.winningEvents.value.length,0);
+});
+test('initial load, hidden refresh and reconnect never replay old win presentation', async () => {
+  const snapshot=fixture({schemaVersion:3}); snapshot.game.id='presentation';
+  snapshot.game.history=[{type:'hu',seat:1,tile:4,source:'selfDraw'}];
+  const scope=setup(snapshot); scope.applyState(snapshot);
+  assert.equal(scope.winningEvents.value.length,0);
+  const next=structuredClone(snapshot); next.revision++; next.game.history.push({type:'hu',seat:2,tile:7,source:'selfDraw'});
+  document.hidden=true; scope.applyState(next); document.hidden=false;
+  assert.equal(scope.winningEvents.value.length,0);
+  scope.visibilityChanged(); scope.applyState(next); assert.equal(scope.winningEvents.value.length,0);
+  scope.offline.value=true;
+  const reconnected=structuredClone(next); reconnected.revision++; reconnected.game.history.push({type:'hu',seat:1,tile:5,source:'selfDraw'});
+  scope.applyState(reconnected); assert.equal(scope.winningEvents.value.length,0);
+});
+test('simultaneous winners share the source tile and reduced motion keeps textual feedback without flights', async () => {
+  const initial=fixture({schemaVersion:3}); initial.game.id='presentation';
+  const scope=setup(initial); scope.applyState(initial);
+  let queried=false;
+  window.matchMedia=()=>({matches:true}); document.querySelector=()=>{queried=true;};
+  const next=structuredClone(initial); next.revision++;
+  next.game.history=[1,2].map(seat=>({type:'hu',seat,tile:4,source:'discard',fromSeat:0}));
+  next.game.discards=[{seat:0,tile:4,huSeats:[1,2]}];
+  next.game.players[1].winPile=[{tile:4,source:'discard',discardIndex:0}];
+  next.game.players[2].winPile=[{tile:4,source:'discard',discardIndex:0,virtual:true}];
+  scope.applyState(next); await settle();
+  assert.equal(scope.winningEvents.value.length,2); assert.equal(scope.winningFlights.value.length,0); assert.equal(queried,false);
+  assert.equal(scope.winningDiscardIndices.value.size,1);
+  assert.match(scope.winningAnnouncement.value,/牌友2接炮5条，来自牌友1；牌友3接炮5条，来自牌友1/);
+  scope.visibilityChanged(); assert.equal(scope.winningEvents.value.length,0);
+  scope.applyState(next); assert.equal(scope.winningEvents.value.length,0);
+});
+test('new game and leaving table clear presentation immediately, without replaying old calls', async () => {
+  const initial=fixture({schemaVersion:3}); initial.game.id='presentation';
+  const scope=setup(initial); scope.applyState(initial);
+  const next=structuredClone(initial); next.revision++; next.game.history=[{type:'hu',seat:1,tile:4,source:'selfDraw'}];
+  scope.applyState(next); assert.equal(scope.winningEvents.value.length,1);
+  const restarted=structuredClone(next); restarted.revision++; restarted.game.id='next-game'; restarted.game.history=[];
+  scope.applyState(restarted); assert.equal(scope.winningEvents.value.length,0);
+  restarted.revision++; restarted.game.history.push({type:'hu',seat:1,tile:4,source:'selfDraw'});
+  scope.applyState(restarted); assert.equal(scope.winningEvents.value.length,1);
+  scope.resetRoomContext(); assert.equal(scope.winningEvents.value.length,0); assert.equal(scope.winningFlights.value.length,0);
+});
+
+test('self-draw has no source flight, while rob-kong feedback labels the actual upgrade source', async () => {
+  const initial=fixture({schemaVersion:3}); initial.game.id='presentation';
+  const scope=setup(initial);scope.applyState(initial);
+  const next=structuredClone(initial);next.revision++;next.game.history=[{type:'hu',seat:0,tile:4,source:'selfDraw',fromSeat:null}];
+  next.game.players[0].winPile=[{tile:4,source:'selfDraw'}];scope.applyState(next);await settle();
+  assert.equal(scope.winningDiscardIndices.value.size,0);assert.equal(scope.winningFlights.value.length,0);assert.match(await render(scope),/摸牌成胡/);
+  next.revision++;next.game.history.push({type:'hu',seat:1,tile:5,source:'robKong',fromSeat:0});next.game.players[1].winPile=[{tile:5,source:'robKong',discardIndex:0}];scope.applyState(next);await settle();
+  const html=await render(scope);assert.match(html,/测试|牌友1补杠/);assert.match(html,/抢杠胡 · 6条/);
+});
+
+test('integrated new-rule rob-kong cue uses photo tile and add-kong label without restoring peng upgrades', async () => {
+  const initial = fixture({ schemaVersion: 3 }); initial.game.id = 'integrated-presentation';
+  initial.game.rules = { allowPungUpgrade: false, turnDirection: 'counterclockwise' };
+  initial.tableScores = [{ id: 'player-1', name: '牌友1', seat: 0, totalScore: 12, settledScore: 12, provisionalScore: 0 }];
+  const scope = setup(initial); scope.applyState(initial);
+  const next = structuredClone(initial); next.revision++;
+  next.game.history = [{ type: 'hu', seat: 2, tile: 5, source: 'robKong', fromSeat: 0 }];
+  next.game.players[2].winPile = [{ tile: 5, source: 'robKong', discardIndex: 0 }];
+  next.tableScores[0].totalScore = 10; next.tableScores[0].provisionalScore = -2;
+  scope.applyState(next); await settle();
+  const html = await render(scope);
+  assert.match(html, /牌友1加杠/);
+  assert.match(html, /抢杠胡 · 6条/);
+  assert.match(html, /tile-photo-face/);
+  assert.match(html, /\/assets\/tiles\/reference-mahjong\.jpg/);
+  assert.equal(scope.tableScoreRows.value[0].totalScore, 10);
+  assert.equal(scope.pungUpgradeAllowed.value, false);
+  assert.equal(scope.gangActions.value.some(action => action.type === 'buGang'), false);
+  assert.equal(scope.counterclockwise.value, true);
+  assert.deepEqual(scope.legalActions.value, next.game.legalActions);
 });

@@ -175,7 +175,7 @@ test('health and API responses are JSON, non-cacheable, and same-origin protecte
   const healthy = await api.request('/api/health', { headers: { origin: api.origin } });
   assert.equal(healthy.status, 200);
   assert.equal(healthy.body.ok, true);
-  assert.equal(healthy.body.version, '0.4.2');
+  assert.equal(healthy.body.version, '0.7.0');
   assert.equal(healthy.body.rulesVersion, 3);
   assert.match(healthy.headers.get('content-type'), /application\/json/);
   assert.match(healthy.headers.get('cache-control'), /no-store/);
@@ -947,7 +947,7 @@ test('v3 HTTP selfdraw uses all personal radish zones, excludes already-hu payer
   const api = await table(t);
   const hand = [0,1,2,3,4,5,9,10,11,15,16,17,6,6];
   const game = apiFixture({ hands: [hand, WAITING_HAND, WAITING_HAND], wins: [[15,12],[7],[]], radishes: [[],[15,12,12],[]], drawTile: 6, head: [8] });
-  game.schemaVersion = 3; game.rules = structuredClone(DEFAULT_RULES); game.firstHuRadishesRevealed = true;
+  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true }; game.firstHuRadishesRevealed = true;
   game.dragonSettlement = { settled: false, entries: [] }; assertLatest(game);
   let views = await installFixture(api,game); const rev = views[0].revision;
   const responses = await Promise.all([api.host.action(rev,{type:'hu'}),api.host.action(rev,{type:'hu'})]);
@@ -971,7 +971,7 @@ test('v3 HTTP exposes and settles locked repeat hu on the reported kong-discard 
   const game = apiFixture({ hands: [source, receiver, WAITING_HAND],
     melds: [[{type:'peng',tile:10,tiles:[10,10,10]}],[],[]],
     wins: [[],[16,10,16,13,16],[]], locks: [[],[10,13,16],[]], drawTile:10, head:[13,0], tail:[16] });
-  game.schemaVersion=3; game.rules=structuredClone(DEFAULT_RULES);
+  game.schemaVersion=3; game.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };
   game.firstHuRadishesRevealed=true; game.dragonSettlement={settled:false,entries:[]};
   assertLatest(game);
   let views=await installFixture(api,game);
@@ -1013,7 +1013,7 @@ test('v3 HTTP seat-three eight-point kong-discard win charges only seat one, sur
     const api = await table(t);
     const game = apiFixture({ wins: [[7], [], []], kongSeats: [0], head: [6] });
     game.schemaVersion = 3;
-    game.rules = { ...structuredClone(DEFAULT_RULES), baseFan: 4, specialHuPatterns: false };
+    game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, baseFan: 4, specialHuPatterns: false };
     for (const key of ['selfDrawOnlyUnwon', 'finalHuPaymentExceptions']) {
       if (paymentFlags === 'absent') delete game.rules[key];
       else game.rules[key] = paymentFlags === 'enabled';
@@ -1083,7 +1083,7 @@ test('v3 HTTP extends a saved five-tile kong through six, seven and eight exactl
     const game = apiFixture({ hands: [[2, 3, 4, 5, 6, 7, 8, 10, 11, 17, 17], noTwo, noTwo],
       melds: [[{ type: meldType, tile: 2, tiles: Array(5).fill(2), extended: true }], [], []],
       wins: [[9], [], []], drawTile: 2, head: [2, 2, 9], tail: [15, 16, 8] });
-    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, turnDirection: 'clockwise', specialHuPatterns: false };
     game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
     game.players[0].kongCount = 2;
     assertLatest(game);
@@ -1163,7 +1163,7 @@ test('v3 HTTP exposed-kong replacement hu charges only its source, survives old-
     const receiver = [2, 2, 2, 3, 4, 5, 6, 7, 8, 10, 11, 17, 17];
     const game = apiFixture({ hands: [[...WAITING_HAND, 2], receiver, WAITING_HAND],
       wins: [[], [], thirdHasHu ? [16] : []], drawTile: 2, head: [9, 9, 6], tail: [15] });
-    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+    game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, turnDirection: 'clockwise', specialHuPatterns: false };
     game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
     assertLatest(game);
     let views = await installFixture(api, game);
@@ -1252,7 +1252,7 @@ test('v3 HTTP pending final first-hu after exposed-kong still has one payer and 
   const game = apiFixture({ hands: [WAITING_HAND, receiver, WAITING_HAND],
     melds: [[], [{ type: 'mingGang', tile: 2, tiles: [2, 2, 2, 2], fromSeat: 0 }], []],
     wins: [[16], [], [16]], currentSeat: 1, drawTile: 9, head: [6] });
-  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, turnDirection: 'clockwise', specialHuPatterns: false };
   game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
   game.drawKind = 'replacement'; game.lastDraw.source = 'replacement';
   game.lastDraw.kongSource = { type: 'mingGang', fromSeat: 0 };
@@ -1289,7 +1289,7 @@ test('v3 special seven-pairs repeat exposes expanded waits only to its owner and
   const api = await table(t);
   const hand=[0,0,2,2,4,4,6,6,9,9,11,11,13,13];
   const game=apiFixture({hands:[hand,WAITING_HAND,WAITING_HAND],drawTile:13,head:[2,7],tail:[8,8,8,15,15,15]});
-  game.schemaVersion=3;game.rules=structuredClone(DEFAULT_RULES);game.firstHuRadishesRevealed=false;
+  game.schemaVersion=3;game.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };game.firstHuRadishesRevealed=false;
   game.dragonSettlement={settled:false,entries:[]};assertLatest(game);
   const views=await installFixture(api,game);
   let answer=await api.host.action(views[0].revision,{type:'hu'});
@@ -1323,7 +1323,7 @@ async function robKongHttpFixture({ sourceWon = false, replacement = false, rece
   if (sourceWon) wins[currentSeat] = [15];
   if (receiverWon) wins[(currentSeat + 1) % 3] = [16];
   const game = apiFixture({ hands, melds, wins, currentSeat, drawTile: 17, head: [15, 8], tail: [7] });
-  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), specialHuPatterns: false };
+  game.schemaVersion = 3; game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, turnDirection: 'clockwise', specialHuPatterns: false };
   game.firstHuRadishesRevealed = true; game.dragonSettlement = { settled: false, entries: [] };
   if (replacement) {
     game.lastDraw.source = 'replacement'; game.drawKind = 'replacement';
@@ -1581,7 +1581,7 @@ test('v3 HTTP old exposed pre-first-hu radishes stay exposed and are not counted
   const { DEFAULT_RULES, assertGameInvariants: assertLatest }=await import('../shared/game.js');
   const api=await table(t);
   const initial=apiFixture({radishes:[[7,8],[],[]],head:[17,6],tail:[15,15,15,16,16,16]});
-  initial.schemaVersion=3;initial.rules=structuredClone(DEFAULT_RULES);
+  initial.schemaVersion=3;initial.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };
   initial.firstHuRadishesRevealed=false;initial.dragonSettlement={settled:false,entries:[]};
   initial.players[0].kongCount=2;delete initial.pendingKongRadishes;
   assertLatest(initial);
@@ -1641,7 +1641,7 @@ async function repeatedFourDotsHttpFixture({ sourceWon = false, schemaVersion = 
   });
   game.history = [{revision:0,type:'hu',seat:1,tile:12,source:'discard',fromSeat:2,message:'保存的首次四筒胡牌记录'}, {revision:0,type:'draw',seat:1,source:'continuation',message:'2号位胡后补摸。'}];
   if (schemaVersion === 3) {
-    game.schemaVersion=3;game.rules=structuredClone(DEFAULT_RULES);game.firstHuRadishesRevealed=true;game.dragonSettlement={settled:false,entries:[]};assertLatest(game);
+    game.schemaVersion=3;game.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };game.firstHuRadishesRevealed=true;game.dragonSettlement={settled:false,entries:[]};assertLatest(game);
   }
   return game;
 }
@@ -1688,7 +1688,7 @@ test('v3 HTTP two already-won players can both claim ordinary discard with stabl
   for (const reverse of [false,true]) {
     const api=await table(t);
     const initial=apiFixture({wins:[[],[17],[17]],locks:[[],[17],[17]],head:[6,8]});
-    initial.schemaVersion=3;initial.rules=structuredClone(DEFAULT_RULES);initial.firstHuRadishesRevealed=true;initial.dragonSettlement={settled:false,entries:[]};assertLatest(initial);
+    initial.schemaVersion=3;initial.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };initial.firstHuRadishesRevealed=true;initial.dragonSettlement={settled:false,entries:[]};assertLatest(initial);
     const views=await installFixture(api,initial);const opened=await api.host.action(views[0].revision,{type:'discard',tile:17});assert.equal(opened.status,200);
     const order=reverse?[2,1]:[1,2];const first=await api.clients[order[0]].action(opened.body.state.revision,{type:'hu'});assert.equal(first.status,200);
     assert.equal(first.body.state.game.history.filter(event=>event.type==='hu').length,0);
@@ -1696,7 +1696,7 @@ test('v3 HTTP two already-won players can both claim ordinary discard with stabl
     const answers=await Promise.all([api.clients[order[1]].action(first.body.state.revision,{type:'hu'}),api.clients[order[1]].action(first.body.state.revision,{type:'hu'})]);
     assert.deepEqual(answers.map(answer=>answer.status).sort(),[200,409]);
     const stored=(await api.store.get(api.roomId)).game;assertLatest(stored);const events=stored.history.filter(event=>event.type==='hu');
-    assert.deepEqual(events.map(event=>event.seat),[1,2]);assert.deepEqual(events.map(event=>event.source),['discard','discard']);
+    assert.deepEqual(events.map(event=>event.seat),[2,1]);assert.deepEqual(events.map(event=>event.source),['discard','discard']);
     for(const event of events)assert.deepEqual(event.payments,[{seat:0,delta:-event.points},{seat:event.seat,delta:event.points}]);
     assert.equal(stored.players[1].huCount,2);assert.equal(stored.players[2].huCount,2);
   }
@@ -1709,7 +1709,7 @@ async function bigSingleReadyHttpFixture({ legacy = false, beforePeng = false } 
     hands:[[12,12,8,16],[6,0,1,2,3,4,5,9,10,11,12,13,14,17],WAITING_HAND],
     melds:[groups.slice(0,3),[],[]],currentSeat:1,drawTile:6,head:[6],
   } : { hands:[[8,16],WAITING_HAND,WAITING_HAND],melds:[groups,[],[]],drawTile:16,head:[6] });
-  initial.schemaVersion=3; initial.rules=structuredClone(DEFAULT_RULES);
+  initial.schemaVersion=3; initial.rules= { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true };
   initial.firstHuRadishesRevealed=false; initial.pendingKongRadishes=0; initial.dragonSettlement={settled:false,entries:[]};
   if (legacy) delete initial.rules.bigSingleReadyPayment;
   assertLatest(initial);
@@ -1829,7 +1829,7 @@ test('manual post-hu HTTP pause survives FileStore reload, ignores forged rule c
   assert.equal(started.status, 200);
   const game = apiFixture({ head: [6, 7], tail: [1, 2, 3, 4, 5, 6] });
   game.schemaVersion = 3;
-  game.rules = { ...structuredClone(DEFAULT_RULES), autoDiscardAfterHu: started.body.state.game.rules.autoDiscardAfterHu, specialHuPatterns: false };
+  game.rules = { ...structuredClone(DEFAULT_RULES), allowPungUpgrade: true, autoDiscardAfterHu: started.body.state.game.rules.autoDiscardAfterHu, specialHuPatterns: false };
   game.firstHuRadishesRevealed = false; game.pendingKongRadishes = 0; game.dragonSettlement = { settled: false, entries: [] };
   const installed = await installFixture(api, game);
   const won = await api.host.action(installed[0].revision, { type: 'hu' }, { rules: { autoDiscardAfterHu: true }, options: { autoDiscardAfterHu: true } });
@@ -1852,7 +1852,7 @@ test('manual post-hu HTTP pause survives FileStore reload, ignores forged rule c
   const after = await reloadedApi.store.get(api.roomId);
   assert.equal(after.game.rules.autoDiscardAfterHu, false);
   assert.equal(after.game.discards.length, 1); assert.equal(after.game.discards[0].tile, 6);
-  assert.equal(after.game.currentSeat, 1); assert.equal(after.game.lastDraw.tile, 7);
+  assert.equal(after.game.currentSeat, 2); assert.equal(after.game.lastDraw.tile, 7);
   assert.deepEqual(after.game.players.map(player => player.score), waitingRoom.game.players.map(player => player.score));
   assert.equal(after.game.players[0].huCount, 1);
   assertLatest(after.game);
@@ -1875,4 +1875,22 @@ test('unchecked option cannot bypass mandatory post-hu kongs through HTTP', asyn
     assert.deepEqual(next.body.state.game.legalActions, [{ type: 'hu' }, { type: 'pass' }]);
     assert.equal(next.body.state.game.rules.autoDiscardAfterHu, false);
   }
+});
+
+test('new-rule HTTP peng upgrade is forbidden server-side and stays forbidden after reconnect', async t => {
+  const api = await table(t);
+  assert.equal(api.state.game.rules.allowPungUpgrade, false);
+  const game = postHuKongGame({ huCount: 0 });
+  game.rules.allowPungUpgrade = false;
+  const installed = await installFixture(api, game);
+  const before = await api.store.get(api.roomId);
+  for (const state of installed) assert.equal(state.game.rules.allowPungUpgrade, false);
+  assert.equal(installed[0].game.legalActions.some(action => action.type === 'buGang'), false);
+  assertError(await api.host.action(installed[0].revision, { type: 'buGang', tile: 2 }, { rules: { allowPungUpgrade: true } }), 422, 'ILLEGAL_ACTION');
+  assert.deepEqual(await api.store.get(api.roomId), before);
+  const reconnected = await api.request(`/api/rooms/${api.roomId}/resume`, { method: 'POST', token: api.host.token, body: {} });
+  assert.equal(reconnected.status, 200);
+  assert.equal(reconnected.body.state.game.rules.allowPungUpgrade, false);
+  assert.equal(reconnected.body.state.game.legalActions.some(action => action.type === 'buGang'), false);
+  assert.deepEqual(await api.store.get(api.roomId), before);
 });

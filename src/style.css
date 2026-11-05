@@ -68,3 +68,28 @@
 .special-hand-note { margin:8px 0 4px; color:#7a6e50; font-size:11px; line-height:1.7; }
 
 .start-options{padding:14px 18px;margin-bottom:14px;border:1px solid #d9cdaa;border-radius:12px;background:#faf8ed;color:#526546}.start-options>strong{display:block;font-size:12px;margin-bottom:8px}.start-options label{display:flex;align-items:center;gap:9px;width:fit-content;min-height:44px;cursor:pointer;font-size:14px}.start-options input[type=checkbox]{width:20px;height:20px;accent-color:#456b4b;flex-shrink:0}.start-options input:focus-visible{outline:2px solid #456b4b;outline-offset:3px}.start-options label:has(input:disabled){opacity:.6;cursor:not-allowed}.start-options p{font-size:12px;line-height:1.7;margin:5px 0 0;color:#6b765c}.game-rule-choice{font-size:12px;line-height:1.7;margin:0 0 14px;color:#657451}.game-rule-choice strong{font-weight:600}
+
+/* Table totals remain distinct from the per-round ledger. */
+.table-total-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 10px; border-radius: 10px; }
+.table-total-line > div { min-width: 0; display: flex; flex-direction: column; gap: 5px; overflow-wrap: anywhere; }
+.table-total-line small { color: var(--text-muted, #817c70); font-size: 11px; }
+.table-total-line > strong { flex-shrink: 0; font-size: 22px; font-variant-numeric: tabular-nums; }
+.table-total-card .score-footnote { line-height: 1.65; }
+/* Public, confirmed win feedback. Transform/opacity only; never blocks play. */
+.playing-center{position:relative}
+.win-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.win-cue{position:absolute;z-index:8;top:55px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 12px);display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px 14px;border:1px solid #d9c17e;border-radius:12px;background:#fffbedf5;box-shadow:0 8px 24px #102f2850;pointer-events:none;animation:win-cue-in .18s ease-out}
+.win-cue-entry{display:flex;align-items:center;gap:8px;color:#37583f;font-size:11px;min-width:0}
+.win-cue-source{max-width:100px;overflow-wrap:anywhere;color:#798168;font-size:10px}
+.win-cue-entry b{display:block;max-width:120px;overflow-wrap:anywhere;font-weight:500}
+.win-cue-entry strong{display:block;color:#9a7634;font-size:12px;margin-top:3px;white-space:nowrap}
+.win-cue-arrow{color:#ac8c49;font-size:18px}
+.discard-tile.winning-discard{opacity:1;z-index:1;outline:2px solid #f2ce69;outline-offset:3px;border-radius:4px;animation:win-source-pulse .6s ease-out 2}
+.win-pile-tile.winning-tile{outline:2px solid #d6ad4c;outline-offset:3px;border-radius:4px;animation:win-received .6s ease-out}
+.winning-flight{position:fixed;z-index:45;pointer-events:none;animation:win-tile-flight .55s cubic-bezier(.24,.65,.35,1) forwards;will-change:transform,opacity}
+@keyframes win-tile-flight{0%{transform:translate(0,0) scale(1.08);opacity:1}75%{opacity:1}100%{transform:translate(var(--win-dx),var(--win-dy)) scale(.9);opacity:0}}
+@keyframes win-source-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes win-received{0%{transform:scale(.9)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes win-cue-in{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.win-cue{padding:8px;gap:10px;top:42px}.win-cue-entry{gap:5px;font-size:10px}.win-cue-source{max-width:65px;font-size:9px}.win-cue-entry b{max-width:75px}.win-cue-entry strong{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.winning-flight{display:none}.win-cue,.discard-tile.winning-discard,.win-pile-tile.winning-tile{animation:none!important}}

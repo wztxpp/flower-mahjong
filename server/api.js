@@ -1,7 +1,7 @@
 import { createGame, dealerForNextGame, applyAction, getPlayerView } from '../shared/game.js';
 import { applyAction as applyV2Action, getPlayerView as getV2View } from '../shared/v2-game.js';
 import { applyAction as applyLegacyAction, getPlayerView as getLegacyView } from '../shared/legacy-game.js';
-import { ensureGameMetadata, newGameMetadata, archiveFinishedGame, recordsForProfile } from './history.js';
+import { ensureGameMetadata, newGameMetadata, archiveFinishedGame, recordsForProfile, tableScores } from './history.js';
 import { assignCharacters, gameCharacters, isCharacterId, preferredCharacter } from '../shared/character-assignment.js';
 
 // Existing saved games keep their exact original rules and physical state.
@@ -76,6 +76,7 @@ function publicRoom(room, seat) {
         score: player?.score ?? 0, handCount: player?.handCount ?? 0, huCount: player?.huCount ?? 0,
         melds: player?.melds ?? [], radishes: player?.radishes ?? [], winPile: player?.winPile ?? [], lastScoreBreakdown: player?.lastScoreBreakdown ?? null };
     }), game,
+    tableScores: tableScores(room),
     lifecycle: room.lifecycleLog || [],
   };
 }
@@ -137,7 +138,7 @@ export function createApi(store) {
     const url = new URL(request.url), method = request.method;
     if (!url.pathname.startsWith('/api/')) return null;
     const origin = request.headers.get('origin'); if (origin && origin !== url.origin) fail(403, 'ORIGIN', '不接受跨站请求');
-    if (method === 'GET' && url.pathname === '/api/health') return json({ ok: true, service: 'flower-mahjong', version: '0.4.2', rulesVersion: 3 });
+    if (method === 'GET' && url.pathname === '/api/health') return json({ ok: true, service: 'flower-mahjong', version: '0.7.0', rulesVersion: 3 });
     if (method === 'POST' && url.pathname === '/api/profile') {
       const body = await bodyOf(request);
       // A browser may generate and persist a random identity before registration,

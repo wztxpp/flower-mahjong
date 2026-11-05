@@ -14,12 +14,13 @@ const doAction = (game, seat, type, tile) => applyAction(game, seat, tile === un
 const huEvent = (game, seat = 0) => game.history.find(event => event.type === 'hu' && event.seat === seat);
 const noZero = waiting.map(tile => tile === 0 ? 6 : tile);
 
-/** Eight-copy physical fixture. Prior logical wins reference retired physical tiles. */
+/** Existing clockwise games remain regression fixtures; new direction is covered separately.
+ * Eight-copy physical fixture. Prior logical wins reference retired physical tiles. */
 function fixture({ hands = [winning, waiting, waiting], melds = [[], [], []], radishes = [[], [], []],
   huCounts = [0, 0, 0], priorWins = [[], [], []], locks = [[], [], []], activeLocks = [false, false, false],
   currentSeat = 0, turnStep = 'discard', drawTile = hands[currentSeat]?.at(-1), drawKind = 'normal',
   head = [], tail = [], rules = {}, wallCount, kongSeats = [], firstHuRadishesRevealed = huCounts.some(count => count > 0) } = {}) {
-  const game = createGame({ seed: 'fixture', rules: { specialHuPatterns: false, bigSingleReadyPayment: false, ...rules } });
+  const game = createGame({ seed: 'fixture', rules: { allowPungUpgrade: true, turnDirection: 'clockwise', specialHuPatterns: false, bigSingleReadyPayment: false, ...rules } });
   game.players.forEach((player, seat) => {
     player.hand = [...hands[seat]].sort((a, b) => a - b);
     player.melds = structuredClone(melds[seat]); player.radishes = [...radishes[seat]];
