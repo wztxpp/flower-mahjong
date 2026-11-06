@@ -1,0 +1,2757 @@
+/* 实体牌桌皮肤在 style.css 后加载：只覆盖外观，不接管 Vue 状态或麻将规则。
+The physical-table skin loads after style.css: it overrides appearance, not Vue state or Mahjong rules. */
+/* 原创实体牌桌皮肤，与规则和基础游戏样式分开。木材、桌毡、黄铜和光照用 CSS 制作，不引用第三方游戏材质。 / Original physical-table skin. Kept separate from rules and gameplay styles.
+   No third-party game assets: wood, felt, brass and lighting are CSS materials. */
+
+/* 定义全局字体、颜色或自定义变量；-- 开头的值由 var() 读取，后加载皮肤可以覆盖。
+   Define global fonts, colors or custom properties; var() reads -- values and the later skin may override them. */
+:root {
+  --table-cream: #fff4d8;
+  --table-gold: #e4bc72;
+  --table-felt: #17624f;
+  --table-dark: #092e29;
+  --table-wood: #70452d;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+body {
+  background: #201a17;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.app-shell {
+  color: #efe2c9;
+  background:
+    radial-gradient(ellipse at 50% -12%, #bb875b52, transparent 55%),
+    radial-gradient(ellipse at 15% 52%, #5a473530, transparent 50%),
+    repeating-linear-gradient(91deg, transparent 0 138px, #080b0b20 139px 141px, transparent 142px 280px),
+    linear-gradient(150deg, #302720, #171d1c 72%);
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.site-header, .in-room .site-header {
+  max-width: 1560px;
+  height: 80px;
+  padding-inline: 44px;
+  border-bottom: 1px solid #c8a16c29;
+  background: linear-gradient(180deg, #1a17154d, transparent);
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.brand-mark {
+  stroke: #e8c585;
+  filter: drop-shadow(0 2px 2px #0006);
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.brand-mark circle {
+  fill: #e8c585;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.brand-name {
+  color: #ffedc9;
+  text-shadow: 0 2px 3px #0009;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.brand-name > span {
+  color: #cebd9f;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.prototype-pill {
+  color: #d2c2a5;
+  border-color: #ae865247;
+  background: #171b1a8c;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.text-button {
+  color: #ddccb0;
+  min-height: 40px;
+}
+
+/* 鼠标悬停反馈；若选择器含 :not(:disabled)，禁用控件不会产生可操作的悬停暗示。
+   Provide hover feedback; :not(:disabled), when present, avoids suggesting disabled controls are actionable. */
+.text-button:hover {
+  color: #fff0c7;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.voice-toggle, .rules-trigger {
+  border: 1px solid #ba97613b;
+  padding: 8px 12px;
+  border-radius: 9px;
+  background: #302b2480;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.leave-table-button {
+  color: #e2c9a2;
+}
+
+/* 键盘导航时显示清晰焦点圈；与鼠标悬停样式分开，方便无鼠标操作。
+   Show a clear keyboard focus ring, separate from hover styling for mouse-free navigation. */
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 3px solid #ffd788;
+  outline-offset: 4px;
+}
+
+/* 大厅延用牌桌材质，呈现柔和灯光下的会客室。 / Lobby: the same table materials, in a softly lit club room. */
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.welcome-layout {
+  max-width: 1320px;
+  padding-top: 62px;
+  gap: 0 86px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.welcome-story .eyebrow {
+  color: #dec18c;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.eyebrow > span {
+  background: #ca9e5d;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.welcome-story h1 {
+  color: #fff0d3;
+  font-weight: 600;
+  text-shadow: 0 3px 4px #120e0e66;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.gold-text {
+  color: #efbe69;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.welcome-description {
+  color: #d0bfa2;
+  font-size: 14px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.hero-illustration {
+  height: 300px;
+  margin-top: 28px;
+  isolation: isolate;
+}
+
+/* 脱离普通布局并相对定位祖先放置；inset、top 或 left 控制局部位置。
+   Leave normal flow and position relative to a positioned ancestor; inset, top or left sets local placement. */
+.hero-illustration::before {
+  content: "";
+  position: absolute;
+  inset: 35px -8px 40px;
+  z-index: -1;
+  transform: rotate(-8deg);
+  border: 12px solid #795033;
+  border-radius: 48%;
+  background: radial-gradient(ellipse at 45% 20%, #3b8870, #15533f 75%);
+  box-shadow:
+    0 8px 0 #38271e, 0 10px 0 #ab7954, 0 26px 30px #0007, inset 0 0 0 2px #d2bc7b70, inset 0 7px 20px #082d2480;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.illustration-ring {
+  border-color: #ebd18b30;
+  width: 330px;
+  height: 150px;
+  top: 49%;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.ring-two {
+  width: 370px;
+  height: 177px;
+  border-color: #d1b47226;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.hero-tile {
+  filter: drop-shadow(1px 14px 7px #06251e70);
+  top: 27px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.hero-tile-left, .hero-tile-right {
+  top: 52px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.hero-tile .mahjong-tile {
+  border: 1px solid #fff8e0;
+  box-shadow:
+    0 6px 0 #d6cdb3, 0 11px 0 #177354, 1px 13px 0 #083f2e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.art-flower {
+  color: #f4c970;
+  text-shadow: 0 2px 5px #000a;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.illustration-caption {
+  bottom: 0;
+  color: #d5bd93;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.illustration-caption > span {
+  background: #c49a5a70;
+}
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.welcome-features {
+  color: #d0bea0;
+  font-size: 11px;
+  gap: 19px;
+  margin-top: 16px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.welcome-features svg {
+  color: #e6bd79;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.entry-card, .personal-history {
+  color: #493c2c;
+  background: linear-gradient(145deg, #fff9e9, #f2e6cb);
+  border: 1px solid #e4c795;
+  box-shadow:
+    0 10px 0 #120e0d24, 0 20px 50px #0004, inset 0 0 0 4px #fff7e54d;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.entry-card {
+  border-radius: 20px;
+  padding-top: 31px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.card-topline {
+  color: #877046;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.small-flower {
+  color: #b98437;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.entry-card h2 {
+  color: #3d523c;
+  font-weight: 600;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.card-description, .character-preference-note, .entry-note {
+  color: #72664e;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.entry-tabs {
+  background: #ded3ba;
+  box-shadow: inset 0 2px 4px #6c532f20;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.entry-tabs button {
+  color: #6e634d;
+  min-height: 44px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.entry-tabs button.active {
+  color: #fff3d3;
+  background: linear-gradient(#35765a, #24583f);
+  box-shadow:
+    0 2px 3px #21382b40, inset 0 1px #99bba56b;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.field-label {
+  color: #625640;
+  margin-top: 16px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.field-label > span {
+  color: #7e7158;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+input, #preferred-character {
+  color: #493f2f;
+  background: #fffdf4;
+  border: 1px solid #cfbe9d;
+  box-shadow: inset 0 2px 4px #7464420c;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+input::placeholder {
+  color: #8c806c;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+input:focus, #preferred-character:focus {
+  border-color: #5f8060;
+  box-shadow: 0 0 0 3px #52795a24;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+#preferred-character {
+  min-height: 48px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.preference-preview {
+  background: #e9dcc1;
+  border: 1px solid #d8c29a;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.preference-preview strong {
+  color: #31583f;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.preference-preview span, .preference-preview small {
+  color: #6d5a42;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.card-bottom {
+  background: #e7d8ba;
+  border-color: #ccba976e;
+  color: #786647;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.welcome-footer {
+  color: #baa78b;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.personal-history .eyebrow, .personal-history .text-button {
+  color: #6c6849;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.personal-history h2 {
+  color: #44543d;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.identity-note, .history-summary span, .history-summary small, .history-empty, .history-disclaimer,
+.personal-game-details, .personal-game-result, .personal-game-topline > div > span {
+  color: #786b54;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.personal-history .history-summary, .personal-game-record {
+  border-color: #ccba9780;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.history-summary strong {
+  color: #315d43;
+}
+
+/* 有实体感且高对比的控件；金色按钮用于动作入口。 / Tangible, high-contrast controls. The gold button always means an action. */
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.button {
+  border-radius: 10px;
+  font-weight: 600;
+  min-height: 44px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.button.primary, .button.gold, .hu-button {
+  color: #4b2b13;
+  border: 1px solid #f1d293;
+  background: linear-gradient(180deg, #ffe3a1 0%, #edbd62 53%, #dda244 100%);
+  box-shadow:
+    inset 0 1px #fff6c9, 0 3px 0 #906025, 0 5px 10px #080d0c33;
+  text-shadow: 0 1px #ffe8ab80;
+}
+
+/* 鼠标悬停反馈；若选择器含 :not(:disabled)，禁用控件不会产生可操作的悬停暗示。
+   Provide hover feedback; :not(:disabled), when present, avoids suggesting disabled controls are actionable. */
+.button.primary:hover:not(:disabled), .button.gold:hover:not(:disabled), .hu-button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffedb7, #f3c977 55%, #e9b14e);
+  box-shadow:
+    inset 0 1px #fff9dc, 0 3px 0 #906025, 0 6px 16px #080d0c40;
+}
+
+/* 禁用态降低或改变视觉强调；真正禁止点击由 HTML disabled 属性负责。
+   Disabled styling changes visual emphasis; the HTML disabled attribute actually blocks interaction. */
+.button:disabled {
+  opacity: .7;
+  text-shadow: none;
+}
+
+/* 禁用态降低或改变视觉强调；真正禁止点击由 HTML disabled 属性负责。
+   Disabled styling changes visual emphasis; the HTML disabled attribute actually blocks interaction. */
+.button.primary:disabled, .button.gold:disabled {
+  color: #c3c4ad;
+  background: #405447;
+  border-color: #71806b;
+  box-shadow: inset 0 1px #9eac8c20;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.button.secondary, .button.invite-button {
+  color: #e9d4b0;
+  background: linear-gradient(#66513b, #43372c);
+  border: 1px solid #a38359;
+  box-shadow:
+    inset 0 1px #e1c59824, 0 2px 0 #161b18;
+}
+
+/* 鼠标悬停反馈；若选择器含 :not(:disabled)，禁用控件不会产生可操作的悬停暗示。
+   Provide hover feedback; :not(:disabled), when present, avoids suggesting disabled controls are actionable. */
+.button.secondary:hover:not(:disabled), .button.invite-button:hover:not(:disabled) {
+  background: linear-gradient(#786045, #554333);
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.hu-button {
+  color: #fff6dc;
+  background: linear-gradient(#cd6941, #9e3c29);
+  border-color: #f2a565;
+  text-shadow: 0 1px #63331e;
+  box-shadow:
+    inset 0 1px #ffd2a470, 0 3px 0 #60261c, 0 5px 10px #080d0c33;
+}
+
+/* 鼠标悬停反馈；若选择器含 :not(:disabled)，禁用控件不会产生可操作的悬停暗示。
+   Provide hover feedback; :not(:disabled), when present, avoids suggesting disabled controls are actionable. */
+.hu-button:hover:not(:disabled) {
+  background: linear-gradient(#e2814e, #b74c30);
+}
+
+/* 连续桌毡配合抛光木质桌沿。 / A continuous felt surface with a polished wooden rail. */
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.room-layout, .in-game .room-layout {
+  max-width: 1560px;
+  padding: 24px 44px 28px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.room-heading, .in-game .room-heading {
+  margin-bottom: 20px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.room-title .eyebrow {
+  color: #c2a77c;
+  font-size: 10px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.room-title h1, .in-game .room-title h1 {
+  color: #f6e6c8;
+  font-weight: 600;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.room-code-badge {
+  color: #baa88d;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.room-code-badge strong {
+  color: #ffe5ad;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 网格划分列或行；minmax(0, 1fr) 允许内容列缩小，避免长内容撑破容器。
+   Define grid tracks; minmax(0, 1fr) lets content shrink instead of overflowing its container. */
+.play-layout {
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 22px;
+}
+
+/* 保留该选择器的基础呈现设置；同属性冲突按层叠规则解决，不改变模板行为。
+   Preserve presentation for this selector; conflicts follow the cascade without changing template behavior. */
+.table-column {
+  isolation: isolate;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.table-surface, .in-game .table-surface {
+  border: 10px solid #805633;
+  border-radius: 42px;
+  padding: 20px 25px 20px;
+  color: #fff2d6;
+  background:
+    radial-gradient(ellipse at 50% 18%, #4d967657, transparent 62%),
+    repeating-linear-gradient(0deg, #e2f1b902 0 1px, #092c2403 1px 3px),
+    radial-gradient(ellipse at 50% 46%, #236f55, #104435 100%);
+  box-shadow:
+    inset 0 0 0 2px #b8ba7670, inset 0 0 0 7px #082f323d, inset 0 10px 24px #072a2a77, 0 0 0 1px #d6a970, 0 4px 0 2px #a97543, 0 11px 0 2px #342920, 0 23px 32px #0006;
+}
+
+/* 定义边框轮廓或圆角，用于分隔区域或表现牌块边缘。
+   Define border outlines or rounding to separate regions or shape tile edges. */
+.table-surface::before {
+  opacity: .22;
+  border-radius: 30px;
+  mix-blend-mode: soft-light;
+}
+
+/* 装饰层不拦截点击，让指针事件到达下面的实际控件。
+   Keep the decorative layer from intercepting clicks so pointer events reach the actual controls beneath it. */
+.table-surface::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid #d6d39a20;
+  border-radius: 25px;
+  pointer-events: none;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.table-topline {
+  color: #d0d7b7;
+  font-size: 10px;
+  padding: 0 4px 18px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.table-topline i {
+  background: #c1e292;
+  box-shadow: 0 0 7px #b9db8a8c;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-top-divider {
+  color: #92b18b;
+}
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.opponent-row, .in-game .opponent-row {
+  gap: 24px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.opponent-seat, .in-game .opponent-seat {
+  position: relative;
+  padding: 14px;
+  background: linear-gradient(150deg, #092f2859, #103f3220);
+  border: 1px solid #b6cc9f3d;
+  border-radius: 17px;
+  box-shadow:
+    inset 0 1px #d5e4b215, 0 4px 8px #052e2720;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.opponent-seat.seat-current {
+  border-color: #f3cf80;
+  background: linear-gradient(145deg, #e6bc4f20, #113d2e35);
+  box-shadow:
+    inset 0 0 0 1px #ffd88926, 0 0 20px #e5b54b1c;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.character-portrait {
+  height: 124px;
+  margin: -7px -7px 12px;
+  background: radial-gradient(ellipse at 50% 100%, #c6a07050, #163f3410 75%);
+  border-radius: 12px;
+  border-bottom: 1px solid #b7c99547;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.character-elegant {
+  background: radial-gradient(ellipse at 50% 100%, #a3b5c950, #163f3410 75%);
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.character-sunny {
+  background: radial-gradient(ellipse at 50% 100%, #dfc56450, #163f3410 75%);
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.character-portrait > img {
+  height: 210px;
+  filter: drop-shadow(0 5px 6px #061c2666);
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.character-portrait > span {
+  bottom: 8px;
+  left: 10px;
+  padding: 6px 10px;
+  color: #ffefce;
+  background: linear-gradient(120deg, #362b23ee, #362b23bd);
+  border: 1px solid #c29a5b70;
+  border-radius: 7px;
+  box-shadow: 0 2px 4px #001e1c40;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.character-portrait small {
+  color: #dfc7a0;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.avatar {
+  border: 2px solid #d8bc7a;
+  box-shadow: 0 2px 6px #032c2766;
+  background: #beae8d;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.player-name {
+  color: #fff3d7;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.player-caption {
+  color: #c0d2b4;
+  font-size: 10px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.host-tag, .connection-tag {
+  color: #e7d5a9;
+  border-color: #d7c4966e;
+  background: #183b2d70;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.dealer-tag {
+  color: #ffe0a1;
+  border-color: #d5b66d99;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.you-tag {
+  color: #245137;
+  background: #f5d994;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.player-score {
+  color: #ffe0a0;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 0 2px #17372d;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.player-score.negative {
+  color: #e1cab8;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.seat-empty {
+  border-style: dashed;
+  background: #0a302638;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.seat-empty .player-name, .seat-empty .player-caption, .lobby-seat-decoration {
+  color: #bfd0b0;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.lobby-seat-decoration {
+  border-color: #bfd0b02e;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.lobby-center h2 {
+  color: #fff0c9;
+  font-weight: 600;
+  text-shadow: 0 2px 3px #092e2d;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.lobby-center > p {
+  color: #d5dec0;
+  font-size: 12px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.table-emblem {
+  border-color: #e5d39d60;
+  background: #17463845;
+  box-shadow:
+    0 0 0 7px #c6d2ad08, inset 0 2px 8px #11372a80;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-emblem svg {
+  stroke: #e6ce91;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-emblem circle {
+  fill: #e6ce91;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-link, .waiting-host, .own-seat-status {
+  color: #e6d6a7;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.start-button {
+  min-height: 50px;
+  font-size: 14px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.own-character-label {
+  color: #e2d6ad;
+  font-size: 11px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.own-seat-summary {
+  border-color: #d5dcb542;
+  padding-top: 14px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.own-score small {
+  color: #cfdbb9;
+}
+
+/* 公开牌区铺在桌毡上，不放在浅色仪表盘卡片里。 / Public tiles stay on the felt, rather than inside pale dashboard cards. */
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.game-status {
+  min-height: 45px;
+  padding: 8px 12px;
+  background: #0b332ac2;
+  border: 1px solid #a5c38b42;
+  border-radius: 10px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.game-status strong {
+  color: #fff1c9;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.turn-indicator.your-turn {
+  background: #ffd779;
+  box-shadow:
+    0 0 0 4px #f0c96b20, 0 0 8px #f0c96b55;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.wall-counter {
+  color: #d8dcb5;
+  background: transparent;
+  border: 0;
+  padding: 0 2px;
+  font-size: 10px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.wall-counter b {
+  color: #ffe4a7;
+  font-size: 23px;
+  font-weight: 700;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.shared-radish-pool {
+  background: linear-gradient(110deg, #0e382b70, #254d3066);
+  border: 1px solid #c0c99250;
+  border-radius: 10px;
+  box-shadow: inset 0 2px 7px #08291e40;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.shared-radish-heading h2 {
+  color: #f6e8ba;
+  font-weight: 600;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.shared-radish-heading > span, .shared-radish-pool > p, .public-zone-label, .public-zone-label b, .public-zone-empty {
+  color: #c7d6b9;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.radish-increment {
+  color: #ffe2a2;
+}
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.discard-area {
+  gap: 12px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.discard-group {
+  border: 1px solid #bbcea43d;
+  background: #0a372535;
+  box-shadow: inset 0 2px 9px #07332635;
+  border-radius: 12px;
+  min-height: 135px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.discard-label {
+  color: #dce2c5;
+  font-size: 10px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.discard-label small {
+  color: #c0cfae;
+  font-size: 9px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.empty-discard {
+  color: #aec6a7;
+  font-size: 10px;
+}
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.discard-tiles {
+  padding-bottom: 7px;
+  gap: 8px 4px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.latest-discard::after {
+  border: 2px solid #ffe6a2;
+  inset: -3px;
+  box-shadow: 0 0 9px #f5c96866;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.table-watermark {
+  color: #e6d4a050;
+  letter-spacing: 5px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.claim-strip {
+  color: #ffedc7;
+  background: #71582b72;
+  border-color: #e1c5839e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.claim-strip b {
+  color: #fff0c5;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.finished-banner {
+  color: #ffefc8;
+  border-color: #ddbe6c78;
+  background: #14352acc;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.finished-banner > .button:not(.gold) {
+  color: #f6dfb5;
+  border-color: #bc9e64;
+  background: #234d3b;
+}
+
+/* 骨白牌面与厚实碧绿牌背表现麻将的实体厚度。 / Bone-colored faces and thick jade backs give every tile a physical edge. */
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.mahjong-tile {
+  background: linear-gradient(130deg, #fffef4 4%, #fff7df 55%, #eadfc4);
+  border-color: #f4e6c4;
+  box-shadow:
+    inset 1px 1px 0 #fffef4, inset -1px -1px 0 #d1c5a8, 0 3px 0 #c7bd9e, 0 5px 0 #207453, 0 7px 5px #05271f59;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.tile-small {
+  box-shadow:
+    inset 1px 1px #fffef4, 0 2px 0 #c9bc98, 0 3px 0 #267854, 0 5px 3px #05271f4d;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.tile-back {
+  background: linear-gradient(120deg, #57965a, #247443 58%, #135331);
+  border-color: #9cb871;
+  box-shadow:
+    inset 1px 1px #c1d59170, 0 2px 0 #d7cda7, 0 4px 0 #bcad8e, 0 6px 5px #072c2366;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.back-pattern {
+  border-color: #dbdda35c;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.back-pattern svg {
+  stroke: #d6d99470;
+}
+
+/* 鼠标悬停反馈；若选择器含 :not(:disabled)，禁用控件不会产生可操作的悬停暗示。
+   Provide hover feedback; :not(:disabled), when present, avoids suggesting disabled controls are actionable. */
+.tile-interactive:hover:not(:disabled) {
+  border-color: #fff0b8;
+  box-shadow:
+    inset 1px 1px #fffef4, 0 3px 0 #c7bd9e, 0 6px 0 #207453, 0 12px 9px #001e1b70;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.tile-selected {
+  border-color: #ffdb79;
+  box-shadow:
+    0 0 0 2px #ffe097, 0 4px 0 #cfb878, 0 7px 0 #24764f, 0 13px 12px #082d236e;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.tile-selected::after {
+  background: #ffe09a;
+  bottom: -15px;
+  box-shadow: 0 0 6px #ffd67480;
+}
+
+/* 手牌托架位于靠近自己的桌边。 / The hand rack belongs to the near edge of the table. */
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.hand-panel, .in-game .hand-panel {
+  color: #f3e9cd;
+  padding: 18px 23px 19px;
+  margin-top: 18px;
+  border: 1px solid #c29c65;
+  border-top: 5px solid #c29a62;
+  border-bottom: 7px solid #4c3224;
+  border-radius: 16px 16px 22px 22px;
+  background: linear-gradient(0deg, #30261e, #55402b);
+  box-shadow:
+    inset 0 1px #e8c994, inset 0 -2px #b37a452b, 0 8px 16px #0004;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.hand-scroll {
+  padding: 18px 6px 15px;
+  scrollbar-color: #d1ab65 #1e3127;
+}
+
+/* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+.my-hand {
+  gap: 5px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.my-hand .mahjong-tile {
+  width: clamp(38px, 3.6vw, 54px);
+  height: clamp(54px, 5vw, 75px);
+  border-radius: 6px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.my-hand .tile-corner {
+  font-size: 9px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.my-hand .drawn-tile {
+  margin-left: 14px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.my-hand .drawn-tile::before {
+  color: #ffe2a1;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.section-kicker {
+  color: #f0d9a5;
+  font-size: 12px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.hand-hint {
+  color: #e0d0ad;
+  font-size: 11px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.my-turn-pill {
+  color: #183b2b;
+  background: #f7d98a;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.frozen-hand-pill {
+  color: #efd7a6;
+  border-color: #ad8e55;
+  font-size: 10px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.own-public-cards {
+  border-color: #d7bd7e33;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.own-public-cards .public-zone-label, .own-public-cards .public-zone-label b, .own-public-cards .public-zone-empty, .own-public-cards .meld small {
+  color: #e1d1ad;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.own-public-cards > .radish-row {
+  border-color: #d7bd7e33;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.waits-info, .locked-waits {
+  color: #efdbb2;
+  font-size: 11px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.wait-label {
+  background: #ae8c536b;
+  color: #ffe8b4;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.muted-hand-caption {
+  color: #d2c19d;
+  font-size: 10px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.action-button {
+  min-height: 44px;
+  font-size: 13px;
+  padding: 10px 19px;
+}
+
+/* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+.discard-button {
+  min-width: 146px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.action-working, .waiting-action {
+  color: #dfceac;
+  font-size: 11px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.hu-diagnostic, .own-score-detail {
+  border-color: #d7bd7e33;
+  color: #e0cda5;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.hu-diagnostic p, .hu-diagnostic > small, .hu-diagnostic summary > span, .own-score-detail > span, .special-hand-note {
+  color: #d4c3a1;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.own-score-detail strong {
+  color: #ffe0a2;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.table-footnote, .table-footnote button {
+  color: #c7b695;
+  font-size: 10px;
+}
+
+/* 积分表与规则采用暖色纸张，和桌毡相邻仍清晰可读。 / Score sheets and rules are warm paper, kept readable next to the felt. */
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.sidebar-card {
+  color: #51482f;
+  border: 1px solid #c5ad7e;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7eed9, #e9dcc0);
+  box-shadow:
+    inset 0 1px #fff8e7, 0 5px 14px #0003;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.sidebar-title {
+  color: #75613a;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.sidebar-title h2 {
+  color: #59482e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.subtle-label, .version-tag, .quiet-note, .score-footnote, .dragon-settlement-note {
+  color: #7c6b49;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.sidebar-card .text-button, .rules-more {
+  color: #5b6443;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rule-snippets strong {
+  color: #586043;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rule-snippets p, .invite-card > p {
+  color: #786b51;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rule-number {
+  color: #9b773d;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.score-line {
+  border-color: #baa57b55;
+  color: #65563b;
+  font-size: 12px;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.score-line > strong {
+  color: #5c6541;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.score-line > strong.positive-score {
+  color: #8e641e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.score-line > strong.negative-score {
+  color: #95634b;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.score-line small {
+  background: #d4dec0;
+  color: #4a6538;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.score-footnote {
+  border-color: #baa57b55;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.history-list p, .history-list li:first-child p {
+  color: #64583e;
+  font-size: 11px;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.history-list li small {
+  color: #866333;
+  font-size: 10px;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.history-list li:not(:last-child)::before {
+  background: #cdbb94;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.history-dot {
+  background: #a8b183;
+  border-color: #f6ebd2;
+  box-shadow: 0 0 0 1px #c6b58b;
+}
+
+/* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+.history-badge {
+  color: #916325;
+  font-weight: 600;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.invite-code {
+  border-color: #c6b68e66;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.invite-code > span {
+  color: #80704e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.invite-code strong {
+  color: #3b6148;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.start-options {
+  background: linear-gradient(120deg, #eee1c5, #d8c396);
+  border-color: #d4b67c;
+  color: #4b563a;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.start-options p {
+  color: #666045;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.game-rule-choice {
+  color: #c8b99a;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.game-rule-choice strong {
+  color: #e5d3a9;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.legacy-banner {
+  background: #4c4435;
+  color: #ead8b0;
+  border-color: #8a7952;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.legacy-banner .text-button {
+  color: #ffe4a6;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.connection-banner, .room-error {
+  border-color: #c9aa72;
+  background: #f2dfb9;
+  color: #704e2e;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.toast {
+  background: #fff3d7;
+  color: #415b37;
+  border-color: #d7ba80;
+  box-shadow: 0 7px 28px #0005;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.modal-backdrop {
+  background: #0a1713a8;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.modal {
+  color: #4c4935;
+  background: linear-gradient(135deg, #fff8e8, #eee2c5);
+  border-color: #d9bd87;
+  box-shadow: 0 22px 90px #0007;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.modal .eyebrow, .modal-close {
+  color: #8a713e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rules-modal-body p {
+  color: #6d654d;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rules-modal-body h3 {
+  color: #4d6340;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.rules-provisional {
+  background: #e9dab5;
+  border-color: #d5bf8e;
+  color: #7e6537;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.rules-provisional p {
+  color: #755f38;
+}
+
+/* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+.rules-modal-body .fan-scale {
+  color: #69633c !important;
+  background: #e8dbb8;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.modal .field-label, .invite-modal-note {
+  color: #746544;
+}
+
+/* 平板屏幕保留牌桌比例，必要时把账目移到下方，不挤压桌面。 / Tablet: retain a real table, with the ledger beneath rather than squeezed. */
+
+/* 条件满足时叠加此断点样式；更窄屏幕可能同时命中多个断点，仍按优先级与源码顺序覆盖。
+   Apply this breakpoint when its condition matches; narrower screens may match several, resolved by specificity and source order. */
+@media (max-width: 1100px) {
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .site-header, .in-room .site-header {
+    padding-inline: 26px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .header-actions {
+    gap: 12px;
+  }
+
+  /* 在此选择器条件下隐藏元素且不占布局空间；其他断点可能恢复显示。
+   Hide the element without layout space under this selector; other breakpoints may restore it. */
+  .prototype-pill {
+    display: none;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .room-layout, .in-game .room-layout {
+    padding-inline: 26px;
+  }
+
+  /* 网格划分列或行；minmax(0, 1fr) 允许内容列缩小，避免长内容撑破容器。
+   Define grid tracks; minmax(0, 1fr) lets content shrink instead of overflowing its container. */
+  .play-layout {
+    grid-template-columns: minmax(0, 1fr) 214px;
+    gap: 18px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .table-surface, .in-game .table-surface {
+    padding: 17px;
+    border-width: 8px;
+    border-radius: 32px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .opponent-row, .in-game .opponent-row {
+    gap: 16px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .opponent-seat, .in-game .opponent-seat {
+    padding: 11px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait {
+    height: 110px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait > img {
+    height: 190px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .welcome-layout {
+    gap: 0 40px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .welcome-features {
+    flex-wrap: wrap;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-illustration::before {
+    inset-inline: 0;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .my-hand {
+    justify-content: flex-start;
+  }
+}
+
+/* 条件满足时叠加此断点样式；更窄屏幕可能同时命中多个断点，仍按优先级与源码顺序覆盖。
+   Apply this breakpoint when its condition matches; narrower screens may match several, resolved by specificity and source order. */
+@media (max-width: 900px) {
+  /* 网格划分列或行；minmax(0, 1fr) 允许内容列缩小，避免长内容撑破容器。
+   Define grid tracks; minmax(0, 1fr) lets content shrink instead of overflowing its container. */
+  .play-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 设置网格轨道或跨列位置，决定桌面与侧栏如何分配空间。
+   Set grid tracks or spans to allocate space between the board and sidebar. */
+  .room-sidebar, .in-game .room-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .sidebar-card {
+    margin-bottom: 0;
+  }
+
+  /* 保留该选择器的基础呈现设置；同属性冲突按层叠规则解决，不改变模板行为。
+   Preserve presentation for this selector; conflicts follow the cascade without changing template behavior. */
+  .in-game .rules-card {
+    grid-column: 1 / -1;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .in-game .rule-snippets {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  /* 保留该选择器的基础呈现设置；同属性冲突按层叠规则解决，不改变模板行为。
+   Preserve presentation for this selector; conflicts follow the cascade without changing template behavior. */
+  .in-game .rule-snippets > div {
+    flex: 1;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait {
+    height: 115px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .my-hand .mahjong-tile, .in-game .my-hand .mahjong-tile {
+    width: 43px;
+    height: 61px;
+  }
+}
+
+/* 条件满足时叠加此断点样式；更窄屏幕可能同时命中多个断点，仍按优先级与源码顺序覆盖。
+   Apply this breakpoint when its condition matches; narrower screens may match several, resolved by specificity and source order. */
+@media (max-width: 760px) {
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .site-header, .in-room .site-header {
+    min-height: 74px;
+    height: auto;
+    padding: 12px 20px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .header-actions {
+    gap: 9px;
+    margin-left: auto;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .brand-name {
+    font-size: 25px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .brand-name > span {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .voice-toggle, .rules-trigger {
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .leave-table-button {
+    font-size: 11px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .welcome-layout {
+    padding-top: 35px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .welcome-story h1 {
+    font-size: 40px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .welcome-description {
+    font-size: 12px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-illustration {
+    height: 245px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-illustration::before {
+    inset: 26px -2px 33px;
+    border-width: 10px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-tile {
+    top: 18px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-tile-left, .hero-tile-right {
+    top: 38px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .illustration-ring {
+    width: 270px;
+    height: 128px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .ring-two {
+    width: 300px;
+    height: 150px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .welcome-features {
+    font-size: 10px;
+    gap: 14px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .room-layout, .in-game .room-layout {
+    padding: 20px 18px 24px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-title h1, .in-game .room-title h1 {
+    font-size: 22px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .room-heading {
+    gap: 14px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-code-badge {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-code-badge strong {
+    font-size: 13px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .invite-button {
+    font-size: 11px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .table-surface, .in-game .table-surface {
+    border-radius: 28px;
+    padding: 15px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait {
+    height: 94px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait > img {
+    height: 172px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .character-portrait > span {
+    font-size: 11px;
+    padding: 4px 7px;
+    left: 6px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .character-portrait small {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-name, .in-game .player-name {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-caption, .in-game .player-caption {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-score, .in-game .player-score {
+    font-size: 21px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .in-game .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .own-character-label {
+    font-size: 10px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hand-panel, .in-game .hand-panel {
+    position: relative;
+    padding: 15px 17px 17px;
+    margin-top: 17px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .hand-info-row {
+    align-items: flex-start;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .hand-hint {
+    font-size: 10px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .hand-info-row > div:first-child {
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 50%;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .action-button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .section-kicker {
+    font-size: 11px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .hand-bottom-row {
+    gap: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .game-status strong {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .discard-label, .discard-label small {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .public-zone-label, .public-zone-label b, .public-zone-empty {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .shared-radish-heading h2 {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .shared-radish-heading > span, .shared-radish-pool > p {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .table-footnote, .table-footnote button {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .score-line, .in-game .score-line {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .rule-snippets strong, .rule-snippets strong {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .rule-snippets p, .rule-snippets p {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .rules-more {
+    font-size: 10px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .in-game .history-list {
+    max-height: 220px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .modal .rules-modal-body p {
+    font-size: 12px;
+  }
+}
+
+/* 条件满足时叠加此断点样式；更窄屏幕可能同时命中多个断点，仍按优先级与源码顺序覆盖。
+   Apply this breakpoint when its condition matches; narrower screens may match several, resolved by specificity and source order. */
+@media (max-width: 480px) {
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .site-header, .in-room .site-header {
+    padding: 11px 15px;
+    gap: 6px 12px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .brand-mark {
+    width: 27px;
+    height: 27px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .brand-name {
+    font-size: 23px;
+    letter-spacing: 3px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .brand-name > span {
+    font-size: 9px;
+    margin-left: 6px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px 8px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .in-room .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .voice-toggle, .rules-trigger {
+    font-size: 10px;
+    min-height: 36px;
+    padding: 6px 8px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .leave-table-button {
+    font-size: 10px;
+    min-height: 36px;
+  }
+
+  /* 保留该选择器的基础呈现设置；同属性冲突按层叠规则解决，不改变模板行为。
+   Preserve presentation for this selector; conflicts follow the cascade without changing template behavior. */
+  .in-room .rules-trigger span {
+    display: inline;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .welcome-layout {
+    padding: 30px 20px 22px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .welcome-story h1 {
+    font-size: 35px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .welcome-description {
+    font-size: 12px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .welcome-features {
+    font-size: 9px;
+    gap: 10px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-illustration {
+    height: 235px;
+    width: min(290px, 100%);
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-illustration::before {
+    inset: 23px -1px 35px;
+    border-width: 9px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hero-tile .mahjong-tile {
+    width: 75px;
+    height: 107px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .illustration-ring {
+    width: 230px;
+    height: 108px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .ring-two {
+    width: 255px;
+    height: 130px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .entry-card {
+    margin-top: 24px;
+    padding-inline: 22px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .field-label {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .field-label > span {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .card-description, .character-preference-note, .entry-note {
+    font-size: 11px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .card-bottom {
+    margin-inline: -22px;
+    font-size: 10px;
+    gap: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .entry-submit {
+    font-size: 14px;
+    height: 50px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .room-layout, .in-game .room-layout {
+    padding: 16px 10px 22px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .room-heading, .in-game .room-heading {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-title h1, .in-game .room-title h1 {
+    font-size: 19px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-title .eyebrow {
+    font-size: 9px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .room-tools {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 5px;
+    max-width: 47%;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .room-code-badge {
+    font-size: 9px;
+    gap: 6px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-code-badge span {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .room-code-badge strong {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .button.invite-button {
+    min-height: 36px;
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .start-options {
+    padding: 12px 13px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .start-options p {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .game-rule-choice {
+    font-size: 10px;
+  }
+
+  /* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+  .table-surface, .in-game .table-surface {
+    padding: 13px 9px 14px;
+    border: 6px solid #805633;
+    border-radius: 24px;
+    box-shadow:
+      inset 0 0 0 1px #c9cc8770, inset 0 5px 12px #072a2a77, 0 0 0 1px #d6a970, 0 3px 0 1px #a97543, 0 8px 0 1px #342920, 0 12px 18px #0005;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .table-surface::after {
+    inset: 5px;
+    border-radius: 14px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .table-topline {
+    font-size: 9px;
+    padding: 0 3px 12px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .opponent-row, .in-game .opponent-row, .lobby-table .opponent-row {
+    gap: 9px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .opponent-seat, .in-game .opponent-seat, .lobby-table .opponent-seat {
+    padding: 8px 7px;
+    border-radius: 12px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait {
+    height: 92px;
+    margin: -4px -3px 9px;
+    border-radius: 8px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .character-portrait > img {
+    height: 152px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .character-portrait > span {
+    bottom: 4px;
+    left: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .character-portrait small {
+    font-size: 8px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .player-topline, .in-game .player-topline {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .opponent-seat .player-identity {
+    min-width: 58px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .opponent-seat .avatar, .in-game .opponent-seat .avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-name, .in-game .player-name, .lobby-table .player-name {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-caption, .in-game .player-caption, .lobby-table .player-caption {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .player-score, .in-game .player-score {
+    font-size: 19px;
+    margin-left: auto;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .host-tag, .you-tag, .dealer-tag {
+    font-size: 8px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .opponent-hand {
+    gap: 2px;
+    margin-top: 9px;
+  }
+
+  /* 组合底色、纹理或阴影表现材质和层次；多层背景按先写的在上方绘制。
+   Combine surfaces, textures or shadows for material and depth; earlier background layers paint on top. */
+  .opponent-hand .tile-back {
+    height: 26px;
+    box-shadow:
+      0 2px #d5c7a4, 0 3px #2b6445, 0 5px 2px #062e2460;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .opponent-seat .win-pile {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .public-zone-label, .public-zone-label b, .public-zone-empty {
+    font-size: 9px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .public-zone-label b {
+    display: inline;
+    margin-left: 3px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .game-status {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .game-status > div:first-child {
+    gap: 6px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .game-status strong {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .wall-counter {
+    font-size: 9px;
+    flex-shrink: 0;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .wall-counter b {
+    font-size: 20px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .playing-center {
+    padding: 14px 0 11px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .shared-radish-pool {
+    padding: 9px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .discard-area {
+    gap: 6px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-group {
+    padding: 8px 5px;
+    border-radius: 8px;
+    min-height: 132px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .discard-label {
+    gap: 4px;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 29px;
+    margin-bottom: 8px;
+    font-size: 9px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-label > span {
+    max-width: 100%;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .discard-label small {
+    font-size: 8px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .discard-tiles {
+    gap: 7px 3px;
+    max-height: 192px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-tiles .tile-small {
+    width: 24px;
+    height: 34px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-tiles .tile-symbols {
+    width: 22px;
+    height: 29px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-tile {
+    height: 34px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .empty-discard {
+    font-size: 9px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .own-seat-summary .player-topline {
+    flex-wrap: nowrap;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .in-game .own-seat-summary .avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .own-seat-summary .player-name {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .own-seat-summary .player-caption {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .own-score {
+    font-size: 24px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .hand-panel, .in-game .hand-panel {
+    padding: 14px 12px 16px;
+    border-radius: 13px 13px 18px 18px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .hand-hint {
+    font-size: 10px;
+    max-width: 57%;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .section-kicker {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .my-turn-pill, .frozen-hand-pill {
+    font-size: 9px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .my-hand {
+    gap: 4px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .my-hand .mahjong-tile, .in-game .my-hand .mahjong-tile {
+    width: 39px;
+    height: 56px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .my-hand .tile-corner {
+    font-size: 8px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .my-hand .drawn-tile {
+    margin-left: 11px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .own-public-cards {
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .hand-bottom-row {
+    align-items: flex-start;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .waits-info {
+    min-width: 105px;
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .muted-hand-caption {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .action-button {
+    min-height: 44px;
+    font-size: 12px;
+    padding: 10px 13px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .discard-button {
+    min-width: 128px;
+  }
+
+  /* 设置网格轨道或跨列位置，决定桌面与侧栏如何分配空间。
+   Set grid tracks or spans to allocate space between the board and sidebar. */
+  .room-sidebar, .in-game .room-sidebar {
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+
+  /* 保留该选择器的基础呈现设置；同属性冲突按层叠规则解决，不改变模板行为。
+   Preserve presentation for this selector; conflicts follow the cascade without changing template behavior. */
+  .in-game .rules-card {
+    grid-column: auto;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .sidebar-card, .in-game .sidebar-card {
+    padding: 17px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .sidebar-title h2 {
+    font-size: 13px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .score-line {
+    font-size: 12px;
+    padding: 11px 0;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .score-line > strong {
+    font-size: 21px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .score-footnote {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .history-list p {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .history-list li small {
+    font-size: 10px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .in-game .rule-snippets {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* 控制弹性排列、对齐或项目间距；只调整布局，不改变模板数据顺序。
+   Control flexible layout, alignment or item gaps without changing template data order. */
+  .in-game .rule-snippets > div {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .rule-snippets strong {
+    font-size: 12px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .in-game .rule-snippets p {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .quiet-note {
+    font-size: 10px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .lobby-seat-decoration {
+    font-size: 9px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .lobby-center h2 {
+    font-size: 23px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .lobby-center > p {
+    font-size: 11px;
+  }
+
+  /* 设置文字大小、层级或行距；小屏覆盖用于保留信息可读性。
+   Set text size, hierarchy or line spacing; small-screen overrides preserve legibility. */
+  .table-link {
+    min-height: 40px;
+    font-size: 11px;
+  }
+
+  /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
+   Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
+  .modal {
+    padding-inline: 19px;
+  }
+}
+
+/* 尊重系统减少动态效果设置，覆盖动画或过渡，不影响牌局逻辑。
+   Respect reduced-motion preferences by overriding animation or transitions, without changing game logic. */
+@media (prefers-reduced-motion: reduce) {
+  /* 设置视觉变化的时间或曲线；减少动态效果的媒体查询可覆盖，计分不依赖动画结束。
+   Set visual timing or easing; reduced-motion queries may override it, and scoring does not depend on animation completion. */
+  .tile-interactive, .button {
+    transition: none;
+  }
+}
+
+/* 累计账目使用同一套清晰的纸张配色。 / Integrated cumulative ledger uses the same readable paper palette. */
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-total-line small {
+  color: #75613a;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-total-line > strong.positive-score {
+  color: #8e641e;
+}
+
+/* 为文字、图标或边框设置对应状态的颜色；继承色仍受更具体的后续规则影响。
+   Set state-specific text, icon or border colors; inherited colors may be overridden by more specific later rules. */
+.table-total-line > strong.negative-score {
+  color: #95634b;
+}

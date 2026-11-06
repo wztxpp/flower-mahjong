@@ -1,83 +1,105 @@
 <script setup>
-import { computed } from 'vue'
-const props = defineProps({ tile: { type: Number, default: null }, back: Boolean, small: Boolean, selected: Boolean, disabled: Boolean, interactive: Boolean })
-const rank = computed(() => props.tile == null ? 0 : props.tile % 9 + 1)
-const isBamboo = computed(() => props.tile != null && props.tile < 9)
-const label = computed(() => props.back ? '背面牌' : `${rank.value}${isBamboo.value ? '条' : '筒'}`)
-// Deliberately separate the suits: bamboo is not a recoloured circle layout.
-const bambooPositions = computed(() => ({
-  2: [[30, 21], [30, 54]],
-  3: [[30, 18], [18, 53], [42, 53]],
-  4: [[18, 21], [42, 21], [18, 54], [42, 54]],
-  5: [[16, 18], [44, 18], [30, 37], [16, 57], [44, 57]],
-  6: [[18, 17], [42, 17], [18, 37], [42, 37], [18, 57], [42, 57]],
-  7: [[30, 13], [18, 32], [42, 32], [18, 47], [42, 47], [18, 62], [42, 62]],
-  9: [[15, 17], [30, 17], [45, 17], [15, 37], [30, 37], [45, 37], [15, 57], [30, 57], [45, 57]],
-}[rank.value] || []))
-const circlePositions = computed(() => ({
-  2: [[30, 21], [30, 54]],
-  3: [[16, 17], [30, 37], [44, 57]],
-  4: [[17, 21], [43, 21], [17, 54], [43, 54]],
-  5: [[16, 18], [44, 18], [30, 37], [16, 57], [44, 57]],
-  6: [[18, 15], [42, 15], [18, 39], [42, 39], [18, 60], [42, 60]],
-  7: [[15, 13], [30, 22], [45, 31], [18, 46], [42, 46], [18, 63], [42, 63]],
-  8: [[18, 13], [42, 13], [18, 29], [42, 29], [18, 46], [42, 46], [18, 62], [42, 62]],
-  9: [[15, 16], [30, 16], [45, 16], [15, 37], [30, 37], [45, 37], [15, 58], [30, 58], [45, 58]],
-}[rank.value] || []))
-const eightBambooSegments = [[13, 18, 23, 31], [23, 31, 30, 17], [30, 17, 37, 31], [37, 31, 47, 18], [13, 58, 23, 45], [23, 45, 30, 59], [30, 59, 37, 45], [37, 45, 47, 58]]
-function bambooColor(index) {
-  return (rank.value === 5 && index === 2) || (rank.value === 7 && index === 0) || (rank.value === 9 && index % 3 === 1) ? 'tile-ink-red' : 'tile-ink-green'
-}
-function circleColor(index) {
-  if (rank.value === 8 || rank.value === 4) return 'tile-ink-black'
-  if (rank.value === 2) return index === 0 ? 'tile-ink-green' : 'tile-ink-black'
-  if (rank.value === 3) return ['tile-ink-black', 'tile-ink-red', 'tile-ink-green'][index]
-  if (rank.value === 5) return index === 2 ? 'tile-ink-red' : 'tile-ink-black'
-  if (rank.value === 6) return index < 2 ? 'tile-ink-green' : 'tile-ink-red'
-  if (rank.value === 7) return index < 3 ? 'tile-ink-green' : 'tile-ink-red'
-  return index < 3 ? 'tile-ink-green' : index < 6 ? 'tile-ink-red' : 'tile-ink-black'
-}
+// 单张麻将的展示组件：接收父组件 props，展示照片牌面或背面，保留原生按钮语义。
+// Single-tile presentation component: receive parent props, show a photographed face or back, and preserve native button semantics.
+// 阅读路线：docs/FRONTEND-READING-GUIDE.md。 / Reading map: docs/FRONTEND-READING-GUIDE.md.
+import { computed } from 'vue';
+import { MAHJONG_PHOTO_URL, photoFaceTransform } from './mahjong-photo-faces.js';
+
+// 这些 props 是父子组件接口；组件只画牌，不判牌，不修改传入数据。
+// These props form the parent/child contract; this component draws tiles without judging rules or mutating inputs.
+const props = defineProps({
+  tile: { type: Number, default: null },
+  back: Boolean,
+  small: Boolean,
+  selected: Boolean,
+  disabled: Boolean,
+  interactive: Boolean,
+});
+// computed 随 tile 更新点数；空值留给空白或背面显示。
+// computed updates the rank when tile changes; null is reserved for blank or hidden faces.
+const rank = computed(() => (props.tile == null ? 0 : (props.tile % 9) + 1));
+// 条的牌种编号小于九；必须先排除空值，因为 JavaScript 中 null < 9 为真。
+// Bamboo IDs are below nine; exclude null first because JavaScript considers null < 9 true.
+const isBamboo = computed(() => props.tile != null && props.tile < 9);
+// 从统一照片截取对应牌面；非法编号返回 null 并显示空白。
+// Crop the matching face from one photograph; invalid IDs return null and render blank.
+const faceTransform = computed(() => photoFaceTransform(props.tile));
+// 读屏、悬停提示与按钮标签共用一份文字；背面绝不暴露牌种。
+// Screen readers, tooltips and button labels share text; hidden backs never reveal a tile type.
+const label = computed(() =>
+  props.back
+    ? '背面牌'
+    : faceTransform.value
+      ? `${rank.value}${isBamboo.value ? '条' : '筒'}`
+      : '空白牌',
+);
+// 一筒靠近照片左边缘，匹配的象牙底色只补空白角；花形图案本身完整保留。
+// The first dots tile reaches the photo's left edge. A matching ivory underlay
+// fills only its missing blank corner; all of the rosette artwork is present.
+// 一筒靠近原照片边缘，用匹配底色补空白角，不重画点阵图案。
+// One dot sits near the photo edge; matching ivory fills its blank corner without redrawing the artwork.
+const faceBackground = computed(() => (props.tile === 9 ? '#feeed7' : '#fff7e6'));
 </script>
 
+<!-- interactive 决定使用原生 button 或展示用 span；:class 绑定外观，aria-pressed 描述选牌状态。 / interactive selects a native button or display span; :class binds appearance and aria-pressed describes selection. -->
 <template>
-  <component :is="interactive ? 'button' : 'span'" class="mahjong-tile" :class="{ 'tile-back': back, 'tile-small': small, 'tile-selected': selected, 'tile-interactive': interactive, 'tile-disabled': disabled, 'tile-eight-circles': !back && !isBamboo && rank === 8 }" :type="interactive ? 'button' : undefined" :disabled="interactive && disabled" :aria-label="label" :aria-pressed="interactive ? selected : undefined" :title="label">
-    <span v-if="back" class="back-pattern"><svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 7 34 30 20 53 6 30Z M20 17 28 30 20 43 12 30Z"/><path d="M20 0v60M0 30h40"/></svg></span>
-    <template v-else>
-      <span class="tile-corner" :class="{ 'bamboo-label': isBamboo }" aria-hidden="true">{{ rank }}<small>{{ isBamboo ? '条' : '筒' }}</small></span>
-      <svg class="tile-symbols" viewBox="0 0 60 76" aria-hidden="true">
-        <g v-if="isBamboo">
-          <g v-if="rank === 1" class="bamboo-bird">
-            <path d="M31 28C17 17 8 22 10 34c2 12 13 19 24 20L21 66l16-6 8 3-4-15c7-8 4-17-1-21l-1-8-6 3Z" class="tile-ink-green" stroke-width="1.4" stroke-linejoin="round"/>
-            <path d="M15 31c5 1 12 7 17 17M14 37c5 1 9 5 14 9M20 26c5 2 9 6 12 13M29 49l-4 10M34 51l-3 11" fill="none" stroke="#f6f2df" stroke-width="1.7" stroke-linecap="round"/>
-            <path d="m32 19 2-7 4 6 4-4-1 9M40 29l9 4-8 2" class="tile-ink-red" stroke-width="1" stroke-linejoin="round"/>
-            <circle cx="36.5" cy="27" r="2.2" fill="#fffdf3"/><circle cx="37" cy="27" r="1" fill="#202825"/>
-            <path d="m34 53 1 8-6 3m9-13 3 8 6 3" class="tile-ink-red" fill="none" stroke-width="1.8" stroke-linecap="round"/>
-          </g>
-          <g v-else-if="rank === 8" class="tile-ink-green" fill="none" stroke-linecap="round">
-            <g v-for="([x1, y1, x2, y2], i) in eightBambooSegments" :key="i">
-              <path :d="`M${x1} ${y1}L${x2} ${y2}`" stroke-width="4.1"/>
-              <path :d="`M${x1 + (x2-x1)*.48 - 2.3} ${y1 + (y2-y1)*.48 + 1.7}l4.6 -3.4`" stroke-width="1.4"/>
-            </g>
-          </g>
-          <g v-for="([x,y], i) in bambooPositions" v-else :key="i" :transform="`translate(${x},${y})`" :class="bambooColor(i)">
-            <path d="M-2.3-6.5Q0-8 2.3-6.5L2.1 6.5Q0 8-2.1 6.5Z" stroke-width=".8"/>
-            <path d="M-4-5.8h8M-3.4 0h6.8M-4 5.8h8" fill="none" stroke-width="1.7" stroke-linecap="round"/>
-            <path d="M-.5-4v2M-.5 2v2" fill="none" stroke="#fffdf3" stroke-width=".8" stroke-linecap="round"/>
-          </g>
-        </g>
-        <g v-else-if="rank === 1" transform="translate(30,38)">
-          <circle r="21" class="tile-ink-green" fill="none" stroke-width="3.2"/><circle r="16.2" class="tile-ink-green" fill="none" stroke-width="1.6"/>
-          <path v-for="n in 12" :key="n" :transform="`rotate(${n * 30})`" d="M0-19c-6 5-6 9 0 13 6-4 6-8 0-13Z" class="tile-ink-green" fill="none" stroke-width="1.2"/>
-          <circle r="7" class="tile-ink-red" stroke-width="1"/><circle r="2.4" fill="#fffdf3"/>
-        </g>
-        <g v-else>
-          <g v-for="([x,y], i) in circlePositions" :key="i" :transform="`translate(${x},${y})`" :class="circleColor(i)">
-            <circle :r="rank < 5 ? 8.1 : rank < 7 ? 6.4 : 5.7" fill="none" :stroke-width="rank < 5 ? 2.6 : 2.1"/>
-            <circle :r="rank < 5 ? 4.5 : rank < 7 ? 3.1 : 2.5" fill="none" stroke-width="1.15"/>
-            <circle r="1" stroke="none"/>
-          </g>
-        </g>
-      </svg>
-    </template>
+  <component
+    :is="interactive ? 'button' : 'span'"
+    class="mahjong-tile"
+    :class="{
+      'tile-back': back,
+      'tile-small': small,
+      'tile-selected': selected,
+      'tile-interactive': interactive,
+      'tile-disabled': disabled,
+    }"
+    :type="interactive ? 'button' : undefined"
+    :disabled="interactive && disabled"
+    :aria-label="label"
+    :aria-pressed="interactive ? selected : undefined"
+    :title="label"
+  >
+    <!-- 先检查背面，再检查合法牌面；v-if / v-else-if 只会渲染一个分支。 / Check hidden backs before valid faces; v-if / v-else-if renders at most one branch. -->
+    <span v-if="back" class="back-pattern"
+      ><svg viewBox="0 0 40 60" aria-hidden="true">
+        <path d="M20 7 34 30 20 53 6 30Z M20 17 28 30 20 43 12 30Z" />
+        <path d="M20 0v60M0 30h40" /></svg
+    ></span>
+    <svg
+      v-else-if="faceTransform"
+      class="tile-photo-face"
+      viewBox="0 0 60 80"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <!-- 底色、变换后的原图、细边框按绘制顺序叠放；viewBox 统一局部坐标。 / Underlay, transformed photo and thin border paint in order; viewBox defines common local coordinates. -->
+      <rect width="60" height="80" :fill="faceBackground" />
+      <image :href="MAHJONG_PHOTO_URL" width="800" height="800" :transform="faceTransform" />
+      <rect
+        x="0"
+        y="0"
+        width="60"
+        height="80"
+        fill="none"
+        :stroke="faceBackground"
+        stroke-width="2"
+      />
+    </svg>
   </component>
 </template>
+
+<style scoped>
+/* scoped 将此规则限制在本组件；绝对定位依赖外层牌块的定位，overflow 裁掉照片其余部分。
+   scoped limits this rule to this component; absolute positioning uses the outer tile and overflow clips the remaining photo. */
+.tile-photo-face {
+  position: absolute;
+  inset: 4% 5% 6%;
+  display: block;
+  width: 90%;
+  height: 90%;
+  overflow: hidden;
+  border-radius: 2px;
+  pointer-events: none;
+}
+</style>

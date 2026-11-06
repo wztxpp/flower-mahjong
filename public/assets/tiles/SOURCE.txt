@@ -1,0 +1,11 @@
+Mahjong face reference supplied by the user:
+https://b0.bdstatic.com/ugc/personal_page_ai/MLwwl9fZ-MKPaOZU4DLCuw2593740273fcd0025b048d136e631f45.jpg
+
+reference-mahjong.jpg is the unmodified 800 x 800 JPEG downloaded on 2026-11-05.
+All nine bamboo and all nine dots faces are visible. The game renders each face
+through an affine SVG viewport defined in src/mahjong-photo-faces.js. No symbols
+were generated, traced, substituted, or reconstructed. The blank missing corner
+of the first dots tile is filled by an ivory SVG underlay; its rosette is intact.
+
+The source is a perspective photo, not high-resolution flat face artwork. Native
+glyphs are approximately 50-85 pixels across; enlargement cannot restore detail.
