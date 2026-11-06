@@ -91,3 +91,8 @@ The repository-wide TypeScript check retains known template-related DB/CONNECTOR
 
 挑一个按钮，回答：它读哪个 ref/computed？调用哪个请求？提交什么动作？服务端如何验权？哪一步真正变更牌局？如何保证旧响应不覆盖新桌？声音从哪个已确认事件产生？找到这七处以后，再修改比从 CSS 或条件表达式随便试更安全。
 Pick one button and identify its state source, request, action payload, server authorization, committed transition, stale-response guard, and confirmed audio event. Locating these seven points makes edits safer than trial-and-error changes.
+
+## 当前展示节奏 / Current presentation pacing
+
+[音画完成后推进](PRESENTATION-PACING.md) 是本轮新增维护文档，连接 App、CharacterAudio、当前引擎与 API。新增维护测试为 `tests/presentation-game.test.js` 和 `tests/presentation-api.test.js`，随 `npm test` 运行；原 ui/audio 测试继续覆盖完成与取消。
+The new maintained [presentation pacing](PRESENTATION-PACING.md) guide connects App, CharacterAudio, the current engine and API. The two presentation test files run under npm test alongside updated UI/audio completion and cancellation cases.

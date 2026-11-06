@@ -1,6 +1,13 @@
 // HTTP 接口：验证输入和身份 → 复制房间 → 修改 → 原子保存 → 返回私人视图。
 // HTTP API: validate input/identity → clone room → mutate → atomically save → return a private view.
-import { createGame, dealerForNextGame, applyAction, getPlayerView } from '../shared/game.js';
+import {
+  createGame,
+  dealerForNextGame,
+  applyAction,
+  applyPresentedAction,
+  continuePresentedGame,
+  getPlayerView,
+} from '../shared/game.js';
 import { isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS } from '../shared/start-options.js';
 import { applyAction as applyV2Action, getPlayerView as getV2View } from '../shared/v2-game.js';
 import {
@@ -283,6 +290,18 @@ function publicRoom(room, seat) {
       };
     }),
     game,
+    // 只公开播放屏障的白名单；不发送引擎内部续行动作或任何凭证。
+    // Expose only gate metadata, never private engine continuations or credentials.
+    presentation: room.presentation ? {
+      id: room.presentation.id,
+      gameId: room.presentation.gameId,
+      requiredSeats: [...room.presentation.requiredSeats],
+      completedSeats: [...room.presentation.completedSeats],
+      owners: { ...room.presentation.owners },
+      preferredClients: { ...room.presentation.preferredClients },
+      expiresAt: room.presentation.expiresAt,
+      remainingMs: Math.max(0, room.presentation.expiresAt - Date.now()),
+    } : null,
     tableScores: tableScores(room),
     lifecycle: room.lifecycleLog || [],
   };
@@ -325,7 +344,7 @@ function assertIdentity(person, hash) {
 }
 // 绑定同一人的座位和个人索引；一份个人记录在一桌只能绑定一个座位。
 // Bind a seat to its profile index; a profile may occupy only one seat per room.
-async function bindProfile(store, room, seat, hash) {
+async function bindProfile(store, room, seat, hash, indexAlreadyLinked = false) {
   if (!hash) return false;
   const person = room.seats[seat];
   assertIdentity(person, hash);
@@ -335,7 +354,7 @@ async function bindProfile(store, room, seat, hash) {
   // history always checks the actual participant hash in the authoritative room.
   // 先写索引再保存房间；孤立索引只用于查找，不能代替房间里的参与者身份验证。
   // Write the index before room CAS; an orphan index is only a lookup hint, never proof of participation.
-  await store.linkProfileRoom(hash, room.id);
+  if (!indexAlreadyLinked) await store.linkProfileRoom(hash, room.id);
   let changed = person.playerHash !== hash;
   person.playerHash = hash;
   if (room.game) {
@@ -388,9 +407,241 @@ function revisionMatches(body, room) {
 async function commit(store, previous, next) {
   next.revision = previous.revision + 1;
   next.updatedAt = Date.now();
-  if (!(await store.compareAndSwap(next, previous.revision)))
-    fail(409, 'STALE_STATE', '有人刚刚操作了牌桌，请刷新后重试');
+  const committed = await store.compareAndSwap(next, previous.revision);
+  if (committed === false) {
+    // 只有存储明确返回 false 才证明没有写入；存储抛出的同名错误也不能当作可重试失败。
+    // Only an explicit false proves no write occurred; even a similarly named storage exception is not retry-safe.
+    const error = new ApiError(409, 'STALE_STATE', '有人刚刚操作了牌桌，请刷新后重试');
+    error.isCompareAndSwapConflict = true;
+    throw error;
+  }
+  // 存储契约只允许布尔值；缺失或畸形返回无法证明是否已写入，必须视为不确定结果。
+  // The store contract permits booleans only; missing or malformed results cannot prove whether a write occurred.
+  if (committed !== true) throw new Error('Invalid compareAndSwap result');
 }
+// 播放屏障与规则阶段分开保存；四十秒覆盖两段音频的看门狗和加载时间。
+// Persist playback gates separately from rule phases; forty seconds covers two audio watchdogs and loading.
+const PRESENTATION_TIMEOUT_MS = 40000;
+
+// 每个标签页独立登记短租约；秘密仍只由座位凭证验证，这些标识不是认证凭证。
+// Each tab records a short lease independently; seat credentials still authenticate, never these identifiers.
+const PRESENTATION_LEASE_MS = 5000;
+const PRESENTATION_DISCOVERY_MS = 1500;
+function presentationPresence(request) {
+  const clientId = request.headers.get('x-presentation-client');
+  if (!clientId) return null;
+  const visible = request.headers.get('x-presentation-visible');
+  const audio = request.headers.get('x-presentation-audio');
+  const ready = request.headers.get('x-presentation-ready');
+  const gameId = request.headers.get('x-presentation-game') || null;
+  const gateId = request.headers.get('x-presentation-gate') || null;
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(clientId) ||
+    !['true', 'false'].includes(visible) || !['ready', 'silent'].includes(audio) ||
+    !['true', 'false'].includes(ready) || (gameId && gameId.length > 128) ||
+    (gateId && !/^[A-Za-z0-9_-]{1,64}$/.test(gateId)))
+    fail(400, 'BAD_PRESENTATION', '播放状态格式不正确');
+  return { clientId, visible: visible === 'true', audio, ready: ready === 'true', gameId, gateId };
+}
+
+// 同样内容一秒内不重复写；最多保留八个最近标签页，防止存档无界增长。
+// Coalesce identical reports within one second and retain at most eight recent tabs to bound storage.
+function recordPresence(room, seat, presence, now = Date.now()) {
+  if (!presence) return false;
+  const clients = room.seats[seat].presentationClients || [];
+  const previous = clients.find((client) => client.clientId === presence.clientId);
+  if (previous && (!room.game || now - previous.at < 1000) &&
+    ['visible', 'audio', 'ready', 'gameId', 'gateId'].every((key) => previous[key] === presence[key])) return false;
+  room.seats[seat].presentationClients = [
+    { ...presence, at: now },
+    ...clients.filter((client) => client.clientId !== presence.clientId),
+  ].slice(0, 8);
+  return true;
+}
+
+// 只选同局、前台且已建立事件基线的活跃页面；声音已就绪优先，ID 决定稳定平局顺序。
+// Elect only fresh, foreground, baselined pages of this game; audio readiness wins, then stable lexical IDs.
+function presentationCandidates(room, seat, now = Date.now()) {
+  const clients = (room.seats[seat]?.presentationClients || [])
+    .filter((client) => client.gameId === room.gameMeta?.id && now - client.at < PRESENTATION_LEASE_MS);
+  // 当前 gate 的无新事件声明只适用这一段；下一段是新的实时事件，不应永久排除前台页。
+  // No-new-events applies only to the reported gate; the next live segment must not exclude that foreground page.
+  const eligible = clients.filter((client) => client.visible &&
+    (client.ready || (client.gateId && client.gateId !== room.presentation?.id)))
+    .sort((a, b) => Number(b.audio === 'ready') - Number(a.audio === 'ready') ||
+      a.clientId.localeCompare(b.clientId));
+  return { clients, eligible };
+}
+
+// 未取得 owner 的座位只短暂等待发现；已有 owner 必须等播放完成或四十秒故障恢复。
+// Unowned seats wait only a short discovery window; owned seats retain full playback or forty-second recovery protection.
+function electPresentationClients(room, now = Date.now()) {
+  const gate = room.presentation;
+  if (!gate) return false;
+  const before = JSON.stringify([gate.requiredSeats, gate.preferredClients]);
+  gate.preferredClients ||= {};
+  gate.requiredSeats = gate.requiredSeats.filter((seat) => {
+    if (!attachedParticipant(room, seat)) {
+      delete gate.preferredClients[seat];
+      return false;
+    }
+    if (gate.owners?.[seat] || gate.completedSeats.includes(seat)) return true;
+    const { clients, eligible } = presentationCandidates(room, seat, now);
+    if (eligible.length) {
+      gate.preferredClients[seat] = eligible[0].clientId;
+      return true;
+    }
+    delete gate.preferredClients[seat];
+    // 已知后台/未就绪页面不拖住一桌；无新鲜遥测时给旧客户端短发现窗口。
+    // Known hidden/unready pages do not hold the table; missing fresh telemetry gets short legacy discovery.
+    return !clients.length && now < (gate.discoveryExpiresAt ?? gate.expiresAt);
+  });
+  return before !== JSON.stringify([gate.requiredSeats, gate.preferredClients]);
+}
+
+// 当前参与者才可以阻挡本局；换座身份与离席状态不会继承等待权。
+// Only current participants can hold a gate; replacements and detached occupants cannot inherit it.
+function attachedParticipant(room, seat) {
+  const person = room.seats[seat];
+  return Boolean(
+    person && !person.detached &&
+    room.gameMeta?.participants[seat]?.tokenHash === person.tokenHash,
+  );
+}
+
+// 为新的引擎暂停建立独立 ID；重启后只需读取 JSON，不依赖 Worker 定时器。
+// Give each engine pause a fresh ID; stored JSON survives restart without Worker timers.
+function createPresentationGate(room, now = Date.now()) {
+  if (!room.game?.presentation) {
+    delete room.presentation;
+    return;
+  }
+  room.presentation = {
+    id: randomToken().slice(0, 32),
+    gameId: room.gameMeta.id,
+    requiredSeats: room.seats.flatMap((person, seat) =>
+      attachedParticipant(room, seat) && connected(person, now) ? [seat] : []),
+    completedSeats: [],
+    owners: {},
+    preferredClients: {},
+    discoveryExpiresAt: now + PRESENTATION_DISCOVERY_MS,
+    expiresAt: now + PRESENTATION_TIMEOUT_MS,
+  };
+  electPresentationClients(room, now);
+}
+
+// 只继续已经提交的动作；不选择碰、杠、胡或过。下一次暂停必须使用全新屏障。
+// Continue only committed actions, never choose claims or passes. A subsequent pause gets a fresh gate.
+function settlePresentation(room, now = Date.now()) {
+  const gate = room.presentation;
+  if (!gate || !room.game?.presentation || gate.gameId !== room.gameMeta?.id) return false;
+  const elected = electPresentationClients(room, now);
+  const requiredSeats = gate.requiredSeats.filter((seat) => attachedParticipant(room, seat));
+  const changed = elected || requiredSeats.length !== gate.requiredSeats.length;
+  gate.requiredSeats = requiredSeats;
+  if (now < gate.expiresAt && !requiredSeats.every((seat) => gate.completedSeats.includes(seat)))
+    return changed;
+  room.game = continuePresentedGame(room.game);
+  if (room.game.phase === 'finished' && !room.gameMeta.finishedAt)
+    room.gameMeta.finishedAt = now;
+  createPresentationGate(room, now);
+  return true;
+}
+
+// 完成回执不携带房间版本；每次 CAS 冲突后重新验权，并且绝不把旧 ID 用在新屏障。
+// Completion receipts need no room revision; reauthenticate after CAS conflicts and never apply an old ID to a new gate.
+async function updatePresentation(store, room, tokenHash, playerHash, receipt = null, presence = null) {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const seat = room.seats.findIndex((person) => person?.tokenHash === tokenHash);
+    if (seat < 0) fail(401, 'UNAUTHORIZED', '座位凭证失效，请重新进入房间');
+    assertIdentity(room.seats[seat], playerHash);
+    if (room.seats[seat].detached) fail(409, 'SEAT_DETACHED', '你已离开这桌，请重新连接');
+    const gate = room.presentation;
+    // 旧回执幂等返回当前视图，甚至不能触发一个更新屏障的超时恢复。
+    // Stale receipts return the current view idempotently, without even expiring a newer gate.
+    if (
+      receipt && (!gate || receipt.presentationId !== gate.id || receipt.gameId !== gate.gameId)
+    ) return room;
+    const next = structuredClone(room);
+    let changed = recordPresence(next, seat, presence);
+    const isBeginning = receipt?.phase === 'begin';
+    const isReleasing = receipt?.phase === 'release';
+    if (gate && !isReleasing) changed = electPresentationClients(next) || changed;
+    if (receipt) {
+      // 同座位多标签页先竞争一次播放权；只有赢家可提交完成，避免静默标签页提前放行。
+      // Same-seat tabs claim playback ownership first; only the winner can complete, preventing silent-tab early release.
+      if (!attachedParticipant(next, seat) || !next.presentation.requiredSeats.includes(seat)) {
+        if (!changed) return room;
+      } else {
+        const owner = gate.owners?.[seat];
+        if (isBeginning) {
+          const { clients } = presentationCandidates(next, seat);
+          const preferred = next.presentation.preferredClients?.[seat];
+          const mayBegin = clients.length ? preferred === receipt.clientId : !presence;
+          if (!owner && !gate.completedSeats.includes(seat) && mayBegin) {
+            (next.presentation.owners ||= {})[seat] = receipt.clientId;
+            next.seats[seat].lastSeen = Date.now();
+            changed = true;
+          }
+        } else if (isReleasing) {
+          // 播放前切到后台的赢家可以交还所有权；已完成的座位和别人的 owner 都不可撤销。
+          // A winner hidden before playback can relinquish ownership; completed seats and other owners are immutable.
+          if (owner === receipt.clientId && !gate.completedSeats.includes(seat)) {
+            delete next.presentation.owners[seat];
+            changed = true;
+          }
+        } else {
+          // 无 owner 时只兼容旧版无 clientId 回执；新版必须先完成 begin 握手。
+          // Only legacy receipts without clientId work while unowned; modern clients must handshake first.
+          const ownsPresentation = owner
+            ? owner === receipt.clientId
+            : receipt.clientId === undefined && !presentationCandidates(next, seat).clients.length;
+          if (!ownsPresentation) return room;
+          if (!gate.completedSeats.includes(seat)) {
+            next.presentation.completedSeats.push(seat);
+            next.seats[seat].lastSeen = Date.now();
+            changed = true;
+          }
+        }
+      }
+    }
+    // 交还 owner 后立即重新选候选，但 release 本身不能续行牌局。
+    // Re-elect immediately after relinquishing ownership, without letting release advance the game.
+    if (isReleasing && gate && changed) changed = electPresentationClients(next) || changed;
+    // begin/release 只修改所有权，即使屏障超时也不推进规则或代表播放完成。
+    // Begin/release only change ownership, even after expiry; neither advances rules nor means playback finished.
+    if (!isBeginning && !isReleasing) changed = settlePresentation(next) || changed;
+    if (!changed) return room;
+    try {
+      await commit(store, room, next);
+      return next;
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== 'STALE_STATE') throw error;
+    }
+    room = await store.get(room.id);
+    if (!room) fail(404, 'ROOM_NOT_FOUND', '没有找到这个房间');
+  }
+  fail(409, 'STALE_STATE', '牌桌仍在更新，请再试一次');
+}
+// 仅忽略租约/心跳及其提交外壳；其他任何字段变化都不是可重试的遥测冲突。
+// Ignore only lease/heartbeat fields and their commit envelope; every other change disqualifies telemetry-only retry.
+function differsOnlyInPresence(previous, current) {
+  if (!current || current.revision <= previous.revision) return false;
+  // 比较完整保存模型而非局版本：离席、换座、档案、房主和屏障都必须原样。
+  // Compare the entire saved model, not just game revision: detach, occupancy, history, host and gate must remain unchanged.
+  const withoutPresence = (room) => {
+    const copy = structuredClone(room);
+    delete copy.revision;
+    delete copy.updatedAt;
+    for (const person of copy.seats) {
+      if (!person) continue;
+      delete person.lastSeen;
+      delete person.presentationClients;
+    }
+    return JSON.stringify(copy);
+  };
+  return withoutPresence(previous) === withoutPresence(current);
+}
+
 // 每个存储实例创建一套接口；限流 Map 仅属于本进程/Worker 实例，不是全局配额。
 // Create handlers per store; the throttle map is process/isolate-local, not a global quota.
 export function createApi(store) {
@@ -544,7 +795,7 @@ export function createApi(store) {
       // 仅匹配约定的房间号与操作后缀，未知路径不会误落入其他操作。
       // Match only the room-code and operation grammar; unknown routes cannot fall through to another action.
       const match = url.pathname.match(
-        /^\/api\/rooms\/([A-Z2-9]{8})(?:\/(join|action|start|leave|resume))?$/,
+        /^\/api\/rooms\/([A-Z2-9]{8})(?:\/(join|action|start|leave|resume|presentation))?$/,
       );
       if (!match) fail(404, 'NOT_FOUND', '没有找到这个接口');
       const [, id, operation] = match;
@@ -645,6 +896,7 @@ export function createApi(store) {
             });
             next.seats[seat] = null;
           }
+          settlePresentation(next);
           selectHost(next);
           if (!wasDetached) logLifecycle(next, 'leave', seat, Date.now());
           try {
@@ -671,7 +923,8 @@ export function createApi(store) {
         await bodyOf(request);
         const next = structuredClone(room),
           bound = await bindProfile(store, next, seat, playerHash);
-        if (next.seats[seat].detached || bound || next.hostSeat === null) {
+        const presenceChanged = recordPresence(next, seat, presentationPresence(request));
+        if (next.seats[seat].detached || bound || next.hostSeat === null || presenceChanged) {
           const wasDetached = Boolean(next.seats[seat].detached);
           next.seats[seat].detached = false;
           next.seats[seat].lastSeen = Date.now();
@@ -686,6 +939,26 @@ export function createApi(store) {
       }
       if (room.seats[seat].detached)
         fail(409, 'SEAT_DETACHED', '你已离开这桌，请通过这桌链接重新连接');
+      // 完成回执只确认本人的播放，不接受客户端指定其他座位或引擎动作。
+      // A receipt confirms this viewer's playback only; supplied seats or rule actions are ignored.
+      if (method === 'POST' && operation === 'presentation') {
+        const body = await bodyOf(request);
+        if (
+          typeof body.presentationId !== 'string' || typeof body.gameId !== 'string' ||
+          (body.phase !== undefined && !['begin', 'complete', 'release'].includes(body.phase)) ||
+          (body.clientId !== undefined &&
+            (typeof body.clientId !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(body.clientId))) ||
+          (['begin', 'release'].includes(body.phase) && body.clientId === undefined)
+        ) fail(400, 'BAD_PRESENTATION', '播放确认格式不正确');
+        room = await updatePresentation(store, room, tokenHash, playerHash, body, presentationPresence(request));
+        return json({ state: publicRoom(room, seat) });
+      }
+      // 读和打牌请求惰性恢复失联屏障；恢复会提升版本，旧动作不会顺带重放。
+      // Reads and actions lazily recover abandoned gates; revision changes prevent replaying stale actions.
+      if (method === 'GET' && !operation)
+        room = await updatePresentation(store, room, tokenHash, playerHash, null, presentationPresence(request));
+      if (method === 'POST' && operation === 'action' && room.presentation)
+        room = await updatePresentation(store, room, tokenHash, playerHash, null, presentationPresence(request));
       // 轮询可补绑旧记录、更新心跳；版本未变时只返回轻量连接状态。
       // Polling can bind legacy records and refresh heartbeats; unchanged revisions return lightweight connections.
       if (method === 'GET' && !operation) {
@@ -740,7 +1013,12 @@ export function createApi(store) {
           dealerSeat: dealerForNextGame(next.game),
           rules,
         });
+        delete next.presentation;
         next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now);
+        // 展示能力按本局保存而非改规则；旧浏览器加入同局后也不能绕过节奏。
+        // Save presentation capability per game, not as a rule; older clients cannot bypass it later.
+        if (body.presentation === true) next.gameMeta.presentationEnabled = true;
+        recordPresence(next, seat, presentationPresence(request));
         next.seats[seat].lastSeen = now;
         // 角色在开局时统一分配并保存；重连读取同一映射，不重新抽签。
         // Assign and save characters once at game start; reconnects reuse the mapping.
@@ -756,7 +1034,21 @@ export function createApi(store) {
       // Validate action shape and copy only type/tile; the saved-version engine decides legality.
       if (method === 'POST' && operation === 'action') {
         const body = await bodyOf(request);
-        revisionMatches(body, room);
+        // 新浏览器可用局 ID 和引擎版本证明牌面仍相同；心跳只改房间版本，不应误拒打牌。
+        // Modern clients can prove the same game state by game ID/revision; presence-only room changes must not reject moves.
+        // 旧客户端仍严格匹配房间版本；任何实际动作改变引擎版本，最后仍必须通过房间 CAS。
+        // Legacy clients retain strict room revisions; actual moves change game revision and final room CAS still applies.
+        const hasCurrentGameProof = body.presentation === true &&
+          body.gameId === room.gameMeta?.id && Number.isSafeInteger(body.gameRevision) &&
+          body.gameRevision === room.game?.revision;
+        // 一旦请求提供局证明，两项必须完整且匹配；不能用新的房间版本掩盖旧局证明。
+        // Once either proof field is supplied, require both to match; a current room revision cannot hide stale game proof.
+        const hasGameProofFields = Object.hasOwn(body, 'gameId') || Object.hasOwn(body, 'gameRevision');
+        if (hasGameProofFields && !hasCurrentGameProof)
+          fail(409, 'STALE_STATE', '牌桌已更新，请看最新牌面后再操作');
+        if (!hasGameProofFields) revisionMatches(body, room);
+        if (room.presentation || room.game?.presentation)
+          fail(409, 'PRESENTATION_PENDING', '请等待动画和语音播放完成');
         if (!room.game) fail(409, 'NOT_STARTED', '房主还没有开始这局');
         const supplied = body.action;
         if (
@@ -774,26 +1066,48 @@ export function createApi(store) {
             fail(400, 'BAD_TILE', '牌的编号不正确');
           action.tile = supplied.tile;
         }
-        const engine = engineFor(room.game),
-          next = structuredClone(room);
-        await bindProfile(store, next, seat, playerHash);
-        ensureGameMetadata(next);
-        try {
-          // 把原牌局交给规则引擎产生下一状态；失败不提交房间副本。
-          // Let the engine produce the next state from the original game; failure never commits the clone.
-          next.game = engine.apply(room.game, seat, action);
-        } catch (error) {
-          fail(422, 'ILLEGAL_ACTION', error.message || '当前不能这样操作');
+        // 游戏状态必须完全未变才重试；索引只关联一次，每轮重新构建独立待提交状态。
+        // Retry only an identical game/lifecycle; link the profile index once and rebuild each candidate from fresh storage.
+        let indexAlreadyLinked = false;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          const engine = engineFor(room.game),
+            next = structuredClone(room);
+          await bindProfile(store, next, seat, playerHash, indexAlreadyLinked);
+          indexAlreadyLinked = true;
+          ensureGameMetadata(next);
+          recordPresence(next, seat, presentationPresence(request));
+          try {
+            // 把原牌局交给规则引擎产生下一状态；失败不提交房间副本。
+            // Let the engine produce the next state from the original game; failure never commits the clone.
+            if (body.presentation === true && room.game.schemaVersion === 3)
+              next.gameMeta.presentationEnabled = true;
+            next.game = next.gameMeta.presentationEnabled === true && room.game.schemaVersion === 3
+              ? applyPresentedAction(room.game, seat, action)
+              : engine.apply(room.game, seat, action);
+          } catch (error) {
+            fail(422, 'ILLEGAL_ACTION', error.message || '当前不能这样操作');
+          }
+          next.seats[seat].lastSeen = Date.now();
+          createPresentationGate(next);
+          // 首次结束时记录结束时间；重读和重复请求不能重新结算或重写这个时间。
+          // Record the first finish time; rereads and retries do not resettle or rewrite it.
+          if (next.game.phase === 'finished' && !next.gameMeta.finishedAt)
+            next.gameMeta.finishedAt = Date.now();
+          try {
+            await commit(store, room, next);
+            return json({ state: publicRoom(next, seat) });
+          } catch (error) {
+            if (!(error instanceof ApiError) || error.code !== 'STALE_STATE' ||
+              error.isCompareAndSwapConflict !== true || !hasCurrentGameProof || room.game.schemaVersion !== 3 || attempt === 3) throw error;
+            const latest = await store.get(room.id);
+            if (!differsOnlyInPresence(room, latest)) throw error;
+            // 只在明确未写入的 CAS 冲突后重算；身份再次校验，积分和事件不从失败副本复用。
+            // Recompute only after a known failed CAS; reauthenticate and never reuse scores/events from the failed clone.
+            if (latest.seats[seat]?.tokenHash !== tokenHash || latest.seats[seat]?.detached) throw error;
+            assertIdentity(latest.seats[seat], playerHash);
+            room = latest;
+          }
         }
-        next.seats[seat].lastSeen = Date.now();
-        // 首次结束时记录结束时间；重读和重复请求不能重新结算或重写这个时间。
-        // Record the first finish time; rereads and retries do not resettle or rewrite it.
-        if (next.game.phase === 'finished' && !next.gameMeta.finishedAt)
-          next.gameMeta.finishedAt = Date.now();
-        await commit(store, room, next);
-        return json({
-          state: publicRoom(next, seat),
-        });
       }
       fail(405, 'METHOD', '不支持这种操作');
     } catch (error) {

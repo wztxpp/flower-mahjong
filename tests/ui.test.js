@@ -15,6 +15,9 @@ import * as Renderer from "vue/server-renderer";
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 import { getPlayerView } from "../shared/game.js";
 import { postHuKongGame } from "./fixtures/post-hu-kong.js";
+import { createApi } from "../server/api.js";
+import { MemoryStore } from "../server/store.js";
+import { continuePresentedGame } from "../shared/game.js";
 
 // Compile the actual SFCs so these checks exercise the shipped template and setup,
 // rather than maintaining a separate presentation model in the tests.
@@ -218,6 +221,27 @@ const response = (data, status = 200) => ({
   status,
   json: async () => data,
 });
+// 为音画同步测试提供公开、合成的展示快照；不包含真实房间或对手手牌。
+// Supply a public synthetic presentation snapshot, without real rooms or concealed opponent tiles.
+function presentationFixture(scope, type = "hu") {
+  // 此夹具只控制页面协调；真实音源在独立音频测试中验证，默认模拟已解锁且立即结束。
+  // This fixture isolates page coordination; audio tests cover real sources, while the default here is unlocked and complete.
+  scope.characterAudio.unlocked = true;
+  scope.characterAudio.context = { state: "running" };
+  scope.characterAudio.enqueueLive = () => Promise.resolve();
+  scope.characterAudio.warmWins = () => Promise.resolve();
+  const initial = fixture({ schemaVersion: 3 });
+  initial.game.id = "playback-game";
+  scope.applyState(initial);
+  const next = structuredClone(initial);
+  next.revision++;
+  next.game.history.push({ type, seat: 0, tile: 0, source: "selfDraw" });
+  next.presentation = {
+    id: "playback-one", gameId: "playback-game", requiredSeats: [0, 1, 2],
+    completedSeats: [], remainingMs: 40000,
+  };
+  return next;
+}
 // 生成没有已结算局的个人历史响应，供大厅与重连测试使用。
 // Build empty profile history for lobby/reconnection tests.
 const emptyHistory = () => ({
@@ -3887,9 +3911,9 @@ test("new-rule board explains delayed rather than permanently forbidden pung upg
   // Assert exact outcomes, including one-time charges, pending-discard restrictions and preserved saved rules.
   assert.match(await render(scope), /本局保留原补杠时机/);
 });
-// 场景：已确认荣胡高亮准确的牌河来源牌及胡牌区，不延迟下一合法动作
-// Scenario: confirmed discard win highlights the exact river tile and win pile without delaying next legal action
-test("confirmed discard win highlights the exact river tile and win pile without delaying next legal action", async () => {
+// 场景：已确认荣胡高亮准确来源，并等待展示结束再开放下一合法动作
+// Scenario: confirmed discard win highlights the exact river tile and waits before the next legal action
+test("confirmed discard win highlights the exact river tile and waits before the next legal action", async () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const initial = fixture({
@@ -3938,7 +3962,7 @@ test("confirmed discard win highlights the exact river tile and win pile without
   // 核对接口返回及版本，区分成功、冲突与未变化响应。
   // Check response/revision contracts, distinguishing success, conflicts and unchanged replies.
   assert.equal(scope.state.value.revision, next.revision);
-  assert.deepEqual(scope.legalActions.value, next.game.legalActions);
+  assert.deepEqual(scope.legalActions.value, []);
   assert.equal(scope.winningEvents.value.length, 1);
   assert.equal(scope.winningEvents.value[0].discardIndex, 0);
   assert.equal(scope.isWinningTile(1, 0), true);
@@ -3970,9 +3994,11 @@ test("confirmed discard win highlights the exact river tile and win pile without
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   cleanup.callback();
+  await settle();
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.equal(scope.winningEvents.value.length, 0);
+  assert.deepEqual(scope.legalActions.value, next.game.legalActions);
 });
 // 场景：首次载入、后台刷新与重连绝不重播旧胡牌表现
 // Scenario: initial load, hidden refresh and reconnect never replay old win presentation
@@ -4337,6 +4363,9 @@ test("integrated rob-kong cue uses photo tiles and an accurate generic source la
     false,
   );
   assert.equal(scope.counterclockwise.value, true);
+  assert.deepEqual(scope.legalActions.value, []);
+  scope.clearPresentation();
+  await settle();
   assert.deepEqual(scope.legalActions.value, next.game.legalActions);
 });
 // Scenario: host ${phase} input has default, bounds, help and selected start value
@@ -4616,4 +4645,456 @@ test("ready payment history is labelled as 喜钱 instead of kong points", async
   // Assert exact outcomes, including one-time charges, pending-discard restrictions and preserved saved rules.
   assert.match(html, /听牌喜钱/);
   assert.doesNotMatch(html, /即时杠分/);
+});
+
+// 场景：声音先结束或画面先结束，都必须收齐两个完成信号才确认；重复轮询不能提前放行。
+// Scenario: either completion order requires both signals; repeated polls cannot release the table early.
+for (const order of ['audio-first', 'animation-first']) {
+  test(`table presentation waits for audio and actual animations: ${order}`, async () => {
+    const scope = setup(fixture({ schemaVersion: 3 }));
+    const next = presentationFixture(scope);
+    let finishAudio, finishAnimation;
+    const audio = new Promise((resolve) => { finishAudio = resolve; });
+    const animation = new Promise((resolve) => { finishAnimation = resolve; });
+    scope.characterAudio.enqueueLive = () => audio;
+    document.querySelectorAll = () => [{
+      getAnimations: () => [{ finished: animation, cancel() { finishAnimation(); } }],
+    }];
+    const requests = [];
+    globalThis.fetch = async (path, options) => {
+      requests.push({ path, body: JSON.parse(options.body) });
+      return response({ state: { ...next, revision: next.revision + 1,
+        presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+          completedSeats: JSON.parse(options.body).phase === "begin" ? [] : [0] } } });
+    };
+    scope.applyState(next);
+    await settle();
+    scope.applyState({ ...next, revision: next.revision + 1 });
+    await scope.mutate({ type: 'discard', tile: 0 });
+    assert.equal(requests.filter((request) => request.body.phase !== "begin").length, 0);
+    assert.equal(scope.isMyTurn.value, false);
+    assert.deepEqual(scope.legalActions.value, []);
+    scheduled.find((item) => item.delay === 2800 && !item.cancelled).callback();
+    if (order === 'audio-first') finishAudio();
+    else finishAnimation();
+    await settle();
+    assert.equal(requests.filter((request) => request.body.phase !== "begin").length, 0);
+    if (order === 'audio-first') finishAnimation();
+    else finishAudio();
+    await settle();
+    assert.equal(requests.length, 2);
+    assert.equal(requests[1].path, '/api/rooms/ABCDEF23/presentation');
+    assert.equal(requests[1].body.presentationId, 'playback-one');
+    assert.equal(requests[1].body.gameId, 'playback-game');
+    assert.equal(scope.localPresentationBusy.value, false);
+    assert.equal(scope.presentationWaiting.value, true, 'other seats still need to finish');
+    scope.resetRoomContext();
+  });
+}
+
+// 场景：静音/未解锁、后台和重连都明确跳过本机媒体，但仍等待服务端全桌确认。
+// Scenario: unavailable audio, hidden tabs and reconnect baselines skip local media but retain table gating.
+for (const mode of ['locked', 'muted', 'hidden', 'reconnect']) {
+  test(`presentation can complete without replay or deadlock: ${mode}`, async () => {
+    const scope = setup(fixture({ schemaVersion: 3 }));
+    const next = presentationFixture(scope, 'discard');
+    if (mode === 'locked') scope.characterAudio.unlocked = false;
+    if (mode === 'muted') scope.characterAudio.setMuted(true);
+    if (mode === 'hidden') document.hidden = true;
+    if (mode === 'reconnect') { scope.voiceCursor.reset(); scope.offline.value = true; }
+    const requests = [];
+    globalThis.fetch = async (path, options) => {
+      requests.push(path);
+      return response({ state: { ...next, revision: next.revision + 1,
+        presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+          completedSeats: JSON.parse(options.body).phase === "begin" ? [] : [0] } } });
+    };
+    scope.applyState(next);
+    await settle();
+    assert.deepEqual(requests, ['locked', 'muted'].includes(mode)
+      ? ['/api/rooms/ABCDEF23/presentation', '/api/rooms/ABCDEF23/presentation']
+      : []);
+    assert.equal(scope.winningEvents.value.length, 0);
+    assert.equal(scope.presentationWaiting.value, true);
+    scope.resetRoomContext();
+  });
+}
+
+// 场景：确认丢包后仅在同步验证同一个 ID 仍待确认时重试，不重新播放或重发动作。
+// Scenario: a lost ack retries only after a verified poll finds the same gate, without replaying media or a move.
+test('presentation acknowledgement retries idempotently after a verified unchanged poll', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope, 'discard');
+  const paths = [];
+  let receipts = 0;
+  globalThis.fetch = async (path, options) => {
+    paths.push(path);
+    if (path.endsWith('/presentation')) {
+      if (JSON.parse(options.body).phase !== 'begin') receipts++;
+      if (receipts === 1 && JSON.parse(options.body).phase !== 'begin') throw new Error('Lost response');
+      return response({ state: { ...next, revision: next.revision + 1,
+        presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+          completedSeats: JSON.parse(options.body).phase === "begin" ? [] : [0] } } });
+    }
+    return response({ unchanged: true, revision: next.revision });
+  };
+  scope.applyState(next);
+  await settle();
+  assert.equal(receipts, 1);
+  await scope.refresh();
+  await settle();
+  assert.equal(receipts, 2);
+  assert.equal(paths.some((path) => path.endsWith('/action')), false);
+  scope.resetRoomContext();
+});
+
+// 场景：旧桌媒体迟到完成或确认迟到返回，不能污染新会话或发送旧桌新动作。
+// Scenario: late old-room media/ack completion cannot update a new session or submit old-room moves.
+test('leaving during presentation invalidates completion and late acknowledgements', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope, 'discard');
+  let finishAudio;
+  scope.characterAudio.enqueueLive = () => new Promise((resolve) => { finishAudio = resolve; });
+  const paths = [];
+  globalThis.fetch = async (path) => {
+    paths.push(path);
+    return response({ state: { ...next, revision: next.revision + 1,
+      presentation: { ...next.presentation, owners: { 0: scope.presentationClientId } } } });
+  };
+  scope.applyState(next);
+  await settle();
+  scope.resetRoomContext();
+  finishAudio();
+  await settle();
+  assert.deepEqual(paths, ['/api/rooms/ABCDEF23/presentation']);
+  assert.equal(scope.presentationWaiting.value, false);
+});
+
+// 场景：同座位另一个页面取得播放权时，本页不播放、不确认，也不放开动作。
+// Scenario: another page owning the same seat keeps this page silent, unable to acknowledge or act.
+test('a duplicate seat tab cannot play or acknowledge another page presentation', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  let playCount = 0;
+  scope.characterAudio.enqueueLive = () => { playCount++; return Promise.resolve(); };
+  const bodies = [];
+  globalThis.fetch = async (_path, options) => {
+    bodies.push(JSON.parse(options.body));
+    return response({ state: { ...next, revision: next.revision + 1,
+      presentation: { ...next.presentation, owners: { 0: 'another-page' } } } });
+  };
+  scope.applyState(next);
+  await settle();
+  assert.equal(bodies.length, 1);
+  assert.equal(bodies[0].phase, 'begin');
+  assert.equal(playCount, 0);
+  assert.equal(scope.winningEvents.value.length, 0);
+  assert.equal(scope.presentationWaiting.value, true);
+  scope.applyState(scope.state.value);
+  await settle();
+  assert.equal(bodies.length, 1);
+  scope.resetRoomContext();
+});
+
+// 场景：展示截止时先取消动画与声音，完成回执不能在残留媒体仍播放时发出。
+// Scenario: the gate deadline cancels visuals/audio before issuing a completion receipt.
+test('presentation deadline stops media before acknowledging completion', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  next.presentation.remainingMs = 100;
+  let finishAudio;
+  let stopped = false;
+  scope.characterAudio.enqueueLive = () => new Promise((resolve) => { finishAudio = resolve; });
+  scope.characterAudio.clear = () => {
+    if (finishAudio) { stopped = true; finishAudio(); }
+  };
+  const bodies = [];
+  globalThis.fetch = async (_path, options) => {
+    const body = JSON.parse(options.body);
+    bodies.push(body);
+    if (body.phase !== 'begin') {
+      assert.equal(stopped, true);
+      assert.equal(scope.winningEvents.value.length, 0);
+    }
+    return response({ state: { ...next, revision: next.revision + bodies.length,
+      presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+        completedSeats: body.phase === 'begin' ? [] : [0] } } });
+  };
+  scope.applyState(next);
+  await settle();
+  assert.equal(bodies.length, 1);
+  scheduled.find((item) => item.delay === 100 && !item.cancelled).callback();
+  await settle();
+  assert.equal(bodies.length, 2);
+  scope.resetRoomContext();
+});
+
+// 场景：播放权认领的迟到响应不能让已离桌页面重新出现或播出旧动作。
+// Scenario: a late ownership response cannot revive a departed table or play its old action.
+test('late playback ownership response is ignored after leaving', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  let deliver;
+  let playCount = 0;
+  scope.characterAudio.enqueueLive = () => { playCount++; return Promise.resolve(); };
+  globalThis.fetch = () => new Promise((resolve) => { deliver = resolve; });
+  scope.applyState(next);
+  scope.resetRoomContext();
+  deliver(response({ state: { ...next,
+    presentation: { ...next.presentation, owners: { 0: scope.presentationClientId } } } }));
+  await settle();
+  assert.equal(playCount, 0);
+  assert.equal(scope.state.value, null);
+  assert.equal(scope.presentationWaiting.value, false);
+});
+
+// 场景：认领失败后切后台再回来，重试可以确认但不可补播已经作废的旧动作。
+// Scenario: an ownership retry after hiding/returning may acknowledge, but must not replay invalidated media.
+test('ownership retries after visibility reset never replay the pending old event', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  const batches = [];
+  scope.characterAudio.enqueueLive = (events) => { batches.push(events); return Promise.resolve(); };
+  let claims = 0;
+  globalThis.fetch = async (_path, options) => {
+    const body = JSON.parse(options.body);
+    if (body.phase === 'begin' && ++claims === 1) throw new Error('Claim response lost');
+    return response({ state: { ...next, revision: next.revision + claims,
+      presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+        completedSeats: body.phase === 'begin' ? [] : [0] } } });
+  };
+  scope.applyState(next);
+  await settle();
+  assert.equal(batches.length, 0);
+  document.hidden = true;
+  scope.visibilityChanged();
+  document.hidden = false;
+  scope.visibilityChanged();
+  scope.applyState({ ...next, revision: next.revision + 1 });
+  await settle();
+  assert.equal(claims, 1);
+  assert.deepEqual(batches, []);
+  assert.equal(scope.winningEvents.value.length, 0);
+  assert.equal(scope.localPresentationBusy.value, false);
+  scope.resetRoomContext();
+});
+
+// 场景：先收到快照的后台、空基线或未解锁副页都不能吞掉同座位前台的胡牌音画。
+// Scenario: an earlier hidden, baseline-only or locked sibling cannot consume the foreground seat's win media.
+for (const siblingMode of ['hidden', 'baseline', 'locked']) {
+  test(`foreground win media survives a faster same-seat ${siblingMode} sibling`, async () => {
+    const sibling = setup(fixture({ schemaVersion: 3 }));
+    const siblingNext = presentationFixture(sibling);
+    const foreground = setup(fixture({ schemaVersion: 3 }));
+    const next = presentationFixture(foreground);
+    assert.notEqual(sibling.presentationClientId, foreground.presentationClientId);
+    if (siblingMode === 'baseline') sibling.voiceCursor.reset();
+    if (siblingMode === 'locked') sibling.characterAudio.unlocked = false;
+    // 服务端根据之前分别注册的前台租约选择可发声页面，客户端不再靠固定延时抢先。
+    // The server chooses the audible page from independently registered leases, not a client-side timing race.
+    siblingNext.presentation.preferredClients = { 0: foreground.presentationClientId };
+    next.presentation.preferredClients = { 0: foreground.presentationClientId };
+    let finishAudio;
+    const played = [];
+    foreground.characterAudio.enqueueLive = (events) => {
+      played.push(events);
+      return new Promise((resolve) => { finishAudio = resolve; });
+    };
+    const receipts = [];
+    let authoritative = structuredClone(next);
+    authoritative.presentation.owners = {};
+    globalThis.fetch = async (_path, options) => {
+      const body = JSON.parse(options.body);
+      receipts.push(body);
+      const gate = authoritative.presentation;
+      if (body.phase === 'begin' && !gate.owners[0]) gate.owners[0] = body.clientId;
+      else if (body.phase !== 'begin' && gate.owners[0] === body.clientId) gate.completedSeats = [0];
+      authoritative.revision++;
+      return response({ state: structuredClone(authoritative) });
+    };
+    document.hidden = siblingMode === 'hidden';
+    sibling.applyState(siblingNext);
+    await settle();
+    assert.equal(receipts.length, 0, 'the passive sibling must not win before foreground polling');
+    document.hidden = false;
+    foreground.applyState(next);
+    await settle();
+    assert.equal(authoritative.presentation.owners[0], foreground.presentationClientId);
+    assert.equal(played.length, 1);
+    assert.equal(played[0][0].type, 'hu');
+    assert.equal(foreground.winningEvents.value.length, 1);
+    assert.deepEqual(authoritative.presentation.completedSeats, []);
+    // 副页继续轮询也不能使前台还在播放的本座位提前完成。
+    // Further sibling polling cannot complete the seat while foreground media still runs.
+    document.hidden = siblingMode === 'hidden';
+    sibling.applyState(structuredClone(authoritative));
+    await settle();
+    document.hidden = false;
+    assert.deepEqual(authoritative.presentation.completedSeats, []);
+    assert.equal(foreground.winningEvents.value.length, 1);
+    scheduled.find((item) => item.delay === 2800 && !item.cancelled).callback();
+    await settle();
+    assert.deepEqual(authoritative.presentation.completedSeats, [], 'voice still running after visuals finish');
+    finishAudio();
+    await settle();
+    assert.deepEqual(authoritative.presentation.completedSeats, [0]);
+    assert.equal(receipts.filter((body) => body.phase !== 'begin').length, 1);
+    foreground.resetRoomContext();
+    sibling.resetRoomContext();
+  });
+}
+
+// 场景：认领飞行期间转后台要归还所有权，不能用空媒体完成来抢掉另一个页面的播放。
+// Scenario: hiding while a claim is in flight releases ownership, rather than completing with empty media.
+test('a page hidden during ownership claim releases the gate without completing it', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  let deliverBegin;
+  let plays = 0;
+  const requests = [];
+  scope.characterAudio.enqueueLive = () => { plays++; return Promise.resolve(); };
+  globalThis.fetch = async (_path, options) => {
+    const body = JSON.parse(options.body);
+    requests.push(body);
+    if (body.phase === 'begin') return new Promise((resolve) => { deliverBegin = resolve; });
+    assert.equal(body.phase, 'release');
+    return response({ state: { ...next, revision: next.revision + 2,
+      presentation: { ...next.presentation, owners: {}, completedSeats: [] } } });
+  };
+  scope.applyState(next);
+  document.hidden = true;
+  scope.visibilityChanged();
+  deliverBegin(response({ state: { ...next, revision: next.revision + 1,
+    presentation: { ...next.presentation, owners: { 0: scope.presentationClientId } } } }));
+  await settle();
+  assert.deepEqual(requests.map((body) => body.phase), ['begin', 'release']);
+  assert.equal(plays, 0);
+  assert.deepEqual(scope.state.value.presentation.completedSeats, []);
+  assert.deepEqual(scope.state.value.presentation.owners, {});
+  scope.resetRoomContext();
+});
+
+// 场景：前台页先看到他页暂时拥有，待他页在播放前释放后仍能接手，不被误记为已开始。
+// Scenario: foreground ownership loss is not playback; after an unstarted sibling releases, fresh media can take over.
+test('a foreground sibling takes over after observing an unstarted owner release', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = presentationFixture(scope);
+  let finishAudio;
+  const batches = [];
+  scope.characterAudio.enqueueLive = (events) => {
+    batches.push(events);
+    return new Promise((resolve) => { finishAudio = resolve; });
+  };
+  const bodies = [];
+  globalThis.fetch = async (_path, options) => {
+    const body = JSON.parse(options.body);
+    bodies.push(body);
+    return response({ state: { ...next, revision: next.revision + bodies.length + 1,
+      presentation: { ...next.presentation, owners: { 0: scope.presentationClientId },
+        completedSeats: body.phase === 'begin' ? [] : [0] } } });
+  };
+  scope.applyState({ ...next, presentation: { ...next.presentation, owners: { 0: 'claim-in-flight' } } });
+  await settle();
+  assert.equal(bodies.length, 0);
+  assert.equal(batches.length, 0);
+  scope.applyState({ ...next, revision: next.revision + 1,
+    presentation: { ...next.presentation, owners: {} } });
+  await settle();
+  assert.equal(bodies.length, 1);
+  assert.equal(bodies[0].phase, 'begin');
+  assert.equal(batches[0][0].type, 'hu');
+  assert.equal(scope.winningEvents.value.length, 1);
+  scheduled.find((item) => item.delay === 2800 && !item.cancelled).callback();
+  await settle();
+  assert.equal(bodies.length, 1);
+  finishAudio();
+  await settle();
+  assert.equal(bodies.length, 2);
+  scope.resetRoomContext();
+});
+
+// 场景：真实 API + 四个真实 App 协调：隐藏座位不拖慢牌局，同座位后台副页不能结束前台慢语音。
+// Scenario: real API plus four App instances exclude a hidden seat while preserving a foreground sibling's slow voice.
+test('real API foreground leases skip a hidden seat but await active sibling media', async () => {
+  browser();
+  // WebCrypto 鉴权使用实际异步任务队列；有限轮事件循环等待真实请求，而非只排空 Promise 微任务。
+  // Real WebCrypto authentication uses event-loop tasks; bounded turns await actual requests, not only promise microtasks.
+  const settleRequests = async (complete) => {
+    for (let turn = 0; turn < 1000; turn++) {
+      if (await complete()) return;
+      await new Promise((resolve) => originals.setTimeout(resolve, 5));
+    }
+    assert.fail('The real authenticated request did not finish within five seconds');
+  };
+  const store = new MemoryStore();
+  const handle = createApi(store);
+  const tokens = [];
+  const call = async (path, seat, body) => {
+    const result = await handle(new Request(`https://example.test/api/${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: seat === undefined ? {} : { authorization: `Bearer ${tokens[seat]}` },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }));
+    assert.ok(result.status >= 200 && result.status < 300);
+    return result.json();
+  };
+  const created = await call('rooms', undefined, { name: '前台甲' });
+  tokens.push(created.token);
+  for (const name of ['前台乙', '后台丙'])
+    tokens.push((await call(`rooms/${created.roomId}/join`, undefined, { name })).token);
+  let roomState = (await call(`rooms/${created.roomId}`, 0)).state;
+  await call(`rooms/${created.roomId}/start`, 0, { revision: roomState.revision, presentation: true });
+  const room = await store.get(created.roomId);
+  room.game = postHuKongGame({ type: 'anGang', winningDraw: true, huCount: 0 });
+  await store.compareAndSwap(room, room.revision);
+  const scopes = [];
+  for (const seat of [0, 1, 2, 1]) {
+    const scope = lobby();
+    scope.session.value = { roomId: created.roomId, token: tokens[seat] };
+    scope.characterAudio.unlocked = true;
+    scope.characterAudio.context = { state: 'running' };
+    scope.characterAudio.warmWins = () => Promise.resolve();
+    scope.characterAudio.enqueueLive = () => Promise.resolve();
+    scope.applyState((await call(`rooms/${created.roomId}`, seat)).state);
+    scopes.push(scope);
+  }
+  globalThis.fetch = (path, options) => handle(new Request(`https://example.test${path}`, options));
+  // 各实例先独立登记状态。后登记的后台副页不得覆盖同座位已登记的前台实例。
+  // Register independently; the later hidden duplicate cannot overwrite its seat's foreground instance.
+  for (const [index, scope] of scopes.entries()) {
+    document.hidden = index >= 2;
+    const data = await scope.api(`/api/rooms/${created.roomId}`);
+    scope.applyState(data.state);
+  }
+  document.hidden = false;
+  let finishSlowVoice;
+  const spoken = [];
+  scopes[1].characterAudio.enqueueLive = (events) => {
+    spoken.push(events);
+    return new Promise((resolve) => { finishSlowVoice = resolve; });
+  };
+  await scopes[0].mutate({ type: 'hu' });
+  await settleRequests(() => scopes[0].winningEvents.value.length === 1);
+  await scopes[1].refresh();
+  await settleRequests(() => spoken.length === 1);
+  const paused = await store.get(created.roomId);
+  assert.deepEqual(paused.presentation.requiredSeats, [0, 1]);
+  assert.equal(paused.presentation.preferredClients[1], scopes[1].presentationClientId);
+  assert.equal(paused.presentation.owners[1], scopes[1].presentationClientId);
+  assert.equal(spoken.length, 1);
+  assert.equal(spoken[0][0].type, 'hu');
+  assert.equal(scopes[1].winningEvents.value.length, 1);
+  const frozen = structuredClone(paused.game);
+  document.hidden = true;
+  await scopes[3].refresh();
+  await settle();
+  document.hidden = false;
+  for (const timer of scheduled.filter((item) => item.delay === 2800 && !item.cancelled)) timer.callback();
+  await settleRequests(async () => (await store.get(created.roomId)).presentation.completedSeats.includes(0));
+  assert.deepEqual((await store.get(created.roomId)).game, frozen, 'foreground voice still holds the actual engine');
+  finishSlowVoice();
+  await settleRequests(async () => !(await store.get(created.roomId)).presentation);
+  assert.deepEqual((await store.get(created.roomId)).game, continuePresentedGame(frozen));
+  assert.equal((await store.get(created.roomId)).presentation, undefined);
+  for (const scope of scopes) scope.resetRoomContext();
 });

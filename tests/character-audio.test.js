@@ -1313,3 +1313,169 @@ test("win warming is bounded, deduplicated and silent; disabled audio sends no p
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   engine.dispose();
 });
+
+// 场景：返回值始终可等待，静音、锁定、无语音和销毁不会遗留等待者。
+// Scenario: every return is awaitable; mute, lock, empty input and disposal leave no waiter behind.
+test("live completion immediately settles skipped speech", async () => {
+  const { engine } = audioFixture();
+  const events = live([{ type: "peng", seat: 0 }]);
+  assert.ok(engine.enqueueLive(events) instanceof Promise);
+  await engine.enqueueLive(events);
+  await engine.unlock();
+  await engine.enqueueLive([]);
+  await engine.enqueueLive([{ type: "draw", urls: [] }]);
+  engine.setMuted(true);
+  await engine.enqueueLive(events);
+  engine.dispose();
+  await engine.enqueueLive(events);
+});
+
+// 场景：双响必须等两段真实结束，开始播放和首段结束均不能提前完成。
+// Scenario: two wins require both actual end events, not merely startup or the first clip's completion.
+test("live completion waits for both winners and preserves win priority", async () => {
+  const { engine, sources, played } = audioFixture();
+  await engine.unlock();
+  let completed = false;
+  const completion = engine.enqueueLive(live([
+    { type: "hu", seat: 0, source: "discard" },
+    { type: "hu", seat: 1, source: "discard" },
+  ])).then(() => { completed = true; });
+  await tick();
+  assert.equal(completed, false);
+  await engine.enqueueLive(live([{ type: "peng", seat: 2 }]));
+  assert.equal(completed, false);
+  sources.at(-1).onended();
+  await tick();
+  assert.equal(completed, false);
+  assert.equal(played.at(-1), "/voices/elegant/fangpao.mp3");
+  sources.at(-1).onended();
+  await completion;
+  assert.equal(completed, true);
+  engine.dispose();
+});
+
+// 场景：清空/静音/销毁/系统锁定即使没有 onended 也先停止声音再释放等待。
+// Scenario: clear/mute/dispose/system lock stop audio and settle even if stop never emits onended.
+test("live cancellation stops playback without relying on onended", async () => {
+  for (const action of ["clear", "mute", "dispose", "lock"]) {
+    const { engine, sources, context } = audioFixture();
+    await engine.unlock();
+    const completion = engine.enqueueLive(live([{ type: "peng", seat: 0 }]));
+    await tick();
+    let stopped = false;
+    let disconnected = false;
+    sources.at(-1).stop = () => { stopped = true; };
+    sources.at(-1).disconnect = () => { disconnected = true; };
+    if (action === "mute") engine.setMuted(true);
+    else if (action === "lock") {
+      context.state = "suspended";
+      context.onstatechange();
+    } else engine[action]();
+    await completion;
+    await tick();
+    assert.equal(stopped, true);
+    assert.equal(disconnected, true);
+    assert.equal(engine.running, false);
+    engine.dispose();
+  }
+});
+
+// 场景：替换加载中的旧批会完成旧等待者，而新批仍等待自己的真实结束。
+// Scenario: replacing an in-flight batch settles its waiter while the new batch awaits its own actual end.
+test("live replacement settles cancelled load and waits independently", async () => {
+  const { engine, sources } = audioFixture();
+  await engine.unlock();
+  const originalFetch = engine.fetchAudio;
+  engine.fetchAudio = (url, options) => url === "stalled"
+    ? new Promise(() => {}) : originalFetch(url, options);
+  const old = engine.enqueueLive([{ type: "peng", urls: ["stalled"] }]);
+  await tick();
+  let completed = false;
+  const replacement = engine.enqueueLive(live([{ type: "peng", seat: 1 }]))
+    .then(() => { completed = true; });
+  await old;
+  await tick();
+  assert.equal(completed, false);
+  sources.at(-1).onended();
+  await replacement;
+  engine.dispose();
+});
+
+// 场景：下载/解码/播放启动失败均完成批次，不产生拒绝或永久锁。
+// Scenario: download, decoding and playback startup failures complete batches without rejection or permanent locks.
+test("live completion settles fetch, decode and playback failures", async () => {
+  for (const failure of ["fetch", "decode", "start"]) {
+    const { engine, context } = audioFixture();
+    await engine.unlock();
+    if (failure === "fetch") engine.fetchAudio = () => { throw new Error("fetch failed"); };
+    if (failure === "decode") context.decodeAudioData = async () => { throw new Error("decode failed"); };
+    if (failure === "start") context.createBufferSource = () => ({
+      connect() {}, stop() {}, disconnect() {},
+      start() { throw new Error("start failed"); },
+    });
+    await engine.enqueueLive(live([{ type: "peng", seat: 0 }]));
+    await tick();
+    assert.equal(engine.running, false);
+    assert.equal(engine.source, null);
+    assert.equal(engine.loads.size, 0);
+    engine.dispose();
+  }
+});
+
+// 场景：下载永久悬挂有四秒上限；迟到成功不能复活已过期声音。
+// Scenario: a hung download is bounded at four seconds; late success cannot revive expired speech.
+test("live completion bounds hung loads and skips stale decoded speech", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const { engine, played } = audioFixture();
+  await engine.unlock();
+  engine.fetchAudio = () => new Promise(() => {});
+  const completion = engine.enqueueLive(live([{ type: "peng", seat: 0 }]));
+  await tick();
+  t.mock.timers.tick(4000);
+  await completion;
+  assert.deepEqual(played, ["silent"]);
+  engine.dispose();
+
+  let now = 0;
+  const stale = audioFixture({ now: () => now });
+  await stale.engine.unlock();
+  const expired = stale.engine.enqueueLive(live([{ type: "peng", seat: 0 }]));
+  now = 551;
+  await expired;
+  assert.deepEqual(stale.played, ["silent"]);
+  stale.engine.dispose();
+});
+
+// 场景：丢失 onended 的看门狗必须先停止并断开，不能只按估计时长放行。
+// Scenario: the missing-onended watchdog must stop and disconnect, not simply release on estimated duration.
+test("playback watchdog stops audible source before completing", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  for (const duration of [2, Infinity, 100]) {
+    const { engine, context, sources } = audioFixture();
+    await engine.unlock();
+    context.decodeAudioData = async () => ({ duration });
+    let completed = false;
+    const completion = engine.enqueueLive(live([{ type: "peng", seat: 0 }]))
+      .then(() => { completed = true; });
+    await tick();
+    let stopped = false;
+    let disconnected = false;
+    sources.at(-1).stop = () => {
+      stopped = true;
+      // stop 异常仍需断开输出，不能让旧声音越过完成屏障。
+      // A stop error must still disconnect output so stale speech cannot cross the completion barrier.
+      if (duration === Infinity) throw new Error("stop failed");
+    };
+    sources.at(-1).disconnect = () => { disconnected = true; };
+    const deadline = duration === 2 ? 3000 : 15000;
+    t.mock.timers.tick(deadline - 1);
+    await tick();
+    assert.equal(completed, false);
+    assert.equal(stopped, false);
+    t.mock.timers.tick(1);
+    await completion;
+    assert.equal(stopped, true);
+    assert.equal(disconnected, true);
+    engine.dispose();
+  }
+});

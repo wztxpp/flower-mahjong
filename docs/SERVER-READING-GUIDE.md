@@ -138,3 +138,20 @@ Run `npm test` and `npm run build`, focusing on concurrent joins, stale revision
 
 保存的 v0.7.0 `allowPungUpgrade:false` 通过引擎 requiresPungDiscard 解释为“碰后必须实际出牌一次”，不重写旧规则、手牌、历史或积分。更老的 true/缺字段时机保留。0 分喜钱不转账，但仍记录一次已处理标记和事件。
 The engine interprets saved v0.7.0 false as an actual post-peng discard requirement without rewriting old rules, tiles, history, or scores. Older true/missing timing remains intact. Zero ready points still record the processing marker/event but transfer no points.
+
+## 展示回执与多端 / Presentation receipts and multiple clients
+
+新增 `POST /api/rooms/:id/presentation`，按原凭证验证本人座位，再按局 ID + 展示 ID 合并 CAS 回执。`phase: begin` 与 `clientId` 认领唯一播放实例；完成回执须匹配归属。四十秒超时由读取/动作请求惰性恢复，主动离席移除该座位等待，重启不丢屏障。`gameMeta.presentationEnabled` 一经启用，本局旧客户端也不能绕过。完整设计、隐私、重试和兼容边界见 [音画节奏](PRESENTATION-PACING.md)。
+The new endpoint authenticates the original seat and merges receipts by game/gate IDs with CAS. Begin/clientId claims a unique playback instance; completion must match ownership. Reads/actions lazily recover forty-second timeouts, departure releases that seat, and restart preserves gates. Once enabled, older clients cannot bypass pacing. See [presentation pacing](PRESENTATION-PACING.md) for privacy, retries and compatibility.
+
+`phase: release` 须匹配同段 ID、clientId 与未完成座位的当前 owner；仅归还归属，不完成也不触发超时续进。重复、非 owner 和旧段 release 都不可删除新归属。
+A release must match the current gate/client owner of an incomplete seat. It only relinquishes ownership, never completes or expires the gate. Duplicate, non-owner and stale releases cannot remove newer ownership.
+
+每个占座者的 presentationClients 分别记录最多八个页面，五秒租约、一秒合并续租；公开视图不输出记录。preferredClients 只公开已选非秘密实例 ID，前台可发声优先。无 owner 时已知后台立即不等，未知页面仅发现 1.5 秒；有 owner 后不因遥测或租约变化提前结束。现代动作的完整 gameId/gameRevision 证明允许仅遥测造成的 room.revision 差异，但显式错误/不完整证明始终拒绝。详见音画节奏文档。
+Each occupant retains at most eight private page records with five-second leases and one-second coalescing. Public preferredClients exposes only selected non-secret IDs, preferring audible foreground pages. Unowned hidden seats do not wait; unknown pages get 1.5-second discovery. Owners survive telemetry/lease changes until completion. Complete modern game proofs tolerate telemetry-only room-version differences, while wrong/partial supplied proof always rejects.
+
+### 展示租约竞争的动作重试 / Action retries for presentation leases
+
+`differsOnlyInPresence` 在动作 CAS 失败后比较完整保存模型，仅排除房间版本/更新时间与座位心跳/页面租约。带有效局证明的 v3 请求最多四次提交尝试；真实牌局、座位、身份或生命周期变化立即拒绝。每轮重建动作副本，不复用失败结果；未知存储错误不重试。详见 [播放节奏](PRESENTATION-PACING.md) 的“动作提交与租约竞争”及 `tests/presentation-api.test.js` 的确定性 CAS 竞争用例。
+
+After an action CAS failure, `differsOnlyInPresence` compares the full saved model, excluding only room revision/update time and seat heartbeat/client leases. Proven v3 requests have at most four commit attempts; real game, occupancy, identity, or lifecycle changes reject immediately. Each attempt rebuilds its candidate, never reusing failed results, and unknown storage errors are not retried. See [presentation pacing](PRESENTATION-PACING.md) and the deterministic CAS-race cases in `tests/presentation-api.test.js`.

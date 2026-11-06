@@ -32,7 +32,17 @@ const voiceMuted = ref(false);
 const winningEvents = ref([]);
 const winningFlights = ref([]);
 let winningTimer;
+let winningSafetyTimer;
+let winningAnimations = [];
+let finishWinningPresentation;
 let presentationGeneration = 0;
+// 本地音画与全桌确认分别等待：本地完成不能替其它座位提前放行。
+// Local media and table acknowledgements are separate waits; one client cannot release other seats.
+const localPresentationBusy = ref(false);
+let turnPresentation = null;
+// 每个页面实例使用独立公开 ID；它不是凭证，只用来防止同座位另一个标签页提前确认。
+// Each page has a distinct public ID, not a credential, preventing another tab in the same seat from acknowledging early.
+const presentationClientId = crypto.randomUUID();
 const voiceCursor = new ActionVoiceCursor();
 const characterAudio = new CharacterAudio({
   onStatus: (status) => {
@@ -188,7 +198,12 @@ const gameBigSingleReadyEnabled = computed(
 const gameAutoDiscardAfterHu = computed(() => game.value?.rules?.autoDiscardAfterHu !== false);
 // 按钮来自服务端 legalActions；前端筛选展示，但最终合法性仍由后端验证。
 // Buttons come from server legalActions; the client filters presentation while the backend validates legality.
-const legalActions = computed(() => game.value?.legalActions || []);
+const presentationWaiting = computed(
+  () => localPresentationBusy.value || Boolean(state.value?.presentation),
+);
+const legalActions = computed(() =>
+  presentationWaiting.value ? [] : game.value?.legalActions || [],
+);
 // 复制后排序，不就地修改权威手牌；将最后一张同种摸牌移至末尾，仅改变显示顺序。
 // Sort a copy rather than mutating authoritative hands; move the last matching drawn tile to the end for display only.
 const hand = computed(() => {
@@ -223,6 +238,7 @@ const gangActions = computed(() =>
 );
 const isMyTurn = computed(
   () =>
+    !presentationWaiting.value &&
     game.value?.currentSeat === mySeat.value &&
     game.value?.phase === 'turn' &&
     phase.value === 'playing',
@@ -287,6 +303,7 @@ const shareUrl = computed(() => {
 // 按终局、大厅、接牌、本人回合的优先顺序选择提示；分支顺序会影响显示含义。
 // Choose status text in priority order: finish, lobby, claim, own turn; branch order affects meaning.
 const statusTitle = computed(() => {
+  if (presentationWaiting.value) return '等待动画与语音结束';
   if (phase.value === 'finished')
     return ['allPlayersHu', 'allThreeHu', 'all_players_hu'].includes(game.value?.finishReason)
       ? '三家都胡了，本局结束'
@@ -317,6 +334,10 @@ const statusTitle = computed(() => {
 const statusDetail = computed(() => {
   if (syncing.value) return '正在确认刚才的操作结果，请稍等。';
   if (offline.value) return '连接暂时中断，正在尝试重新连接';
+  if (presentationWaiting.value)
+    return localPresentationBusy.value
+      ? '本次动作正在展示，结束后才继续判定。'
+      : '本机展示已结束，等待其他牌友的动画与语音。';
   if (phase.value === 'playing' && currentPlayer.value?.detached)
     return `${currentPlayer.value.name}已离桌，本局等待该牌友重连；已记积分不会清除。`;
   if (phase.value === 'finished') return finishText.value;
@@ -567,6 +588,7 @@ function paymentSummary(entry) {
 // Highlight the current turn seat only during active play outside the claim phase.
 function isTurn(player) {
   return (
+    !presentationWaiting.value &&
     game.value?.currentSeat === player.seat &&
     phase.value === 'playing' &&
     game.value?.phase !== 'claim'
@@ -683,8 +705,15 @@ function isWinningTile(seat, index) {
 function clearPresentation() {
   presentationGeneration++;
   clearTimeout(winningTimer);
+  clearTimeout(winningSafetyTimer);
+  winningAnimations.forEach((animation) => animation.cancel());
+  winningAnimations = [];
   winningEvents.value = [];
   winningFlights.value = [];
+  // 清理表示画面已结束或明确取消；卸载、后台和异常都必须释放等待者。
+  // Cleanup means visuals ended or were explicitly cancelled; teardown and interruptions release waiters.
+  finishWinningPresentation?.();
+  finishWinningPresentation = null;
 }
 // 从已提交事件构建短暂胡牌反馈；最多展示最近两次，并等待 DOM 更新后测量飞牌坐标。
 // Build transient feedback from committed wins; keep the latest two and measure flight coordinates after the DOM update.
@@ -693,8 +722,11 @@ function presentWins(events, snapshot) {
     (event) =>
       event.type === 'hu' && Number.isInteger(event.tile) && event.tile >= 0 && event.tile < 18,
   );
-  if (!wins.length) return;
+  if (!wins.length) return Promise.resolve();
   clearPresentation();
+  const completion = new Promise((resolve) => {
+    finishWinningPresentation = resolve;
+  });
   const generation = presentationGeneration;
   const latestWins = wins.slice(-2);
   winningEvents.value = latestWins.map((event, index) => {
@@ -706,10 +738,16 @@ function presentWins(events, snapshot) {
     const discardIndex = pile[winIndex]?.discardIndex;
     return { ...event, winIndex, discardIndex };
   });
-  // 牌桌和可操作项始终来自当前权威快照；短暂覆盖层只解释已提交的胡牌，不阻断下一步。
-  // Board and legal actions always remain the current authoritative state. The
-  // short overlay explains a committed win without blocking the next action.
-  winningTimer = setTimeout(clearPresentation, latestWins.length > 1 ? 4500 : 2800);
+  // 字幕、高亮及飞牌全部撤下后才算展示结束；与语音完成并行等待，而非只延迟按钮。
+  // Finish only after captions, highlights and flights are removed; wait alongside audio, not merely a button delay.
+  const captionFinished = new Promise((resolve) => {
+    winningTimer = setTimeout(resolve, latestWins.length > 1 ? 4500 : 2800);
+  });
+  // 浏览器动画异常停滞时明确撤下视觉元素，避免永久等待；正常路径仍等 finished。
+  // Explicitly remove stalled visuals after a bounded fallback; normal playback still awaits finished.
+  winningSafetyTimer = setTimeout(() => {
+    if (generation === presentationGeneration) clearPresentation();
+  }, 10000);
   // 等本轮快照渲染完成才能读取牌河与胡牌区的实际屏幕坐标。
   // Wait for snapshot rendering before measuring actual discard and win-pile screen coordinates.
   nextTick(() => {
@@ -752,6 +790,254 @@ function presentWins(events, snapshot) {
       ];
     });
   });
+  // 飞牌坐标写入后再等一轮 DOM；只等待本次反馈的有限动画，不能等页面无限转圈动画。
+  // Wait another DOM patch after flight placement; await only these finite effects, never unrelated infinite spinners.
+  nextTick(async () => {
+    await nextTick();
+    if (generation !== presentationGeneration) return;
+    const elements = document.querySelectorAll?.(
+      '.win-cue, .winning-flight, .winning-discard, .winning-tile',
+    ) || [];
+    winningAnimations = [...elements].flatMap((element) => element.getAnimations?.() || []);
+    await Promise.all([
+      captionFinished,
+      Promise.allSettled(winningAnimations.map((animation) => animation.finished)),
+    ]);
+    if (generation === presentationGeneration) clearPresentation();
+  });
+  return completion;
+}
+// 切桌、换局或服务端已恢复推进时，先取消旧音画和计时器，再使旧确认回调失效。
+// Cancel old media/timers and invalidate callbacks on room/game changes or authoritative recovery.
+function cancelTurnPresentation() {
+  const previous = turnPresentation;
+  turnPresentation = null;
+  clearTimeout(previous?.timer);
+  localPresentationBusy.value = false;
+  characterAudio.clear();
+  clearPresentation();
+}
+// 认领请求期间切后台时归还播放权而不是报告完成，给同座位前台页保留真实播放机会。
+// If a claim spans hiding, release ownership instead of completing so a foreground sibling can actually play.
+async function releasePresentation(pending) {
+  if (pending.releasing || !session.value || turnPresentation !== pending) return;
+  pending.releasing = true;
+  localPresentationBusy.value = false;
+  const currentEpoch = epoch;
+  const credential = { ...session.value };
+  try {
+    const data = await api(`/api/rooms/${encodeURIComponent(credential.roomId)}/presentation`, {
+      method: 'POST',
+      token: credential.token,
+      body: {
+        presentationId: pending.id,
+        gameId: pending.gameId,
+        clientId: presentationClientId,
+        phase: 'release',
+      },
+    });
+    if (currentEpoch === epoch && turnPresentation === pending) applyState(data.state);
+  } catch {
+    // 丢包后由相同 ID 的轮询重试释放；不可把不确定的释放改成完成回执。
+    // Verified polling retries an uncertain release by ID; never substitute a completion receipt.
+  } finally {
+    pending.releasing = false;
+  }
+}
+// 只有仍可见、在线且确有新媒体的页面能认领；重连基线与后台页不消费前台页的播放机会。
+// Only visible online pages with fresh media may claim; reconnect baselines/hidden tabs cannot consume foreground playback.
+function hasFreshPresentation(pending) {
+  return !document.hidden && !offline.value &&
+    pending.visibilityEpoch === voiceVisibilityEpoch && Date.now() - pending.receivedAt <= 5000 &&
+    pending.events.some((event) => event.urls?.length || event.type === 'hu');
+}
+// 只确认当前会话、当前局的同一展示 ID；失败后由下一次已验证轮询重试，不重放麻将动作。
+// Acknowledge only the same presentation in the current session/game; verified polling retries a failed ack, never a move.
+async function acknowledgePresentation() {
+  const pending = turnPresentation;
+  const gate = state.value?.presentation;
+  if (
+    !pending?.ready || pending.sending || !gate || gate.id !== pending.id ||
+    gate.gameId !== pending.gameId || gate.completedSeats?.includes(mySeat.value) ||
+    (gate.owners && gate.owners[mySeat.value] !== presentationClientId) ||
+    !gate.requiredSeats?.includes(mySeat.value) || !session.value || destroyed
+  ) return;
+  pending.sending = true;
+  const currentEpoch = epoch;
+  const credential = { ...session.value };
+  const voiceEpoch = voiceVisibilityEpoch;
+  try {
+    const data = await api(`/api/rooms/${encodeURIComponent(credential.roomId)}/presentation`, {
+      method: 'POST',
+      token: credential.token,
+      body: {
+        presentationId: pending.id,
+        gameId: pending.gameId,
+        clientId: presentationClientId,
+      },
+    });
+    if (currentEpoch === epoch && turnPresentation === pending)
+      applyState(data.state, voiceEpoch);
+  } catch {
+    // 确认请求可按 ID 幂等重试；网络失败不能伪造全桌完成，也不提交 pass。
+    // Acks are idempotent by ID; a transport failure neither invents table completion nor submits a pass.
+  } finally {
+    pending.sending = false;
+  }
+}
+// 先原子认领本座位的播放权，再启动音画；相同座位的第二个标签页只同步牌面。
+// Claim playback ownership atomically before starting media; another tab in the same seat only synchronizes the board.
+async function beginPresentation(pending) {
+  const gate = state.value?.presentation;
+  if (
+    pending.claiming || pending.releasing || pending.started || !gate || turnPresentation !== pending ||
+    gate.id !== pending.id || !session.value
+  ) return;
+  if (
+    !gate.requiredSeats?.includes(mySeat.value) || gate.completedSeats?.includes(mySeat.value)
+  ) {
+    pending.started = true;
+    pending.ready = false;
+    localPresentationBusy.value = false;
+    return;
+  }
+  // 其他页面暂时拥有并不等于已经播放；它可能在开始前释放，届时本页仍可接手新事件。
+  // A sibling's temporary ownership is not playback; it may release before starting, so retain takeover eligibility.
+  if (gate.owners?.[mySeat.value] && gate.owners[mySeat.value] !== presentationClientId) {
+    pending.ready = false;
+    localPresentationBusy.value = false;
+    return;
+  }
+  // 服务端按各页面独立前台租约选出优先实例；不能靠较早轮询抢过它。
+  // The server elects a preferred instance from independent foreground leases; faster polling cannot steal it.
+  if (gate.preferredClients?.[mySeat.value] &&
+      gate.preferredClients[mySeat.value] !== presentationClientId) {
+    localPresentationBusy.value = false;
+    return;
+  }
+  if (!hasFreshPresentation(pending)) {
+    localPresentationBusy.value = false;
+    if (gate.owners?.[mySeat.value] === presentationClientId) releasePresentation(pending);
+    return;
+  }
+  pending.claiming = true;
+  const currentEpoch = epoch;
+  const credential = { ...session.value };
+  const voiceEpoch = voiceVisibilityEpoch;
+  try {
+    const data = await api(`/api/rooms/${encodeURIComponent(credential.roomId)}/presentation`, {
+      method: 'POST',
+      token: credential.token,
+      body: {
+        presentationId: pending.id,
+        gameId: pending.gameId,
+        clientId: presentationClientId,
+        phase: 'begin',
+      },
+    });
+    if (currentEpoch !== epoch || turnPresentation !== pending) return;
+    applyState(data.state, voiceEpoch);
+    const latestGate = state.value?.presentation;
+    if (turnPresentation !== pending || latestGate?.id !== pending.id) return;
+    if (latestGate.owners?.[mySeat.value] !== presentationClientId) {
+      pending.ready = false;
+      localPresentationBusy.value = false;
+      return;
+    }
+    // 认领期间可能进入后台、断网或换可见性代数；此时明确跳过，不把缓存事件补播出来。
+    // Claiming may span hiding, disconnects or visibility changes; explicitly skip instead of replaying queued events.
+    if (!hasFreshPresentation(pending)) {
+      await releasePresentation(pending);
+      return;
+    }
+    playTurnPresentation(pending, pending.events, state.value);
+  } catch {
+    // 认领不成功不播放也不确认；下一次验证过的轮询可安全重试同一 ID。
+    // Do not play or complete after an uncertain claim; a verified poll can retry the same ID safely.
+  } finally {
+    pending.claiming = false;
+  }
+}
+// 每个请求附带本页面的展示能力，不代表麻将操作；服务端以独立 clientId 保存，后台副页不能覆盖前台。
+// Requests describe this page's presentation capability, never a move; independent client IDs prevent a hidden sibling overwriting foreground state.
+function presentationPresenceHeaders() {
+  const gameId = state.value?.game?.id;
+  const pending = turnPresentation;
+  const ready = Boolean(gameId && !offline.value && !voiceNeedsBaseline &&
+    (pending && pending.id === state.value?.presentation?.id
+      ? (pending.started && localPresentationBusy.value) || hasFreshPresentation(pending)
+      : lastVoiceSync > 0 && Date.now() - lastVoiceSync <= 5000));
+  const canSpeak = characterAudio.unlocked && !characterAudio.muted &&
+    characterAudio.context?.state === 'running';
+  return {
+    'X-Presentation-Client': presentationClientId,
+    'X-Presentation-Visible': String(!document.hidden),
+    'X-Presentation-Audio': canSpeak ? 'ready' : 'silent',
+    'X-Presentation-Ready': String(ready),
+    ...(gameId ? { 'X-Presentation-Game': gameId } : {}),
+    // “本段没有新媒体”仅约束本段，不能让慢语音的完成回执把下一段新事件也标成不可播放。
+    // Abstaining from this gate must not mark the next fresh event unplayable after a slow voice completes.
+    ...(state.value?.presentation?.id ? { 'X-Presentation-Gate': state.value.presentation.id } : {}),
+  };
+}
+// 每个服务端展示 ID 只启动一次；Promise.all 要求音频与画面都结束，重复轮询不会提前确认。
+// Start once per server presentation ID; Promise.all requires both media paths, so repeated polls cannot acknowledge early.
+function syncTurnPresentation(events, snapshot) {
+  const gate = snapshot.presentation;
+  if (gate && turnPresentation?.id === gate.id && turnPresentation.gameId === gate.gameId) {
+    if (!turnPresentation.started) beginPresentation(turnPresentation);
+    acknowledgePresentation();
+    return;
+  }
+  // 普通轻量刷新没有新事件时保留正在播放的兼容旧局反馈。
+  // Preserve legacy local playback across ordinary snapshots without new events.
+  if (!gate && !turnPresentation?.id && !events.length) return;
+  cancelTurnPresentation();
+  const pending = {
+    id: gate?.id || null,
+    gameId: snapshot.game?.id,
+    ready: false,
+    sending: false,
+    started: false,
+    events,
+    // 重试不能更新事件的可见性/时间基线，否则旧叫牌会被误当作新事件补播。
+    // Retries must not refresh event visibility/time baselines, or stale calls could replay as new.
+    visibilityEpoch: voiceVisibilityEpoch,
+    receivedAt: Date.now(),
+  };
+  turnPresentation = pending;
+  if (gate) {
+    localPresentationBusy.value = true;
+    beginPresentation(pending);
+  } else playTurnPresentation(pending, events, snapshot);
+}
+// 取得播放权后并行播放；全桌截止时间和每条媒体自身的兜底都先取消媒体再释放等待。
+// After ownership, play concurrently; both table and media fallbacks stop effects before releasing their waits.
+function playTurnPresentation(pending, events, snapshot) {
+  const gate = snapshot.presentation;
+  pending.started = true;
+  localPresentationBusy.value = events.some((event) => event.urls?.length || event.type === 'hu');
+  const completion = Promise.all([
+    presentWins(events, snapshot),
+    characterAudio.enqueueLive(events),
+  ]);
+  if (gate) {
+    // 服务端返回剩余时间避免客户端时钟偏差；超时先停止音画再确认，不能一边播一边放行。
+    // Use server remaining time to avoid clock skew; stop media before timeout acknowledgement, never while still playing.
+    const remaining = Number.isFinite(gate.remainingMs) ? Math.max(0, gate.remainingMs) : 40000;
+    pending.timer = setTimeout(() => {
+      if (turnPresentation !== pending) return;
+      characterAudio.clear();
+      clearPresentation();
+    }, Math.min(40000, remaining));
+  }
+  completion.finally(() => {
+    if (turnPresentation !== pending) return;
+    clearTimeout(pending.timer);
+    pending.ready = true;
+    localPresentationBusy.value = false;
+    acknowledgePresentation();
+  });
 }
 // 接收权威快照的唯一汇合点：拒绝旧房间及旧版本，再派生语音与展示事件。
 // Central snapshot application: reject other rooms and older revisions, then derive audio and presentation events.
@@ -771,6 +1057,7 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
   const silent =
     offline.value || document.hidden || (lastVoiceSync > 0 && now - lastVoiceSync > 5000);
   if (newGame || silent) {
+    if (turnPresentation) turnPresentation.events = [];
     characterAudio.clear();
     clearPresentation();
   }
@@ -786,8 +1073,7 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
     bigSingleReadyPoints.value =
       next.game.rules?.bigSingleReadyPoints ?? DEFAULT_BIG_SINGLE_READY_POINTS;
   state.value = next;
-  presentWins(events, next);
-  characterAudio.enqueueLive(events);
+  syncTurnPresentation(events, next);
   if (newGame) characterAudio.warmWins(next.game?.characters);
   if (!discardOptions.value.some((action) => action.tile === selectedTile.value)) {
     selectedTile.value = null;
@@ -819,6 +1105,7 @@ async function api(path, options = {}) {
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
+        ...(path.startsWith('/api/rooms') ? presentationPresenceHeaders() : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       ...(options.keepalive ? { keepalive: true } : {}),
@@ -924,6 +1211,7 @@ function historyDate(value) {
 // 切桌的失效屏障：提升 epoch、取消旧读取、清理 UI；保留各桌凭证及待确认离席。
 // Room-change invalidation barrier: advance epoch, abort old reads and reset UI while retaining room credentials and pending departures.
 function resetRoomContext() {
+  cancelTurnPresentation();
   voiceCursor.reset();
   characterAudio.clear();
   clearPresentation();
@@ -1158,6 +1446,7 @@ async function refresh() {
           if (typeof connected === 'boolean' && player.connected !== connected)
             player.connected = connected;
         });
+      syncTurnPresentation([], state.value);
     } else applyState(data.state, voiceEpoch);
     if (offline.value) flash('已重新连接，牌局已同步。');
     offline.value = false;
@@ -1194,12 +1483,15 @@ async function refresh() {
 // Reset the audio baseline on visibility changes so returning to the page never replays old actions.
 function visibilityChanged() {
   voiceVisibilityEpoch++;
+  if (turnPresentation) turnPresentation.events = [];
   characterAudio.clear();
   clearPresentation();
   lastVoiceSync = 0;
   voiceNeedsBaseline = true;
   voiceCursor.reset();
-  if (!pollController && !busy.value) schedulePoll(performance.now(), !document.hidden);
+  // 进入后台也尽快送出该页面的租约变化，避免其他座位每步等待不可播放页面。
+  // Publish hiding promptly too, so other seats do not wait each step for a page that cannot play.
+  if (!pollController && !busy.value) schedulePoll(performance.now(), true);
 }
 // 校验表单、确认旧桌离席、准备身份，再选择建房、加入或重连；不会盲目重发落座。
 // Validate the form, confirm departures and identity, then create, join or resume without blindly retrying seat creation.
@@ -1267,7 +1559,7 @@ async function enterRoom() {
 // 发送用户选择的合法动作及 revision；冲突或网络不确定时先同步，不猜测成功也不重放操作。
 // Send the chosen action with revision; on conflict or uncertain transport, synchronize instead of assuming success or replaying it.
 async function mutate(action, start = false) {
-  if (busy.value || offline.value || syncing.value || !state.value || !session.value) return;
+  if (busy.value || offline.value || syncing.value || presentationWaiting.value || !state.value || !session.value) return;
   if (start && (!canConfigureStart.value || filledSeats.value < 3)) return;
   // 即使调用者绕过禁用按钮，非法金额也在发请求前返回；服务端仍会独立校验。
   // Reject invalid amounts before a request even if a caller bypasses the disabled button; the server validates independently.
@@ -1292,6 +1584,12 @@ async function mutate(action, start = false) {
   const currentEpoch = epoch;
   const credential = { ...session.value };
   const revision = state.value.revision;
+  // 页面租约也会提升房间版本；单局身份和引擎版本让服务端区分遥测变化与真正的过期动作。
+  // Page leases also change room revision; game identity/revision distinguish telemetry changes from genuinely stale moves.
+  const actionGame = start ? {} : {
+    gameId: state.value.game?.id,
+    gameRevision: state.value.game?.revision,
+  };
   const voiceEpoch = voiceVisibilityEpoch;
   let needsSync = false;
   try {
@@ -1300,7 +1598,11 @@ async function mutate(action, start = false) {
       {
         method: 'POST',
         token: credential.token,
-        body: { revision, ...(start ? { options: startOptions } : { action }) },
+        body: {
+          revision,
+          presentation: true,
+          ...(start ? { options: startOptions } : { action, ...actionGame }),
+        },
       },
     );
     if (currentEpoch !== epoch) return;

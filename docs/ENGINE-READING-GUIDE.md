@@ -87,3 +87,8 @@ Conserve 144 physical tiles, eight of each identity, and zero-sum scores. Valida
 
 纯可读性提交只统一私有助手名称、排版和注释，不改导出接口/规则键/存档键。最终整合另包含独立授权的喜钱与补杠功能提交，行为比较以该功能提交为基线。语法比较先把受控私有名称映回基线，再忽略位置和注释；若仍相等，说明执行表达式、分支次序与数据字面量未变。另用固定种子跨三版本对局重放比较每步状态、视图和合法动作。
 The pure readability commit changes only private helpers, layout, and explanations. Final integration separately includes authorized bonus/timing changes, so its behavior baseline is the feature commit. AST comparison reverses the approved private renames and ignores locations/comments, then checks expressions, branch order, and literals. Seeded differential replays independently compare states, views, and legal actions across all three versions.
+
+## 音画分步入口 / Presentation-paced entry points
+
+`applyAction` 保留原即时语义；`applyPresentedAction` 使用同一规则但在出牌/碰/杠/整批胡后设置 `game.presentation`。出牌暂停发生在计算接牌选项之前。`continuePresentedGame` 清除该标记后继续到下一个展示或决策点，不增加引擎 revision，不重复结算。`getLegalActions` 在暂停时为空；存档 rules 不变。具体标记、服务端确认和验证见 [音画节奏](PRESENTATION-PACING.md)。
+`applyAction` keeps immediate semantics. `applyPresentedAction` uses the same rules but marks presentation boundaries after discards/peng/kong/win batches, before discard-claim evaluation. Continuation clears the marker and reaches the next boundary without changing engine revision or repeating settlement. Legal actions are empty while paused; saved rules remain intact. See [presentation pacing](PRESENTATION-PACING.md).

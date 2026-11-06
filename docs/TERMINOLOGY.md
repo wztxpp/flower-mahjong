@@ -76,3 +76,14 @@ This dictionary defines each concept in code. Prefer the Chinese terms below and
 
 三个引擎的同义私有助手已统一：`cloneSerializable`、`sortTiles`、`tileLabel`、`countTiles`、`tilesInMelds`、`sameTileList`、`removeTilesFromHand`。状态转换使用 `beginDrawStep`、`drawTile`、`discardTile`、`declareKong`、`resolveClaimWindow`、`finishGame`；试算使用 `calculateHuScore` 和 `canDeclareKong`，提交积分使用 `transferPoints`。
 The engines use consistent private helpers for serialization, sorting, labels, counts, tile removal, transitions, and scoring. Calculation and mutation names are deliberately different. Public exports and saved keys remain unchanged.
+
+## 展示同步 / Presentation coordination
+
+- `game.presentation`：引擎暂停的续进标记，不是新玩法、待决玩家选择或计分事件。 / An engine continuation marker, not a rule, player choice or score event.
+- `room.presentation`：持久化全桌展示屏障，包含局/展示 ID、requiredSeats、completedSeats、owners 和 expiresAt；公开响应另给 remainingMs。 / Persisted table gate with game/gate IDs, required/completed seats, owners and expiry; public responses add remaining time.
+- `presentationClientId`：本页面实例的非秘密 ID；同座位多个页面只有一个播放拥有者。不能替代原座位凭证。 / A non-secret page-instance ID; only one tab per seat owns playback. It never replaces seat credentials.
+- `presentationEnabled`：gameMeta 的本局展示能力，不能放入或回填 rules。 / A per-game presentation capability in metadata, not a rules migration.
+
+- `presentationClients`：占座者内部的各页面可见性/音频/事件基线短租约，不公开其他记录。 / Private per-occupant page leases describing visibility, audio and event baselines.
+- `preferredClients`：本段尚未开始播放的优先前台页面 ID，不是身份凭证；不能抢走已开始的 owner。 / Preferred foreground page IDs for unstarted playback, not credentials and never a way to displace an existing owner.
+- `gameId/gameRevision` 动作证明：精确匹配当前单局与引擎版本，区分遥测房间版本变化和真正过期动作；部分或错误证明不可回退放行。 / Exact game/engine-version proof distinguishing telemetry from stale moves; partial/wrong proof cannot fall back to acceptance.

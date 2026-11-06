@@ -607,7 +607,12 @@ function pendingPungDiscard(game, seat) {
 /* 服务端权威动作白名单；按阶段、轮次和座位返回具体动作，不信任前端按钮。
  * Return the authoritative action allowlist by phase, turn, and seat; frontend buttons are not trusted validation. */
 export function getLegalActions(game, seat) {
-  if (!Number.isInteger(seat) || seat < 0 || seat > 2 || game.phase === 'finished') return [];
+  // 展示结束前所有座位都必须等待，不能用旧按钮绕过续行边界。
+  // Every seat waits for presentation; stale buttons cannot bypass the continuation boundary.
+  if (
+    game.presentation || !Number.isInteger(seat) || seat < 0 || seat > 2 ||
+    game.phase === 'finished'
+  ) return [];
   if (game.phase === 'claim') {
     if (!game.claim?.eligibleSeats.includes(seat) || game.claim.responses[seat]) return [];
     return [
@@ -1291,13 +1296,24 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
 }
 /* 完成本轮胡牌结算后决定终局或胡后补摸；不把胡牌等同于个人离席。
  * After settling hu, decide between game end and continuation draw; hu does not mean leaving a seat. */
-function continueAfterHu(game, seat) {
+function continueAfterHu(game, seat, presentationOptions) {
+  // 结算已完成，但终局判定和续摸要等本批胡牌展示结束。
+  // Settlement is committed; defer the end decision and draw until the hu batch is presented.
+  if (presentationOptions?.pausePresentation) {
+    game.phase = 'turn';
+    game.turnStep = 'draw';
+    game.currentSeat = seat;
+    game.lastDraw = null;
+    game.claim = null;
+    game.presentation = { stage: 'hu', seat };
+    return;
+  }
   if (game.players.every((player) => player.huCount > 0)) finishGame(game, 'allPlayersHu');
   else beginDrawStep(game, seat, 'continuation');
 }
 /* 真正提交杠：移动实体牌、处理本版本杠分和萝卜、记录事件，再进入补摸流程。
  * Commit a kong: move physical tiles, apply this version’s payments and radishes, log, and enter replacement draw. */
-function declareKong(game, seat, type, tile, fromSeat = null) {
+function declareKong(game, seat, type, tile, fromSeat = null, presentationOptions) {
   const player = game.players[seat];
   let concealed = type === 'anGang';
   let kongSize = 4;
@@ -1372,16 +1388,17 @@ function declareKong(game, seat, type, tile, fromSeat = null) {
     }，${payerSeats.length === 1 ? '出牌方' : '另外两家各'}付${amount}分，${radishDeferred ? `累计待翻萝卜${game.pendingKongRadishes}张，首胡时一起翻` : `翻出萝卜${tileLabel(radish)}`}。`,
   });
   beginDrawStep(game, seat, 'replacement');
+  if (presentationOptions?.pausePresentation) game.presentation = { stage: 'kong', seat };
 }
 
 /** An upgrade offers only the new tile. The original meld and all kong effects stay untouched. */
 /* 补杠/加杠先只拿出新增一张供抢杠；所有人过以前，不修改原副露和杠分。
  * Offer only the new tile for rob-kong; do not change the original meld or kong payments until every responder passes. */
-function offerKongUpgrade(game, seat, type, tile) {
+function offerKongUpgrade(game, seat, type, tile, presentationOptions) {
   const player = game.players[seat];
   const afterKong = game.lastDraw?.seat === seat && game.lastDraw.source === 'replacement';
   // A won player's ordinary draw is protected, just like its ordinary discard.
-  if (player.huCount && !afterKong) return declareKong(game, seat, type, tile);
+  if (player.huCount && !afterKong) return declareKong(game, seat, type, tile, null, presentationOptions);
   const options = {};
   for (const other of turnOrderAfter(game, seat)) {
     // Rob-kong is its own repeat-win exception. It never offers peng or mingGang.
@@ -1395,7 +1412,7 @@ function offerKongUpgrade(game, seat, type, tile) {
   /* 按本局顺位保留有至少一项接牌动作的座位，响应窗口只等待这些人。
    * Keep eligible seats in saved turn order; the claim window waits only for them. */
   const eligibleSeats = turnOrderAfter(game, seat).filter((other) => options[other]);
-  if (!eligibleSeats.length) return declareKong(game, seat, type, tile);
+  if (!eligibleSeats.length) return declareKong(game, seat, type, tile, null, presentationOptions);
   removeTilesFromHand(player.hand, tile);
   player.pendingKongDiscard = false;
   game.discards.push({
@@ -1429,7 +1446,7 @@ function offerKongUpgrade(game, seat, type, tile) {
 }
 /* 等待所有有资格座位回应后，一次性按本版本优先级处理；不按网络先到先得。
  * Wait for all eligible responses, then resolve together using version-specific priority, never network arrival order. */
-function resolveClaimWindow(game) {
+function resolveClaimWindow(game, presentationOptions) {
   const claim = game.claim;
   /* 必须等到所有有资格玩家都明确回应，防止先点击的人抢走更高优先级。
    * Wait for every eligible response so arrival order cannot defeat a higher-priority action. */
@@ -1451,7 +1468,7 @@ function resolveClaimWindow(game) {
       discarded.seat,
       claim.discardIndex,
     );
-    continueAfterHu(game, winners[0]);
+    continueAfterHu(game, winners[0], presentationOptions);
     return;
   }
   if (claim.kind === 'robKong') {
@@ -1460,7 +1477,7 @@ function resolveClaimWindow(game) {
     discarded.claimedAs = claim.kongType;
     game.players[discarded.seat].hand.push(discarded.tile);
     game.players[discarded.seat].hand.sort((a, b) => a - b);
-    declareKong(game, discarded.seat, claim.kongType, discarded.tile);
+    declareKong(game, discarded.seat, claim.kongType, discarded.tile, null, presentationOptions);
     return;
   }
   // Wait for everyone first; kong outranks peng, equal claims use the saved direction, never click order.
@@ -1471,7 +1488,7 @@ function resolveClaimWindow(game) {
   const type = claim.responses[caller].type;
   discarded.claimedBy = caller;
   discarded.claimedAs = type;
-  if (type === 'mingGang') declareKong(game, caller, type, discarded.tile, discarded.seat);
+  if (type === 'mingGang') declareKong(game, caller, type, discarded.tile, discarded.seat, presentationOptions);
   else {
     const player = game.players[caller];
     removeTilesFromHand(player.hand, discarded.tile, 2);
@@ -1495,11 +1512,12 @@ function resolveClaimWindow(game) {
       tile: discarded.tile,
       message: `${caller + 1}号位碰${tileLabel(discarded.tile)}，请出牌。`,
     });
+    if (presentationOptions?.pausePresentation) game.presentation = { stage: 'peng', seat: caller };
   }
 }
 /* 提交一张弃牌、清除摸牌上下文，再建立接牌窗口；无人能接时进入下家摸牌步骤。
  * Commit a discard, clear draw context, then open a claim window or advance to the next draw if nobody can claim. */
-function discardTile(game, seat, tile, automatic = false) {
+function discardTile(game, seat, tile, automatic = false, presentationOptions) {
   const player = game.players[seat];
   removeTilesFromHand(player.hand, tile);
   const discarded = {
@@ -1523,6 +1541,23 @@ function discardTile(game, seat, tile, automatic = false) {
     message: `${seat + 1}号位${automatic ? '摸后自动打出' : '打出'}${tileLabel(tile)}${discarded.afterKong ? '（杠后出牌，接胡仅出牌者付款）' : ''}。`,
   });
   awardBigSingleReady(game, seat);
+  // 只保存公开弃牌索引，不提前计算或泄露任何对手的回应选项。
+  // Store only the public discard index; do not compute or expose opponents' claims yet.
+  if (presentationOptions?.pausePresentation) {
+    game.phase = 'turn';
+    game.turnStep = 'draw';
+    game.currentSeat = seat;
+    game.claim = null;
+    game.presentation = { stage: 'discard', discardIndex: game.discards.length - 1 };
+    return;
+  }
+  openDiscardClaimWindow(game, game.discards.length - 1);
+}
+/* 展示完成后才为指定已提交弃牌计算回应；此助手不再次移牌或记出牌事件。
+ * Compute claims for a committed discard after presentation, without moving or logging the tile again. */
+function openDiscardClaimWindow(game, discardIndex) {
+  const discarded = game.discards[discardIndex];
+  const { seat, tile } = discarded;
   const options = {};
   for (const other of turnOrderAfter(game, seat)) {
     const available = getDiscardClaimOptions(game, other, discarded);
@@ -1549,12 +1584,12 @@ function discardTile(game, seat, tile, automatic = false) {
 /** No timing race or user draw action: stop only at a real player decision. */
 /* 自动执行无需用户选择的摸牌/胡后摸打，遇到真实决策点立即停止；上限用于发现死循环。
  * Advance automatic draws and post-hu discards until a real decision is needed; the bound detects loops. */
-function advanceAutomaticSteps(game) {
+function advanceAutomaticSteps(game, presentationOptions) {
   // Each two automatic transitions consume at least one of the 144 physical tiles.
   for (let transitions = 0; transitions < 300; transitions++) {
     /* 接牌阶段或终局需要等待/停止，自动轮转不能跨过这些边界。
      * Claims and finished games stop automatic advancement at their phase boundaries. */
-    if (game.phase !== 'turn') return;
+    if (game.presentation || game.phase !== 'turn') return;
     if (game.turnStep === 'draw') {
       drawTile(game);
       continue;
@@ -1570,13 +1605,45 @@ function advanceAutomaticSteps(game) {
     )
       return;
     if (game.lastDraw?.seat !== seat) throw new Error('胡后缺少摸牌记录');
-    discardTile(game, seat, game.lastDraw.tile, true);
+    discardTile(game, seat, game.lastDraw.tile, true, presentationOptions);
   }
   throw new Error('自动轮转超出牌墙上限');
 }
 /* 校验动作属于当前白名单后复制整局，在副本提交动作并检查守恒；成功才返回新状态。
  * Validate the action against the current allowlist, apply it to a copy, check invariants, and return only a valid new state. */
 export function applyAction(game, seat, action) {
+  return applyGameAction(game, seat, action);
+}
+/* 可选的音画分步入口；不写入规则快照，也不改变旧 applyAction 的同步行为。
+ * Opt into presentation pacing per call, without altering rules or the immediate applyAction contract. */
+export function applyPresentedAction(game, seat, action) {
+  return applyGameAction(game, seat, action, { pausePresentation: true });
+}
+/* 恢复一段已提交展示；引擎 revision 保持原动作来源，房间 CAS 版本由 API 管理。
+ * Resume one committed presentation boundary; retain action provenance revision, leaving room CAS to the API. */
+export function continuePresentedGame(game) {
+  if (game.schemaVersion !== 3) throw new Error('旧牌局需要使用原版本规则');
+  if (!game.presentation) throw new Error('当前没有等待展示的操作');
+  assertGameInvariants(game);
+  const next = cloneSerializable(game);
+  const presentation = next.presentation;
+  delete next.presentation;
+  if (presentation.stage === 'discard') openDiscardClaimWindow(next, presentation.discardIndex);
+  else if (presentation.stage === 'hu') {
+    // 终局沿用即时引擎原来的行动座位；未终局时 continueAfterHu 再指定优先赢家。
+    // Preserve the immediate engine's ending seat; ongoing play then selects the priority winner.
+    next.currentSeat = next.history.at(-1).fromSeat ?? presentation.seat;
+    continueAfterHu(next, presentation.seat);
+  }
+  // 碰已经处于出牌步骤，杠已经处于补摸步骤，无需重复提交。
+  // Peng already sits at discard and kong at replacement draw; never commit either twice.
+  advanceAutomaticSteps(next, { pausePresentation: true });
+  assertGameInvariants(next);
+  return next;
+}
+/* 两个公开入口共用验证与转换，展示选项只沿本次调用显式传递。
+ * Share validation and transitions between public entries, passing presentation options only within this call. */
+function applyGameAction(game, seat, action, presentationOptions) {
   if (game.schemaVersion !== 3) throw new Error('旧牌局需要使用原版本规则');
   if (
     !action ||
@@ -1601,16 +1668,23 @@ export function applyAction(game, seat, action) {
   next.revision++;
   if (next.phase === 'claim') {
     next.claim.responses[seat] = cloneSerializable(matched);
-    resolveClaimWindow(next);
+    resolveClaimWindow(next, presentationOptions);
   } else if (action.type === 'discard' || action.type === 'pass') {
-    discardTile(next, seat, action.type === 'pass' ? next.lastDraw.tile : action.tile);
+    discardTile(
+      next,
+      seat,
+      action.type === 'pass' ? next.lastDraw.tile : action.tile,
+      false,
+      presentationOptions,
+    );
   } else if (action.type === 'hu') {
     settleHuBatch(next, [seat], next.lastDraw.tile, 'selfDraw');
-    continueAfterHu(next, seat);
+    continueAfterHu(next, seat, presentationOptions);
   } else if (['buGang', 'addGang'].includes(action.type))
-    offerKongUpgrade(next, seat, action.type, action.tile);
-  else if (action.type === 'anGang') declareKong(next, seat, action.type, action.tile);
-  advanceAutomaticSteps(next);
+    offerKongUpgrade(next, seat, action.type, action.tile, presentationOptions);
+  else if (action.type === 'anGang')
+    declareKong(next, seat, action.type, action.tile, null, presentationOptions);
+  advanceAutomaticSteps(next, presentationOptions);
   assertGameInvariants(next);
   return next;
 }
@@ -1621,6 +1695,7 @@ export function getPlayerView(game, seat) {
   const me = game.players[seat];
   return {
     schemaVersion: 3,
+    ...(game.presentation ? { presentation: { stage: game.presentation.stage } } : {}),
     phase: game.phase,
     turnStep: game.turnStep,
     currentSeat: game.currentSeat,
@@ -1700,6 +1775,25 @@ export function getPlayerView(game, seat) {
 /* 验证实体牌总数、每种八张、积分零和和阶段手牌数量；逻辑胡牌引用不能当成新实体牌。
  * Check physical tile counts, eight copies per identity, zero-sum scores, and phase-dependent hand sizes; logical wins are references. */
 export function assertGameInvariants(game) {
+  // 标记只包含恢复所需的公开索引/座位，且必须与暂停阶段一致。
+  // Markers contain only public resume indices/seats and must agree with the paused phase.
+  if (game.presentation) {
+    const { stage, seat, discardIndex } = game.presentation;
+    const isDiscard = stage === 'discard';
+    if (
+      !['discard', 'hu', 'kong', 'peng'].includes(stage) ||
+      Object.keys(game.presentation).some(
+        (key) => !['stage', isDiscard ? 'discardIndex' : 'seat'].includes(key),
+      ) ||
+      game.phase !== 'turn' || game.claim !== null || game.lastDraw !== null ||
+      game.turnStep !== (stage === 'peng' ? 'discard' : 'draw') ||
+      (isDiscard
+        ? !Number.isInteger(discardIndex) || discardIndex !== game.discards.length - 1 ||
+          game.discards[discardIndex]?.seat !== game.currentSeat ||
+          game.discards[discardIndex]?.claimable || game.discards[discardIndex]?.claimedBy !== undefined
+        : !Number.isInteger(seat) || seat < 0 || seat > 2 || seat !== game.currentSeat)
+    ) throw new Error('展示续行状态无效');
+  }
   if (
     Object.hasOwn(game.rules, 'bigSingleReadyPoints') &&
     !isBigSingleReadyPoints(game.rules.bigSingleReadyPoints)

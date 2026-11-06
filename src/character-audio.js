@@ -174,6 +174,11 @@ export class CharacterAudio {
   // Increment the generation to invalidate awaited work, then abort downloads and stop the current source.
   clear() {
     this.generation++;
+    // 先停止实际声音，再释放等待者；取消不能依赖浏览器一定发送 onended。
+    // Stop audible playback before releasing waiters; cancellation cannot depend on onended delivery.
+    this.cancelPlayback?.();
+    this.activeItem?.complete?.();
+    for (const item of this.queue) item.complete?.();
     this.queue = [];
     // 取消的缓存 Promise 不可继续复用，因此先删对应缓存再 abort。
     // A cancelled cached promise cannot be reused, so delete its entry before aborting.
@@ -212,12 +217,15 @@ export class CharacterAudio {
   /* 现场快照已包含自动回合，不补播积压动作。 / Live snapshots already include automatic turns. Never narrate that backlog. */
   // 现场播报不朗读整个自动回合：有胡优先最多两次，否则只播最新公开动作。
   // Live speech never narrates a whole automatic-turn backlog: prefer up to two wins, otherwise only the latest public action.
+  // 返回 Promise<void>：本批所选语音全部结束或被跳过/取消/失败后完成，永不因音频失败拒绝。
+  // Return Promise<void>: settle when this selected batch ends or is skipped/cancelled/failed; audio failures do not reject it.
   enqueueLive(events) {
     // 未解锁或静音时直接忽略，不能先排队再在未来突然补播。
     // Ignore while muted or locked rather than enqueueing speech that might unexpectedly play later.
-    if (this.muted || !this.unlocked || this.context?.state !== 'running') return;
+    if (this.disposed || this.muted || !this.unlocked || this.context?.state !== 'running')
+      return Promise.resolve();
     const voiced = events.filter((event) => event.urls?.length);
-    if (!voiced.length) return;
+    if (!voiced.length) return Promise.resolve();
     const wins = voiced.filter((event) => event.type === 'hu');
     // 同一次原子服务端更新里胡牌优先；没有胡牌则只保留最新已提交公开动作。
     // A win takes precedence over all ordinary calls in its atomic server update.
@@ -225,12 +233,18 @@ export class CharacterAudio {
     const latest = wins.length ? wins.slice(-2) : voiced.slice(-1);
     // 正在播胡时普通动作不打断它；新的胡牌仍可替换旧现场队列。
     // Ordinary actions do not interrupt a live win; a newer win may still replace the live queue.
-    if (this.activeItem?.live && this.activeItem.kind === 'hu' && !wins.length) return;
+    if (this.activeItem?.live && this.activeItem.kind === 'hu' && !wins.length)
+      return Promise.resolve();
     this.clear();
+    let complete;
+    const completion = new Promise((resolve) => {
+      complete = resolve;
+    });
     const at = this.now();
     // 现场声音寿命很短：胡 650ms、普通动作 550ms；这是开始前的时效检查。
     // Live audio has a short start deadline: 650ms for wins and 550ms for ordinary actions.
     this.queue.push({
+      complete,
       urls: latest.flatMap((event) => event.urls),
       at,
       live: true,
@@ -238,6 +252,7 @@ export class CharacterAudio {
       maxAge: wins.length ? 650 : 550,
     });
     this.drain();
+    return completion;
   }
   /* 只预热简短公开胡牌语音，并限制为三个并发后台请求。 / Warm only short public win calls, in three bounded background requests. */
   // 只预热公开胡牌短语；三个异步工作循环共享 next 下标，限制并发下载数量。
@@ -294,7 +309,8 @@ export class CharacterAudio {
         );
         timer = setTimeout(() => controller.abort(), 4000);
       });
-      const download = this.fetchAudio(url, { signal: controller.signal })
+      const download = Promise.resolve()
+        .then(() => this.fetchAudio(url, { signal: controller.signal }))
         .then((response) => {
           // HTTP 成功且确为音频才解码，避免把错误 HTML 页面交给 WebAudio。
           // Decode only successful audio responses, never an HTML error page.
@@ -331,8 +347,8 @@ export class CharacterAudio {
           generation = this.generation;
         this.activeItem = item;
         const maxAge = item.maxAge ?? 6000;
-        if (this.now() - item.at > maxAge) continue;
         try {
+          if (this.now() - item.at > maxAge) continue;
           // 整个事件加载完再播；开始后剩余片段不会过期或被普通新事件逐段挤出，但显式清理仍可停止。
           // Load the whole event before speaking. Once started, its remaining clips
           // cannot expire or be evicted by newer events; explicit clearing can stop it.
@@ -358,18 +374,15 @@ export class CharacterAudio {
               break;
             // 等待 onended 才播放下一片段；clear 调用 stop 也会结束当前音源。
             // Wait for onended before the next clip; clear also ends the current source by calling stop.
-            await new Promise((resolve) => {
-              const source = this.context.createBufferSource();
-              this.source = source;
-              source.buffer = buffer;
-              source.connect(this.context.destination);
-              source.onended = resolve;
-              source.start();
-              this.onStatus('ready');
-            });
+            await this.playBuffer(buffer);
           }
         } catch {
           if (generation === this.generation) this.onStatus('unavailable');
+        } finally {
+          // 每条退出路径都完成本批；旧批清理不得抹掉新批的状态。
+          // Complete every exit path; stale batch cleanup must not erase newer state.
+          item.complete?.();
+          if (this.activeItem === item) this.activeItem = null;
         }
       }
       // 即使下载或播放失败，也释放串行锁，允许后续新事件继续播放。
@@ -379,6 +392,59 @@ export class CharacterAudio {
       this.activeItem = null;
       this.running = false;
     }
+  }
+  // 播放单片段，正常依赖 onended；兜底先 stop/disconnect 再完成，绝不边响边放行。
+  // Play one clip using onended normally; the fallback stops/disconnects before completing, never releasing audible playback.
+  playBuffer(buffer) {
+    return new Promise((resolve, reject) => {
+      const source = this.context.createBufferSource();
+      let timer;
+      let finished = false;
+      const finish = (stop = false, error) => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        source.onended = null;
+        if (stop) {
+          try {
+            source.stop();
+          } catch {
+            /* 已停止或尚未启动。 / Already stopped or not started. */
+          }
+        }
+        // 即使 stop 抛错，也断开输出，保证取消后不会继续听到旧声音。
+        // Disconnect even when stop throws, ensuring cancelled speech cannot remain audible.
+        try {
+          source.disconnect?.();
+        } catch {
+          /* 已断开。 / Already disconnected. */
+        }
+        if (this.source === source) this.source = null;
+        if (this.cancelPlayback === cancel) this.cancelPlayback = null;
+        if (error) reject(error);
+        else resolve();
+      };
+      const cancel = () => finish(true);
+      this.source = source;
+      this.cancelPlayback = cancel;
+      try {
+        source.buffer = buffer;
+        source.connect(this.context.destination);
+        source.onended = () => finish();
+        // 正常时长加一秒事件宽限，最长十五秒；未知时长也必须有上限。
+        // Allow duration plus one second of event grace, capped at fifteen seconds, including unknown durations.
+        const duration = Number.isFinite(buffer.duration) && buffer.duration > 0
+          ? buffer.duration * 1000 + 1000
+          : 15000;
+        timer = setTimeout(cancel, Math.min(duration, 15000));
+        source.start();
+        this.onStatus('ready');
+      } catch (error) {
+        // 初始化失败也清理音源与计时器；外层统一把失败视为跳过。
+        // Setup failures also clean up the source/timer; the caller uniformly treats failure as skipped.
+        finish(true, error);
+      }
+    });
   }
   // 组件销毁时永久关闭此实例的上下文，并使回调不再报告锁定状态。
   // On component disposal, close this instance’s context and suppress further locked-state reports.

@@ -42,8 +42,8 @@ Common current-engine path:
 
 `createGame → turn/discard → discardTile → claim → resolveClaimWindow → turn/draw → drawTile → turn/discard`
 
-无人可接时跳过 claim。碰成功直接进入碰牌者 discard 步骤，不能伪造一次摸牌。胡/杠后可能进入 continuation/replacement 摸牌；v2/v3 的自动推进会在一次 API 动作内完成无需选择的步骤。
-Skip claim when nobody is eligible. A successful peng enters its claimant’s discard step without inventing a draw. Hu/kong may start continuation/replacement draws; v2/v3 automatic advancement completes non-decision steps in one API action.
+无人可接时跳过 claim。碰成功直接进入碰牌者 discard 步骤，不能伪造一次摸牌。胡/杠后可能进入 continuation/replacement 摸牌；v2 与未启用展示的 v3 在一次 API 动作内完成自动步骤；启用展示的 v3 在每个已提交动作后暂停，待全桌音画回执后才继续。
+Skip claim when nobody is eligible. A successful peng enters its claimant’s discard step without inventing a draw. Hu/kong may start continuation/replacement draws; v2 and unpaced v3 complete non-decision steps in one action; presentation-enabled v3 pauses after each committed event until table media receipts permit continuation.
 
 接牌窗口要收齐回应，再按引擎版本和保存方向处理。`pass` 也必须记录，没回应和明确放弃不同。一炮多响先准备所有赢家再一起算分，不按最快点击者结算。
 Collect all eligible responses before resolving by saved engine/direction. No response is not a pass. Simultaneous winners are prepared together before scoring, not by click speed.
@@ -82,3 +82,8 @@ Conservation cannot simply concatenate every array. Read assertGameInvariants an
 
 一般不能静默改变旧局规则。补杠时机是用户明确纠正旧实现的例外：v0.7.0 的 `allowPungUpgrade:false` 不再解释为永久禁止，而是碰后先完成一次出牌、之后正常窗口允许补杠。由 `requiresPungDiscard` 与兼容推断读取处理，不重写旧规则字段、牌区、历史或已结算分；更老的允许/缺省策略仍保留。详见 [补杠纠错说明](PUNG-UPGRADE-CORRECTION.md)。
 Normally saved rules must not change silently. The user-authorized pung timing correction is an explicit exception: v0.7.0 false means discard once after peng before later legal upgrades, not a permanent ban. Compatibility reads apply it without rewriting saved rules, tiles, history, or settled scores; older allow/missing timing remains intact.
+
+## 7. 展示屏障生命周期 / Presentation-gate lifecycle
+
+[音画节奏](PRESENTATION-PACING.md) 说明分段引擎、房间级 CAS 屏障、同座位播放归属、完成/取消、四十秒惰性恢复及旧客户端边界。引擎 revision 仍代表一次原始动作；每个播放认领、完成或续进分别提升 room.revision。断线恢复只能继续已提交动作，不选择胡、碰、杠或过。
+[Presentation pacing](PRESENTATION-PACING.md) documents staged execution, room CAS gates, same-seat playback ownership, completion/cancellation, forty-second lazy recovery and compatibility. Engine revision retains original-action provenance; ownership, receipts and continuation each advance room revision. Recovery never chooses a player action.

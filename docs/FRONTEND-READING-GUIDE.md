@@ -73,9 +73,9 @@ Other clients receive the revision through `refresh` polling. An `unchanged` res
 
 **Server-authoritative data:** `state`, `state.game`, `legalActions`, scores, hands, history, turn seat and rule version. `session` holds room access credentials, not just a room code. Do not edit client scores merely to make the interface respond optimistically.
 
-**纯展示数据**：选牌下标、弹窗、提示、复制反馈、胡牌字幕和飞牌。`winningEvents` 与 `winningFlights` 不持有新的实体牌，也不阻止下一步合法操作。胡牌动画结束不是结算条件。
+**纯展示数据**：选牌下标、弹窗、提示、复制反馈、胡牌字幕和飞牌。`winningEvents` 与 `winningFlights` 不持有新的实体牌；当前客户端会等待音画结束，再向服务端确认继续下一段判定。已经成立动作的即时积分不依赖播放再次结算。
 
-**Presentation-only data:** selection indices, dialogs, notices, copy feedback, win captions and flights. `winningEvents` and `winningFlights` do not create physical tiles or block the next legal action. Animation completion is not a settlement condition.
+**Presentation-only data:** selection indices, dialogs, notices, copy feedback, win captions and flights. `winningEvents` and `winningFlights` do not create physical tiles. The current client waits for media completion before acknowledging the next judgment; committed immediate scores are never settled again by playback.
 
 **非响应式控制数据**：计时器句柄、`AbortController`、`epoch`、Promise 与 Map/Set。它们用于控制生命周期，不直接显示，因此不必全改成 ref。
 
@@ -172,3 +172,11 @@ Rules and history distinguish unavailable payments, explicit zero and the actual
 `pungUpgradeAfterDiscard` 表示碰后必须真实打出一张，之后符合其他合法条件时可以补杠，不是永久禁补，也不要求同牌恰好刚摸到。暗杠补摸不能代替这次出牌。前端依据保存规则解释时机，实际按钮仍只读取服务端 `legalActions`；抢杠字幕用通用“杠牌”，避免错误猜测补杠或加杠来源。
 
 `pungUpgradeAfterDiscard` means an actual discard must follow the pung before later upgrading under other legality conditions. It is not a permanent ban and does not require a freshly drawn matching tile. A concealed-kong replacement draw cannot substitute for that discard. The frontend explains saved timing rules while buttons still follow server `legalActions`; rob-kong captions use the generic kong label rather than guessing the upgrade source.
+
+## 12. 音画完成与服务端续进 / Media completion and server continuation
+
+详见 [音画节奏](PRESENTATION-PACING.md)。`syncTurnPresentation` 按 ID 去重，`beginPresentation` 先原子认领同座位播放权，`playTurnPresentation` 等待字幕、动画 finished 和语音完成，`acknowledgePresentation` 只确认当前局当前屏障。服务端所需座位全部完成以前，按钮和回合高亮保持关闭。
+See [presentation pacing](PRESENTATION-PACING.md). These helpers deduplicate gate IDs, claim same-seat playback ownership, await media completion, and acknowledge only the current gate/game. Actions and turn highlights remain disabled until the required seats finish.
+
+后台或重连空基线不发送 begin；各页面通过请求头独立上报前台/音频/事件准备状态，按服务端 preferredClients 认领，取消旧的固定让位延时。认领在途失去可见性时，releasePresentation 归还归属，不发送空媒体完成。只有后台的未开始座位不拖住全桌；未知页面使用 1.5 秒短发现。四十秒仅保护已开始但失联的媒体。
+Hidden/baseline-only pages never begin. Independent presence headers and server preferredClients replace fixed client-side yielding. Hiding during acquisition releases ownership without false completion. Known background-only seats do not hold unstarted playback; unknown pages get 1.5-second discovery. Forty seconds remains only for owned media that disconnects.

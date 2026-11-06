@@ -107,3 +107,18 @@ New games save allowPungUpgrade and pungUpgradeAfterDiscard as true. A real peng
 
 喜钱是每个对手各付的虚拟积分，房主仅开局前可改。HTTP 用例检查权限、边界值、并发只提交一次、局中拒绝改值和 FileStore 重载；界面用例检查数字输入、无效值禁用、请求发出时取快照、轮询保留编辑、只读规则和历史标签。0 表示不收取喜钱，不表示移除一次性已付标记，也不改变之后胡牌的独立计分。
 The ready bonus is virtual points per opponent, editable by the host only before starting. HTTP cases cover authorization, bounds, single concurrent commit, rejection of midgame edits and FileStore reload. UI cases cover numeric validation, disabled starts, request-time snapshots, preserved draft edits, read-only rules and history labels. Zero means no ready charge, not removal of the paid-once marker or a change to later hu scoring.
+
+## 音画顺序回归 / Presentation ordering regressions
+
+- `tests/presentation-game.test.js`：分段推进与原即时引擎状态/历史完全一致、连续自动打出、手动模式、碰杠/抢杠及多人胡。 / Exact staged/immediate state-history parity, chained automatic discards, manual mode, claims/kongs/rob-kong and simultaneous wins.
+- `tests/presentation-api.test.js`：多座位回执、同座位播放归属竞争、CAS、过期 ID、四十秒超时、离席、重启、混合客户端和隐私。 / Multi-seat receipts, same-seat ownership, CAS, stale IDs, expiry, departure, restart, mixed clients and privacy.
+- `tests/ui.test.js` 与 `tests/character-audio.test.js` 新场景分别验证音画两个完成顺序、无音频、取消、丢包重试与音源停止。 / Added UI/audio cases validate both completion orders, unavailable audio, cancellation, lost acknowledgements and stopped sources.
+
+设计和执行边界见 [音画节奏](PRESENTATION-PACING.md)。浏览器替身测试不等于真实设备音响或全平台验收。
+See [presentation pacing](PRESENTATION-PACING.md). Browser substitutes do not constitute audio-hardware or cross-platform acceptance.
+
+同座位组合回归同时实例化两个 App，覆盖后台、空基线及未解锁副页更早收到事件，验证前台胡牌画面和声音均完成以后才发出唯一完成回执；另覆盖认领在途转后台释放、独立后台会话的截止恢复。
+Two-App same-seat regressions cover earlier hidden, baseline-only and locked siblings, requiring the foreground win visuals/audio to both finish before a unique receipt. Additional cases cover hiding during acquisition and bounded background-only recovery.
+
+前台租约回归另覆盖：同座位独立记录、可发声优先、后台座位连续多段不等四十秒、未知发现窗口、已开始媒体不受后台副页/租约失效打断、慢媒体结束后下一段仍被选中、遥测版本差异与严格动作证明。ui 测试还用真实 API 与四个 App 实例验证隐藏座位不阻挡、前台慢语音仍阻挡真实引擎。
+Lease regressions additionally cover independent sibling records, audible priority, hidden-seat short recovery across gates, discovery, owner protection, slow-media next-gate readiness and strict game proofs. A real API plus four App instances verifies that a hidden seat does not hold the table while foreground slow audio still holds the actual engine.
