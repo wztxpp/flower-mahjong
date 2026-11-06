@@ -214,7 +214,10 @@ test('self draw pauses before continuation and manual post-hu still requires a d
 
 test('simultaneous winners settle as one batch before finishing or continuing', () => {
   for (const final of [false, true]) {
-    let game = fixture({ huCounts: final ? [1, 0, 0] : [0, 0, 0], kongSeats: final ? [0] : [] });
+    // 来源使用非胡手牌，避免用弃牌跳过已胡玩家的必胡。
+    // Use a nonwinning source instead of bypassing a previous winner's mandatory hu.
+    const source = winning.map(tile => tile === 0 ? 8 : tile);
+    let game = fixture({ hands: [source, waiting, waiting], huCounts: final ? [1, 0, 0] : [0, 0, 0], kongSeats: final ? [0] : [] });
     game = applyAction(game, 0, { type: 'discard', tile: 17 });
     game = applyAction(game, 2, { type: 'hu' });
     const staged = compare(game, 1, { type: 'hu' });

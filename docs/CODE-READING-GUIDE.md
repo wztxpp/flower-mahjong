@@ -25,7 +25,8 @@ Every change starts with AGENTS.md; it links the required guides so future work 
 | `src/App.vue` | 大厅/牌桌、会话、网络、表单、重连、声音和动画编排。 / Lobby/table, sessions, requests, recovery, and presentation orchestration. |
 | `src/MahjongTile.vue` | 单张牌的图形和可访问性展示。 / Tile rendering and accessibility. |
 | `src/Icon.vue` | 小图标 SVG，不包含游戏规则。 / SVG icons, not rules. |
-| `src/character-audio.js` | 角色、权威事件游标、音频串行队列。 / Characters, event cursor, audio queue. |
+| `src/character-audio.js` | 角色、权威事件游标、逐事件结果音频串行队列。 / Characters, event cursor and serial audio with per-event outcomes. |
+| `src/shared-playback.js` | 完整公开前缀、同座声音协调、成功记录、失败接力与降级。 / Complete public prefixes, sibling audio coordination, success records, bounded recovery and fallback. |
 | `src/mahjong-photo-faces.js` | 参考照片裁切与牌面定位。 / Photo crop geometry and face positioning. |
 | `src/style.css` | 基础布局、组件外观、响应式样式。 / Base layouts, components, responsive rules. |
 | `src/tabletop.css` | 后加载的牌桌视觉覆盖；顺序与优先级必须保留。 / Later table overrides; preserve order and specificity. |
@@ -96,3 +97,13 @@ Pick one button and identify its state source, request, action payload, server a
 
 [音画完成后推进](PRESENTATION-PACING.md) 是本轮新增维护文档，连接 App、CharacterAudio、当前引擎与 API。新增维护测试为 `tests/presentation-game.test.js` 和 `tests/presentation-api.test.js`，随 `npm test` 运行；原 ui/audio 测试继续覆盖完成与取消。
 The new maintained [presentation pacing](PRESENTATION-PACING.md) guide connects App, CharacterAudio, the current engine and API. The two presentation test files run under npm test alongside updated UI/audio completion and cancellation cases.
+
+[胡后必胡纠错](POST-HU-WIN-CORRECTION.md) 连接引擎动作白名单、HTTP 拒绝、界面提示与存档兼容；新增维护文件 `tests/post-hu-win.test.js` 和 `tests/fixtures/post-hu-win.js` 已列入测试指南。
+The [mandatory-win correction](POST-HU-WIN-CORRECTION.md) connects engine allowlists, HTTP rejection, UI guidance and saved-state compatibility. The new maintained suite and fixture are listed in the testing guide.
+
+## 平滑播放修复维护清单 / Smooth-playback maintenance inventory
+
+`src/App.vue` 新增接收/展示分离和本地FIFO；`src/character-audio.js` 的 enqueueOrdered 返回逐事件真实结果；`src/shared-playback.js` 负责完整公开前缀、同座位成功记录及有界失败接力；`server/api.js` 支持 local 节拍及GET竞争重读。新增维护测试为 `tests/ordered-audio.test.js`、`tests/shared-playback.test.js`、`tests/presentation-network.test.js`；`tests/browser/isolated-server.mjs` 与 `tests/browser/README.md` 仅服务隔离合成浏览器验收。不得连接真实牌局或把此辅助服务发布到生产。完整协议见 [音画节奏](PRESENTATION-PACING.md)。
+App adds received/displayed separation and a local FIFO; audio reports per-event outcomes; shared-playback coordinates complete public prefixes, same-seat success records and bounded sibling retries; the API adds local cadence and safe read-contention handling. New maintained audio/network suites join npm test. The browser server/readme are isolated synthetic acceptance helpers only, never production endpoints. See the pacing guide.
+
+- `docs/SMOOTH-PLAYBACK-VALIDATION.md`：本次自动与真实浏览器验收、证据范围和未验证项。 / Automated and real-browser acceptance, evidence scope and unverified areas.

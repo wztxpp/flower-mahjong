@@ -2729,15 +2729,17 @@ test("v3 HTTP exposes and settles locked repeat hu on the reported kong-discard 
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const receiver = [4, 5, 6, 6, 7, 7, 7, 8, 11, 12, 13, 14, 15];
-  const source = [2, 3, 5, 6, 7, 8, 8, 8, 10, 14, 14];
+  // 补一条而非接牌者正在听的二筒，避免提前触发必须抢胡。
+  // Upgrade one bamboo rather than a receiver's winning two-dot tile, avoiding mandatory earlier rob hu.
+  const source = [2, 3, 5, 6, 7, 8, 8, 8, 0, 14, 14];
   const game = apiFixture({
     hands: [source, receiver, WAITING_HAND],
     melds: [
       [
         {
           type: "peng",
-          tile: 10,
-          tiles: [10, 10, 10],
+          tile: 0,
+          tiles: [0, 0, 0],
         },
       ],
       [],
@@ -2745,7 +2747,7 @@ test("v3 HTTP exposes and settles locked repeat hu on the reported kong-discard 
     ],
     wins: [[], [16, 10, 16, 13, 16], []],
     locks: [[], [10, 13, 16], []],
-    drawTile: 10,
+    drawTile: 0,
     head: [13, 0],
     tail: [16],
   });
@@ -2767,7 +2769,7 @@ test("v3 HTTP exposes and settles locked repeat hu on the reported kong-discard 
   let views = await installFixture(api, game);
   let answer = await api.host.action(views[0].revision, {
     type: "buGang",
-    tile: 10,
+    tile: 0,
   });
   // 核对接口返回及版本，区分成功、冲突与未变化响应。
   // Check response/revision contracts, distinguishing success, conflicts and unchanged replies.
@@ -2871,6 +2873,9 @@ test("v3 HTTP seat-three eight-point kong-discard win charges only seat one, sur
   for (const paymentFlags of ["enabled", "disabled", "absent"]) {
     const api = await table(t);
     const game = apiFixture({
+      // 来源不能自摸，否则已胡玩家必须胡，不能打出本测试的弃牌。
+      // Keep the source nonwinning so mandatory repeat hu does not prevent this discard.
+      hands: [[8, ...WINNING_HAND.slice(1)], WAITING_HAND, WAITING_HAND],
       wins: [[7], [], []],
       kongSeats: [0],
       head: [6],
@@ -3013,16 +3018,7 @@ test("v3 HTTP mandatory post-hu kongs reject old-client pass and discard without
       ).length,
       1,
     );
-    assert.ok(
-      result.body.state.game.legalActions.some(
-        (action) => action.type === "hu",
-      ),
-    );
-    assert.ok(
-      result.body.state.game.legalActions.some(
-        (action) => action.type === "pass",
-      ),
-    );
+    assert.deepEqual(result.body.state.game.legalActions, [{ type: "hu" }]);
   }
 });
 // 场景：v3 HTTP 已保存的五张杠可扩为六、七、八张，每次付费补牌只执行一次
@@ -4073,7 +4069,7 @@ test("v3 HTTP already-won upgrader is protected on ordinary draw but replacement
       for (const seat of [1, 2])
         assert.deepEqual(
           states[seat].game.legalActions.map((action) => action.type).sort(),
-          ["hu", "pass"],
+          seat === 1 ? ["hu"] : ["hu", "pass"],
         );
       const passed = await api.clients[2].action(states[2].revision, {
         type: "pass",
@@ -4720,7 +4716,7 @@ test("v3 HTTP reported ordinary four-dot discard offers repeat hu before natural
   assert.equal(states[1].game.huDiagnostic.code, "AVAILABLE");
   assert.deepEqual(
     states[1].game.legalActions.map((action) => action.type),
-    ["hu", "pass"],
+    ["hu"],
   );
   assert.equal(
     states[1].game.huLockActive,
@@ -5613,9 +5609,6 @@ test("unchecked option cannot bypass mandatory post-hu kongs through HTTP", asyn
       {
         type: "hu",
       },
-      {
-        type: "pass",
-      },
     ]);
     assert.equal(next.body.state.game.rules.autoDiscardAfterHu, false);
   }
@@ -6074,3 +6067,82 @@ for (const oldRoom of [false, true]) // 场景：HTTP 真实碰牌后先打一�
       game.history,
     );
   });
+
+// 场景：已胡玩家在自摸、接炮和抢杠时只能胡，旧客户端替代动作不得改动存档，重连后规则不变。
+// Scenario: repeat selfdraw, discard and rob-kong wins are mandatory; old-client alternatives cannot mutate storage or bypass reconnect.
+test("v3 HTTP mandatory repeat hu survives reconnect and rejects every alternative without mutation", async (t) => {
+  const { DEFAULT_RULES, assertGameInvariants: assertLatest } = await import(
+    "../shared/game.js"
+  );
+  // 自动打出选项只管不能胡的牌，两个值都不能把必须胡变为可过。
+  // Auto-discard only controls nonwinning tiles; neither setting permits passing mandatory hu.
+  for (const autoDiscardAfterHu of [false, true]) {
+    for (const source of ["selfDraw", "discard", "robKong"]) {
+      const api = await table(t);
+      let game;
+      let seat;
+      if (source === "selfDraw") {
+        game = apiFixture({ wins: [[8], [], []], head: [8] });
+        game.schemaVersion = 3;
+        game.rules = structuredClone(DEFAULT_RULES);
+        game.firstHuRadishesRevealed = true;
+        game.dragonSettlement = { settled: false, entries: [] };
+        seat = 0;
+      } else if (source === "discard") {
+        game = await repeatedFourDotsHttpFixture();
+        seat = 1;
+      } else {
+        game = await robKongHttpFixture({ receiverWon: true });
+        seat = 1;
+      }
+      game.rules.autoDiscardAfterHu = autoDiscardAfterHu;
+      assertLatest(game);
+      const installed = await installFixture(api, game);
+      if (source !== "selfDraw") {
+        const opening = source === "discard"
+          ? { type: "discard", tile: 12 }
+          : { type: "buGang", tile: 17 };
+        const opened = await api.host.action(installed[0].revision, opening);
+        assert.equal(opened.status, 200);
+      }
+      const current = (await api.clients[seat].get()).body.state;
+      assert.deepEqual(current.game.legalActions, [{ type: "hu" }]);
+      const before = await api.store.get(api.roomId);
+      const tile = source === "selfDraw"
+        ? 17
+        : before.game.discards[before.game.claim.discardIndex].tile;
+      // 直接提交每一种替代意图，而不是替用户把错误动作改成胡。
+      // Submit each alternative literally rather than silently converting it into hu.
+      for (const type of ["pass", "discard", "peng", "mingGang", "anGang", "buGang", "addGang"]) {
+        const action = type === "pass" ? { type } : { type, tile };
+        assertError(
+          await api.clients[seat].action(current.revision, action),
+          422,
+          "ILLEGAL_ACTION",
+        );
+        assert.deepEqual(await api.store.get(api.roomId), before);
+      }
+      const reconnect = client(api, api.roomId, api.clients[seat].token, seat);
+      const restored = (await reconnect.get()).body.state;
+      assert.equal(restored.revision, current.revision);
+      assert.deepEqual(restored.game.legalActions, [{ type: "hu" }]);
+      const accepted = await reconnect.action(restored.revision, { type: "hu" });
+      assert.equal(accepted.status, 200);
+      // 抢杠还有未胡旁观者需要回应；它仍可合法过牌，随后才统一结算。
+      // An unwon rob-kong bystander may still pass before the batch settles.
+      if (source === "robKong") {
+        const passed = await api.clients[2].action(accepted.body.state.revision, { type: "pass" });
+        assert.equal(passed.status, 200);
+      }
+      const after = await api.store.get(api.roomId);
+      assert.equal(after.game.players[seat].huCount, before.game.players[seat].huCount + 1);
+      assertLatest(after.game);
+      assertError(
+        await reconnect.action(restored.revision, { type: "hu" }),
+        409,
+        "STALE_STATE",
+      );
+      assert.deepEqual(await api.store.get(api.roomId), after);
+    }
+  }
+});

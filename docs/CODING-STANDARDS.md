@@ -64,3 +64,6 @@ Report changes, untouched boundaries, exact checks, legacy validation, unrun che
 
 一般不能静默改变旧局规则。补杠时机是用户明确纠正旧实现的例外：v0.7.0 的 `allowPungUpgrade:false` 不再解释为永久禁止，而是碰后先完成一次出牌、之后正常窗口允许补杠。由 `requiresPungDiscard` 与兼容推断读取处理，不重写旧规则字段、牌区、历史或已结算分；更老的允许/缺省策略仍保留。详见 [补杠纠错说明](PUNG-UPGRADE-CORRECTION.md)。
 Normally saved rules must not change silently. The user-authorized pung timing correction is an explicit exception: v0.7.0 false means discard once after peng before later legal upgrades, not a permanent ban. Compatibility reads apply it without rewriting saved rules, tiles, history, or settled scores; older allow/missing timing remains intact.
+
+schema 3 已胡者的能胡必胡也属用户明确纠错，过滤当前/已保存未回应窗口，不改已提交回应或历史积分。具体边界见 [胡后必胡纠错](POST-HU-WIN-CORRECTION.md)。
+Mandatory available wins for prior winners in schema three are also user-authorized corrections. Filter current/saved unanswered choices without changing submitted responses or historical scores. See [mandatory-win correction](POST-HU-WIN-CORRECTION.md).

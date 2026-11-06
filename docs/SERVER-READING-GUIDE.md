@@ -139,7 +139,12 @@ Run `npm test` and `npm run build`, focusing on concurrent joins, stale revision
 保存的 v0.7.0 `allowPungUpgrade:false` 通过引擎 requiresPungDiscard 解释为“碰后必须实际出牌一次”，不重写旧规则、手牌、历史或积分。更老的 true/缺字段时机保留。0 分喜钱不转账，但仍记录一次已处理标记和事件。
 The engine interprets saved v0.7.0 false as an actual post-peng discard requirement without rewriting old rules, tiles, history, or scores. Older true/missing timing remains intact. Zero ready points still record the processing marker/event but transfer no points.
 
-## 展示回执与多端 / Presentation receipts and multiple clients
+## 当前本地播放模式 / Current local playback mode
+
+`presentationMode: local` 保留原分段引擎，服务端按650ms普通段和2800/4500ms胡牌段惰性续进，不写展示租约、不等任何客户端回执。GET心跳竞争只对明确CAS false有界重读并重验权；未知写入结果不重试。真实玩家回应与权限未放松。详见 [音画节奏](PRESENTATION-PACING.md)。
+Local mode retains the staged engine with lazy 650ms ordinary and 2800/4500ms win cadence, without leases or receipts. Heartbeat races retry only proven CAS nonwrites with reauthentication; unknown outcomes never retry. Real player responses and authorization remain unchanged. See the pacing guide.
+
+## 旧模式展示回执与多端 / Legacy presentation receipts and multiple clients
 
 新增 `POST /api/rooms/:id/presentation`，按原凭证验证本人座位，再按局 ID + 展示 ID 合并 CAS 回执。`phase: begin` 与 `clientId` 认领唯一播放实例；完成回执须匹配归属。四十秒超时由读取/动作请求惰性恢复，主动离席移除该座位等待，重启不丢屏障。`gameMeta.presentationEnabled` 一经启用，本局旧客户端也不能绕过。完整设计、隐私、重试和兼容边界见 [音画节奏](PRESENTATION-PACING.md)。
 The new endpoint authenticates the original seat and merges receipts by game/gate IDs with CAS. Begin/clientId claims a unique playback instance; completion must match ownership. Reads/actions lazily recover forty-second timeouts, departure releases that seat, and restart preserves gates. Once enabled, older clients cannot bypass pacing. See [presentation pacing](PRESENTATION-PACING.md) for privacy, retries and compatibility.
@@ -155,3 +160,9 @@ Each occupant retains at most eight private page records with five-second leases
 `differsOnlyInPresence` 在动作 CAS 失败后比较完整保存模型，仅排除房间版本/更新时间与座位心跳/页面租约。带有效局证明的 v3 请求最多四次提交尝试；真实牌局、座位、身份或生命周期变化立即拒绝。每轮重建动作副本，不复用失败结果；未知存储错误不重试。详见 [播放节奏](PRESENTATION-PACING.md) 的“动作提交与租约竞争”及 `tests/presentation-api.test.js` 的确定性 CAS 竞争用例。
 
 After an action CAS failure, `differsOnlyInPresence` compares the full saved model, excluding only room revision/update time and seat heartbeat/client leases. Proven v3 requests have at most four commit attempts; real game, occupancy, identity, or lifecycle changes reject immediately. Each attempt rebuilds its candidate, never reusing failed results, and unknown storage errors are not retried. See [presentation pacing](PRESENTATION-PACING.md) and the deterministic CAS-race cases in `tests/presentation-api.test.js`.
+
+
+### 再开局与空闲租约 / Another round and idle leases
+
+`recordPresence` 仅在 room.game 存在且未结束时保存展示租约。大厅/终局轮询不因遥测提升房间版本，因此不会阻塞严格 revision 校验的 `/start`；正常在线心跳、换座/离席及并发开局保护不变。新局创建后恢复登记。详见 [音画节奏](PRESENTATION-PACING.md)。
+`recordPresence` stores presentation leases only while room.game exists and remains unfinished. Lobby/finished polling no longer bumps room revisions for telemetry, so it cannot block `/start`'s strict revision checks. Normal heartbeats, occupancy/departure and concurrent-start protections remain unchanged. Registration resumes after game creation. See [presentation pacing](PRESENTATION-PACING.md).

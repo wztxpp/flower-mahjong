@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as Vue from "vue";
 import * as CharacterAudioModule from "../src/character-audio.js";
+import * as SharedPlaybackModule from "../src/shared-playback.js";
 import * as MahjongPhotoModule from "../src/mahjong-photo-faces.js";
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 
@@ -75,6 +76,7 @@ const App = compileComponent("App.vue", {
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
   "./character-audio.js": CharacterAudioModule,
+  "./shared-playback.js": SharedPlaybackModule,
   "../shared/start-options.js": StartOptionsModule,
 });
 // 保存属性描述符而不只是值，恢复时保留可写性和访问器语义。

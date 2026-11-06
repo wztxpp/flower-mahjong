@@ -552,7 +552,9 @@ function getDiscardClaimOptions(game, seat, discarded) {
     counts[discarded.tile] >= 3 &&
     canDeclareKong(game, seat, 'mingGang', discarded.tile);
   const canPeng = !player.huCount && player.melds.length < 4 && counts[discarded.tile] >= 2;
-  // Hu + legal kong remains hu/pass. Hu + peng without kong offers both choices.
+  // 胡优先于同时可做的杠；未胡者无杠时仍可选碰。是否可过由动作白名单按已胡状态决定。
+  // Hu suppresses a simultaneous kong; unwon claimants may still peng without a kong.
+  // The final allowlist adds pass only when the claimant has no mandatory hu.
   if (canHu && canGang)
     return [
       {
@@ -615,8 +617,15 @@ export function getLegalActions(game, seat) {
   ) return [];
   if (game.phase === 'claim') {
     if (!game.claim?.eligibleSeats.includes(seat) || game.claim.responses[seat]) return [];
+    const options = cloneSerializable(game.claim.options[seat]);
+    // 已胡者能胡就只能胡，普通接炮和抢杠共用此入口。读取时也过滤旧存档的选项，
+    // 但不改写原窗口、已提交回应或历史；旧客户端不能通过直接发“过”绕过。
+    // A prior winner must take an available discard/rob-kong win. Filter saved options on read
+    // without rewriting the window, submitted responses or history; old-client pass requests fail too.
+    if (game.players[seat].huCount > 0 && options.some((action) => action.type === 'hu'))
+      return options.filter((action) => action.type === 'hu');
     return [
-      ...cloneSerializable(game.claim.options[seat]),
+      ...options,
       {
         type: 'pass',
       },
@@ -634,6 +643,10 @@ export function getLegalActions(game, seat) {
     tile,
   }));
   if (drawn !== null && getAllowedHuWaits(game, seat, drawn, true)) {
+    // 胡后的自然摸牌、续摸和杠后补摸统一必须胡；返回前排除所有过牌/出牌选择。
+    // Normal, continuation and kong-replacement draws all require a post-hu win;
+    // return before exposing any discard/pass alternative, regardless of the auto-discard setting.
+    if (player.huCount > 0) return [{ type: 'hu' }];
     actions.push({
       type: 'hu',
     });
@@ -687,10 +700,6 @@ export function getLegalActions(game, seat) {
         type: 'pass',
       },
     ];
-  if (player.huCount && actions.some((action) => action.type === 'hu'))
-    actions.push({
-      type: 'pass',
-    });
   return actions;
 }
 
@@ -753,6 +762,10 @@ export function getHuDiagnostic(game, seat) {
   }
   if (game.phase === 'claim' && !game.claim.eligibleSeats.includes(seat))
     return reply('NOT_ELIGIBLE', '本次弃牌没有你的可用接牌操作，请等待下一次机会。', extra);
+  // 诊断也遵守已胡必胡，避免抢杠说明仍误导玩家可以过；可胡判断仍来自上面的真实牌型。
+  // Diagnostics must not advertise pass to a prior winner; availability still uses the actual shape checks above.
+  if (player.huCount > 0)
+    return reply('AVAILABLE', '你已经胡过，当前能胡就必须胡；请点击“胡牌”，不能过、出牌、碰或杠。', extra);
   return reply(
     'AVAILABLE',
     game.claim?.kind === 'robKong'

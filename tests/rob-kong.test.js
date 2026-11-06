@@ -367,7 +367,16 @@ test("unwon first upgrade can be robbed by previously won locked player", () => 
   assert.deepEqual(game.claim.eligibleSeats, [1, 2]);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  game = move(move(game, 1, "hu"), 2, "pass");
+  // 两位已胡接牌者均必须胡，不能用过牌结束窗口。
+  // Both previously won claimants must win rather than pass to close the window.
+  const before = structuredClone(game);
+  for (const seat of [1, 2]) {
+    assert.deepEqual(getLegalActions(game, seat), [{ type: "hu" }]);
+    assert.throws(() => move(game, seat, "pass"), /当前不能/);
+    assert.deepEqual(game, before);
+  }
+  game = move(move(game, 1, "hu"), 2, "hu");
+  assert.equal(game.players[2].huCount, 2);
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.equal(game.players[1].huCount, 2);
@@ -434,7 +443,9 @@ for (const repeated of [false, true]) // 逐项覆盖 [false,true]；同一组�
         ? [0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6]
         : [0, 1, 1, 2, 2, 9, 9, 10, 10, 11, 11, 12, 12];
       let game = fixture({
-        receivers: [hand, waitZero],
+        // 旁观者听十七而非零，避免让已胡旁观者非法过掉抢杠胡。
+        // The bystander waits on seventeen, not zero, so no mandatory rob-kong hu is skipped.
+        receivers: [hand, [0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17]],
         receiverWon: repeated,
       });
       // 此分支代表重复胡，必须保留前次胡牌影响而非当作新玩家首次胡。
@@ -457,7 +468,7 @@ for (const repeated of [false, true]) // 逐项覆盖 [false,true]；同一组�
       // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
       // Arrange: prepare this step’s input or reference data within the synthetic scenario.
       game = move(game, 0, "buGang", 0);
-      game = move(move(game, 1, "hu"), 2, "pass");
+      game = move(game, 1, "hu");
       const event = huEvents(game)[0];
       // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
       // Check rendered output or source structure; regex/string matches are not real browser interactions.
@@ -489,12 +500,14 @@ test("big single rob-kong adds one fan but charges only upgrader, including fina
   let game = fixture({
     sourceWon: true,
     replacement: true,
-    receivers: [[0], waitZero],
+    // 旁观者没有抢零的听口，保留单一赢家的终局付款断言。
+    // A non-zero bystander wait preserves the single-winner final-payment assertion.
+    receivers: [[0], [0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17]],
     receiverMelds: [melds, []],
   });
   game.players[2].huCount = 1; // Prior hu without an additional physical record is supported by older saved fixtures.
   game = move(game, 0, "buGang", 0);
-  game = move(move(game, 1, "hu"), 2, "pass");
+  game = move(game, 1, "hu");
   const event = huEvents(game)[0];
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.

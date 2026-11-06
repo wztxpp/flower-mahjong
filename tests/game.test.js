@@ -55,6 +55,9 @@ const doAction = (game, seat, type, tile) =>
 const huEvent = (game, seat = 0) =>
   game.history.find((event) => event.type === "hu" && event.seat === seat);
 const noZero = waiting.map((tile) => (tile === 0 ? 6 : tile));
+// 出牌来源不能自己正在可胡；拆掉一组顺子，保留刚摸的 17 来测试出牌结算。
+// Break one sequence so the source can legally discard its drawn 17 rather than skip a mandatory hu.
+const nonWinningSource = winning.map(tile => tile === 0 ? 8 : tile);
 
 /** Existing clockwise games remain regression fixtures; new direction is covered separately.
  * Eight-copy physical fixture. Prior logical wins reference retired physical tiles. */
@@ -485,27 +488,29 @@ test("first selfdraw adds six shared tail radishes and leaves a winning continua
   // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
   assertGameInvariants(game);
 });
-// 场景：胡后手牌锁定：只能打出刚摸到的牌，或通过过牌跳过该牌
-// Scenario: post-hu hand is locked: only just-drawn tile may be discarded, or pass skips it
-test("post-hu hand is locked: only just-drawn tile may be discarded, or pass skips it", () => {
+// 场景：胡后非胡摸牌保持锁手，手动过牌只打出刚摸的牌
+// Scenario: manual post-hu hand stays locked and pass discards only a nonwinning drawn tile
+test("manual post-hu hand stays locked and pass discards only a nonwinning drawn tile", () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   let game = fixture({
+    hands: [nonWinningSource, waiting, waiting],
     huCounts: [1, 0, 0],
     head: [6],
+    rules: { autoDiscardAfterHu: false },
   });
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.deepEqual(
-    getLegalActions(game, 0).filter((action) => action.type === "discard"),
-    [
-      {
-        type: "discard",
-        tile: 17,
-      },
-    ],
-  );
-  assert.ok(has(game, 0, "hu") && has(game, 0, "pass"));
+  // 自动模式的直接出牌也只能选择刚摸的牌，不能换出旧手牌。
+  // A direct discard in automatic mode must still use the draw, never an older locked tile.
+  const automatic = structuredClone(game);
+  automatic.rules.autoDiscardAfterHu = true;
+  assert.deepEqual(getLegalActions(automatic, 0), [{ type: "discard", tile: 17 }]);
+  assert.throws(() => doAction(automatic, 0, "discard", 1));
+  assert.equal(doAction(automatic, 0, "discard", 17).discards[0].tile, 17);
+  assert.deepEqual(getLegalActions(game, 0), [{ type: "pass" }]);
+  assert.equal(has(game, 0, "hu"), false);
+  assert.equal(has(game, 0, "pass"), true);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const before = structuredClone(game);
@@ -626,7 +631,7 @@ test("already-hu players cannot peng and their discards cannot be penged", () =>
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   game = doAction(
     fixture({
-      hands: [winning, pengHand, waiting],
+      hands: [nonWinningSource, pengHand, waiting],
       huCounts: [1, 0, 0],
     }),
     0,
@@ -646,6 +651,7 @@ test("ordinary post-hu discard is protected but post-kong discard allows hu paid
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   let game = doAction(
     fixture({
+      hands: [nonWinningSource, waiting, waiting],
       huCounts: [1, 0, 0],
       kongSeats: [0],
     }),
@@ -738,6 +744,7 @@ test("third winner ends only after entire simultaneous batch; no extra draw", ()
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   let game = doAction(
     fixture({
+      hands: [nonWinningSource, waiting, waiting],
       huCounts: [1, 0, 0],
       kongSeats: [0],
       head: [6],
@@ -1729,7 +1736,7 @@ test("diagnostics explain shape and repeat discard availability privately", () =
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.equal(getHuDiagnostic(game, 1).code, "AVAILABLE");
-  assert.match(getHuDiagnostic(game, 1).message, /弃牌可以接胡/);
+  assert.match(getHuDiagnostic(game, 1).message, /能胡就必须胡/);
   assert.ok(
     game.history.every((event) => !Object.hasOwn(event, "huDiagnostic")),
   );
@@ -1998,6 +2005,7 @@ test("a first simultaneous winner completing the table does not cancel an alread
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   let game = doAction(
     fixture({
+      hands: [nonWinningSource, waiting, waiting],
       huCounts: [1, 0, 1],
       kongSeats: [0],
       head: [6],
@@ -2104,12 +2112,13 @@ test("post-hu uninteresting turns auto-advance through consecutive locked player
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   let game = fixture({
+    hands: [nonWinningSource, waiting, waiting],
     huCounts: [1, 1, 0],
     head: [6, 7, 8],
   });
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  game = doAction(game, 0, "pass");
+  game = doAction(game, 0, "discard", 17);
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.equal(game.currentSeat, 2);
@@ -2414,6 +2423,7 @@ test("final first and repeat co-winners each charge only the kong discarder", ()
   ]) {
     let game = doAction(
       fixture({
+        hands: [nonWinningSource, waiting, waiting],
         huCounts: [1, 0, 1],
         kongSeats: [0],
         head: [6],
@@ -2457,6 +2467,7 @@ test("final and nonfinal kong-discard wins charge only the source even without t
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   let initial = doAction(
     fixture({
+      hands: [nonWinningSource, waiting, waiting],
       huCounts: [1, 0, 0],
       kongSeats: [0],
       head: [6],
@@ -2512,7 +2523,9 @@ test("reported 2/5/8 circles hand can repeat-hu a kong discard before its next n
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const receiver = [4, 5, 6, 6, 7, 7, 7, 8, 11, 12, 13, 14, 15];
-  const source = [2, 3, 5, 6, 7, 8, 8, 8, 10, 14, 14];
+  // 补不在听口内的一筒以测试杠后弃牌；二筒会触发不可跳过的抢杠胡。
+  // Upgrade outside the receiver's waits; tile 10 would require a rob-kong hu before the discard.
+  const source = [2, 3, 5, 6, 7, 8, 8, 8, 9, 14, 14];
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.deepEqual(getWaitTiles(receiver), [10, 13, 16]);
@@ -2520,19 +2533,20 @@ test("reported 2/5/8 circles hand can repeat-hu a kong discard before its next n
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   let game = fixture({
     hands: [source, receiver, waiting],
-    melds: [[meld(10)], [], []],
+    melds: [[meld(9)], [], []],
     huCounts: [0, 5, 0],
     priorWins: [[], [16, 10, 16, 13, 16], []],
     locks: [[], [10, 13, 16], []],
     activeLocks: [false, true, false],
-    drawTile: 10,
+    drawTile: 9,
     head: [13, 0],
     tail: [16],
   });
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  game = doAction(game, 0, "buGang", 10);
-  // Decline the newly supported rob-kong window before exercising the later discard.
+  game = doAction(game, 0, "buGang", 9);
+  // 未胡对手仍可过牌；已胡接牌者此时不具备抢杠听口。
+  // Only unwon opponents may pass here; the previous winner cannot rob this tile.
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   game = passAll(game);
@@ -2721,6 +2735,7 @@ test("reported seat-three eight-point kong-discard win receives eight, not sixte
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   let game = fixture({
+    hands: [nonWinningSource, waiting, waiting],
     huCounts: [1, 0, 0],
     kongSeats: [0],
     firstHuRadishesRevealed: true,
@@ -2821,7 +2836,13 @@ test("first, repeat, final and big-single kong-discard payments ignore both self
         ]) {
           const bigSingle = shape !== "standard";
           const initial = fixture({
-            hands: [winning, bigSingle ? [17] : waiting, waiting],
+            // 无关的第三家不听 17，避免已胡时必须同批胡而改变单赢家付款场景。
+            // Keep the unrelated player off the 17 wait so mandatory co-hu cannot alter this single-winner case.
+            hands: [
+              nonWinningSource,
+              bigSingle ? [17] : waiting,
+              waiting.map((tile) => tile === 0 ? 8 : tile),
+            ],
             melds: [[], bigSingle ? groups : [], []],
             huCounts,
             kongSeats: [0],
@@ -2880,6 +2901,7 @@ test("simultaneous first and repeat kong-discard winners never pay each other, r
       ]) {
         const initial = savedPaymentFlags(
           fixture({
+            hands: [nonWinningSource, waiting, waiting],
             huCounts,
             kongSeats: [0],
             firstHuRadishesRevealed: true,
@@ -3095,7 +3117,7 @@ test("next-seat double-hu priority settles both first and repeat winners before 
         huCounts[seat] = winnerCounts[index];
       });
       const hands = [waiting, waiting, waiting].map((hand, seat) =>
-        seat === fromSeat ? winning : hand,
+        seat === fromSeat ? nonWinningSource : hand,
       );
       const initial = fixture({
         hands,
@@ -3260,9 +3282,9 @@ test("post-hu concealed, supplement and fifth-tile kongs are mandatory and old-c
     assertGameInvariants(next);
   }
 });
-// 场景：未胡玩家可放弃任何自己的杠而出牌，真正胡后可胡时仍保留胡与过牌
-// Scenario: unwon players may discard instead of any own kong, while a real post-hu win retains hu and pass
-test("unwon players may discard instead of any own kong, while a real post-hu win retains hu and pass", () => {
+// 场景：未胡玩家可放弃自己的杠而出牌，已胡玩家可胡时仅能确认胡
+// Scenario: unwon players may discard instead of any own kong, while a real post-hu win requires hu
+test("unwon players may discard instead of any own kong, while a real post-hu win requires hu", () => {
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   // 逐项覆盖 ['anGang','buGang','addGang']；同一组检查用于每个样本，顺序以代码列出的集合为准。
@@ -3280,20 +3302,14 @@ test("unwon players may discard instead of any own kong, while a real post-hu wi
       type,
       winningDraw: true,
     });
-    assert.deepEqual(getLegalActions(winningGame, 0), [
-      {
-        type: "discard",
-        tile: winningGame.lastDraw.tile,
-      },
-      {
-        type: "hu",
-      },
-      {
-        type: "pass",
-      },
-    ]);
+    assert.deepEqual(getLegalActions(winningGame, 0), [{ type: "hu" }]);
+    // 已胡可胡必须确认胡，过牌不能跳过此次结算。
+    // A previous winner must confirm hu; passing cannot skip this settlement.
+    const before = structuredClone(winningGame);
+    assert.throws(() => doAction(winningGame, 0, "pass"));
+    assert.throws(() => doAction(winningGame, 0, "discard", winningGame.lastDraw.tile));
+    assert.deepEqual(winningGame, before);
     assertGameInvariants(doAction(winningGame, 0, "hu"));
-    assertGameInvariants(doAction(winningGame, 0, "pass"));
   }
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
@@ -3305,18 +3321,7 @@ test("unwon players may discard instead of any own kong, while a real post-hu wi
   });
   // 核对快照或旧值，防止修改输入、重复提交或覆盖已保存状态。
   // Compare snapshots/saved values to detect input mutation, duplicate commits or overwritten state.
-  assert.deepEqual(getLegalActions(huBeforeKong, 0), [
-    {
-      type: "discard",
-      tile: 0,
-    },
-    {
-      type: "hu",
-    },
-    {
-      type: "pass",
-    },
-  ]);
+  assert.deepEqual(getLegalActions(huBeforeKong, 0), [{ type: "hu" }]);
 });
 // 场景：牌墙不足以供杠或杠会丢失听口时，胡后自动出牌仍执行
 // Scenario: post-hu auto-discard still runs when the wall cannot fund a kong or the kong would lose waits
@@ -3515,54 +3520,29 @@ test("reported four-dot chronology allows repeat one-dot and four-dot claims bef
   );
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  game = doAction(game, 2, "discard", 9);
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(has(game, 1, "hu"), true);
-  assert.equal(getHuDiagnostic(game, 1).code, "AVAILABLE");
-  // Declining this tile does not erase the next eligible ordinary discard.
-  // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
-  // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  game = passAll(game);
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(game.currentSeat, 0);
-  assert.equal(game.lastDraw.tile, 12);
-  // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
-  // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  game = doAction(game, 0, "discard", 12);
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(has(game, 1, "hu"), true);
-  assert.equal(getHuDiagnostic(game, 1).code, "AVAILABLE");
-  // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
-  // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  const reconnected = JSON.parse(JSON.stringify(game));
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(has(reconnected, 1, "hu"), true);
-  // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
-  // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  game = passAll(doAction(reconnected, 1, "hu"));
-  // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
-  // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  const wins = game.history.filter((e) => e.type === "hu" && e.seat === 1);
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.deepEqual(
-    wins.map((e) => e.tile),
-    [12, 12],
-  );
-  assert.equal(wins[1].source, "discard");
-  assert.equal(wins[1].fromSeat, 0);
-  assert.deepEqual(
-    wins[1].payments.filter((p) => p.delta < 0).map((p) => p.seat),
-    [0],
-  );
-  // 验证当前状态的引擎不变量；场景不能靠非法牌数来满足期望。
-  // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
-  assertGameInvariants(game);
+  // 从同一首胡后状态分别接一筒和四筒，不能先跳过已胡玩家的一筒胡。
+  // Branch from the same post-win state: mandatory one-dot hu cannot be skipped to reach four dots.
+  const afterFirstHu = game;
+  for (const tile of [9, 12]) {
+    game = doAction(afterFirstHu, 2, "discard", tile);
+    assert.deepEqual(getLegalActions(game, 1), [{ type: "hu" }]);
+    assert.equal(getHuDiagnostic(game, 1).code, "AVAILABLE");
+    const before = structuredClone(game);
+    assert.throws(() => doAction(game, 1, "pass"));
+    assert.deepEqual(game, before);
+    const reconnected = JSON.parse(JSON.stringify(game));
+    assert.deepEqual(getLegalActions(reconnected, 1), [{ type: "hu" }]);
+    game = passAll(doAction(reconnected, 1, "hu"));
+    const wins = game.history.filter(event => event.type === "hu" && event.seat === 1);
+    assert.deepEqual(wins.map(event => event.tile), [12, tile]);
+    assert.equal(wins[1].source, "discard");
+    assert.equal(wins[1].fromSeat, 2);
+    assert.deepEqual(wins[1].payments.filter(payment => payment.delta < 0).map(payment => payment.seat), [2]);
+    assert.equal(game.history.some(event => event.type === "draw" && event.seat === 1 && event.source === "normal"), false);
+    assertGameInvariants(game);
+  }
 });
+
 // 场景：两名此前已胡玩家均可原子地胡普通弃牌，并按稳定顺时针顺序结算
 // Scenario: both prior winners can claim an ordinary discard atomically in stable clockwise order
 test("both prior winners can claim an ordinary discard atomically in stable clockwise order", () => {
@@ -3642,6 +3622,7 @@ test("post-hu auto-discard is a validated per-game rule with backward-compatible
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const automatic = fixture({
+    hands: [nonWinningSource, waiting, waiting],
     huCounts: [1, 1, 0],
     head: [6, 7],
   });
@@ -3649,13 +3630,13 @@ test("post-hu auto-discard is a validated per-game rule with backward-compatible
   delete legacy.rules.autoDiscardAfterHu;
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
-  const expected = doAction(automatic, 0, "pass");
+  const expected = doAction(automatic, 0, "discard", 17);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   delete expected.rules.autoDiscardAfterHu;
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.deepEqual(doAction(legacy, 0, "pass"), expected);
+  assert.deepEqual(doAction(legacy, 0, "discard", 17), expected);
   assert.equal(
     legacy.rules.autoDiscardAfterHu,
     undefined,
@@ -3783,6 +3764,7 @@ test("manual post-hu mode stops for every natural draw instead of skipping conse
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   let game = fixture({
+    hands: [nonWinningSource, waiting, waiting],
     huCounts: [1, 1, 0],
     head: [6, 7],
     rules: {
@@ -3792,9 +3774,6 @@ test("manual post-hu mode stops for every natural draw instead of skipping conse
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.deepEqual(getLegalActions(game, 0), [
-    {
-      type: "hu",
-    },
     {
       type: "pass",
     },
@@ -3858,29 +3837,21 @@ test("manual mode retains repeated hu choices and mandatory legal own kongs with
     ])
       assert.throws(() => applyAction(game, 0, action));
     const replacement = doAction(game, 0, type, game.lastDraw.tile);
-    assert.deepEqual(getLegalActions(replacement, 0), [
-      {
-        type: "hu",
-      },
-      {
-        type: "pass",
-      },
-    ]);
+    assert.deepEqual(getLegalActions(replacement, 0), [{ type: "hu" }]);
     assertGameInvariants(doAction(replacement, 0, "hu"));
     const winningGame = postHuKongGame({
       type,
       winningDraw: true,
     });
     winningGame.rules.autoDiscardAfterHu = false;
-    assert.deepEqual(getLegalActions(winningGame, 0), [
-      {
-        type: "hu",
-      },
-      {
-        type: "pass",
-      },
-    ]);
-    assertGameInvariants(doAction(winningGame, 0, "pass"));
+    assert.deepEqual(getLegalActions(winningGame, 0), [{ type: "hu" }]);
+    // 已胡可胡必须确认胡，过牌不能跳过此次结算。
+    // A previous winner must confirm hu; passing cannot skip this settlement.
+    const before = structuredClone(winningGame);
+    assert.throws(() => doAction(winningGame, 0, "pass"));
+    assert.throws(() => doAction(winningGame, 0, "discard", winningGame.lastDraw.tile));
+    assert.deepEqual(winningGame, before);
+    assertGameInvariants(doAction(winningGame, 0, "hu"));
     const unwon = postHuKongGame({
       type,
       huCount: 0,
@@ -3902,14 +3873,7 @@ test("manual mode retains repeated hu choices and mandatory legal own kongs with
   repeated = doAction(repeated, 0, "hu");
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.deepEqual(getLegalActions(repeated, 0), [
-    {
-      type: "hu",
-    },
-    {
-      type: "pass",
-    },
-  ]);
+  assert.deepEqual(getLegalActions(repeated, 0), [{ type: "hu" }]);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   repeated = doAction(repeated, 0, "hu");

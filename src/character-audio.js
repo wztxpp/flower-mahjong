@@ -211,7 +211,13 @@ export class CharacterAudio {
       this.queue.push({ urls: group, at });
     }
     let queuedClips = this.queue.reduce((count, item) => count + item.urls.length, 0);
-    while (queuedClips > 12) queuedClips -= this.queue.shift().urls.length;
+    while (queuedClips > 12) {
+      const dropped = this.queue.shift();
+      queuedClips -= dropped.urls.length;
+      // 通用入口挤出的保序批次也必须结算，不能遗留等待者。
+      // An ordered batch evicted by the general entry must also release its waiter.
+      dropped.complete?.();
+    }
     this.drain();
   }
   /* 现场快照已包含自动回合，不补播积压动作。 / Live snapshots already include automatic turns. Never narrate that backlog. */
@@ -253,6 +259,72 @@ export class CharacterAudio {
     });
     this.drain();
     return completion;
+  }
+  // 保序批次保留事件身份；返回 { events: [{ eventKey, status }] }，顺序与输入一致。
+  // Ordered batches retain identity and return { events: [{ eventKey, status }] } in input order.
+  // success 仅表示该事件全部片段自然结束；失败、取消和未播放不能写入已播记录。
+  // success means every clip naturally ended; failed, cancelled and skipped events must not be marked heard.
+  enqueueOrdered(events) {
+    const entries = events.map((event) => ({
+      eventKey: event.eventKey ?? null,
+      urls: [...(event.urls || [])],
+      status: event.urls?.length ? null : 'skipped',
+    }));
+    let settled = false;
+    let complete;
+    const completion = new Promise((resolve) => {
+      // 取消只结算未完成项，保留此前成功/失败；复制报告避免旧 await 后续更改返回值。
+      // Cancellation settles unfinished entries only; copy the report so stale awaits cannot mutate it.
+      complete = (fallback = 'cancelled') => {
+        if (settled) return;
+        settled = true;
+        for (const entry of entries) entry.status ||= fallback;
+        resolve({ events: entries.map(({ eventKey, status }) => ({ eventKey, status })) });
+      };
+    });
+    if (this.disposed || this.muted || !this.unlocked || this.context?.state !== 'running') {
+      complete('skipped');
+      return completion;
+    }
+    const urls = entries.flatMap((entry) => entry.urls);
+    if (!urls.length) {
+      complete('skipped');
+      return completion;
+    }
+    this.queue.push({ urls, entries, ordered: true, complete });
+    this.drain();
+    return completion;
+  }
+  // 逐事件、逐片段独立播放；任一失败不吞掉其他赢家，单个事件有失败则不算完整已播。
+  // Play each event/clip independently; one failure cannot swallow another winner or count as a fully heard event.
+  async playOrdered(item, generation) {
+    const isCurrent = () =>
+      generation === this.generation &&
+      !this.disposed && !this.muted && this.unlocked && this.context?.state === 'running';
+    for (const entry of item.entries) {
+      if (!isCurrent()) break;
+      if (!entry.urls.length) continue;
+      let failed = false;
+      for (const url of entry.urls) {
+        if (!isCurrent()) break;
+        try {
+          const buffer = await this.buffer(url);
+          // 冷下载不采用旧现场过期窗口，但 await 后必须重新检查取消代数和音频状态。
+          // Cold downloads ignore legacy live expiry, but must recheck cancellation and readiness after await.
+          if (!isCurrent()) break;
+          const status = await this.playBuffer(buffer);
+          if (status !== 'success') failed = true;
+          if (status === 'failed' && isCurrent()) this.onStatus('unavailable');
+        } catch {
+          failed = true;
+          if (isCurrent()) this.onStatus('unavailable');
+        }
+      }
+      // clear 已同步结算的事件不能被迟到下载覆盖；暂停且无 statechange 也不算成功。
+      // Never overwrite entries settled synchronously by clear; suspension without statechange is not success either.
+      if (entry.status === null)
+        entry.status = !isCurrent() ? 'cancelled' : failed ? 'failed' : 'success';
+    }
   }
   /* 只预热简短公开胡牌语音，并限制为三个并发后台请求。 / Warm only short public win calls, in three bounded background requests. */
   // 只预热公开胡牌短语；三个异步工作循环共享 next 下标，限制并发下载数量。
@@ -348,6 +420,12 @@ export class CharacterAudio {
         this.activeItem = item;
         const maxAge = item.maxAge ?? 6000;
         try {
+          // 保序和旧现场共用一个消费者锁；clear 只使旧代失效，由同一循环接手后来的新批。
+          // Ordered and legacy speech share one consumer lock; clear invalidates old work and this same loop takes new batches.
+          if (item.ordered) {
+            await this.playOrdered(item, generation);
+            continue;
+          }
           if (this.now() - item.at > maxAge) continue;
           // 整个事件加载完再播；开始后剩余片段不会过期或被普通新事件逐段挤出，但显式清理仍可停止。
           // Load the whole event before speaking. Once started, its remaining clips
@@ -400,7 +478,7 @@ export class CharacterAudio {
       const source = this.context.createBufferSource();
       let timer;
       let finished = false;
-      const finish = (stop = false, error) => {
+      const finish = (stop = false, error, status = 'success') => {
         if (finished) return;
         finished = true;
         clearTimeout(timer);
@@ -422,9 +500,9 @@ export class CharacterAudio {
         if (this.source === source) this.source = null;
         if (this.cancelPlayback === cancel) this.cancelPlayback = null;
         if (error) reject(error);
-        else resolve();
+        else resolve(status);
       };
-      const cancel = () => finish(true);
+      const cancel = () => finish(true, undefined, 'cancelled');
       this.source = source;
       this.cancelPlayback = cancel;
       try {
@@ -436,7 +514,9 @@ export class CharacterAudio {
         const duration = Number.isFinite(buffer.duration) && buffer.duration > 0
           ? buffer.duration * 1000 + 1000
           : 15000;
-        timer = setTimeout(cancel, Math.min(duration, 15000));
+        // 看门狗只释放队列，不冒充自然结束；旧调用方继续忽略此返回状态。
+        // A watchdog releases the queue without claiming a natural end; legacy callers ignore the status.
+        timer = setTimeout(() => finish(true, undefined, 'failed'), Math.min(duration, 15000));
         source.start();
         this.onStatus('ready');
       } catch (error) {

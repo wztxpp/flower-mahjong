@@ -24,6 +24,7 @@ A scenario may repeat act/assert phases to cover a lifecycle. A cloned `before` 
 - `tests/v2-game.test.js`：冻结 schema 2；保留旧听牌锁和个人萝卜等差异。 / Frozen schema two, including its saved wait-lock and personal-radish behavior.
 - `tests/legacy-game.test.js`：最早引擎及手动摸牌；不能跟随新引擎一起改期望。 / Original engine/manual drawing; do not modernize its expectations alongside the current engine.
 - `tests/fixtures/post-hu-kong.js`：共享胡后必杠夹具。 / Shared mandatory post-win kong fixture.
+- `tests/post-hu-win.test.js`、`tests/fixtures/post-hu-win.js`：已胡必胡的三类自摸/接胡、旧窗口恢复、拒绝所有备选动作、多人统一结算及冻结版本边界；夹具保证实体守恒。 / Mandatory post-win draw/claim variants, restored windows, rejected alternatives, atomic multi-winner settlement and frozen-version boundaries, using a conserved fixture.
 - `tests/peng-upgrade-regression.test.js`：碰后先打一次牌，之后正常操作窗口可用已持有第四张补杠，不要求刚摸到同牌；同时覆盖 v0.7.0 错误 false 的纠正、抢杠和旧规则时机。 / Discard once after peng, then permit a held fourth copy in a later normal window without requiring a matching new draw; cover the v0.7.0 false correction, rob-kong and preserved older timing.
 - `tests/fixtures/pung-upgrade.js`：共享真实碰牌夹具，分别控制已持有第四张与后续墙头，避免把这两个条件混为一谈。 / Shared real-peng fixture with independent held-fourth-copy and later-wall-head controls.
 - `tests/extended-kong.test.js`：五至八张扩杠、补牌来源与付款方。 / Five-to-eight-tile extensions and replacement payer provenance.
@@ -122,3 +123,22 @@ Two-App same-seat regressions cover earlier hidden, baseline-only and locked sib
 
 前台租约回归另覆盖：同座位独立记录、可发声优先、后台座位连续多段不等四十秒、未知发现窗口、已开始媒体不受后台副页/租约失效打断、慢媒体结束后下一段仍被选中、遥测版本差异与严格动作证明。ui 测试还用真实 API 与四个 App 实例验证隐藏座位不阻挡、前台慢语音仍阻挡真实引擎。
 Lease regressions additionally cover independent sibling records, audible priority, hidden-seat short recovery across gates, discovery, owner protection, slow-media next-gate readiness and strict game proofs. A real API plus four App instances verifies that a hidden seat does not hold the table while foreground slow audio still holds the actual engine.
+
+
+再开局回归在 `tests/presentation-api.test.js`：真实规则耗尽合成牌墙后，三位玩家轮询和切换可见性不能使开局版本失效；在 start 读取与 CAS 之间插入读取仍只开局一次。验证归档旧账、开局选项、新局租约恢复，并保留房主、满员、真实过期和并发重复开局拒绝。测试仅使用 MemoryStore，不访问真实房间。
+Another-round regressions in `tests/presentation-api.test.js` exhaust a synthetic wall through real rules. Three-player polling and visibility changes must not stale start revisions; a read inserted between start load and CAS still permits exactly one start. Coverage retains archived results, options, resumed active-game leases, and host/full-seat/real-stale/concurrent-start guards. Tests use MemoryStore only, never real rooms.
+
+
+组合回归串联“胡后最后一张必胡 → 三位播放器完成 → 真正终局 → 三方空闲轮询 → 同桌下一局”，验证不能过或提前开局，旧回执不影响新局，旧账只归档一次，新局仍保留音画屏障。
+The combined regression chains mandatory post-hu final-tile winning, all three media completions, actual finish, three idle polls and another round. It rejects passes/early starts, isolates late old receipts, archives once and retains new-game presentation gates.
+
+## 平滑播放修复维护清单 / Smooth-playback maintenance inventory
+
+`src/App.vue` 新增接收/展示分离和本地FIFO；`src/character-audio.js` 的 enqueueOrdered 返回逐事件真实结果；`src/shared-playback.js` 负责完整公开前缀、同座位成功记录及有界失败接力；`server/api.js` 支持 local 节拍及GET竞争重读。新增维护测试为 `tests/ordered-audio.test.js`、`tests/shared-playback.test.js`、`tests/presentation-network.test.js`；`tests/browser/isolated-server.mjs` 与 `tests/browser/README.md` 仅服务隔离合成浏览器验收。不得连接真实牌局或把此辅助服务发布到生产。完整协议见 [音画节奏](PRESENTATION-PACING.md)。
+App adds received/displayed separation and a local FIFO; audio reports per-event outcomes; shared-playback coordinates complete public prefixes, same-seat success records and bounded sibling retries; the API adds local cadence and safe read-contention handling. New maintained audio/network suites join npm test. The browser server/readme are isolated synthetic acceptance helpers only, never production endpoints. See the pacing guide.
+
+
+### 可靠播放的专项边界 / Reliable-playback test boundaries
+
+`tests/ordered-audio.test.js` 实例化真实 CharacterAudio，仅替换浏览器设备与网络，验证自然结束才成功、下载/播放上限失败、取消不悬挂、双胡分别报告和旧 live 返回 void。`tests/shared-playback.test.js` 实例化真实协调器，覆盖晚基线补全前缀、健康副页接力、1200毫秒后失败终态禁止倒序、静音资格不复活、首次 locked 基线解锁后新现场事件可补前缀、只计本批外未终态有声前缀、略过与降级页内串行。`tests/ui.test.js` 验证前台长网络缺口不清队列、本地加共享前缀计数的待播8段按钮及用户主动略过。这些是逻辑回归范围，不是音响听感、跨设备恰好一次或正式环境验收承诺。
+Ordered-audio tests use real CharacterAudio with substituted browser/network dependencies to verify natural-end success, bounded failure, settled cancellation, separate winner outcomes and legacy void results. Shared-playback tests exercise the real coordinator's late-baseline prefixes, sibling recovery, 1200ms terminal ordering, frozen mute eligibility, initial locked-baseline recovery on subsequent unlocked live input, nonterminal voiced-prefix counts outside the batch, explicit skip and page-local fallback. UI tests cover long foreground gaps and the explicit-skip threshold combining local and shared-prefix backlog. These logical regressions do not establish acoustic quality, cross-device exactly-once or production acceptance.

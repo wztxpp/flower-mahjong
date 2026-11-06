@@ -73,9 +73,12 @@ Other clients receive the revision through `refresh` polling. An `unchanged` res
 
 **Server-authoritative data:** `state`, `state.game`, `legalActions`, scores, hands, history, turn seat and rule version. `session` holds room access credentials, not just a room code. Do not edit client scores merely to make the interface respond optimistically.
 
-**纯展示数据**：选牌下标、弹窗、提示、复制反馈、胡牌字幕和飞牌。`winningEvents` 与 `winningFlights` 不持有新的实体牌；当前客户端会等待音画结束，再向服务端确认继续下一段判定。已经成立动作的即时积分不依赖播放再次结算。
+schema 3 已胡且可胡时，服务端只给胡按钮；`mustHu` 由该白名单派生明确提示，不在前端重复判胡或自动点击。接炮、抢杠与自摸均使用此显示。详见 [胡后必胡纠错](POST-HU-WIN-CORRECTION.md)。
+For an available schema-three post-hu win, the server supplies hu alone. mustHu derives accurate wording from that allowlist without judging wins or clicking automatically, across discard, rob-kong and self-draw states. See [mandatory-win correction](POST-HU-WIN-CORRECTION.md).
 
-**Presentation-only data:** selection indices, dialogs, notices, copy feedback, win captions and flights. `winningEvents` and `winningFlights` do not create physical tiles. The current client waits for media completion before acknowledging the next judgment; committed immediate scores are never settled again by playback.
+**纯展示数据**：选牌下标、弹窗、提示、复制反馈、胡牌字幕和飞牌。`winningEvents` 与 `winningFlights` 不持有新的实体牌；local 客户端等待本页音画结束再开放本机最新操作；只有旧屏障路径向服务端确认媒体完成。已经成立动作的即时积分不依赖播放再次结算。
+
+**Presentation-only data:** selection indices, dialogs, notices, copy feedback, win captions and flights. `winningEvents` and `winningFlights` do not create physical tiles. Local clients wait for page media before enabling their latest controls; only legacy gates acknowledge server media completion; committed immediate scores are never settled again by playback.
 
 **非响应式控制数据**：计时器句柄、`AbortController`、`epoch`、Promise 与 Map/Set。它们用于控制生命周期，不直接显示，因此不必全改成 ref。
 
@@ -119,9 +122,9 @@ HTTP 409 indicates a conflict; inspect the error code to distinguish stale revis
 
 Clicking a win button is a request, not proof that a win committed. `ActionVoiceCursor` reads committed history, tracking room ID, game ID, history length and revision. Initial entry, refresh, new games and silent synchronization establish baselines without replaying old events.
 
-`CharacterAudio` 负责声音机制：用户手势解锁、Promise 缓存、下载取消、串行播放、静音和销毁。现场播报优先胡牌，普通自动回合只保留最新公开动作。加载完成后再次检查取消代数和时效，避免离桌后突然发声。音频失败不会更改牌局。
+`CharacterAudio` 负责声音机制：用户手势解锁、Promise 缓存、下载取消、串行播放、静音和销毁。旧 enqueueLive 现场入口优先胡牌、只保留最新普通公开动作；当前 local 使用 enqueueOrdered 保留全部顺序事件。加载完成后再次检查取消代数和时效，避免离桌后突然发声。音频失败不会更改牌局。
 
-`CharacterAudio` handles audio mechanics: gesture unlocking, promise caching, download cancellation, serial playback, muting and disposal. Live speech prioritizes wins and retains only the latest ordinary public action from automatic turns. After loading, it rechecks generation and freshness to avoid speech after departure. Audio failures do not change the game.
+`CharacterAudio` handles audio mechanics: gesture unlocking, promise caching, download cancellation, serial playback, muting and disposal. Legacy enqueueLive prioritizes wins and keeps only the latest ordinary public action; current local mode uses enqueueOrdered to retain every ordered event. After loading, it rechecks generation and freshness to avoid speech after departure. Audio failures do not change the game.
 
 ## 9. CSS 层叠与牌面绘制 / CSS cascade and tile rendering
 
@@ -173,10 +176,24 @@ Rules and history distinguish unavailable payments, explicit zero and the actual
 
 `pungUpgradeAfterDiscard` means an actual discard must follow the pung before later upgrading under other legality conditions. It is not a permanent ban and does not require a freshly drawn matching tile. A concealed-kong replacement draw cannot substitute for that discard. The frontend explains saved timing rules while buttons still follow server `legalActions`; rob-kong captions use the generic kong label rather than guessing the upgrade source.
 
-## 12. 音画完成与服务端续进 / Media completion and server continuation
+## 12. 本地保序与服务端节拍 / Local ordering and server cadence
+
+当前默认 local 模式把 receivedState 与页面 state 分开，所有新公开事件进本机 FIFO；音频及原动画都完成后才开放本机最新按钮，慢设备不会锁全桌。`src/shared-playback.js` 使用 Web Locks、完整公开前缀和逐事件结果记录协调同源同浏览器同座声音。普通409仅同步，不冒充断网。详见 [音画节奏](PRESENTATION-PACING.md)。
+Local mode separates received authority from displayed state and queues all new public events. Local controls wait for real media, but slow devices do not block the table. SharedPlaybackCoordinator uses Web Locks, complete public prefixes and per-event outcome records to coordinate same-origin sibling audio. Ordinary 409s synchronize without claiming a disconnect. See the pacing guide.
+
+### 旧屏障兼容 / Legacy barrier compatibility
 
 详见 [音画节奏](PRESENTATION-PACING.md)。`syncTurnPresentation` 按 ID 去重，`beginPresentation` 先原子认领同座位播放权，`playTurnPresentation` 等待字幕、动画 finished 和语音完成，`acknowledgePresentation` 只确认当前局当前屏障。服务端所需座位全部完成以前，按钮和回合高亮保持关闭。
 See [presentation pacing](PRESENTATION-PACING.md). These helpers deduplicate gate IDs, claim same-seat playback ownership, await media completion, and acknowledge only the current gate/game. Actions and turn highlights remain disabled until the required seats finish.
 
 后台或重连空基线不发送 begin；各页面通过请求头独立上报前台/音频/事件准备状态，按服务端 preferredClients 认领，取消旧的固定让位延时。认领在途失去可见性时，releasePresentation 归还归属，不发送空媒体完成。只有后台的未开始座位不拖住全桌；未知页面使用 1.5 秒短发现。四十秒仅保护已开始但失联的媒体。
 Hidden/baseline-only pages never begin. Independent presence headers and server preferredClients replace fixed client-side yielding. Hiding during acquisition releases ownership without false completion. Known background-only seats do not hold unstarted playback; unknown pages get 1.5-second discovery. Forty seconds remains only for owned media that disconnects.
+
+
+### 读懂共享声音结果 / Reading shared audio outcomes
+
+沿 `applyState → registerSnapshot → queueLocalPresentation → playThrough → enqueueOrdered` 阅读：每次快照（含空事件基线）登记完整公开前缀，批次保存接收时 `audioEligible`。先取得共享锁，再从共享 floor 处理到该批末端；不能只比较最大已播下标，也不能取得锁就记已播。enqueueOrdered 返回逐 eventKey 的 success/failed/cancelled/skipped，仅 success 写成功终态。失败头部有1200毫秒同座健康页接力窗口，超时转明确失败终态后才让后续前进，避免迟到倒序。已有页面实际静音/锁定期间新后缀不因解锁复活；全新页首次 locked 基线不是新入队，不永久拒绝旧前缀，ticket 仍静默，解锁后下一新现场事件才可代副页补齐。缺锁/存储时降级页内串行并调用 onDegraded，可能跨页重复；不承诺每条声音可用或跨页恰好一次。
+Follow applyState → registerSnapshot → queueLocalPresentation → playThrough → enqueueOrdered. Every snapshot, including empty baselines, registers its complete public prefix; batches retain receipt-time audioEligible. Under the lock, process from the shared floor through the batch end, never using only a maximum index or marking success on lock acquisition. Ordered audio reports exact-key success/failed/cancelled/skipped outcomes, and only success records terminal success. A failed head allows 1200ms eligible-sibling recovery before explicit terminal failure releases later speech without late inversion. Established-page muted/locked suffixes never revive on unlock. A new page’s initial locked baseline is not newly queued input and does not permanently deny the prefix; its ticket stays silent, and only a later unlocked live event may recover a sibling’s prefix. Missing locks/storage invoke onDegraded and fall back to page-local ordering with possible sibling duplication, not guaranteed available speech or exactly-once.
+
+local 前台长短网络缺口均保留队列和游标；`pendingPresentationCount` 合计本地当前/待播段及 onPendingPrefix 的本批外未终态有声共享前缀（不重复计本批），总数达到8才显示“略过并看最新牌面”，玩家点击 `skipLocalPlayback` 后取消本页媒体并登记已知历史为略过。不能按五秒阈值自动丢队列。隐藏、离桌和换局仍走取消/静默基线，旧屏障继续保留其独立重连语义。详见 [音画节奏](PRESENTATION-PACING.md)，最终测试结果见独立验收记录。
+Local foreground gaps of any length preserve queues/cursors. pendingPresentationCount combines active/queued local segments with onPendingPrefix’s nonterminal voiced recovery outside the current batch, avoiding current-batch double counting. At eight, explicit skip invokes skipLocalPlayback to cancel page media and mark known history skipped. There is no automatic five-second queue drop. Hide, leave and game changes still cancel/baseline; legacy barriers retain separate reconnect semantics. See the pacing protocol and separate final validation record.

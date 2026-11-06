@@ -29,6 +29,9 @@ These modules have no DOM, Vue, network, or database. Create a seeded game and p
 `applyAction` 先验证输入只含允许字段，并用 `type` 与 `tile` 匹配合法动作。只有通过才复制整局并增加 `revision`，因此失败不会半改旧对象。
 applyAction validates fields and matches type/tile against the allowlist before copying and incrementing revision. A rejected request cannot partially corrupt the original.
 
+已胡者能胡时 `getLegalActions` 只返回胡，优先于手动/自动出牌和杠；接炮与抢杠都在添加过牌前处理，读取旧窗口不改存档对象。首次胡和冻结版本仍保留原选择。见 [胡后必胡纠错](POST-HU-WIN-CORRECTION.md)。
+For prior winners, getLegalActions returns hu alone before any discard/pass/kong alternative. Claim and rob-kong reads apply it before adding pass, without mutating saved windows. First wins and frozen versions retain their choices. See [mandatory-win correction](POST-HU-WIN-CORRECTION.md).
+
 `discardTile` 从手牌移除一张，保存这次是否杠后出牌，清除 `lastDraw`，写入弃牌事件。它会按顺位计算他家选项，有选项才建立 `claim`。没有选项则指定下一位进入 draw。
 discardTile removes one physical tile, captures its post-kong provenance, clears lastDraw, logs the event, and computes opponents’ options. It creates a claim window only when someone has options; otherwise it starts the next draw.
 

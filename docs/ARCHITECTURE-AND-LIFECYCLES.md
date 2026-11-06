@@ -13,6 +13,9 @@
 **服务器是规则和账本的唯一权威。** 浏览器负责输入、展示、等待与过期响应保护。代码里没有第二套前端算分权威。
 **The server owns rules and ledgers.** The browser owns input, presentation, waiting, and stale-response protection, not authoritative scoring.
 
+schema 3 已胡者的可胡窗口只给 `hu`，仍等本人点击。读取旧待回应窗口时筛选选项，不改其已提交回应；所有 HTTP 动作共用引擎白名单拒绝跳胡。见 [胡后必胡纠错](POST-HU-WIN-CORRECTION.md)。
+Schema-three prior winners receive hu alone when available and still confirm manually. Reads filter saved unanswered options without changing submitted responses; every HTTP action uses the engine allowlist to reject skips. See [mandatory-win correction](POST-HU-WIN-CORRECTION.md).
+
 ## 2. 页面与会话生命周期 / Page and session lifecycle
 
 - **挂载 mounted**：读 URL 和本标签页对应凭证；无 room 参数时进入大厅，不盲目恢复上一桌。个人记录身份与座位连接分别处理。 / On mount, read URL/tab credentials. A URL without room opens the lobby rather than reviving the last room. Profile identity is separate.
@@ -42,8 +45,8 @@ Common current-engine path:
 
 `createGame → turn/discard → discardTile → claim → resolveClaimWindow → turn/draw → drawTile → turn/discard`
 
-无人可接时跳过 claim。碰成功直接进入碰牌者 discard 步骤，不能伪造一次摸牌。胡/杠后可能进入 continuation/replacement 摸牌；v2 与未启用展示的 v3 在一次 API 动作内完成自动步骤；启用展示的 v3 在每个已提交动作后暂停，待全桌音画回执后才继续。
-Skip claim when nobody is eligible. A successful peng enters its claimant’s discard step without inventing a draw. Hu/kong may start continuation/replacement draws; v2 and unpaced v3 complete non-decision steps in one action; presentation-enabled v3 pauses after each committed event until table media receipts permit continuation.
+无人可接时跳过 claim。碰成功直接进入碰牌者 discard 步骤，不能伪造一次摸牌。胡/杠后可能进入 continuation/replacement 摸牌；v2 与未启用展示的 v3 在一次 API 动作内完成自动步骤；启用展示的 v3 按已提交动作分段；local 使用服务端短节拍，只有旧屏障等待全桌音画回执。
+Skip claim when nobody is eligible. A successful peng enters its claimant’s discard step without inventing a draw. Hu/kong may start continuation/replacement draws; v2 and unpaced v3 complete non-decision steps in one action; paced v3 pauses at committed segments: local mode uses server cadence, while legacy gates await table media receipts.
 
 接牌窗口要收齐回应，再按引擎版本和保存方向处理。`pass` 也必须记录，没回应和明确放弃不同。一炮多响先准备所有赢家再一起算分，不按最快点击者结算。
 Collect all eligible responses before resolving by saved engine/direction. No response is not a pass. Simultaneous winners are prepared together before scoring, not by click speed.
@@ -87,3 +90,21 @@ Normally saved rules must not change silently. The user-authorized pung timing c
 
 [音画节奏](PRESENTATION-PACING.md) 说明分段引擎、房间级 CAS 屏障、同座位播放归属、完成/取消、四十秒惰性恢复及旧客户端边界。引擎 revision 仍代表一次原始动作；每个播放认领、完成或续进分别提升 room.revision。断线恢复只能继续已提交动作，不选择胡、碰、杠或过。
 [Presentation pacing](PRESENTATION-PACING.md) documents staged execution, room CAS gates, same-seat playback ownership, completion/cancellation, forty-second lazy recovery and compatibility. Engine revision retains original-action provenance; ownership, receipts and continuation each advance room revision. Recovery never chooses a player action.
+
+
+展示页面租约只属于进行中的局；大厅与终局不续租、不因此增加房间版本，避免多人轮询使“再来一局”持续过期。房间在线心跳仍正常更新，开局仍须通过房主、满员、版本和 CAS 校验。
+Presentation page leases belong only to an active game. Lobbies and finished rounds neither renew them nor bump room revisions for them, preventing multi-player polling from continuously staling another-round requests. Normal heartbeats continue; starts still require host, occupancy, revision and CAS checks.
+
+## 展示不再是全员屏障 / Presentation is no longer an all-seat barrier
+
+新版 local 模式把服务端短节拍、最新接收快照、页面展示快照和本地FIFO分开。声音慢只影响该页控制，不影响其他设备或真实规则判定；真实 claim 的玩家选择仍必须完整。旧段原样排空后再切换。详细生命周期、故障恢复与兼容边界见 [音画节奏](PRESENTATION-PACING.md)。
+Local mode separates server cadence, received authority, displayed frames and per-page FIFO. Slow media affects only that page's controls, while real claim choices remain required. Existing legacy segments drain unchanged before opt-in. See the pacing guide for cancellation, recovery and compatibility.
+
+
+### 可靠播放的页内/同座边界 / Page-local and shared playback boundaries
+
+`src/shared-playback.js` 接收完整公开 history 投影，以房间/局/历史下标重建共享起点到当前段的完整前缀。锁与 `huajian-ordered-voice-v2:<room>:<seat>` 记录仅协调同源同浏览器同座声音；晚入副页和活跃时间超时都不能越过同局未完成前缀；即使所有旧页已关，后来的新现场事件仍可能带出共享记录中的未完成前缀，可按待播阈值主动略过。只有 CharacterAudio 自然完成的 success 才写成功，失败释放锁给健康副页1200毫秒机会，再转明确失败终态；后续声音不能越过未决头部，终态后不能迟到回播。音频不可用仍可能漏声，不影响权威牌局；缺锁/存储时明确降级页内顺序，不保证跨页去重或恰好一次。
+The coordinator projects complete public history and walks the shared baseline-to-segment prefix by room/game/history index. Locks and the version-two room/seat ledger coordinate same-origin/browser/seat audio only; later baselines and activity expiry cannot overtake unfinished same-game prefixes. Even after all old pages close, later live events may bring out that retained prefix; explicit skipping is available at the backlog threshold. Only natural CharacterAudio success records successful completion. Failure releases the lock for a 1200ms eligible-sibling opportunity before explicit terminal failure. Later speech cannot overtake unresolved heads or retry terminal events. Unavailable audio can still be missing without changing game authority. Missing locks/storage degrade to page-local ordering, not guaranteed sibling deduplication or exactly-once.
+
+local 同一前台会话的网络缺口无论多久都不自动清除已收队列/游标；本地待播（含当前段）加 onPendingPrefix 报告的本批外未终态有声前缀达到8才显示主动略过按钮，点击只结束本页媒体并显示最新已收状态，不发送麻将动作。后台、离桌、换局/历史缩短仍取消旧媒体与票据并建立静默基线。已有页面实际新后缀的静音/未解锁资格固定，不能复活已拒绝事件。全新页首次 locked 基线不将已有历史永久拒绝，ticket 仍静默；解锁后下一条新现场事件才可能代副页补共享前缀。旧屏障的五秒静默重连规则仍单独保留。
+A foreground local session retains received queues/cursors across any transport-gap duration. Eight local pending segments including the active one plus onPendingPrefix-reported nonterminal voiced events outside the batch expose explicit skip; clicking ends page media and shows latest received state without sending a move. Backgrounding, departure, game/history resets still revoke old media/tickets and establish silent baselines. Receipt-time mute/lock eligibility for established-page new suffixes is frozen and refused events never revive. A new page’s initial locked baseline does not permanently deny existing history, but its ticket stays silent; only a subsequent unlocked live event may recover a sibling’s shared prefix. Legacy five-second silent reconnect rules remain separate.

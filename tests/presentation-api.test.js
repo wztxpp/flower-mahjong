@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApi, ApiError } from '../server/api.js';
 import { MemoryStore } from '../server/store.js';
-import { createGame, applyAction, continuePresentedGame } from '../shared/game.js';
+import { createGame, applyAction, continuePresentedGame, getLegalActions, assertGameInvariants } from '../shared/game.js';
 import { postHuKongGame } from './fixtures/post-hu-kong.js';
 import { createGame as createV2Game } from '../shared/v2-game.js';
 
@@ -32,10 +32,14 @@ async function table(game = createGame({ seed: 'presentation-api' }), presentati
     tokens.push(joined.token);
   }
   let current = await request('rooms/' + id, 0);
-  await request('rooms/' + id + '/start', 0, { revision: current.state.revision, presentation: presentationAtStart });
-  const room = await store.get(id);
-  room.game = game;
-  await store.compareAndSwap(room, room.revision);
+  // null 专门保留三人等待开局的房间，其余夹具替换测试局但不触及真实数据。
+  // Null keeps a full lobby; other fixtures replace only the isolated test game.
+  if (game !== null) {
+    await request('rooms/' + id + '/start', 0, { revision: current.state.revision, presentation: presentationAtStart });
+    const room = await store.get(id);
+    room.game = game;
+    await store.compareAndSwap(room, room.revision);
+  }
   return {
     store, id, request,
     restart() { api = createApi(store); },
@@ -711,4 +715,179 @@ test('nonboolean CAS results are uncertain storage errors and never retry', asyn
     assert.equal(attempts, 1);
     assert.equal((await api.store.get(api.id)).game.discards.length, 1);
   }
+});
+
+// 通过真实合法出牌/过耗尽固定种子牌墙，获得完整守恒的终局，而不是伪造结算状态。
+// Exhaust a seeded wall through real legal discards/passes, producing a conserved finished game rather than faking settlement.
+function finishedGame() {
+  let game = createGame({ seed: 'replay-presence-regression' });
+  for (let step = 0; game.phase !== 'finished'; step++) {
+    assert.ok(step < 1000, 'the isolated fixture must reach a real finish');
+    const moves = [0, 1, 2].flatMap((seat) =>
+      getLegalActions(game, seat).map((action) => ({ seat, action })));
+    const move = moves.find(({ action }) => action.type === 'discard' || action.type === 'pass') || moves[0];
+    assert.ok(move);
+    game = applyAction(game, move.seat, move.action);
+  }
+  return game;
+}
+
+// 等待开局与结束后的页面能力变化不是牌桌操作，不能使房主刚看到的开局版本失效。
+// Page capability changes in a lobby or finished round are not table operations and must not stale the host's start revision.
+for (const phase of ['lobby', 'finished']) {
+  test(`${phase} presence polling cannot invalidate a first or repeat start`, async (t) => {
+    const api = await table(phase === 'lobby' ? null : finishedGame());
+    let now = Date.now();
+    t.mock.method(Date, 'now', () => now);
+    const viewed = (await api.get()).state;
+    const before = await api.store.get(api.id);
+    const path = 'rooms/' + api.id;
+    // 三位玩家各有不同页面；隔开一秒后续租并切换可见性，覆盖原来的持续版本抖动。
+    // Give each player a distinct page, then renew after one second and switch visibility to cover continuous former churn.
+    for (const visible of [true, false, true]) {
+      now += 1100;
+      for (const seat of [0, 1, 2]) {
+        const result = await api.request(path, seat, undefined,
+          presenceHeaders(viewed.game?.id || '', `idle-${seat}`, { visible }));
+        assert.equal(result.status, 200);
+      }
+    }
+    // 不刷新房主提交的版本，直接按最初看到的状态再开局。
+    // Submit the initially viewed revision without refreshing the host before starting again.
+    const result = await api.request(path + '/start', 0, {
+      revision: viewed.revision, presentation: true,
+      options: { autoDiscardAfterHu: false, bigSingleReadyPoints: 80 },
+    });
+    assert.equal(result.status, 200, result.error);
+    assert.equal(result.state.revision, viewed.revision + 1);
+    assert.equal(result.state.phase, 'playing');
+    assert.notEqual(result.state.game.id, viewed.game?.id);
+    assert.equal(result.state.game.rules.bigSingleReadyPoints, 80);
+    assert.equal(result.state.game.rules.autoDiscardAfterHu, false);
+    const saved = await api.store.get(api.id);
+    assert.equal(saved.archivedGames?.length || 0, phase === 'finished' ? 1 : 0);
+    if (before.game) {
+      assert.deepEqual(saved.archivedGames[0].game.history, before.game.history);
+      assert.deepEqual(saved.archivedGames[0].game.players.map((player) => player.score),
+        before.game.players.map((player) => player.score));
+    }
+    // 新局已经存在后才恢复租约；下一次播放依然能选到本局前台页面。
+    // Leases resume once the new game exists so its next presentation can still elect current foreground pages.
+    const active = await reportPresence(api, 1, 'active-page');
+    assert.equal(active.state.revision, result.state.revision + 1);
+    assert.equal((await api.store.get(api.id)).seats[1].presentationClients[0].gameId, result.state.game.id);
+  });
+}
+
+// 终局读取刚好发生在开局 CAS 之前时也必须无副作用，不能逼迫房主反复点击。
+// A finished-room poll immediately before start CAS must also be side-effect-free, without forcing repeated host clicks.
+test('finished presence polling between start read and CAS cannot reject another round', async () => {
+  const api = await table(finishedGame());
+  const viewed = (await api.get()).state;
+  const compareAndSwap = api.store.compareAndSwap.bind(api.store);
+  let attempts = 0;
+  api.store.compareAndSwap = async (candidate, revision) => {
+    if (candidate.gameMeta?.id !== viewed.game.id) {
+      attempts++;
+      const poll = await reportPresence(api, 1, 'race-before-start');
+      assert.equal(poll.status, 200);
+    }
+    return compareAndSwap(candidate, revision);
+  };
+  const result = await api.request('rooms/' + api.id + '/start', 0, {
+    revision: viewed.revision, presentation: true,
+  });
+  assert.equal(result.status, 200, result.error);
+  assert.equal(attempts, 1);
+  assert.equal((await api.store.get(api.id)).archivedGames.length, 1);
+});
+
+// 停止无用租约写入不能放宽真正的开局保护：房主、满员、当前版本和一次归档都必须保留。
+// Suppressing idle leases must not relax actual start guards: host, full occupancy, current revision and one archive remain mandatory.
+test('repeat start retains host, occupancy, stale revision and concurrent-start protection', async () => {
+  const api = await table(finishedGame());
+  const state = (await api.get()).state;
+  const path = 'rooms/' + api.id + '/start';
+  const body = { revision: state.revision, presentation: true };
+  assert.equal((await api.request(path, 1, body)).code, 'HOST_ONLY');
+  const results = await Promise.all([api.request(path, 0, body), api.request(path, 0, body)]);
+  assert.deepEqual(results.map((result) => result.status).sort(), [200, 409]);
+  const saved = await api.store.get(api.id);
+  assert.equal(saved.archivedGames.length, 1);
+  assert.equal((await api.request(path, 0, { ...body, revision: saved.revision })).code, 'PLAYING');
+
+  const departed = await table(finishedGame());
+  const old = (await departed.get()).state;
+  await departed.leave(2);
+  const nextPath = 'rooms/' + departed.id + '/start';
+  assert.equal((await departed.request(nextPath, 0, { revision: old.revision })).code, 'STALE_STATE');
+  const latest = (await departed.get()).state;
+  assert.equal((await departed.request(nextPath, 0, { revision: latest.revision })).code, 'NOT_FULL');
+  assert.equal((await departed.store.get(departed.id)).archivedGames?.length || 0, 0);
+});
+
+
+// 串联两个修复：最后一张必胡先等全桌音画，真正终局后轮询不挡续局，新局仍有正常展示屏障。
+// Combine both fixes: a mandatory last-tile win awaits every viewer, idle polls then allow another round, and new-game pacing remains active.
+test('mandatory final-tile hu finishes after media and permits exactly one paced next round', async () => {
+  const game = postHuKongGame({ winningDraw: true });
+  // 只缩短合成测试局；移走的墙牌保留在实物归档区，不能直接删掉而破坏 144 张守恒。
+  // Shorten only this synthetic game; preserve removed wall copies in physical retirement rather than violating 144-tile conservation.
+  game.retiredTiles.push(...game.wall.splice(0).map((tile) => ({ seat: 0, tile })));
+  assertGameInvariants(game);
+  const api = await table(game, true);
+  for (const seat of [0, 1, 2]) await reportPresence(api, seat, `media-${seat}`);
+  const viewed = (await api.get()).state;
+  assert.deepEqual(viewed.game.legalActions, [{ type: 'hu' }]);
+  const before = await api.store.get(api.id);
+  assert.equal((await api.action(0, viewed.revision, { type: 'pass' })).code, 'ILLEGAL_ACTION');
+  assert.deepEqual(await api.store.get(api.id), before);
+  const accepted = await api.action(0, viewed.revision, { type: 'hu' });
+  assert.equal(accepted.status, 200);
+  assert.equal(accepted.state.phase, 'playing');
+  assert.equal(accepted.state.game.players[0].huCount, 2);
+  const gate = accepted.state.presentation;
+  assert.deepEqual(gate.requiredSeats, [0, 1, 2]);
+  for (const seat of [0, 1, 2])
+    assert.equal((await api.ack(seat, gate, { phase: 'begin', clientId: `media-${seat}` })).status, 200);
+  for (const seat of [0, 1]) {
+    const pending = await api.ack(seat, gate, { clientId: `media-${seat}` });
+    assert.equal(pending.state.phase, 'playing');
+    assert.equal(pending.state.presentation.id, gate.id);
+    assert.equal((await api.request('rooms/' + api.id + '/start', 0, {
+      revision: pending.state.revision, presentation: true,
+    })).code, 'PLAYING');
+  }
+  const ended = await api.ack(2, gate, { clientId: 'media-2' });
+  assert.equal(ended.state.phase, 'finished');
+  assert.equal(ended.state.game.finishReason, 'wallExhausted');
+  assert.equal(ended.state.presentation, null);
+  const settled = await api.store.get(api.id);
+  assert.equal(settled.game.history.filter((event) => event.type === 'hu').length, 1);
+  assert.equal(settled.game.history.filter((event) => event.type === 'finish').length, 1);
+  assertGameInvariants(settled.game);
+  for (const seat of [0, 1, 2]) {
+    const idle = await reportPresence(api, seat, `finished-${seat}`, { visible: false });
+    assert.equal(idle.state.revision, ended.state.revision);
+  }
+  const started = await api.request('rooms/' + api.id + '/start', 0, {
+    revision: ended.state.revision, presentation: true,
+  });
+  assert.equal(started.status, 200);
+  assert.notEqual(started.state.game.id, ended.state.game.id);
+  assert.deepEqual(started.state.game.players.map((player) => player.huCount), [0, 0, 0]);
+  const saved = await api.store.get(api.id);
+  assert.equal(saved.archivedGames.length, 1);
+  assert.deepEqual(saved.archivedGames[0].game.history, settled.game.history);
+  assert.deepEqual(saved.archivedGames[0].game.players.map((player) => player.score),
+    settled.game.players.map((player) => player.score));
+  // 旧局最后一条完成回执迟到不得改新局；新局真实动作仍必须创建自己的屏障。
+  // A delayed old-game completion cannot mutate the new round; a new move must still create its own gate.
+  assert.equal((await api.ack(2, gate, { clientId: 'media-2' })).state.revision, started.state.revision);
+  const discard = started.state.game.legalActions.find((action) => action.type === 'discard');
+  assert.ok(discard);
+  const move = await api.action(started.state.game.currentSeat, started.state.revision, discard);
+  assert.equal(move.status, 200);
+  assert.ok(move.state.presentation);
+  assert.equal(move.state.presentation.gameId, started.state.game.id);
 });

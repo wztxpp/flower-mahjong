@@ -5,6 +5,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
+import { SharedPlaybackCoordinator } from './shared-playback.js';
 // 开局选项与服务端共用默认值、上限和校验，避免两端接受不同的输入。
 // Share start-option defaults, limits and validation with the server so both sides accept the same inputs.
 import {
@@ -36,10 +37,23 @@ let winningSafetyTimer;
 let winningAnimations = [];
 let finishWinningPresentation;
 let presentationGeneration = 0;
-// 本地音画与全桌确认分别等待：本地完成不能替其它座位提前放行。
-// Local media and table acknowledgements are separate waits; one client cannot release other seats.
+// 本地音画控制本页输入；turnPresentation 仅保留旧屏障兼容，local模式不等其他座位。
+// Local media gates this page’s input; turnPresentation retains legacy barrier compatibility, while local mode never awaits other seats.
 const localPresentationBusy = ref(false);
 let turnPresentation = null;
+// 新模式分别保存最新权威快照和本机正在展示的快照；慢声音只影响本机按钮，不阻挡整桌。
+// Keep received authority separate from the displayed frame; slow audio blocks this page's controls, never the table.
+let receivedState = null;
+let localPresentationGeneration = 0;
+let localPresentationQueue = [];
+let localPresentationRunning = false;
+const localAnnouncement = ref('');
+const localPendingPresentationCount = ref(0);
+const sharedPendingPrefixCount = ref(0);
+// 副页补齐的共享旧前缀不在本页批次中，也必须计入可主动略过的积压。
+// Shared prefixes recovered by a sibling are outside its local batches but must count toward explicit backlog skip.
+const pendingPresentationCount = computed(() => localPendingPresentationCount.value + sharedPendingPrefixCount.value);
+const localCaptionFinishes = new Set();
 // 每个页面实例使用独立公开 ID；它不是凭证，只用来防止同座位另一个标签页提前确认。
 // Each page has a distinct public ID, not a credential, preventing another tab in the same seat from acknowledging early.
 const presentationClientId = crypto.randomUUID();
@@ -48,6 +62,16 @@ const characterAudio = new CharacterAudio({
   onStatus: (status) => {
     voiceStatus.value = status;
   },
+});
+// 同座页面共享的是公开事件的播放进度，既不是规则权威，也不持有暗手牌。
+// Sibling pages share public playback progress, never game authority or concealed hands.
+const sharedPlayback = new SharedPlaybackCoordinator({
+  pageId: presentationClientId,
+  onPendingPrefix: (count) => { sharedPendingPrefixCount.value = count; },
+  play: (events) => characterAudio.enqueueOrdered(events),
+  cancelAudio: () => characterAudio.clear(),
+  canPlay: () => !document.hidden && characterAudio.unlocked && !characterAudio.muted &&
+    characterAudio.context?.state === 'running',
 });
 let lastVoiceSync = 0;
 let voiceNeedsBaseline = false;
@@ -291,6 +315,12 @@ const pendingKongLabel = computed(() =>
   game.value?.claim?.kongType === 'addGang' ? '加杠' : '补杠',
 );
 const canHu = computed(() => legalActions.value.some((action) => action.type === 'hu'));
+// 只有服务端明确只给“胡”时才提示必胡；不为冻结的旧引擎制造新规则或新动作。
+// Describe a forced win only when the server supplies hu alone; do not invent rules/actions for frozen engines.
+const mustHu = computed(
+  () => isLatest.value && postHu.value && canHu.value &&
+    legalActions.value.every((action) => action.type === 'hu'),
+);
 // 邀请链接仅携带 room，清除其他查询参数和片段，绝不附带个人或座位令牌。
 // Invitations contain only room, removing other query parameters and fragments; never append identity or seat tokens.
 const shareUrl = computed(() => {
@@ -303,12 +333,16 @@ const shareUrl = computed(() => {
 // 按终局、大厅、接牌、本人回合的优先顺序选择提示；分支顺序会影响显示含义。
 // Choose status text in priority order: finish, lobby, claim, own turn; branch order affects meaning.
 const statusTitle = computed(() => {
-  if (presentationWaiting.value) return '等待动画与语音结束';
+  if (presentationWaiting.value)
+    return state.value?.presentationMode === 'local'
+      ? localPresentationBusy.value ? '本机动作按顺序播放' : '牌桌正在继续'
+      : '等待动画与语音结束';
   if (phase.value === 'finished')
     return ['allPlayersHu', 'allThreeHu', 'all_players_hu'].includes(game.value?.finishReason)
       ? '三家都胡了，本局结束'
       : '本局圆满结束';
   if (phase.value === 'lobby') return filledSeats.value === 3 ? '牌友已到齐' : '等牌友，一起开局';
+  if (mustHu.value) return '已经胡过，这张必须胡';
   if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong')
     return legalActions.value.length
       ? '可以抢杠，等你回应'
@@ -334,6 +368,8 @@ const statusTitle = computed(() => {
 const statusDetail = computed(() => {
   if (syncing.value) return '正在确认刚才的操作结果，请稍等。';
   if (offline.value) return '连接暂时中断，正在尝试重新连接';
+  if (presentationWaiting.value && state.value?.presentationMode === 'local')
+    return localAnnouncement.value || '本机展示结束即可操作，不等待其他设备的声音。';
   if (presentationWaiting.value)
     return localPresentationBusy.value
       ? '本次动作正在展示，结束后才继续判定。'
@@ -341,6 +377,7 @@ const statusDetail = computed(() => {
   if (phase.value === 'playing' && currentPlayer.value?.detached)
     return `${currentPlayer.value.name}已离桌，本局等待该牌友重连；已记积分不会清除。`;
   if (phase.value === 'finished') return finishText.value;
+  if (mustHu.value) return '已经胡过，能胡就必须胡；请点击“胡牌”，不能过、出牌、碰或杠。';
   if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong')
     return legalActions.value.length
       ? `本次只能抢杠胡或过，不能碰、杠；所有人过后才形成${pendingKongLabel.value}。`
@@ -401,6 +438,10 @@ async function toggleVoice() {
     if (await characterAudio.unlock()) characterAudio.warmWins(game.value?.characters);
   } else {
     voiceMuted.value = true;
+    // 用户主动静音取消未开始的声音资格；以后取消静音不会补读静音期间或此前积压的声音。
+    // Explicit mute revokes queued speech eligibility; unmuting never resurrects muted-period or older queued speech.
+    for (const batch of localPresentationQueue) batch.audioEligible = false;
+    sharedPlayback.cancel();
     characterAudio.setMuted(true);
   }
   try {
@@ -734,7 +775,7 @@ function presentWins(events, snapshot) {
     const following = latestWins
       .slice(index + 1)
       .filter((other) => other.seat === event.seat).length;
-    const winIndex = pile.length - following - 1;
+    const winIndex = event.winIndex ?? pile.length - following - 1;
     const discardIndex = pile[winIndex]?.discardIndex;
     return { ...event, winIndex, discardIndex };
   });
@@ -810,6 +851,13 @@ function presentWins(events, snapshot) {
 // 切桌、换局或服务端已恢复推进时，先取消旧音画和计时器，再使旧确认回调失效。
 // Cancel old media/timers and invalidate callbacks on room/game changes or authoritative recovery.
 function cancelTurnPresentation() {
+  localPresentationGeneration++;
+  sharedPlayback.cancel();
+  localPresentationQueue = [];
+  localPendingPresentationCount.value = 0;
+  localPresentationRunning = false;
+  localAnnouncement.value = '';
+  for (const finish of localCaptionFinishes) finish();
   const previous = turnPresentation;
   turnPresentation = null;
   clearTimeout(previous?.timer);
@@ -1039,6 +1087,110 @@ function playTurnPresentation(pending, events, snapshot) {
     acknowledgePresentation();
   });
 }
+// 本地队列只接受游标产生的新事件；不同动作逐条排队，同一弃牌的双胡仍共用原动画。
+// Queue only fresh cursor events, one action at a time; simultaneous discard winners retain the shared animation.
+function queueLocalPresentation(events, snapshot, receipt = null) {
+  const audioEligible = !document.hidden && characterAudio.unlocked && !characterAudio.muted &&
+    characterAudio.context?.state === 'running';
+  const voiced = events.filter((event) => event.urls?.length || event.type === 'hu');
+  const groups = [];
+  for (let index = 0; index < voiced.length; index++) {
+    const event = { ...voiced[index] };
+    if (event.type === 'hu') {
+      const pile = snapshot.game.players?.find((player) => player.seat === event.seat)?.winPile || [];
+      // 一次慢轮询可能包含多次胡；用后续同座胡的数量定位，不能全部飞向最后一张。
+      // A delayed poll may include several wins; count later same-seat wins instead of targeting the final tile every time.
+      event.winIndex = pile.length - 1 - voiced.slice(index + 1)
+        .filter((later) => later.type === 'hu' && later.seat === event.seat).length;
+    }
+    const group = groups.at(-1);
+    const previous = group?.at(-1);
+    const sameWinBatch = previous?.type === 'hu' && event.type === 'hu' &&
+      event.source !== 'selfDraw' && previous.source === event.source &&
+      previous.tile === event.tile && previous.fromSeat === event.fromSeat && previous.seat !== event.seat &&
+      group.length < 2;
+    if (sameWinBatch) group.push(event);
+    else groups.push([event]);
+  }
+  // 声音资格在接收时固定，不能等轮到播放时再把用户静音期间的事件变成可发声。
+  // Capture audio eligibility on receipt, never promote muted-period events when they later reach the head.
+  for (const group of groups) localPresentationQueue.push({ events: group, snapshot, receipt, audioEligible });
+  localPendingPresentationCount.value = localPresentationQueue.length + Number(localPresentationRunning);
+  if (!localPresentationRunning && !localPresentationQueue.length) state.value = snapshot;
+  drainLocalPresentation();
+}
+
+// 普通动作即使静音或音频失败也至少显示350毫秒；取消会同时撤下字幕并释放等待。
+// Ordinary calls remain visible for at least 350ms even when silent/failed; cancellation releases the caption wait.
+function presentLocalAction(events, snapshot) {
+  state.value = snapshot;
+  localAnnouncement.value = events.map((event) => event.message ||
+    `${snapshot.game.players?.find((player) => player.seat === event.seat)?.name || '牌友'}${event.type === 'discard' ? `打出${tileLabel(event.tile)}` : event.type === 'hu' ? '胡牌' : '完成动作'}`).join(' ');
+  if (events.some((event) => event.type === 'hu')) return presentWins(events, snapshot);
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timer);
+      localCaptionFinishes.delete(finish);
+      resolve();
+    };
+    const timer = setTimeout(finish, 350);
+    localCaptionFinishes.add(finish);
+  });
+}
+
+// 每页保留完整画面；声音委托共享顺序协调器，只有真实成功才完成，失败给可发声副页一次接力机会。
+// Preserve every page's visuals; the coordinator orders shared audio, records real success and permits bounded sibling recovery.
+async function playLocalPresentationBatch(batch, generation) {
+  if (generation !== localPresentationGeneration || document.hidden) return;
+  const audio = batch.audioEligible
+    ? sharedPlayback.playThrough(batch.receipt, batch.events)
+    : Promise.resolve();
+  await Promise.allSettled([presentLocalAction(batch.events, batch.snapshot), audio]);
+}
+
+// 长网络缺口不静默删掉队列；只有玩家明确点击此按钮才略过当前待播，牌局和账本不变。
+// Long network gaps never silently drop queued events; only this explicit choice skips playback, not game state or scores.
+function skipLocalPlayback() {
+  if (!receivedState || receivedState.presentationMode !== 'local') return;
+  cancelTurnPresentation();
+  state.value = receivedState;
+  // 把当前已知历史作为明确略过的新基线，不在下一次轮询偷偷补回来。
+  // Explicitly baseline the currently known history so the next poll cannot replay what the user skipped.
+  voiceCursor.consumeEvents(receivedState, { silent: true });
+  sharedPlayback.registerSnapshot(receivedState, { baseline: true, eligible: false, skip: true });
+}
+
+// 单消费者等本段音频和实际动画都完成再取下一段；新快照只能追加，绝不 clear 正在播放的段。
+// One consumer waits for both audio and real animations; incoming snapshots append without clearing active playback.
+async function drainLocalPresentation() {
+  if (localPresentationRunning || !localPresentationQueue.length) return;
+  const generation = localPresentationGeneration;
+  localPresentationRunning = true;
+  localPresentationBusy.value = true;
+  try {
+    while (localPresentationQueue.length && generation === localPresentationGeneration) {
+      const batch = localPresentationQueue.shift();
+      localPendingPresentationCount.value = localPresentationQueue.length + 1;
+      try {
+        await playLocalPresentationBatch(batch, generation);
+      } catch {
+        // 媒体设施故障只结束本段，不撤销权威事件，也不阻止下一段；离桌代数仍优先。
+        // A media facility failure ends only this batch, never its committed event or subsequent batches.
+      }
+    }
+  } finally {
+    if (generation === localPresentationGeneration) {
+      localPresentationRunning = false;
+      localPendingPresentationCount.value = 0;
+      localPresentationBusy.value = false;
+      localAnnouncement.value = '';
+      // 播完后才显示最新合法动作。收到的快照可能已越过当前段，但不能提前开放旧牌面按钮。
+      // Reveal the latest legal actions only after playback catches up, never controls for an obsolete board.
+      if (receivedState) state.value = receivedState;
+    }
+  }
+}
+
 // 接收权威快照的唯一汇合点：拒绝旧房间及旧版本，再派生语音与展示事件。
 // Central snapshot application: reject other rooms and older revisions, then derive audio and presentation events.
 function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
@@ -1047,22 +1199,27 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
   if (!next || next.id !== session.value?.roomId) return;
   // 同一房间的低版本响应也不能覆盖新状态。
   // An older revision must not overwrite newer state in the same room.
-  if (state.value && next.id === state.value.id && next.revision < state.value.revision) return;
+  const latest = receivedState || state.value;
+  if (latest && next.id === latest.id && next.revision < latest.revision) return;
   const now = Date.now();
   const newGame =
-    (state.value?.game?.id || null) !== (next.game?.id || null) ||
-    (next.game?.history?.length || 0) < (state.value?.game?.history?.length || 0);
-  // 重连、后台或超过五秒的缺口只更新基线，不补播积压语音。
-  // Reconnects, hidden tabs and gaps over five seconds establish a silent baseline instead of replaying backlog.
-  const silent =
-    offline.value || document.hidden || (lastVoiceSync > 0 && now - lastVoiceSync > 5000);
+    (latest?.game?.id || null) !== (next.game?.id || null) ||
+    (next.game?.history?.length || 0) < (latest?.game?.history?.length || 0);
+  // local模式同一前台会话的网络延迟不丢队列或游标；只有明确后台/换局会取消。
+  // Local foreground transport gaps retain queues/cursors; only explicit visibility/game lifecycle changes cancel them.
+  // 旧屏障模式保留已发布的静默重连边界，不把这次可靠队列协议反向套到旧播放器。
+  // Legacy barriers retain their published silent-reconnect boundary rather than inheriting the new queue protocol.
+  const silent = document.hidden || (next.presentationMode !== 'local' &&
+    (offline.value || (lastVoiceSync > 0 && now - lastVoiceSync > 5000)));
   if (newGame || silent) {
+    if (next.presentationMode === 'local' || localPresentationRunning) cancelTurnPresentation();
     if (turnPresentation) turnPresentation.events = [];
     characterAudio.clear();
     clearPresentation();
   }
   // 可见性代数防止切后台前发出的请求把旧事件当成现场语音。
   // The visibility epoch prevents pre-visibility-change requests from becoming live audio.
+  const wasVoiceBaseline = voiceCursor.gameKey !== `${next.id}:${next.game?.id || 'legacy'}`;
   const events =
     voiceEpoch !== voiceVisibilityEpoch ? [] : voiceCursor.consumeEvents(next, { silent });
   lastVoiceSync = now;
@@ -1072,8 +1229,26 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
   if (next.game && (!state.value?.game || newGame))
     bigSingleReadyPoints.value =
       next.game.rules?.bigSingleReadyPoints ?? DEFAULT_BIG_SINGLE_READY_POINTS;
-  state.value = next;
-  syncTurnPresentation(events, next);
+  receivedState = next;
+  if (next.presentationMode === 'local' && turnPresentation) cancelTurnPresentation();
+  // 在有声事件之前登记基线；晚入副页不能让自己的较新基线盖掉已有页面尚未播完的前缀。
+  // Register baselines before speech; a later sibling baseline cannot erase an existing page's unfinished prefix.
+  const registerPlayback = () => next.game?.schemaVersion === 3
+    ? sharedPlayback.registerSnapshot(next, {
+      baseline: wasVoiceBaseline || silent || next.presentationMode !== 'local',
+      legacy: next.presentationMode !== 'local',
+      eligible: !silent && !document.hidden && characterAudio.unlocked && !characterAudio.muted &&
+        characterAudio.context?.state === 'running',
+    }) : null;
+  if (next.presentationMode === 'local') {
+    queueLocalPresentation(events, next, registerPlayback());
+  } else {
+    state.value = next;
+    syncTurnPresentation(events, next);
+    // 旧屏障协调可能取消本页代数；在它之后登记，不能让新基线一创建就失效。
+    // Legacy synchronization may cancel this page generation; register afterwards so the new baseline survives.
+    registerPlayback();
+  }
   if (newGame) characterAudio.warmWins(next.game?.characters);
   if (!discardOptions.value.some((action) => action.tile === selectedTile.value)) {
     selectedTile.value = null;
@@ -1212,6 +1387,7 @@ function historyDate(value) {
 // Room-change invalidation barrier: advance epoch, abort old reads and reset UI while retaining room credentials and pending departures.
 function resetRoomContext() {
   cancelTurnPresentation();
+  receivedState = null;
   voiceCursor.reset();
   characterAudio.clear();
   clearPresentation();
@@ -1430,8 +1606,8 @@ async function refresh() {
     // 只有语音基线有效时才用版本增量；否则请求完整快照重新建立基线。
     // Use a revision hint only with a valid audio baseline; otherwise request a full snapshot.
     const since =
-      !voiceNeedsBaseline && state.value?.id === roomId
-        ? `?since=${encodeURIComponent(state.value.revision)}`
+      !voiceNeedsBaseline && (receivedState || state.value)?.id === roomId
+        ? `?since=${encodeURIComponent((receivedState || state.value).revision)}`
         : '';
     const data = await api(`/api/rooms/${encodeURIComponent(roomId)}${since}`, { controller });
     if (currentEpoch !== epoch) return;
@@ -1446,7 +1622,7 @@ async function refresh() {
           if (typeof connected === 'boolean' && player.connected !== connected)
             player.connected = connected;
         });
-      syncTurnPresentation([], state.value);
+      if (state.value.presentationMode !== 'local') syncTurnPresentation([], state.value);
     } else applyState(data.state, voiceEpoch);
     if (offline.value) flash('已重新连接，牌局已同步。');
     offline.value = false;
@@ -1469,6 +1645,10 @@ async function refresh() {
           ? '此座位已离桌。可使用这桌的邀请链接明确重连，或返回大厅。'
           : message;
       loadHistory();
+    } else if (failure.status === 409) {
+      // 已收到服务器响应：正常版本竞争不是断网，也不能清空语音游标或制造“重新连接”。
+      // The server replied: ordinary revision contention is not a disconnect and must not reset audio or announce reconnection.
+      syncing.value = true;
     } else {
       offline.value = true;
       if (!state.value) error.value = '暂时无法连接牌桌，正在自动重试。';
@@ -1482,6 +1662,10 @@ async function refresh() {
 // 切到后台或回来都重置语音基线，防止恢复页面时补播旧动作。
 // Reset the audio baseline on visibility changes so returning to the page never replays old actions.
 function visibilityChanged() {
+  if (state.value?.presentationMode === 'local') {
+    cancelTurnPresentation();
+    if (receivedState) state.value = receivedState;
+  }
   voiceVisibilityEpoch++;
   if (turnPresentation) turnPresentation.events = [];
   characterAudio.clear();
@@ -1601,6 +1785,7 @@ async function mutate(action, start = false) {
         body: {
           revision,
           presentation: true,
+          presentationMode: 'local',
           ...(start ? { options: startOptions } : { action, ...actionGame }),
         },
       },
@@ -1788,6 +1973,12 @@ onUnmounted(() => {
                   ? '语音加载失败 · 重试'
                   : '开启角色语音'
           }}</button
+        >
+        <button
+          v-if="pendingPresentationCount >= 8"
+          class="text-button"
+          @click="skipLocalPlayback"
+          >待播 {{ pendingPresentationCount }} 段 · 略过并看最新牌面</button
         >
         <span class="prototype-pill"><span></span> 朋友内测版 · v0.7.0</span>
         <button
@@ -3051,15 +3242,15 @@ onUnmounted(() => {
               ><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3
               ><p
                 >三人，只用条、筒各 1–9，每种八张，共 144
-                张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。点“过”打出刚摸的新牌。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
+                张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。已经胡过的玩家能胡就必须胡，只有“胡牌”选项，包括自摸、接炮和抢杠，仍须本人点击确认。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
               ><p
-                >自己摸牌同时可胡又可杠时，先选胡或过。三家都至少胡过一次，或牌墙摸完，本局结束。</p
+                >自己摸牌同时可胡又可杠时，不提供杠；未胡者仍可放弃胡并出牌，已胡者只能胡。三家都至少胡过一次，或牌墙摸完，本局结束。</p
               ></section
             >
             <section
               ><h3><span>二</span>接牌时，按实际选择回应</h3
               ><p
-                >未胡玩家打出的牌，若你可胡也可碰、但不可明杠，可选择胡、碰或过；同一张牌可胡又可明杠时，只提供胡或过。多人回应时，胡优先于明杠，明杠优先于碰。同级按{{
+                >未胡玩家打出的牌，若你尚未胡过，可胡也可碰、但不可明杠时，可选择胡、碰或过；可胡又可明杠时，只提供胡或过。你已胡过且本张可胡时，只提供胡。多人回应时，胡优先于明杠，明杠优先于碰。同级按{{
                   counterclockwise ? '逆时针' : '本局原顺时针'
                 }}顺序决定，和点击先后无关。</p
               ><p
@@ -3071,7 +3262,7 @@ onUnmounted(() => {
               ><p v-if="pungUpgradeAfterDiscard"
                 >刚碰完、还没有打出一张牌时不能补杠；先打出一张，之后轮到自己且符合其他合法条件时，可以用原先留在手里的同牌或后来摸到的同牌补杠，不要求刚摸到同牌。暗杠后的补摸不能代替这次出牌。已成立的明杠或暗杠仍可逐张加到第五至八张。</p
               ><p
-                >补杠、已有杠再加一张，都先给别人抢杠胡的机会，只能胡或过，不能碰或杠。无人抢胡才形成杠、收杠分、翻萝卜并补摸；有人抢胡则不形成这次杠，胡牌仅由追加牌的杠牌者付款，普通抢杠加
+                >补杠、已有杠再加一张，都先给别人抢杠胡的机会。未胡者可胡或过，已胡者可胡就只能胡，不能碰或杠。无人抢胡才形成杠、收杠分、翻萝卜并补摸；有人抢胡则不形成这次杠，胡牌仅由追加牌的杠牌者付款，普通抢杠加
                 1 番；七对抢杠不加番，萝卜仍计算。</p
               ><p
                 >加牌的玩家还没胡过，第一手即可被抢；已经胡过者的普通摸牌加杠不能被抢，但杠后补摸再加杠，别人无论胡过与否都可按合法听牌抢胡。补杠与加杠均沿用这个来源判断。</p

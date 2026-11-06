@@ -34,3 +34,6 @@ This repository is maintained by someone learning frontend development. Readabil
 
 一般不能静默改变旧局规则。补杠时机是用户明确纠正旧实现的例外：v0.7.0 的 `allowPungUpgrade:false` 不再解释为永久禁止，而是碰后先完成一次出牌、之后正常窗口允许补杠。由 `requiresPungDiscard` 与兼容推断读取处理，不重写旧规则字段、牌区、历史或已结算分；更老的允许/缺省策略仍保留。详见 [补杠纠错说明](docs/PUNG-UPGRADE-CORRECTION.md)。
 Normally saved rules must not change silently. The user-authorized pung timing correction is an explicit exception: v0.7.0 false means discard once after peng before later legal upgrades, not a permanent ban. Compatibility reads apply it without rewriting saved rules, tiles, history, or settled scores; older allow/missing timing remains intact.
+
+用户另确认 schema 3 已胡者能胡必胡，当前及已保存待回应窗口只提供胡；不倒改已提交回应、历史或旧账，schema1/2 冻结。见 [胡后必胡纠错](docs/POST-HU-WIN-CORRECTION.md)。
+The user also confirmed mandatory available wins for prior winners in schema three, including saved unanswered windows. Do not retroactively change submitted responses/history/scores or frozen schemas one/two. See [mandatory-win correction](docs/POST-HU-WIN-CORRECTION.md).
