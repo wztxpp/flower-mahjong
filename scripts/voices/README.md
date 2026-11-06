@@ -105,3 +105,25 @@ python scripts/voices/extend_qianggang.py --phase audit \
 ```
 
 清单的 `clips` 为每角色 23 条可播放语音，共 69 条。旧 `hu` 记录移到 `legacyClips`，对应三个 MP3 原样保留以兼容旧客户端，但不是当前报牌路径；磁盘共 72 个 MP3。新增三条的原文严格为“抢杠”，不附加“胡”。检查详情保存在 `docs/voice-qianggang-audit.json`。
+
+## 双语代码导读 / Bilingual code reading
+
+逐文件职责、数据流、缓存边界、历史迁移和安全检查见 [语音工具导读](../../docs/VOICE-TOOLING-GUIDE.md)。七个自维护 Python 文件均在模块入口、函数、关键分支及数据转换处提供中英对照注释；注释任务不需要运行推理。
+See the [voice tooling guide](../../docs/VOICE-TOOLING-GUIDE.md) for responsibilities, data flow, cache limits, historical migrations and safety checks. All seven maintained Python files have bilingual annotations at module entry points, functions, important branches and transformations. Reading or annotating them does not require inference.
+
+### English operational overview
+
+The pack uses original fictional adult character directions with local Qwen3-TTS VoiceDesign references and Base-model cloning. It does not rely on browser speech, paid cloud speech, real-person samples or pitch shifting. Current delivery contains 69 playable calls plus three retained legacy hu MP3s. Keep model weights, credentials, environments and intermediate WAVs outside the website repository.
+
+Installation examples above use Python 3.12, FFmpeg and official pinned dependencies/model revisions. CPU inference needs roughly 10 GB of RAM and sufficient disk space. Downloading is a separate preparation step; inference tools load local weights only. Run reference generation before clip generation, then audit. The three base-flow commands must share the same work directory. bfloat16 is the default; float32 is available in the base generator for hardware compatibility at greater memory cost.
+
+MP3 output is mono 24 kHz/96 kbps, normalized toward -18 LUFS/-2 dBTP. Audits check decoding, duration, level, clipping and hashes, then retain raw local faster-whisper transcripts. ASR, estimated pitch and unique hashes do not certify pronunciation, persona consistency or human listening. Review the actual audio before publishing.
+
+Carrier rescue first generates review-only phrases, then extracts a manually verified target at explicit bounds. Historical crop coordinates above apply only to the recordings that were reviewed, not new candidate audio. Recheck source hashes, words and boundaries before extraction. Incremental win-call tools recover character references from existing hash-verified generated clips when original reference WAVs are unavailable. They do not redesign characters or deploy the website.
+
+### 重跑前注意 / Before rerunning
+
+- 改种子、精度或生成模式时，使用 `--force`；缓存键没有包含所有参数。换识别模型/设置时用 `audit.py --force-asr`。 / Use force after changing synthesis seed, precision or modes because cache identity omits some parameters; force ASR after changing recognition models/settings.
+- `audit` 并非只读，会写报告及满足条件时的清单；`--partial` 在文件齐全时仍可写清单。 / Audit writes reports and, when complete, manifests; partial mode can still write a complete manifest.
+- 扩展脚本是带固定数量前提的历史迁移，尤其自摸/放炮扩展不可盲目套用到任意更新后的清单。 / Extension scripts are historical migrations with fixed count assumptions, especially the win-call extension; do not blindly apply them to newer manifests.
+- 不使用 `python -O` 跑审计；它会关闭重要 assert。载体、裁剪、上下文报告会覆盖指定目标，不具备逐条复用缓存。 / Do not audit with python -O, which disables important assertions. Carrier generation, extraction and context reports overwrite targets without per-clip reuse caches.

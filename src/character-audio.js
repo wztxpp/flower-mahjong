@@ -1,161 +1,391 @@
-/** Fixed absolute seats, never viewer-relative: all clients hear the same character. */
+// 声音层入口：App 用游标挑出新事件，再交给队列播放；音频绝不修改游戏状态。
+// Audio entry: App selects new events with the cursor, then queues playback; audio never changes game state.
+// 详见 docs/FRONTEND-READING-GUIDE.md 的音频章节。 / See the audio section in docs/FRONTEND-READING-GUIDE.md.
+/* 固定绝对座位，不随观察者变化：所有客户端听到相同角色。 / Fixed absolute seats, never viewer-relative: all clients hear the same character. */
+// 角色 ID 与资源路径是客户端与服务端共享契约。座位是绝对座位，不随观察者旋转。
+// Character IDs and asset paths are shared client/server contracts. Seats are absolute, not viewer-relative.
 export const CHARACTERS = Object.freeze([
   { id: 'sweet', name: '小桃', style: '萝莉音', portrait: '/characters/sweet.png' },
   { id: 'elegant', name: '清岚', style: '御姐音', portrait: '/characters/elegant.png' },
   { id: 'sunny', name: '晴禾', style: '阳光少女音', portrait: '/characters/sunny.png' },
-])
-export function characterForSeat(seat) { return CHARACTERS[seat] || CHARACTERS[0] }
+]);
+// 旧局没有角色分配时按绝对座位兜底；非法下标使用第一个角色。
+// For older games without assignments, fall back by absolute seat; invalid indices use the first character.
+export function characterForSeat(seat) {
+  return CHARACTERS[seat] || CHARACTERS[0];
+}
+// 仅把合法公开动作映射为音频路径；摸牌、隐藏手牌和未确认申请不发声。
+// Map valid public actions to audio paths; draws, hidden hands and unconfirmed requests remain silent.
 export function clipForEvent(event, characters) {
-  if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat > 2) return null
-  let clip
-  if (event.type === 'discard' && Number.isInteger(event.tile) && event.tile >= 0 && event.tile < 18) clip = `${event.tile < 9 ? 'tiao' : 'tong'}-${event.tile % 9 + 1}`
-  else if (event.type === 'peng') clip = 'peng'
-  else if (event.type === 'hu') clip = event.source === 'selfDraw' ? 'zimo' : ['discard', 'kongDiscard'].includes(event.source) ? 'fangpao' : event.source === 'robKong' ? 'qianggang' : null
-  else if (['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type)) clip = 'gang'
-  return clip ? `/voices/${(CHARACTERS.find(character => character.id === characters?.[event.seat]) || characterForSeat(event.seat)).id}/${clip}.mp3` : null
+  // 先拒绝无效座位，避免构造错误资源路径或播报未知玩家。
+  // Reject invalid seats before building asset paths or announcing unknown players.
+  if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat > 2) return null;
+  let clip;
+  // 牌种 0–8 为条、9–17 为筒；取余加一得到语音文件中的点数。
+  // Tile IDs 0–8 are bamboo and 9–17 dots; modulo plus one yields the spoken rank.
+  if (
+    event.type === 'discard' &&
+    Number.isInteger(event.tile) &&
+    event.tile >= 0 &&
+    event.tile < 18
+  )
+    clip = `${event.tile < 9 ? 'tiao' : 'tong'}-${(event.tile % 9) + 1}`;
+  else if (event.type === 'peng') clip = 'peng';
+  // 胡牌只按已提交来源选择一条语音，不再额外追加“胡”。
+  // A win selects one clip from its committed source, without an extra hu clip.
+  else if (event.type === 'hu')
+    clip =
+      event.source === 'selfDraw'
+        ? 'zimo'
+        : ['discard', 'kongDiscard'].includes(event.source)
+          ? 'fangpao'
+          : event.source === 'robKong'
+            ? 'qianggang'
+            : null;
+  else if (['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type)) clip = 'gang';
+  // 优先使用服务端本局角色 ID，缺失或未知 ID 才用兼容映射。
+  // Prefer the server game’s character ID; fall back only for missing or unknown IDs.
+  return clip
+    ? `/voices/${(CHARACTERS.find((character) => character.id === characters?.[event.seat]) || characterForSeat(event.seat)).id}/${clip}.mp3`
+    : null;
 }
 
-/** Only classify a win from the committed source, using the winner's character. */
+/* 仅根据已提交的来源分类胡牌，并使用赢家的角色。 / Only classify a win from the committed source, using the winner's character. */
+// 保持数组接口，方便队列统一处理；没有可播动作时返回空数组。
+// Keep an array interface for the queue; unsupported events return an empty array.
 export function clipsForEvent(event, characters) {
-  const clip = clipForEvent(event, characters)
-  if (!clip) return []
-  return [clip]
+  const clip = clipForEvent(event, characters);
+  if (!clip) return [];
+  return [clip];
 }
 
-/** Observe committed server history, not speculative button clicks or pending claims. */
+/* 只观察服务端已提交历史，不根据按钮点击或待决申请猜测播报。 / Observe committed server history, not speculative button clicks or pending claims. */
+// 游标记住已见历史长度与版本，不存游戏规则。首次快照只建立基线，避免重播整局。
+// The cursor remembers seen history length and revision, not rules. The first snapshot establishes a baseline without replaying the game.
 export class ActionVoiceCursor {
-  reset() { this.gameKey = null; this.count = 0; this.revision = -1 }
-  constructor() { this.reset() }
-  consumeEvents(state, { silent = false } = {}) {
-    const history = state?.game?.history || []
-    const key = state?.game ? `${state.id}:${state.game.id || 'legacy'}` : null
-    if (!key) { this.reset(); return [] }
-    if (this.gameKey === key && state.revision < this.revision) return []
-    const baseline = key !== this.gameKey || history.length < this.count
-    const events = baseline || silent ? [] : history.slice(this.count)
-    this.gameKey = key; this.count = history.length; this.revision = state.revision
-    return events.map((event, index) => ({ ...event, eventKey: `${key}:${this.count - events.length + index}`, urls: clipsForEvent(event, state.game.characters) }))
+  // 离桌或可见性变化后，清除上一局标识、已读长度与版本。
+  // Clear the previous game key, consumed length and revision after departure or visibility changes.
+  reset() {
+    this.gameKey = null;
+    this.count = 0;
+    this.revision = -1;
   }
-  consume(state, options) { return this.consumeEvents(state, options).flatMap(event => event.urls) }
+  // 创建游标时采用同一复位路径，避免初始值与重连状态不一致。
+  // Use the same reset path for construction so initial and reconnect states agree.
+  constructor() {
+    this.reset();
+  }
+  // 每次快照仅返回新追加的已提交事件；silent 仍前移游标，但不产生待播事件。
+  // Return only newly appended committed events; silent advances the cursor without emitting events.
+  consumeEvents(state, { silent = false } = {}) {
+    const history = state?.game?.history || [];
+    // 房间 ID 与局 ID 联合区分同桌下一局；旧数据没有局 ID 时使用 legacy。
+    // Combine room and game IDs to distinguish successive rounds; use legacy when old data lacks a game ID.
+    const key = state?.game ? `${state.id}:${state.game.id || 'legacy'}` : null;
+    if (!key) {
+      this.reset();
+      return [];
+    }
+    // 拒绝乱序旧版本，不能让游标倒退并再次播报。
+    // Reject out-of-order older revisions so the cursor cannot move backward and replay events.
+    if (this.gameKey === key && state.revision < this.revision) return [];
+    // 换局或历史变短都视为新基线；不能把整段历史当作新现场动作。
+    // A new game or shorter history establishes a baseline, not a backlog of new live actions.
+    const baseline = key !== this.gameKey || history.length < this.count;
+    const events = baseline || silent ? [] : history.slice(this.count);
+    this.gameKey = key;
+    this.count = history.length;
+    this.revision = state.revision;
+    // eventKey 使用历史绝对下标，保证同牌、同类型的多次动作仍有独立身份。
+    // eventKey uses the absolute history index so repeated tile/action pairs remain distinct.
+    return events.map((event, index) => ({
+      ...event,
+      eventKey: `${key}:${this.count - events.length + index}`,
+      urls: clipsForEvent(event, state.game.characters),
+    }));
+  }
+  // 兼容仅需要音频 URL 的调用方；flatMap 将每个事件的 URL 数组合并。
+  // Support callers needing only audio URLs; flatMap merges each event’s URL array.
+  consume(state, options) {
+    return this.consumeEvents(state, options).flatMap((event) => event.urls);
+  }
 }
 
-/** A single serial WebAudio queue. Unlock must run directly in a user gesture. */
+/* 单个串行 WebAudio 队列，解锁必须直接由用户手势触发。 / A single serial WebAudio queue. Unlock must run directly in a user gesture. */
+// 单个 WebAudio 队列串行播放。依赖可注入，测试无需真实浏览器音响。
+// One WebAudio queue plays serially. Injectable dependencies allow tests without real browser audio.
 export class CharacterAudio {
-  constructor({ createContext = () => new (window.AudioContext || window.webkitAudioContext)(), fetchAudio = (url, options) => fetch(url, options), now = () => Date.now(), onStatus = () => {} } = {}) {
-    this.createContext = createContext; this.fetchAudio = fetchAudio; this.now = now; this.onStatus = onStatus
-    this.queue = []; this.buffers = new Map(); this.loads = new Set(); this.muted = false; this.unlocked = false; this.generation = 0; this.running = false
+  // 保存音频上下文工厂、下载函数、时钟和状态回调；generation 是取消代数。
+  // Store the context factory, fetcher, clock and status callback; generation is a cancellation counter.
+  constructor({
+    createContext = () => new (window.AudioContext || window.webkitAudioContext)(),
+    fetchAudio = (url, options) => fetch(url, options),
+    now = () => Date.now(),
+    onStatus = () => {},
+  } = {}) {
+    this.createContext = createContext;
+    this.fetchAudio = fetchAudio;
+    this.now = now;
+    this.onStatus = onStatus;
+    this.queue = [];
+    this.buffers = new Map();
+    this.loads = new Set();
+    this.muted = false;
+    this.unlocked = false;
+    this.generation = 0;
+    this.running = false;
   }
+  // 必须由用户手势触发 resume；播放一个无声样本以完成浏览器声音解锁。
+  // Resume must follow a user gesture; play one silent sample to complete browser audio unlocking.
   async unlock() {
     try {
-      this.context ||= this.createContext()
+      this.context ||= this.createContext();
+      // 浏览器暂停音频时立即失去解锁状态并清空旧语音，避免恢复后积压。
+      // When the browser suspends audio, mark it locked and clear stale speech rather than backlog on resume.
       this.context.onstatechange = () => {
         if (!this.disposed && this.context.state !== 'running') {
-          this.unlocked = false; this.clear(); this.onStatus('locked')
+          this.unlocked = false;
+          this.clear();
+          this.onStatus('locked');
         }
-      }
-      await this.context.resume()
-      if (this.context.state !== 'running') throw new Error('Audio locked')
-      const source = this.context.createBufferSource()
-      source.buffer = this.context.createBuffer(1, 1, this.context.sampleRate)
-      source.connect(this.context.destination); source.start()
-      this.unlocked = true; this.onStatus('ready')
-      return true
-    } catch { this.unlocked = false; this.onStatus('locked'); return false }
-  }
-  setMuted(value) { this.muted = value; if (value) this.clear() }
-  clear() {
-    this.generation++; this.queue = []
-    for (const controller of this.loads) { this.buffers.delete(controller.url); controller.abort() }
-    this.activeItem = null
-    try { this.source?.stop() } catch { /* already stopped */ }
-    this.source = null
-  }
-  enqueue(urls) {
-    if (this.context && this.context.state !== 'running') { this.unlocked = false; this.onStatus('locked') }
-    if (this.muted || !this.unlocked || this.context?.state !== 'running') return
-    const at = this.now()
-    for (let index = 0; index < urls.length; index++) {
-      const url = urls[index], group = [url]
-      this.queue.push({ urls: group, at })
+      };
+      await this.context.resume();
+      if (this.context.state !== 'running') throw new Error('Audio locked');
+      const source = this.context.createBufferSource();
+      source.buffer = this.context.createBuffer(1, 1, this.context.sampleRate);
+      source.connect(this.context.destination);
+      source.start();
+      this.unlocked = true;
+      this.onStatus('ready');
+      return true;
+    } catch {
+      this.unlocked = false;
+      this.onStatus('locked');
+      return false;
     }
-    let queuedClips = this.queue.reduce((count, item) => count + item.urls.length, 0)
-    while (queuedClips > 12) queuedClips -= this.queue.shift().urls.length
-    this.drain()
   }
-  /** Live snapshots already include automatic turns. Never narrate that backlog. */
+  // 静音不仅阻止新音频，还必须停止正在播放和下载的旧队列。
+  // Muting blocks new audio and stops current playback and pending downloads.
+  setMuted(value) {
+    this.muted = value;
+    if (value) this.clear();
+  }
+  // 递增代数使已经 await 的旧任务失效；同时终止下载和当前音源。
+  // Increment the generation to invalidate awaited work, then abort downloads and stop the current source.
+  clear() {
+    this.generation++;
+    this.queue = [];
+    // 取消的缓存 Promise 不可继续复用，因此先删对应缓存再 abort。
+    // A cancelled cached promise cannot be reused, so delete its entry before aborting.
+    for (const controller of this.loads) {
+      this.buffers.delete(controller.url);
+      controller.abort();
+    }
+    this.activeItem = null;
+    try {
+      this.source?.stop();
+    } catch {
+      /* 已经停止，无需再次处理。 / already stopped */
+    }
+    this.source = null;
+  }
+  // 通用队列为每条音频保存入队时间；最多保留十二条，超额丢最旧项。
+  // The general queue timestamps each clip and retains at most twelve, dropping the oldest excess items.
+  enqueue(urls) {
+    if (this.context && this.context.state !== 'running') {
+      this.unlocked = false;
+      this.onStatus('locked');
+    }
+    // 未解锁或静音时直接忽略，不能先排队再在未来突然补播。
+    // Ignore while muted or locked rather than enqueueing speech that might unexpectedly play later.
+    if (this.muted || !this.unlocked || this.context?.state !== 'running') return;
+    const at = this.now();
+    for (let index = 0; index < urls.length; index++) {
+      const url = urls[index],
+        group = [url];
+      this.queue.push({ urls: group, at });
+    }
+    let queuedClips = this.queue.reduce((count, item) => count + item.urls.length, 0);
+    while (queuedClips > 12) queuedClips -= this.queue.shift().urls.length;
+    this.drain();
+  }
+  /* 现场快照已包含自动回合，不补播积压动作。 / Live snapshots already include automatic turns. Never narrate that backlog. */
+  // 现场播报不朗读整个自动回合：有胡优先最多两次，否则只播最新公开动作。
+  // Live speech never narrates a whole automatic-turn backlog: prefer up to two wins, otherwise only the latest public action.
   enqueueLive(events) {
-    if (this.muted || !this.unlocked || this.context?.state !== 'running') return
-    const voiced = events.filter(event => event.urls?.length)
-    if (!voiced.length) return
-    const wins = voiced.filter(event => event.type === 'hu')
+    // 未解锁或静音时直接忽略，不能先排队再在未来突然补播。
+    // Ignore while muted or locked rather than enqueueing speech that might unexpectedly play later.
+    if (this.muted || !this.unlocked || this.context?.state !== 'running') return;
+    const voiced = events.filter((event) => event.urls?.length);
+    if (!voiced.length) return;
+    const wins = voiced.filter((event) => event.type === 'hu');
+    // 同一次原子服务端更新里胡牌优先；没有胡牌则只保留最新已提交公开动作。
     // A win takes precedence over all ordinary calls in its atomic server update.
     // Without a win, only the latest committed public action is still current.
-    const latest = wins.length ? wins.slice(-2) : voiced.slice(-1)
-    if (this.activeItem?.live && this.activeItem.kind === 'hu' && !wins.length) return
-    this.clear()
-    const at = this.now()
-    this.queue.push({ urls: latest.flatMap(event => event.urls), at, live: true,
-      kind: wins.length ? 'hu' : latest[0].type, maxAge: wins.length ? 650 : 550 })
-    this.drain()
+    const latest = wins.length ? wins.slice(-2) : voiced.slice(-1);
+    // 正在播胡时普通动作不打断它；新的胡牌仍可替换旧现场队列。
+    // Ordinary actions do not interrupt a live win; a newer win may still replace the live queue.
+    if (this.activeItem?.live && this.activeItem.kind === 'hu' && !wins.length) return;
+    this.clear();
+    const at = this.now();
+    // 现场声音寿命很短：胡 650ms、普通动作 550ms；这是开始前的时效检查。
+    // Live audio has a short start deadline: 650ms for wins and 550ms for ordinary actions.
+    this.queue.push({
+      urls: latest.flatMap((event) => event.urls),
+      at,
+      live: true,
+      kind: wins.length ? 'hu' : latest[0].type,
+      maxAge: wins.length ? 650 : 550,
+    });
+    this.drain();
   }
-  /** Warm only short public win calls, in three bounded background requests. */
+  /* 只预热简短公开胡牌语音，并限制为三个并发后台请求。 / Warm only short public win calls, in three bounded background requests. */
+  // 只预热公开胡牌短语；三个异步工作循环共享 next 下标，限制并发下载数量。
+  // Preload only public win calls; three async worker loops share the next index to bound concurrency.
   async warmWins(characters) {
-    if (this.muted || !this.unlocked || this.context?.state !== 'running') return
-    const generation = this.generation
-    const urls = [...new Set([0, 1, 2].flatMap(seat => ['selfDraw', 'discard', 'robKong']
-      .flatMap(source => clipsForEvent({ type: 'hu', seat, source }, characters))))]
-    let next = 0
-    await Promise.all([0, 1, 2].map(async () => {
-      while (next < urls.length && generation === this.generation && !this.muted && this.unlocked) {
-        try { await this.buffer(urls[next++]) } catch { /* Optional warming must never block play. */ }
-      }
-    }))
+    // 未解锁或静音时直接忽略，不能先排队再在未来突然补播。
+    // Ignore while muted or locked rather than enqueueing speech that might unexpectedly play later.
+    if (this.muted || !this.unlocked || this.context?.state !== 'running') return;
+    const generation = this.generation;
+    const urls = [
+      ...new Set(
+        [0, 1, 2].flatMap((seat) =>
+          ['selfDraw', 'discard', 'robKong'].flatMap((source) =>
+            clipsForEvent({ type: 'hu', seat, source }, characters),
+          ),
+        ),
+      ),
+    ];
+    let next = 0;
+    await Promise.all(
+      [0, 1, 2].map(async () => {
+        // 每次取下一项前检查代数与静音，清队列后不再启动新的预热。
+        // Before each next item, check generation and mute state so clearing stops new warm-up work.
+        while (
+          next < urls.length &&
+          generation === this.generation &&
+          !this.muted &&
+          this.unlocked
+        ) {
+          try {
+            await this.buffer(urls[next++]);
+          } catch {
+            /* 可选预热失败不能阻断牌局。 / Optional warming must never block play. */
+          }
+        }
+      }),
+    );
   }
+  // 缓存的是 Promise，因此同时请求同一 URL 会共用一次下载和解码。
+  // Cache promises so concurrent requests for the same URL share one download and decode.
   async buffer(url) {
     if (!this.buffers.has(url)) {
-      const controller = new AbortController(); controller.url = url; this.loads.add(controller)
-      let timer
+      const controller = new AbortController();
+      controller.url = url;
+      this.loads.add(controller);
+      let timer;
+      // 主动取消与四秒超时都拒绝同一个等待 Promise，防止加载无限悬挂。
+      // Explicit cancellation and the four-second timeout reject the same waiting promise to prevent indefinite loads.
       const cancelled = new Promise((_, reject) => {
-        controller.signal.addEventListener('abort', () => reject(new Error('Voice load cancelled')), { once: true })
-        timer = setTimeout(() => controller.abort(), 4000)
-      })
-      const download = this.fetchAudio(url, { signal: controller.signal }).then(response => {
-        if (!response.ok || !response.headers.get('content-type')?.startsWith('audio/')) throw new Error('Voice unavailable')
-        return response.arrayBuffer()
-      }).then(bytes => this.context.decodeAudioData(bytes))
+        controller.signal.addEventListener(
+          'abort',
+          () => reject(new Error('Voice load cancelled')),
+          { once: true },
+        );
+        timer = setTimeout(() => controller.abort(), 4000);
+      });
+      const download = this.fetchAudio(url, { signal: controller.signal })
+        .then((response) => {
+          // HTTP 成功且确为音频才解码，避免把错误 HTML 页面交给 WebAudio。
+          // Decode only successful audio responses, never an HTML error page.
+          if (!response.ok || !response.headers.get('content-type')?.startsWith('audio/'))
+            throw new Error('Voice unavailable');
+          return response.arrayBuffer();
+        })
+        .then((bytes) => this.context.decodeAudioData(bytes));
+      // 下载或取消谁先完成就决定结果；无论成功失败都清理计时器和在途集合。
+      // Whichever finishes first, download or cancellation, decides the result; always clean up the timer and in-flight set.
       const promise = Promise.race([download, cancelled]).finally(() => {
-        clearTimeout(timer); this.loads.delete(controller)
-      })
-      this.buffers.set(url, promise)
-      promise.catch(() => { if (this.buffers.get(url) === promise) this.buffers.delete(url) })
+        clearTimeout(timer);
+        this.loads.delete(controller);
+      });
+      this.buffers.set(url, promise);
+      // 失败缓存可重试；只有缓存仍指向本 Promise 时才删除，避免误删后来请求。
+      // Failed loads may retry; delete only if the cache still holds this promise, not a newer replacement.
+      promise.catch(() => {
+        if (this.buffers.get(url) === promise) this.buffers.delete(url);
+      });
     }
-    return this.buffers.get(url)
+    return this.buffers.get(url);
   }
+  // 单消费者循环保证语音不重叠；running 在首次 await 前设置，阻止第二个循环。
+  // A single-consumer loop prevents overlap; set running before the first await to block a second drain.
   async drain() {
-    if (this.running) return
-    this.running = true
+    if (this.running) return;
+    this.running = true;
     try {
       while (this.queue.length && !this.muted && this.unlocked) {
-        const item = this.queue.shift(), generation = this.generation
-        this.activeItem = item
-        const maxAge = item.maxAge ?? 6000
-        if (this.now() - item.at > maxAge) continue
+        // 记下当前代数；下载完成时可能已经静音、离桌或被新现场动作替换。
+        // Capture the generation; by download completion the user may have muted, left or replaced the live action.
+        const item = this.queue.shift(),
+          generation = this.generation;
+        this.activeItem = item;
+        const maxAge = item.maxAge ?? 6000;
+        if (this.now() - item.at > maxAge) continue;
         try {
+          // 整个事件加载完再播；开始后剩余片段不会过期或被普通新事件逐段挤出，但显式清理仍可停止。
           // Load the whole event before speaking. Once started, its remaining clips
           // cannot expire or be evicted by newer events; explicit clearing can stop it.
-          const buffers = await Promise.all(item.urls.map(url => this.buffer(url)))
-          if (generation !== this.generation || this.muted || this.now() - item.at > maxAge || this.context.state !== 'running') continue
+          // 整组下载完成后才开始，播放中不按过期时间截断同一组剩余片段。
+          // Load the entire group before starting; do not expire remaining clips mid-group.
+          const buffers = await Promise.all(item.urls.map((url) => this.buffer(url)));
+          // await 之后重新验证状态与时效，不能假定下载期间一切未变。
+          // Recheck state and freshness after await; conditions may have changed while loading.
+          if (
+            generation !== this.generation ||
+            this.muted ||
+            this.now() - item.at > maxAge ||
+            this.context.state !== 'running'
+          )
+            continue;
           for (const buffer of buffers) {
-            if (generation !== this.generation || this.muted || !this.unlocked || this.context.state !== 'running') break
-            await new Promise(resolve => {
-              const source = this.context.createBufferSource(); this.source = source
-              source.buffer = buffer; source.connect(this.context.destination)
-              source.onended = resolve; source.start(); this.onStatus('ready')
-            })
+            if (
+              generation !== this.generation ||
+              this.muted ||
+              !this.unlocked ||
+              this.context.state !== 'running'
+            )
+              break;
+            // 等待 onended 才播放下一片段；clear 调用 stop 也会结束当前音源。
+            // Wait for onended before the next clip; clear also ends the current source by calling stop.
+            await new Promise((resolve) => {
+              const source = this.context.createBufferSource();
+              this.source = source;
+              source.buffer = buffer;
+              source.connect(this.context.destination);
+              source.onended = resolve;
+              source.start();
+              this.onStatus('ready');
+            });
           }
-        } catch { if (generation === this.generation) this.onStatus('unavailable') }
+        } catch {
+          if (generation === this.generation) this.onStatus('unavailable');
+        }
       }
-    } finally { this.source = null; this.activeItem = null; this.running = false }
+      // 即使下载或播放失败，也释放串行锁，允许后续新事件继续播放。
+      // Release the serial lock even after loading or playback failure so later events can proceed.
+    } finally {
+      this.source = null;
+      this.activeItem = null;
+      this.running = false;
+    }
   }
-  dispose() { this.disposed = true; this.clear(); this.context?.close(); this.unlocked = false }
+  // 组件销毁时永久关闭此实例的上下文，并使回调不再报告锁定状态。
+  // On component disposal, close this instance’s context and suppress further locked-state reports.
+  dispose() {
+    this.disposed = true;
+    this.clear();
+    this.context?.close();
+    this.unlocked = false;
+  }
 }

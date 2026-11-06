@@ -1,84 +1,209 @@
-/** Metadata lives alongside, never inside, versioned game engines. */
+// 记录层：把房间生命周期与局内规则隔离，保存可验证的参与身份和公开成绩。
+// History layer: separate room lifecycle from game rules and preserve verifiable participation and public scores.
+// 旧存档只补当前可证明的一局；不创造已丢失历史，也不改引擎内部状态。
+// Backfill only the verifiable current game in legacy saves; do not invent lost history or alter engine state.
 export function ensureGameMetadata(room) {
   if (!room.game || room.gameMeta) return;
-  // Existing rooms have no generation marker. Their one verifiable current game
-  // gets this deterministic ID; later starts always receive a fresh random ID.
+  // 稳定的旧局 ID 保证重复读取一致；旧时间只是估计值，界面可据标记说明。
+  // A stable legacy ID survives rereads; legacy timestamps are marked as estimates for display.
   room.gameMeta = {
     id: `legacy-${room.id}-${room.createdAt}`,
-    startedAt: room.createdAt, startedAtEstimated: true,
+    startedAt: room.createdAt,
+    startedAtEstimated: true,
     finishedAt: room.game.phase === 'finished' ? room.updatedAt : null,
     finishedAtEstimated: room.game.phase === 'finished',
-    participants: room.seats.map((person, seat) => person ? {
-      seat, name: person.name, tokenHash: person.tokenHash, playerHash: person.playerHash || null,
-    } : null),
+    participants: room.seats.map((person, seat) =>
+      person
+        ? {
+            seat,
+            name: person.name,
+            tokenHash: person.tokenHash,
+            playerHash: person.playerHash || null,
+          }
+        : null,
+    ),
   };
 }
-
+// 开局拍下参与者身份快照；后续换座或改名不能改变历史归属。
+// Snapshot participant identities at start so later seat replacements cannot change history ownership.
 export function newGameMetadata(room, id, at) {
-  return { id, startedAt: at, finishedAt: null, participants: room.seats.map((person, seat) => ({ seat, name: person.name, tokenHash: person.tokenHash, playerHash: person.playerHash || null })) };
+  return {
+    id,
+    startedAt: at,
+    finishedAt: null,
+    participants: room.seats.map((person, seat) => ({
+      seat,
+      name: person.name,
+      tokenHash: person.tokenHash,
+      playerHash: person.playerHash || null,
+    })),
+  };
 }
-
 // Explicit public-event fields avoid copying a future engine's private fields.
+// 公开事件用白名单复制字段，防止未来新增私人字段被自动带出。
+// Copy public events through an allowlist so future private fields cannot leak automatically.
 function publicEvents(game) {
-  const allowed = ['revision', 'type', 'seat', 'source', 'message', 'tile', 'fromSeat', 'points', 'payments', 'score', 'newRadishes', 'radish', 'reason', 'automatic', 'afterKong', 'dragons', 'kongSource', 'kongType', 'radishDeferred', 'pendingKongRadishes'];
-  return (game.history || []).map(event => {
+  const allowed = [
+    'revision',
+    'type',
+    'seat',
+    'source',
+    'message',
+    'tile',
+    'fromSeat',
+    'points',
+    'payments',
+    'score',
+    'newRadishes',
+    'radish',
+    'reason',
+    'automatic',
+    'afterKong',
+    'dragons',
+    'kongSource',
+    'kongType',
+    'radishDeferred',
+    'pendingKongRadishes',
+  ];
+  return (game.history || []).map((event) => {
     const result = {};
-    for (const key of allowed) if (event[key] !== undefined && !(event.type === 'draw' && key === 'tile')) result[key] = structuredClone(event[key]);
-    if (event.type === 'draw') result.message = `${Number.isInteger(event.seat) ? event.seat + 1 : ''}号位${event.source === 'replacement' ? '杠后补牌' : event.source === 'continuation' ? '胡后补摸' : '摸了一张牌'}。`;
+    // 摸牌事件即使含 tile 也不复制；其他允许字段深拷贝，避免共享可变对象。
+    // Never copy a draw tile; deep-clone other allowed values to avoid shared mutable objects.
+    for (const key of allowed)
+      if (event[key] !== undefined && !(event.type === 'draw' && key === 'tile'))
+        result[key] = structuredClone(event[key]);
+    // 重新生成摸牌文案，防止旧引擎的原始 message 暴露摸到的牌。
+    // Rebuild draw messages so original engine text cannot reveal the drawn tile.
+    if (event.type === 'draw')
+      result.message = `${Number.isInteger(event.seat) ? event.seat + 1 : ''}号位${event.source === 'replacement' ? '杠后补牌' : event.source === 'continuation' ? '胡后补摸' : '摸了一张牌'}。`;
     return result;
   });
 }
-
 /** Keep all historical scores and public events, without copying private walls/hands forever. */
+// 归档只留下元信息、成绩和公开事件，不永久复制私人手牌或牌墙。
+// Archive metadata, scores, and public events without retaining private hands or walls in each archive.
 export function archiveFinishedGame(room) {
   const game = room.game;
   return {
-    meta: structuredClone(room.gameMeta), updatedAt: room.updatedAt,
-    game: { schemaVersion: game.schemaVersion || 1, phase: 'finished', finishReason: game.finishReason,
-      players: game.players.map(player => ({ score: player.score, huCount: player.huCount || 0, kongCount: player.kongCount || 0 })),
+    meta: structuredClone(room.gameMeta),
+    updatedAt: room.updatedAt,
+    game: {
+      schemaVersion: game.schemaVersion || 1,
+      phase: 'finished',
+      finishReason: game.finishReason,
+      players: game.players.map((player) => ({
+        score: player.score,
+        huCount: player.huCount || 0,
+        kongCount: player.kongCount || 0,
+      })),
       history: publicEvents(game),
     },
   };
 }
-
+// 把存档与当前局统一遍历，仅提取匹配个人凭证摘要的参与记录。
+// Scan archives and the current game, returning participation records only for the matching profile digest.
 export function recordsForProfile(room, playerHash) {
   const records = [];
-  const games = [...(room.archivedGames || []).map(archive => ({ ...archive, archived: true })), ...(room.game && room.gameMeta ? [{ game: room.game, meta: room.gameMeta, updatedAt: room.updatedAt, archived: false }] : [])];
+  const games = [
+    ...(room.archivedGames || []).map((archive) => ({
+      ...archive,
+      archived: true,
+    })),
+    ...(room.game && room.gameMeta
+      ? [
+          {
+            game: room.game,
+            meta: room.gameMeta,
+            updatedAt: room.updatedAt,
+            archived: false,
+          },
+        ]
+      : []),
+  ];
   for (const entry of games) {
     const { game, meta } = entry;
     for (const participant of meta.participants) {
+      // 房间索引不是权限：必须在这一局的参与快照中找到本人身份。
+      // The room index is not authorization: the game participant snapshot must match the profile.
       if (!participant || participant.playerHash !== playerHash) continue;
-      const seat = participant.seat, person = room.seats[seat];
+      const seat = participant.seat,
+        person = room.seats[seat];
       const finished = game.phase === 'finished';
+      // finished 代表已结算；未结束时凭座位仍属本人且未离席区分 playing/detached。
+      // Finished means settled; active-game status depends on matching occupancy and the detach flag.
       records.push({
-        gameId: meta.id, roomId: room.id, seat, name: participant.name,
-        status: finished ? 'finished' : !person || person.tokenHash !== participant.tokenHash || person.detached ? 'detached' : 'playing',
-        score: game.players[seat].score, huCount: game.players[seat].huCount || 0,
-        startedAt: meta.startedAt, startedAtEstimated: Boolean(meta.startedAtEstimated), finishedAtEstimated: Boolean(meta.finishedAtEstimated), updatedAt: entry.updatedAt, finishedAt: finished ? meta.finishedAt || entry.updatedAt : null,
-        rulesVersion: game.schemaVersion || 1, finishReason: game.finishReason || null,
-        players: game.players.map((player, index) => ({ seat: index, name: meta.participants[index]?.name || `${index + 1}号位`, score: player.score })),
+        gameId: meta.id,
+        roomId: room.id,
+        seat,
+        name: participant.name,
+        status: finished
+          ? 'finished'
+          : !person || person.tokenHash !== participant.tokenHash || person.detached
+            ? 'detached'
+            : 'playing',
+        score: game.players[seat].score,
+        huCount: game.players[seat].huCount || 0,
+        startedAt: meta.startedAt,
+        startedAtEstimated: Boolean(meta.startedAtEstimated),
+        finishedAtEstimated: Boolean(meta.finishedAtEstimated),
+        updatedAt: entry.updatedAt,
+        finishedAt: finished ? meta.finishedAt || entry.updatedAt : null,
+        rulesVersion: game.schemaVersion || 1,
+        finishReason: game.finishReason || null,
+        players: game.players.map((player, index) => ({
+          seat: index,
+          name: meta.participants[index]?.name || `${index + 1}号位`,
+          score: player.score,
+        })),
         events: publicEvents(game),
       });
     }
   }
   return records;
 }
-
 /** Public scores for this room only. Never merge by nickname or replacement seat.
  * Recomputed from the saved ledger, so reloads/retries cannot double-count a round. */
+// 本桌成绩从账本重新计算，绝不增写累计计数器，避免刷新或重试重复结算。
+// Recompute room totals from the ledger rather than incrementing counters on rereads or retries.
 export function tableScores(room) {
-  if (room.game && !room.gameMeta) { room = { ...room }; ensureGameMetadata(room); }
-  const entries = [...(room.archivedGames || []), ...(room.game && room.gameMeta
-    ? [{ game: room.game, meta: room.gameMeta }] : [])];
+  // 计算旧桌时只给浅拷贝补元信息；不把只读查询变成持久化写入。
+  // For legacy rooms, backfill metadata on a shallow copy, not as a persisted side effect of reading.
+  if (room.game && !room.gameMeta) {
+    room = {
+      ...room,
+    };
+    ensureGameMetadata(room);
+  }
+  const entries = [
+    ...(room.archivedGames || []),
+    ...(room.game && room.gameMeta
+      ? [
+          {
+            game: room.game,
+            meta: room.gameMeta,
+          },
+        ]
+      : []),
+  ];
   const totals = new Map();
-  const addPerson = person => {
+  // 内部以座位凭证摘要聚合同一参与者；对外只返回不含凭证的显示 ID。
+  // Group participants internally by seat digest; expose only a display ID without credentials.
+  const addPerson = (person) => {
     if (!person?.tokenHash) return null;
-    if (!totals.has(person.tokenHash)) totals.set(person.tokenHash, {
-      id: `player-${totals.size + 1}`, name: person.name, seat: null,
-      totalScore: 0, settledScore: 0, provisionalScore: 0, settledGames: 0,
-    });
+    if (!totals.has(person.tokenHash))
+      totals.set(person.tokenHash, {
+        id: `player-${totals.size + 1}`,
+        name: person.name,
+        seat: null,
+        totalScore: 0,
+        settledScore: 0,
+        provisionalScore: 0,
+        settledGames: 0,
+      });
     return totals.get(person.tokenHash);
   };
+  // 每个局 ID / 座位只计一次；同名或同座位的新玩家不会继承旧账。
+  // Count each game ID / seat once; a new occupant never inherits scores by name or seat.
   const seen = new Set();
   for (const { game, meta } of entries) {
     for (const person of meta?.participants || []) {
@@ -90,13 +215,28 @@ export function tableScores(room) {
       if (!row) continue;
       const score = game.players[person.seat]?.score ?? 0;
       row.totalScore += score;
-      if (game.phase === 'finished') { row.settledScore += score; row.settledGames++; }
-      else row.provisionalScore += score;
+      // 把已结算与暂记分别累计；totalScore 包含两者，但 settledGames 只算结束局。
+      // Track settled and provisional scores separately; totalScore includes both, settledGames only finished games.
+      if (game.phase === 'finished') {
+        row.settledScore += score;
+        row.settledGames++;
+      } else row.provisionalScore += score;
     }
   }
+  // 最后补入尚未打过牌的现任玩家，并更新当前座位和离席显示状态。
+  // Finally include current occupants with no games and update their seat and detach display state.
   for (const [seat, person] of room.seats.entries()) {
     const row = addPerson(person);
-    if (row) { row.name = person.name; row.seat = seat; row.detached = Boolean(person.detached); }
+    if (row) {
+      row.name = person.name;
+      row.seat = seat;
+      row.detached = Boolean(person.detached);
+    }
   }
-  return [...totals.values()].map(row => ({ ...row, detached: row.detached ?? true }));
+  // 没有当前座位的历史参与者默认已离席；其旧成绩仍保留。
+  // Historical participants without a current seat default to detached and retain their scores.
+  return [...totals.values()].map((row) => ({
+    ...row,
+    detached: row.detached ?? true,
+  }));
 }

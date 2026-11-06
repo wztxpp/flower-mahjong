@@ -1,10 +1,18 @@
 <script setup>
-defineProps({ name: String, size: { type: Number, default: 20 } })
+// 无状态 SVG 图标组件，由 App 的 name/size 输入选择图案与尺寸。
+// Stateless SVG icon component: App supplies name/size to select the drawing and dimensions.
+// 阅读路线：docs/FRONTEND-READING-GUIDE.md。 / Reading map: docs/FRONTEND-READING-GUIDE.md.
+// name 选择图标，size 控制像素尺寸；父组件用 :size 传数字而不是字符串。
+// name selects the icon; size sets pixel dimensions. Parents use :size to pass a number.
+defineProps({ name: String, size: { type: Number, default: 20 } });
+// SVG path 是原始绘图数据；键名被模板调用方使用，不能随意重命名。
+// SVG paths are drawing data; callers depend on these keys, so preserve their names.
 const paths = {
   arrow: 'M5 12h14m-5-5 5 5-5 5',
   copy: 'M9 9h11v11H9zM15 5V3H3v12h2',
   link: 'm10 13 4-4m-6 7-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 12a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-1 1',
-  users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M15 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+  users:
+    'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m20 0v-2a4 4 0 0 0-3-3.87M15 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
   book: 'M4 3h6a3 3 0 0 1 3 3v15a4 4 0 0 0-4-2H4zm9 3a3 3 0 0 1 3-3h5v16h-5a3 3 0 0 0-3 2M7 7h3M7 11h3m6-4h2m-2 4h2',
   close: 'm6 6 12 12M6 18 18 6',
   check: 'm5 12 4 4L19 6',
@@ -18,6 +26,21 @@ const paths = {
   trophy: 'M8 3h8v6a4 4 0 0 1-8 0zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v6m-4 2h8',
   sparkle: 'm12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z',
   clock: 'M12 6v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',
-}
+};
 </script>
-<template><svg :width="size" :height="size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path :d="paths[name] || paths.info"/></svg></template>
+<!-- 装饰图标不重复被读屏朗读；未知 name 回退 info，颜色继承父元素 currentColor。 / Decorative icons stay hidden from screen readers; unknown names use info and currentColor inherits the parent color. -->
+<template>
+  <svg
+    :width="size"
+    :height="size"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path :d="paths[name] || paths.info" />
+  </svg>
+</template>

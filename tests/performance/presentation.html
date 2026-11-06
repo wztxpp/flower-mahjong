@@ -1,19 +1,198 @@
+<!-- 本地合成界面验收页：通过 Vite 本地服务打开，不用于线上游戏或真实个人数据。
+Local synthetic UI QA page: serve with local Vite; never use real games or personal data.
+按钮仅切换合成视图；benchmark 数字不是 FPS、真实网络或浏览器绘制速度。
+Buttons change synthetic views; benchmark numbers are not FPS, real networking or browser paint time. -->
 <!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Local presentation QA</title><style>#qa{position:fixed;z-index:100;bottom:8px;left:8px;background:white;color:#223;padding:8px;max-width:95vw;border:1px solid #888;font:12px sans-serif}#qa button{margin:3px;padding:6px}#result{max-width:85vw;white-space:pre-wrap;max-height:150px;overflow:auto}</style></head><body><div id="app"></div><div id="qa"><strong>Synthetic local presentation QA</strong><button id="reset">Reset</button><button id="win">Discard win</button><button id="double">Two winners</button><button id="benchmark">Benchmark</button><pre id="result">Loading…</pre></div><script type="module">
-import {createApp,nextTick} from 'vue';
+import { createApp, nextTick } from 'vue';
 import App from '../../src/App.vue';
 import '../../src/style.css';
 import '../../src/tabletop.css';
-const realFetch=window.fetch.bind(window);
+// 保存原 fetch，只拦截相对 /api/ 请求；其他静态资产仍由本地开发服务器加载。
+// Keep original fetch and intercept relative /api/ requests only; other assets load from the local development server.
+const realFetch = window.fetch.bind(window);
 // Never contacts an actual game or persists a server-side room.
-window.fetch=async (url,options)=>String(url).startsWith('/api/') ? new Response(JSON.stringify(String(url).includes('/profile/history') ? {summary:{settledGames:0,totalScore:0},records:[]} : String(url).includes('/profile') ? {playerToken:'a'.repeat(64)} : {unchanged:true,connections:[true,true,true]}),{headers:{'content-type':'application/json'}}) : realFetch(url,options);
-const app=createApp(App); app.mount('#app');
+window.fetch = async (url, options) => String(url).startsWith('/api/') ? new Response(JSON.stringify(String(url).includes('/profile/history') ? {
+  summary: {
+    settledGames: 0,
+    totalScore: 0
+  },
+  records: []
+} : String(url).includes('/profile') ? {
+  playerToken: 'a'.repeat(64)
+} : {
+  unchanged: true,
+  connections: [true, true, true]
+}), {
+  headers: {
+    'content-type': 'application/json'
+  }
+}) : realFetch(url, options);
+// 挂载真实 App；后续通过 setupState 注入展示状态，绕过联网而不另写一套界面。
+// Mount the actual App and inject presentation state through setupState instead of networking or duplicating UI logic.
+const app = createApp(App);
+app.mount('#app');
 await nextTick();
-const scope=app._instance.setupState;
-const initial=()=>({id:'ABCDEF23',revision:1,you:0,hostSeat:0,phase:'playing',tableScores:[0,1,2].map(seat=>({id:`player-${seat+1}`,name:['测试甲','测试乙','测试丙'][seat],seat,totalScore:[12,-7,-5][seat],settledScore:[12,-7,-5][seat],provisionalScore:0,detached:false})),seats:[0,1,2].map(seat=>({seat,name:['测试甲','测试乙','测试丙'][seat],connected:true})),game:{id:'visual-fixture',schemaVersion:3,phase:'turn',turnStep:'discard',currentSeat:0,drawnTile:3,wallCount:42,characters:['sweet','elegant','sunny'],rules:{autoDiscardAfterHu:true,specialHuPatterns:true,allowPungUpgrade:false,turnDirection:'counterclockwise'},players:[0,1,2].map(seat=>({seat,handCount:13,hand:seat===0?[0,1,2,3,4,4,5,9,10,11,12,13,14,17]:undefined,huCount:0,score:0,melds:[],radishes:[],winPile:[]})),discards:Array.from({length:60},(_,index)=>({seat:index%3,tile:index%18})),history:[],sharedRadishes:[1,2,3,6,8,12],firstHuRadishesRevealed:true,legalActions:[{type:'discard',tile:0},{type:'discard',tile:4}],huDiagnostic:{canHu:false,message:'合成测试牌局'},waitTiles:[]}});
+const scope = app._instance.setupState;
+// 构造固定规模的合成公开视图；只给本人手牌，不是可提交给规则引擎的完整牌局。
+// Build a fixed-size synthetic public view with one private hand, not a complete engine state for submission.
+const initial = () => ({
+  id: 'ABCDEF23',
+  revision: 1,
+  you: 0,
+  hostSeat: 0,
+  phase: 'playing',
+  tableScores: [0, 1, 2].map(seat => ({
+    id: `player-${seat + 1}`,
+    name: ['测试甲', '测试乙', '测试丙'][seat],
+    seat,
+    totalScore: [12, -7, -5][seat],
+    settledScore: [12, -7, -5][seat],
+    provisionalScore: 0,
+    detached: false
+  })),
+  seats: [0, 1, 2].map(seat => ({
+    seat,
+    name: ['测试甲', '测试乙', '测试丙'][seat],
+    connected: true
+  })),
+  game: {
+    id: 'visual-fixture',
+    schemaVersion: 3,
+    phase: 'turn',
+    turnStep: 'discard',
+    currentSeat: 0,
+    drawnTile: 3,
+    wallCount: 42,
+    characters: ['sweet', 'elegant', 'sunny'],
+    rules: {
+      autoDiscardAfterHu: true,
+      specialHuPatterns: true,
+      allowPungUpgrade: false,
+      turnDirection: 'counterclockwise'
+    },
+    players: [0, 1, 2].map(seat => ({
+      seat,
+      handCount: 13,
+      hand: seat === 0 ? [0, 1, 2, 3, 4, 4, 5, 9, 10, 11, 12, 13, 14, 17] : undefined,
+      huCount: 0,
+      score: 0,
+      melds: [],
+      radishes: [],
+      winPile: []
+    })),
+    discards: Array.from({
+      length: 60
+    }, (_, index) => ({
+      seat: index % 3,
+      tile: index % 18
+    })),
+    history: [],
+    sharedRadishes: [1, 2, 3, 6, 8, 12],
+    firstHuRadishesRevealed: true,
+    legalActions: [{
+      type: 'discard',
+      tile: 0
+    }, {
+      type: 'discard',
+      tile: 4
+    }],
+    huDiagnostic: {
+      canHu: false,
+      message: '合成测试牌局'
+    },
+    waitTiles: []
+  }
+});
 let snapshot;
-function reset(){scope.resetRoomContext();scope.session={roomId:'ABCDEF23',token:'b'.repeat(64)};snapshot=initial();scope.applyState(structuredClone(snapshot));document.querySelector('#result').textContent='Ready. Synthetic private hand only; no backend writes.';}
-function win(double){snapshot=structuredClone(snapshot);snapshot.revision++;const index=snapshot.game.discards.length; snapshot.game.discards.push({seat:0,tile:4,huSeats:double?[2,1]:[2]}); for(const seat of double?[2,1]:[2]){snapshot.game.history.push({type:'hu',seat,tile:4,source:'discard',fromSeat:0});snapshot.game.players[seat].huCount++;snapshot.game.players[seat].winPile.push({tile:4,source:'discard',discardIndex:index,virtual:double&&seat===1});}scope.applyState(structuredClone(snapshot));document.querySelector('#result').textContent='Committed win applied. Current legal actions remain enabled.';}
-function summary(values){values.sort((a,b)=>a-b);return {samples:values.length,p50:+values[Math.floor(values.length*.5)].toFixed(3),p95:+values[Math.floor(values.length*.95)].toFixed(3),max:+values.at(-1).toFixed(3)}}
-async function benchmark(){reset();await nextTick();const selection=[],updates=[];for(let i=0;i<220;i++){const started=performance.now();scope.selectHand(i%2?0:4,i%2?0:4);await nextTick();if(i>=20)selection.push(performance.now()-started);}for(let i=0;i<100;i++){const next=structuredClone(snapshot);next.revision++;snapshot=next;const started=performance.now();scope.applyState(next);await nextTick();if(i>=20)updates.push(performance.now()-started);}document.querySelector('#result').textContent=JSON.stringify({method:'Same-browser Vue dev build, 60 river tiles; state->nextTick DOM patch only, excludes paint/network; 20 warmups per scenario',selectionMs:summary(selection),snapshotMs:summary(updates),tileElements:document.querySelectorAll('.mahjong-tile').length},null,2);}
-document.querySelector('#reset').onclick=reset;document.querySelector('#win').onclick=()=>win(false);document.querySelector('#double').onclick=()=>win(true);document.querySelector('#benchmark').onclick=benchmark;reset();
+// 清理旧桌上下文后注入新的合成快照，避免前一次动画/音频状态干扰观察。
+// Clear prior room context before applying a fresh synthetic snapshot to isolate animation/audio state.
+function reset() {
+  scope.resetRoomContext();
+  scope.session = {
+    roomId: 'ABCDEF23',
+    token: 'b'.repeat(64)
+  };
+  snapshot = initial();
+  scope.applyState(structuredClone(snapshot));
+  document.querySelector('#result').textContent = 'Ready. Synthetic private hand only; no backend writes.';
+}
+// 模拟服务端已提交的弃牌胡事件；一炮双响共享一张实物牌，第二份胡牌引用标为 virtual。
+// Simulate committed discard-win events; double winners share one physical tile and the second win reference is virtual.
+function win(double) {
+  snapshot = structuredClone(snapshot);
+  snapshot.revision++;
+  const index = snapshot.game.discards.length;
+  snapshot.game.discards.push({
+    seat: 0,
+    tile: 4,
+    huSeats: double ? [2, 1] : [2]
+  });
+  for (const seat of double ? [2, 1] : [2]) {
+    snapshot.game.history.push({
+      type: 'hu',
+      seat,
+      tile: 4,
+      source: 'discard',
+      fromSeat: 0
+    });
+    snapshot.game.players[seat].huCount++;
+    snapshot.game.players[seat].winPile.push({
+      tile: 4,
+      source: 'discard',
+      discardIndex: index,
+      virtual: double && seat === 1
+    });
+  }
+  scope.applyState(structuredClone(snapshot));
+  document.querySelector('#result').textContent = 'Committed win applied. Current legal actions remain enabled.';
+}
+// 原地排序本次测量样本并输出中位数、95 分位与最大值。
+// Sort local measurement samples in place and report median, p95 and maximum.
+function summary(values) {
+  values.sort((a, b) => a - b);
+  return {
+    samples: values.length,
+    p50: +values[Math.floor(values.length * .5)].toFixed(3),
+    p95: +values[Math.floor(values.length * .95)].toFixed(3),
+    max: +values.at(-1).toFixed(3)
+  };
+}
+// 分别测选牌和快照更新，丢弃前二十次预热；nextTick 只保证 DOM patch，不包含绘制与网络。
+// Measure selection and snapshot updates separately, discarding twenty warmups; nextTick covers DOM patching, not paint/network.
+async function benchmark() {
+  reset();
+  await nextTick();
+  const selection = [],
+    updates = [];
+  for (let i = 0; i < 220; i++) {
+    const started = performance.now();
+    scope.selectHand(i % 2 ? 0 : 4, i % 2 ? 0 : 4);
+    await nextTick();
+    // 达到预热次数后才保存样本，避免初始化开销污染稳态结果。
+    // Save samples only after warmup to exclude initialization overhead.
+    if (i >= 20) selection.push(performance.now() - started);
+  }
+  for (let i = 0; i < 100; i++) {
+    const next = structuredClone(snapshot);
+    next.revision++;
+    snapshot = next;
+    const started = performance.now();
+    scope.applyState(next);
+    await nextTick();
+    // 达到预热次数后才保存样本，避免初始化开销污染稳态结果。
+    // Save samples only after warmup to exclude initialization overhead.
+    if (i >= 20) updates.push(performance.now() - started);
+  }
+  document.querySelector('#result').textContent = JSON.stringify({
+    method: 'Same-browser Vue dev build, 60 river tiles; state->nextTick DOM patch only, excludes paint/network; 20 warmups per scenario',
+    selectionMs: summary(selection),
+    snapshotMs: summary(updates),
+    tileElements: document.querySelectorAll('.mahjong-tile').length
+  }, null, 2);
+}
+document.querySelector('#reset').onclick = reset;
+document.querySelector('#win').onclick = () => win(false);
+document.querySelector('#double').onclick = () => win(true);
+document.querySelector('#benchmark').onclick = benchmark;
+reset();
 </script></body></html>
