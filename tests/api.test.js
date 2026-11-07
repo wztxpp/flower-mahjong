@@ -3,6 +3,7 @@
 // 阅读说明见 docs/TESTING-READING-GUIDE.md；固定种子与凭证仅为测试，不应移入真实用户数据。
 // See docs/TESTING-READING-GUIDE.md; seeded data and test credentials must stay separate from real user data.
 import test from "node:test";
+import { visibleHistoryEvent } from "../shared/tile-visibility.js";
 import assert from "node:assert/strict";
 import { createServer, request as httpRequest } from "node:http";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
@@ -2693,8 +2694,16 @@ test("v3 HTTP selfdraw uses all personal radish zones, excludes already-hu payer
   // Exercise each entry in views with the same checks, preserving the listed order.
   for (const view of views) {
     const event = view.game.history.find((e) => e.type === "hu");
-    assert.equal(event.score.radishBonus, 4);
-    assert.equal(event.score.fan, 1);
+    // 本人保留算分明细；对手只见账目，不见自摸牌或私人分解。
+    // The owner keeps score details; opponents see the ledger without the self-draw face or private breakdown.
+    if (view.you === 0) {
+      assert.equal(event.score.radishBonus, 4);
+      assert.equal(event.score.fan, 1);
+    } else {
+      assert.equal(event.score.radishBonus, 4);
+      assert.equal(event.score.fan, 1);
+      assert.equal(event.tile, null);
+    }
     assert.deepEqual(event.payments, [
       {
         seat: 2,
@@ -2884,6 +2893,9 @@ test("v3 HTTP seat-three eight-point kong-discard win charges only seat one, sur
     game.rules = {
       ...structuredClone(DEFAULT_RULES),
       allowPungUpgrade: true,
+      // 复现旧八分反馈，不用新默认值重写历史计分。
+      // Reproduce the historical eight-point report without applying newer scoring defaults.
+      kongEventFan: false,
       baseFan: 4,
       specialHuPatterns: false,
     };
@@ -3133,11 +3145,11 @@ test("v3 HTTP extends a saved five-tile kong through six, seven and eight exactl
         assert.equal(meld.type, meldType);
         assert.deepEqual(
           meld.tiles,
-          Array(size).fill(meldType === "anGang" && view.you !== 0 ? null : 2),
+          Array(size).fill(2),
         );
         assert.equal(
           meld.tile,
-          meldType === "anGang" && view.you !== 0 ? null : 2,
+          2,
         );
         const events = view.game.history.filter(
           (event) => event.type === "addGang",
@@ -3191,7 +3203,10 @@ test("v3 HTTP extends a saved five-tile kong through six, seven and eight exactl
       (event) => event.type === "hu",
     ).score;
     assert.equal(score.copyFanBonus, 5);
-    assert.equal(score.fan, 6);
+    // 新快照保留同牌五番，再加基础一番与杠上花一番。
+    // New snapshots retain five copy fan plus base one and kong-replacement one.
+    assert.equal(score.fan, 7);
+    assert.equal(score.kongReplacementBonus, 1);
     assertLatest((await api.store.get(api.roomId)).game);
   }
 });
@@ -4015,7 +4030,7 @@ test("v3 HTTP rob-kong settles both winners clockwise regardless of response ord
       for (const state of states)
         assert.deepEqual(
           state.game.history.filter((event) => event.type === "hu"),
-          events,
+          events.map((event) => visibleHistoryEvent(stored, event, state.you)),
         );
       assertError(
         await api.clients[responseOrder[1]].action(revision, {
@@ -4791,7 +4806,7 @@ test("v3 HTTP reported ordinary four-dot discard offers repeat hu before natural
   // 逐项覆盖 states；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in states with the same checks, preserving the listed order.
   for (const state of states)
-    assert.deepEqual(state.game.history, stored.history);
+    assert.deepEqual(state.game.history, stored.history.map((event) => visibleHistoryEvent(stored, event, state.you)));
 });
 // 场景：v3 HTTP 再次荣胡规则变化保留已胡来源保护，并保持 v2 锁定规则不变
 // Scenario: v3 HTTP repeat-discard change preserves won-source protection and frozen v2 lock
@@ -5060,7 +5075,7 @@ test("v3 HTTP ready single payment is atomic, visible to all, and cannot be dupl
   // Exercise each entry in after with the same checks, preserving the listed order.
   for (const state of after) {
     assert.equal(state.revision, views[0].revision + 1);
-    assert.deepEqual(state.game.history, stored.history);
+    assert.deepEqual(state.game.history, stored.history.map((event) => visibleHistoryEvent(stored, event, state.you)));
     assert.deepEqual(
       state.game.players.map((p) => p.score),
       [100, -50, -50],

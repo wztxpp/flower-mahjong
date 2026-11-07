@@ -1,3 +1,5 @@
+import { visibleHistoryEvent } from '../shared/tile-visibility.js';
+
 // 记录层：把房间生命周期与局内规则隔离，保存可验证的参与身份和公开成绩。
 // History layer: separate room lifecycle from game rules and preserve verifiable participation and public scores.
 // 旧存档只补当前可证明的一局；不创造已丢失历史，也不改引擎内部状态。
@@ -42,7 +44,7 @@ export function newGameMetadata(room, id, at) {
 // Explicit public-event fields avoid copying a future engine's private fields.
 // 公开事件用白名单复制字段，防止未来新增私人字段被自动带出。
 // Copy public events through an allowlist so future private fields cannot leak automatically.
-function publicEvents(game) {
+function publicEvents(game, viewerSeat = null) {
   const allowed = [
     'revision',
     'type',
@@ -64,8 +66,12 @@ function publicEvents(game) {
     'kongType',
     'radishDeferred',
     'pendingKongRadishes',
+    'hidden',
   ];
-  return (game.history || []).map((event) => {
+  return (game.history || []).map((storedEvent) => {
+    // 个人历史也有座位权限；进行中不能从大厅记录绕过牌桌遮牌。
+    // Profile history has seat permissions too; lobby records must not bypass live-table masking.
+    const event = visibleHistoryEvent(game, storedEvent, viewerSeat);
     const result = {};
     // 摸牌事件即使含 tile 也不复制；其他允许字段深拷贝，避免共享可变对象。
     // Never copy a draw tile; deep-clone other allowed values to avoid shared mutable objects.
@@ -155,7 +161,7 @@ export function recordsForProfile(room, playerHash) {
           name: meta.participants[index]?.name || `${index + 1}号位`,
           score: player.score,
         })),
-        events: publicEvents(game),
+        events: publicEvents(game, seat),
       });
     }
   }

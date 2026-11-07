@@ -231,7 +231,8 @@ function publicRoom(room, seat) {
     for (const player of game.players) {
       delete player.hand;
       player.melds = player.melds.map((meld) =>
-        meld.type === 'anGang'
+        meld.type === 'anGang' &&
+        !(game.schemaVersion === 3 && game.rules.publicConcealedKongs === true)
           ? {
               type: 'anGang',
               tile: null,

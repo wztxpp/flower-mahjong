@@ -166,3 +166,5 @@ After an action CAS failure, `differsOnlyInPresence` compares the full saved mod
 
 `recordPresence` 仅在 room.game 存在且未结束时保存展示租约。大厅/终局轮询不因遥测提升房间版本，因此不会阻塞严格 revision 校验的 `/start`；正常在线心跳、换座/离席及并发开局保护不变。新局创建后恢复登记。详见 [音画节奏](PRESENTATION-PACING.md)。
 `recordPresence` stores presentation leases only while room.game exists and remains unfinished. Lobby/finished polling no longer bumps room revisions for telemetry, so it cannot block `/start`'s strict revision checks. Normal heartbeats, occupancy/departure and concurrent-start protections remain unchanged. Registration resumes after game creation. See [presentation pacing](PRESENTATION-PACING.md).
+
+新局公开暗杠、自摸胡牌隐私通过 `shared/tile-visibility.js` 统一过滤；`publicEvents` 接收本人历史座位，避免从个人记录旁路读取对手牌面或计分牌数。缺快照旧局与 schema1/2 保持原样，详见 [展示隐私](TILE-VISIBILITY.md)。 / New-game kong/win visibility shares one filter; publicEvents receives the profile participant seat so records cannot bypass tile/count privacy. Older snapshots and schemas remain unchanged.

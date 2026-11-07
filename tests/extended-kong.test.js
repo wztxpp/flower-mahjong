@@ -228,9 +228,9 @@ for (const type of ["anGang", "mingGang", "buGang"]) {
         const publicMeld = getPlayerView(game, viewer).players[0].melds[0];
         assert.deepEqual(
           publicMeld.tiles,
-          Array(count).fill(type === "anGang" ? null : 0),
+          Array(count).fill(0),
         );
-        assert.equal(publicMeld.tile, type === "anGang" ? null : 0);
+        assert.equal(publicMeld.tile, 0);
         assert.equal(getPlayerView(game, viewer).players[0].hand, undefined);
       }
       assert.deepEqual(
@@ -408,11 +408,11 @@ test("same-tile peng and kong remain separate and select the correct upgrade typ
     [0, 0, 0],
   );
   assert.deepEqual(getPlayerView(extended, 1).players[0].melds[1].tiles, [
-    null,
-    null,
-    null,
-    null,
-    null,
+    0,
+    0,
+    0,
+    0,
+    0,
   ]);
 });
 // 场景：牌墙必须同时够翻萝卜与补牌，且每种实体牌总数仍为八张

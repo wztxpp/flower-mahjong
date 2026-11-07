@@ -90,6 +90,10 @@ For an available schema-three post-hu win, the server supplies hu alone. mustHu 
 
 Server seats are `0 / 1 / 2`. `mySeat` is the viewer’s absolute seat; `opponents` uses modulo for viewer-relative arrangement. Characters still follow absolute seats and server assignments, so all viewers agree. The host controls starting; the dealer determines the opening position. They are different roles.
 
+牌河 `riverPlayers` 复用 `opponents[0]`（左）、`me`（中）、`opponents[1]`（右），三位观察者分别看到 `[1,0,2]`、`[2,1,0]`、`[0,2,1]`。桌面与窄屏沿用同一三列网格，不改变绝对座位 key、弃牌归属或记录顺序。`tests/ui.test.js` 覆盖三种视角、三个规则版本及终局。
+
+River columns reuse `opponents[0]` (left), `me` (center), and `opponents[1]` (right). Viewers zero, one and two see `[1,0,2]`, `[2,1,0]`, and `[0,2,1]`. Desktop and narrow layouts retain the same three-column grid without changing absolute keys, discard ownership or record order. The UI suite covers all viewpoints, all engine versions and finished games.
+
 `seats` 合并房间占座信息与本局参与者信息；终局 `scoreSeats` 优先本局参与者名单。本桌总积分使用参与者 ID，不能按昵称或座位号把新玩家与离桌玩家合并。
 
 `seats` merges occupancy with current-game participant data; after finishing, `scoreSeats` prefers the game’s participant list. Table totals use participant IDs, not nickname or seat-number merging between new and departed players.
@@ -197,3 +201,5 @@ Follow applyState → registerSnapshot → queueLocalPresentation → playThroug
 
 local 前台长短网络缺口均保留队列和游标；`pendingPresentationCount` 合计本地当前/待播段及 onPendingPrefix 的本批外未终态有声共享前缀（不重复计本批），总数达到8才显示“略过并看最新牌面”，玩家点击 `skipLocalPlayback` 后取消本页媒体并登记已知历史为略过。不能按五秒阈值自动丢队列。隐藏、离桌和换局仍走取消/静默基线，旧屏障继续保留其独立重连语义。详见 [音画节奏](PRESENTATION-PACING.md)，最终测试结果见独立验收记录。
 Local foreground gaps of any length preserve queues/cursors. pendingPresentationCount combines active/queued local segments with onPendingPrefix’s nonterminal voiced recovery outside the current batch, avoiding current-batch double counting. At eight, explicit skip invokes skipLocalPlayback to cancel page media and mark known history skipped. There is no automatic five-second queue drop. Hide, leave and game changes still cancel/baseline; legacy barriers retain separate reconnect semantics. See the pacing protocol and separate final validation record.
+
+新局对手自摸胡牌用 `tile: null, hidden: true` 表示。App 胡牌区、字幕、悬停和读屏保持隐藏，同时仍播放自摸声音与高亮；终局重新拿到牌面。见 [展示隐私](TILE-VISIBILITY.md)。 / Opponent self-draw wins use tile null/hidden true. App hides faces/captions/tooltips/accessibility text while retaining audio and highlights; finish reveals the tiles.

@@ -199,6 +199,9 @@ const opponents = computed(() => [
   seats.value[(mySeat.value + 1) % 3],
   seats.value[(mySeat.value + 2) % 3],
 ]);
+// 牌河从左到右复用对手面板的左右顺序，并将本人放在中间；不排序或修改服务端座位/弃牌快照。
+// Reuse the opponent panels' left/right order with the viewer in the center; never sort or mutate server seats/discards.
+const riverPlayers = computed(() => [opponents.value[0], me.value, opponents.value[1]]);
 const filledSeats = computed(() => seats.value.filter((seat) => seat.name).length);
 const isHost = computed(() => mySeat.value === (state.value?.hostSeat ?? 0));
 const canConfigureStart = computed(
@@ -294,7 +297,7 @@ const winningAnnouncement = computed(() =>
   winningEvents.value
     .map(
       (event) =>
-        `${seatLabel(event.seat)}${winSourceLabel(event)}${tileLabel(event.tile)}${event.fromSeat != null ? `，来自${seatLabel(event.fromSeat)}` : ''}`,
+        `${seatLabel(event.seat)}${winSourceLabel(event)}${event.hidden ? '（牌面隐藏）' : tileLabel(event.tile)}${event.fromSeat != null ? `，来自${seatLabel(event.fromSeat)}` : ''}`,
     )
     .join('；'),
 );
@@ -557,6 +560,9 @@ function meldLabel(meld) {
 // 区分自摸、接炮、抢杠及共胡逻辑副本；标签不新增实体牌。
 // Distinguish win sources and virtual shared-win copies; labels do not create physical tiles.
 function winLabel(win) {
+  // 遮牌记录没有牌种，提示与读屏也不能把 null 当作一条。
+  // Masked entries have no identity; tooltips and screen readers must not coerce null into one bamboo.
+  if (win.hidden) return '自摸 · 牌面隐藏，终局公开';
   return `${tileLabel(win.tile)} · ${win.source === 'selfDraw' ? '自摸' : win.source === 'robKong' ? '抢杠胡' : win.source === 'kongDiscard' ? '杠后接胡' : '接炮'}${win.virtual ? ' · 共胡记牌，不另算实物牌' : ''}`;
 }
 // 兼容不同版本的服务端计分明细；只解释已经算好的番、萝卜与付款方。
@@ -571,12 +577,16 @@ function scoreSummary(score, payments = []) {
     return `大单钓：${score.total} 分 / 付款方（本次不叠加番分、萝卜${isLatest.value ? '；神龙局末另结' : '、神龙'}）${paidBy}`;
   const patterns = (
     score.patternBonuses ||
-    (score.robKongBonus ? [{ type: 'robKong', fan: score.robKongBonus }] : [])
+    // 旧特殊牌型开关关闭时仍可能有本次事件番，按来源字段读取，不重新算分。
+    // Older non-pattern scoring may still carry event fan; read its source fields without recalculating scores.
+    ['robKong', 'kongDiscard', 'kongReplacement']
+      .filter((type) => score[`${type}Bonus`])
+      .map((type) => ({ type, fan: score[`${type}Bonus`] }))
   )
     .map((item) =>
       item.type === 'sevenPairs' && score.sevenPairsFixed
         ? `七对固定${item.fan}番`
-        : `${{ bigSingle: '大单吊', allTriplets: '对对胡', pureSuit: '清一色', robKong: '抢杠', sevenPairs: '七对' }[item.type] || item.type} +${item.fan}番`,
+        : `${{ bigSingle: '大单吊', allTriplets: '对对胡', pureSuit: '清一色', robKong: '抢杠', kongDiscard: '杠后接炮', kongReplacement: '杠上花', sevenPairs: '七对' }[item.type] || item.type} +${item.fan}番`,
     )
     .join('、');
   const prefix = patterns ? `${patterns} · ` : '';
@@ -761,7 +771,8 @@ function clearPresentation() {
 function presentWins(events, snapshot) {
   const wins = events.filter(
     (event) =>
-      event.type === 'hu' && Number.isInteger(event.tile) && event.tile >= 0 && event.tile < 18,
+      event.type === 'hu' && (event.hidden === true ||
+        (Number.isInteger(event.tile) && event.tile >= 0 && event.tile < 18)),
   );
   if (!wins.length) return Promise.resolve();
   clearPresentation();
@@ -2511,7 +2522,7 @@ onUnmounted(() => {
                       :data-win-seat="player.seat"
                       :data-win-index="winIndex"
                       :title="winLabel(win)"
-                      ><MahjongTile :tile="win.tile" small /><span
+                      ><MahjongTile :tile="win.tile" :back="win.hidden" small /><span
                         v-if="win.virtual"
                         class="virtual-badge"
                         aria-label="共胡记牌，不另算实物牌"
@@ -2580,11 +2591,11 @@ onUnmounted(() => {
                       ? `${seatLabel(event.fromSeat)}${event.source === 'robKong' ? '杠牌' : '出牌'}`
                       : '摸牌成胡'
                   }}</span>
-                  <MahjongTile :tile="event.tile" small /><span class="win-cue-arrow">→</span>
+                  <MahjongTile :tile="event.tile" :back="event.hidden" small /><span class="win-cue-arrow">→</span>
                   <span
                     ><b>{{ seatLabel(event.seat) }}</b
                     ><strong
-                      >{{ winSourceLabel(event) }} · {{ tileLabel(event.tile) }}</strong
+                      >{{ winSourceLabel(event) }} · {{ event.hidden ? '牌面隐藏' : tileLabel(event.tile) }}</strong
                     ></span
                   >
                 </div>
@@ -2641,7 +2652,8 @@ onUnmounted(() => {
               </section>
               <!-- 牌河保留被碰杠或胡过的记录；v-memo 的依赖包含认领与高亮，防止缓存旧外观。 / The river retains claimed records; v-memo dependencies include claims and highlights so cached appearance stays current. -->
               <div class="discard-area"
-                ><div v-for="player in seats" :key="player.seat" class="discard-group"
+                ><div v-for="player in riverPlayers" :key="player.seat" class="discard-group"
+                  :data-river-seat="player.seat"
                   ><div class="discard-label"
                     ><span>{{
                       player.seat === mySeat && me.isCurrentParticipant !== false
@@ -2767,7 +2779,7 @@ onUnmounted(() => {
                     :data-win-seat="mySeat"
                     :data-win-index="winIndex"
                     :title="winLabel(win)"
-                    ><MahjongTile :tile="win.tile" small /><span
+                    ><MahjongTile :tile="win.tile" :back="win.hidden" small /><span
                       v-if="win.virtual"
                       class="virtual-badge"
                       aria-label="共胡记牌，不另算实物牌"

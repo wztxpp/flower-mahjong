@@ -606,3 +606,25 @@ test("no eligible robber commits an upgrade immediately, without an empty reacti
   // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
   assertGameInvariants(game);
 });
+
+// 抢杠原有的一番不依赖新增快照；保存待回应窗口后恢复也不能重复加番或改写旧记录。
+// The existing rob-kong bonus is independent of the new flag; restoring a claim neither doubles it nor rewrites history.
+for (const snapshot of [true, false, 'absent']) {
+  test(`rob-kong retains exactly one fan with snapshot ${snapshot}`, () => {
+    let game = fixture();
+    if (snapshot === 'absent') delete game.rules.kongEventFan;
+    else game.rules.kongEventFan = snapshot;
+    game = move(game, 0, 'buGang', 0);
+    game = JSON.parse(JSON.stringify(game));
+    const before = structuredClone(game);
+    const next = move(move(game, 2, 'hu'), 1, 'hu');
+    assert.deepEqual(game, before);
+    assert.deepEqual(next.rules, before.rules);
+    for (const event of huEvents(next)) {
+      assert.equal(event.score.fan, 2);
+      assert.equal(event.score.robKongBonus, 1);
+      assert.deepEqual(event.score.patternBonuses, [{ type: 'robKong', fan: 1 }]);
+    }
+    assertGameInvariants(next);
+  });
+}

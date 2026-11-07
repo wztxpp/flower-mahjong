@@ -238,6 +238,7 @@ test("legacy allowed peng upgrade still yields to simultaneous self-hu", () => {
     huCount: 0,
   });
   game.rules.allowPungUpgrade = true;
+  delete game.rules.preHuActionChoice;
   // Rebuild the concealed hand while preserving all physical tile counts.
   // The drawn 2 completes 2/3/4, 5/6/7, 9/10/11 and a pair of 17s.
   const replacementHand = [2, 3, 4, 5, 6, 7, 9, 10, 11, 17, 17];
@@ -365,6 +366,9 @@ test("a concealed kong and replacement draw cannot stand in for the mandatory po
       head: [15, 15, 9, 9],
     }),
   );
+  // 本用例验证旧规则存档；新局的碰后禁暗杠由 action-choice 回归覆盖。
+  // This regression models an old rule snapshot; action-choice tests cover the new restriction.
+  delete game.rules.concealedKongAfterPungDiscard;
   // Substitute four non-zero concealed tiles with fours of another tile, keeping the wall conserved.
   // 准备：构造该变体的规则、牌局或对照快照，保持旧历史与当前输入分离。
   // Arrange this variant’s rules, game or comparison snapshot, keeping saved history separate from current input.

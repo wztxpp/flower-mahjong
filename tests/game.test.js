@@ -991,6 +991,7 @@ test("hu suppresses a simultaneous kong choice in hand and on another player dis
   let game = fixture({
     hands: [hand, waiting, waiting],
     drawTile: 0,
+    rules: { preHuActionChoice: false },
   });
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
@@ -1006,6 +1007,7 @@ test("hu suppresses a simultaneous kong choice in hand and on another player dis
   game = doAction(
     fixture({
       hands: [winning, base, waiting],
+      rules: { preHuActionChoice: false },
     }),
     0,
     "discard",
@@ -1050,7 +1052,7 @@ test("concealed kong pays each opponent 2, defers its radish until first hu and 
   const view = getPlayerView(game, 1);
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.deepEqual(view.players[0].melds[0].tiles, [null, null, null, null]);
+  assert.deepEqual(view.players[0].melds[0].tiles, [0, 0, 0, 0]);
   assert.equal(
     game.history.find((event) => event.type === "anGang").tile,
     undefined,
@@ -2740,6 +2742,8 @@ test("reported seat-three eight-point kong-discard win receives eight, not sixte
     kongSeats: [0],
     firstHuRadishesRevealed: true,
     rules: {
+      // 保留反馈发生时的旧算分快照。 / Preserve the scoring snapshot from the reported incident.
+      kongEventFan: false,
       baseFan: 4,
     },
     head: [6],
@@ -2865,7 +2869,9 @@ test("first, repeat, final and big-single kong-discard payments ignore both self
           // Check the big-single case under its specific payment contract rather than ordinary-shape expectations.
           if (bigSingle) {
             assert.equal(event.score.bigSingle, true);
-            assert.equal(event.points, shape === "legacyBigSingle" ? 50 : 4);
+            // 新快照的大单吊叠加杠后接炮一番，旧固定五十分仍不变。
+            // New big-single scoring includes one event fan; legacy fixed fifty remains unchanged.
+            assert.equal(event.points, shape === "legacyBigSingle" ? 50 : 8);
           }
           assert.deepEqual(
             game.players.map((player) => player.score),
@@ -3428,6 +3434,8 @@ test("reported automatic seven-circles kong discard pays 34 not 68 and never cha
       tail: [16],
       radishes: [sharedRadishes, [], []],
       rules: {
+        // 保留反馈发生时的旧算分快照。 / Preserve the scoring snapshot from the reported incident.
+        kongEventFan: false,
         baseFan: 8,
       },
     });
@@ -4078,5 +4086,73 @@ test("100 paired full games keep identical tiles and scores with automatic versu
         `Seed ${seed}: ${key} changed with pacing`,
       );
     }
+  }
+});
+
+// 新快照开启事件番，旧快照缺字段或 false 不补写；真实暗杠后的补摸只加一次。
+// Explicit new snapshots enable event fan; absent/false saved flags are never backfilled, and a real kong draw adds it once.
+for (const snapshot of [true, false, 'absent']) {
+  test(`kong event fan snapshot ${snapshot}: real replacement, reload and continuation`, () => {
+    let game = fixture({
+      hands: [[0, 0, 0, 0, 3, 4, 5, 9, 10, 11, 12, 13, 14, 17], waiting, waiting],
+      drawTile: 0,
+      head: [17, 17, 6],
+      firstHuRadishesRevealed: true,
+    });
+    if (snapshot === 'absent') delete game.rules.kongEventFan;
+    else game.rules.kongEventFan = snapshot;
+    game = doAction(game, 0, 'anGang', 0);
+    game = JSON.parse(JSON.stringify(game));
+    const before = structuredClone(game);
+    const next = doAction(game, 0, 'hu');
+    const score = huEvent(next).score;
+    assert.deepEqual(game, before);
+    assert.deepEqual(next.rules, before.rules);
+    assert.deepEqual(next.history.slice(0, before.history.length), before.history);
+    assert.equal(score.kongReplacementBonus, snapshot === true ? 1 : undefined);
+    assert.equal(score.fan, snapshot === true ? 3 : 2);
+    assert.equal(score.fanPoints, snapshot === true ? 4 : 2);
+    assert.equal(next.lastDraw.source, 'continuation');
+    const repeated = doAction(next, 0, 'hu');
+    const repeatScore = repeated.history.filter(event => event.type === 'hu').at(-1).score;
+    assert.equal(repeatScore.kongReplacementBonus, undefined);
+    assert.equal(repeatScore.fan, 2);
+    assertGameInvariants(repeated);
+  });
+
+  // 同张杠后弃牌可由首次与再次胡者共同结算，每人只加一番且只有出牌者付款。
+  // First and repeat winners share a post-kong discard; each gets one bonus and only the discarder pays.
+  test(`kong event fan snapshot ${snapshot}: simultaneous first and repeat discard wins`, () => {
+    let game = fixture({
+      hands: [nonWinningSource, waiting, waiting],
+      huCounts: [1, 0, 1],
+      kongSeats: [0],
+      firstHuRadishesRevealed: true,
+    });
+    if (snapshot === 'absent') delete game.rules.kongEventFan;
+    else game.rules.kongEventFan = snapshot;
+    game = doAction(game, 0, 'discard', 17);
+    game = JSON.parse(JSON.stringify(game));
+    const savedRules = structuredClone(game.rules);
+    game = doAction(doAction(game, 2, 'hu'), 1, 'hu');
+    for (const seat of [1, 2]) {
+      const event = huEvent(game, seat);
+      assert.equal(event.source, 'kongDiscard');
+      assert.equal(event.score.kongDiscardBonus, snapshot === true ? 1 : undefined);
+      assert.equal(event.score.fan, snapshot === true ? 2 : 1);
+      assert.equal(event.points, snapshot === true ? 2 : 1);
+      assert.deepEqual(event.payments.filter(payment => payment.delta < 0).map(payment => payment.seat), [0]);
+    }
+    assert.deepEqual(game.rules, savedRules);
+    assertGameInvariants(game);
+  });
+}
+
+// 新局默认必须是可验证的布尔开关，错误类型不能被当作开启。
+// New defaults must persist a validated boolean, not truthy invalid inputs.
+test('new games explicitly snapshot validated kong event fan', () => {
+  assert.equal(createGame({ seed: 'kong-default' }).rules.kongEventFan, true);
+  for (const invalid of [1, 'true', null]) {
+    assert.throws(() => createGame({ rules: { kongEventFan: invalid } }), /必须为布尔值/);
   }
 });

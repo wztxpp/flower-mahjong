@@ -7,6 +7,7 @@
  * 阅读 / Read: docs/ENGINE-READING-GUIDE.md, docs/TERMINOLOGY.md.
  */
 /** Pure schema-v3 engine. Scores are virtual; provisional overlaps are explicit rules. */
+import { hidesPrivateWinDetails, visibleHistoryEvent, visibleScoreSummary } from './tile-visibility.js';
 import { DEFAULT_BIG_SINGLE_READY_POINTS, isBigSingleReadyPoints } from './start-options.js';
 /* 牌种有 18 种；每种八张，一共 144 张实体牌。
  * There are 18 identities, eight copies each, for 144 physical tiles. */
@@ -17,12 +18,24 @@ export const DEFAULT_RULES = Object.freeze({
   // 是否允许七对结构。
   // Enable the seven-pairs shape.
   sevenPairs: true,
+  // 暗杠牌面公开；缺字段旧局仍沿用隐藏策略。
+  // Publish concealed-kong faces; saves missing this flag retain hidden faces.
+  publicConcealedKongs: true,
+  // 进行中只让本人看自摸胡牌；不改变权威牌区或计分。
+  // Only the owner sees self-drawn wins during play; authority and scoring stay unchanged.
+  hideSelfDrawWins: true,
   // 允许碰后补杠；v0.7.0 已保存的 false 按已确认纠错映射为先出牌策略。
   // Allow peng upgrades; saved v0.7.0 false values map to the authorized after-discard correction.
   allowPungUpgrade: true,
   // 碰后必须真正打出一张牌，之后正常操作窗口才允许补杠。
   // Require an actual post-peng discard before later legal upgrade windows.
   pungUpgradeAfterDiscard: true,
+  // 未首次胡牌时同时保留胡、碰和合法杠；旧局缺字段仍用原有优先规则。
+  // Offer all legal choices before the first win; missing saved flags retain old priority.
+  preHuActionChoice: true,
+  // 碰后的这次出牌前不能暗杠，实际出牌后正常窗口恢复。
+  // No concealed kong before the post-peng discard; later normal windows resume.
+  concealedKongAfterPungDiscard: true,
   // 本局行牌方向；缺失字段保留旧方向。
   // Saved turn direction; missing fields retain the historical direction.
   turnDirection: 'counterclockwise',
@@ -38,6 +51,9 @@ export const DEFAULT_RULES = Object.freeze({
   // 是否使用新版七对/大单吊牌型与固定听口规则。
   // Enable special seven-pairs/big-single pattern and wait rules.
   specialHuPatterns: true,
+  // 新局的杠后接炮与杠上花各加一番；缺失或 false 保留旧算分，七对固定档位不叠加。
+  // New games add one fan for post-kong discard/replacement wins; absent/false keeps old scoring and seven pairs stays fixed.
+  kongEventFan: true,
   // 普通胡牌的基础番数，不等于已经换算的分数。
   // Base fan for an ordinary win, not converted points.
   baseFan: 1,
@@ -161,11 +177,16 @@ function normalizeNewGameRules(input = {}) {
   if (!isBigSingleReadyPoints(rules.bigSingleReadyPoints)) throw new Error('大单吊喜钱分值无效');
   for (const key of [
     'sevenPairs',
+    'publicConcealedKongs',
+    'hideSelfDrawWins',
     'allowPungUpgrade',
     'pungUpgradeAfterDiscard',
+    'preHuActionChoice',
+    'concealedKongAfterPungDiscard',
     'autoDiscardAfterHu',
     'bigSingleReadyPayment',
     'specialHuPatterns',
+    'kongEventFan',
     'multipleWinners',
     'finalHuPaymentExceptions',
     'selfDrawOnlyUnwon',
@@ -552,10 +573,11 @@ function getDiscardClaimOptions(game, seat, discarded) {
     counts[discarded.tile] >= 3 &&
     canDeclareKong(game, seat, 'mingGang', discarded.tile);
   const canPeng = !player.huCount && player.melds.length < 4 && counts[discarded.tile] >= 2;
-  // 胡优先于同时可做的杠；未胡者无杠时仍可选碰。是否可过由动作白名单按已胡状态决定。
-  // Hu suppresses a simultaneous kong; unwon claimants may still peng without a kong.
-  // The final allowlist adds pass only when the claimant has no mandatory hu.
-  if (canHu && canGang)
+  // 新局未胡玩家保留所有合法选择；已胡必胡仍由最终白名单保证。
+  // New games retain all unwon-player choices; the final allowlist still enforces post-hu wins.
+  // 旧局缺开关时不改变已经采用的胡优先策略。
+  // Missing saved flags preserve the historical hu-first policy.
+  if (canHu && canGang && (player.huCount > 0 || game.rules.preHuActionChoice !== true))
     return [
       {
         type: 'hu',
@@ -642,7 +664,8 @@ export function getLegalActions(game, seat) {
     type: 'discard',
     tile,
   }));
-  if (drawn !== null && getAllowedHuWaits(game, seat, drawn, true)) {
+  const canHu = drawn !== null && getAllowedHuWaits(game, seat, drawn, true);
+  if (canHu) {
     // 胡后的自然摸牌、续摸和杠后补摸统一必须胡；返回前排除所有过牌/出牌选择。
     // Normal, continuation and kong-replacement draws all require a post-hu win;
     // return before exposing any discard/pass alternative, regardless of the auto-discard setting.
@@ -650,12 +673,18 @@ export function getLegalActions(game, seat) {
     actions.push({
       type: 'hu',
     });
-  } else {
+  }
+  // 首胡前胡与杠不是互斥；保存局未启用新开关时仍保留旧行为。
+  // Before the first win, hu and kong are independent choices; old saves retain their policy.
+  if (!canHu || game.rules.preHuActionChoice === true) {
     const counts = countTiles(player.hand);
     for (let tile = 0; tile < TILE_COUNT; tile++) {
       if (
         player.melds.length < 4 &&
         counts[tile] >= 4 &&
+        // 只有本人的真实出牌才能结束碰后禁暗杠窗口，补摸不算。
+        // Only this player's actual discard ends the post-peng restriction, not a replacement draw.
+        !(game.rules.concealedKongAfterPungDiscard === true && pendingPungDiscard(game, seat)) &&
         canDeclareKong(game, seat, 'anGang', tile)
       )
         actions.push({
@@ -911,7 +940,7 @@ export function fanToPoints(fan) {
 }
 /* 只计算本次胡牌分解，不直接转账；各版本的萝卜、神龙和大单吊重叠策略不能混用。
  * Calculate one hu score breakdown without transferring points; keep version-specific radish, dragon, and big-single policies. */
-function calculateHuScore(game, seat, bigSingle, pattern, robKongBonus = 0) {
+function calculateHuScore(game, seat, bigSingle, pattern, kongEventType = null) {
   const player = game.players[seat];
   // The winning tile is now in winPile, not in hand. River references never join these counts.
   /* 本人手牌与逻辑胡牌区一起参与相应计分，不把弃牌河再计一遍。
@@ -972,16 +1001,19 @@ function calculateHuScore(game, seat, bigSingle, pattern, robKongBonus = 0) {
         fan: 2,
       });
   }
+  // 事件番只影响本次胡，不写入首胡牌型，避免后续胡重复累积。
+  // Event fan belongs to this win only; never store it in the first pattern and accumulate it on later wins.
+  const kongEventBonus = kongEventType ? 1 : 0;
   const fan =
     (sevenPairsFixed
       ? pattern.fixedFan
       : game.rules.baseFan +
         copyFanBonus +
-        patternBonuses.reduce((sum, item) => sum + item.fan, 0)) + robKongBonus;
-  if (robKongBonus)
+        patternBonuses.reduce((sum, item) => sum + item.fan, 0)) + kongEventBonus;
+  if (kongEventBonus)
     patternBonuses.push({
-      type: 'robKong',
-      fan: robKongBonus,
+      type: kongEventType,
+      fan: kongEventBonus,
     });
   const fanPoints = fanToPoints(fan);
   /* 当前 v3 按全桌共享萝卜计分；翻牌归属与计分归属不是同一个概念。
@@ -1019,11 +1051,9 @@ function calculateHuScore(game, seat, bigSingle, pattern, robKongBonus = 0) {
     dragonBonus,
     bigSingle,
     bigSinglePoints,
-    ...(robKongBonus
-      ? {
-          robKongBonus,
-        }
-      : {}),
+    // 保留抢杠的历史字段名；新增来源使用独立字段，不把旧事件伪装成新快照。
+    // Preserve the historical rob-kong field; new sources use distinct fields without rewriting old events.
+    ...(kongEventBonus ? { [`${kongEventType}Bonus`]: kongEventBonus } : {}),
     overlapPolicy: special ? 'fan' : game.rules.bigSingleOverlap,
     total,
     ...(special
@@ -1236,11 +1266,22 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
     };
   });
   for (const { seat, newRadishes, bigSingle, pattern, wasRepeat } of prepared) {
-    /* 抢杠胡通常加一番，但七对首次及重复胡都不叠加该事件番。
-     * Rob-kong adds one fan except for both first and repeated seven-pairs wins. */
-    // Seven-pairs never adds the rob-kong event bonus, on either its first or repeat win.
-    const robKongBonus = source === 'robKong' && pattern?.kind !== 'sevenPairs' ? 1 : 0;
-    const score = calculateHuScore(game, seat, bigSingle, pattern, robKongBonus);
+    /* 七对沿用固定档位，首次及重复胡均不叠加事件番。普通抢杠保留历史加番；
+     * 其他来源严格要求开局快照为 true，旧存档不能靠读取新默认值启用。
+     * Seven pairs keeps its fixed tier on first and repeated wins. Ordinary rob-kong retains its historical bonus;
+     * other sources require an explicit true snapshot, never a default injected into saved games. */
+    let kongEventType = null;
+    if (pattern?.kind !== 'sevenPairs') {
+      if (source === 'robKong') kongEventType = 'robKong';
+      else if (game.rules.kongEventFan === true) {
+        if (source === 'kongDiscard') kongEventType = 'kongDiscard';
+        // 只认本次杠后补摸；普通摸牌、胡后续摸和上一次杠的标记都不能获得此番。
+        // Only the current replacement draw qualifies, not natural/continuation draws or an earlier kong marker.
+        else if (selfDraw && game.lastDraw?.seat === seat && game.lastDraw.source === 'replacement')
+          kongEventType = 'kongReplacement';
+      }
+    }
+    const score = calculateHuScore(game, seat, bigSingle, pattern, kongEventType);
     const repeatSelfDrawWithOneUnhu =
       selfDraw && !bigSingle && priorHuSeats.length === 2 && priorHuSeats.includes(seat);
     /* 本批次之前尚未胡、而现在三家均已胡，才符合末家首次胡的付款例外。
@@ -1701,8 +1742,8 @@ function applyGameAction(game, seat, action, presentationOptions) {
   assertGameInvariants(next);
   return next;
 }
-/* 按请求座位裁剪私有状态：本人手牌可见，对手暗杠/手牌和待决选择不可泄露。
- * Project state for the requesting seat: reveal its hand but conceal opponents’ hands, hidden kongs, and pending choices. */
+/* 按座位与本局快照投影：公开暗杠，隐藏对手手牌、自摸胡牌及待决选择；旧局保持原策略。
+ * Project by seat and saved rules: publish kongs, conceal opponents’ hands/self-drawn wins/pending choices, and retain legacy policy. */
 export function getPlayerView(game, seat) {
   if (!Number.isInteger(seat) || seat < 0 || seat > 2) throw new Error('座位无效');
   const me = game.players[seat];
@@ -1730,7 +1771,7 @@ export function getPlayerView(game, seat) {
         : {}),
       handCount: player.hand.length,
       melds: player.melds.map((meld) =>
-        meld.type === 'anGang' && index !== seat
+        meld.type === 'anGang' && index !== seat && game.rules.publicConcealedKongs !== true
           ? {
               type: 'anGang',
               tile: null,
@@ -1744,16 +1785,30 @@ export function getPlayerView(game, seat) {
             }
           : cloneSerializable(meld),
       ),
-      winPile: cloneSerializable(player.winPile),
+      // 只隐藏已移入胡牌区的自摸记录，不把当前摸牌误当成胡牌。
+      // Hide only settled self-draw win entries, never confuse them with the current draw.
+      winPile: player.winPile.map((win) =>
+        win.source === 'selfDraw' && hidesPrivateWinDetails(game, index, seat)
+          ? { source: win.source, virtual: win.virtual, tile: null, hidden: true }
+          : cloneSerializable(win),
+      ),
       radishes: [...player.radishes],
       score: player.score,
       huCount: player.huCount,
       kongCount: player.kongCount,
-      lastScoreBreakdown: cloneSerializable(player.lastScoreBreakdown),
+      // handCounts 等扩展分解可能含完整暗手与以前自摸牌，不能只遮当前事件的 tile。
+      // Extended breakdowns can include concealed hands and past self-draws; masking only event.tile is insufficient.
+      lastScoreBreakdown: hidesPrivateWinDetails(game, index, seat)
+        ? visibleScoreSummary(player.lastScoreBreakdown) : cloneSerializable(player.lastScoreBreakdown),
     })),
     discards: cloneSerializable(game.discards),
-    retiredTiles: cloneSerializable(game.retiredTiles),
-    history: cloneSerializable(game.history),
+    // 实体归档是胡牌区的另一引用，同样按拥有者遮牌，但不改实体存档。
+    // Retired physical tiles mirror win-pile references; mask by owner without mutating stored tiles.
+    retiredTiles: game.retiredTiles.map((record) =>
+      hidesPrivateWinDetails(game, record.seat, seat)
+        ? { seat: record.seat, tile: null, hidden: true } : cloneSerializable(record),
+    ),
+    history: game.history.map((event) => visibleHistoryEvent(game, event, seat)),
     claim: game.claim
       ? {
           discardSeat: game.claim.discardSeat,

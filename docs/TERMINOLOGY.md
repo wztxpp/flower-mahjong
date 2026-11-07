@@ -106,3 +106,10 @@ The engines use consistent private helpers for serialization, sorting, labels, c
 - `page-local`：缺锁、缺存储或共享设施失败后的页内顺序与记录降级，跨页可能重复；不承诺恰好一次。 / Page-local ordering/records when shared facilities are missing or fail; sibling duplication is possible, with no exactly-once guarantee.
 
 - `onPendingPrefix`：协调器报告本批之外待补有声前缀数量，App 写入 sharedPendingPrefixCount 并与本地计数合并；结束/取消清零，不把已终态或本批事件重复计入。 / Coordinator callback reporting outstanding voiced recovery outside the current batch; App merges it with local counts and clears it on completion/cancellation, excluding terminal and current-batch events.
+
+- `preHuActionChoice`：新局首胡前保留全部合法动作的规则快照，不改变不同玩家回应的胡优先结算。 / New-game snapshot preserving all legal pre-win choices without changing cross-player hu resolution priority.
+- `concealedKongAfterPungDiscard`：新局碰后必须先真实出牌才恢复暗杠资格的规则开关。 / New-game rule requiring an actual post-peng discard before concealed-kong eligibility returns.
+- `kongEventFan`：新局杠事件番快照；严格 true 才启用新增的杠后接炮/杠上花一番，普通抢杠原有一番不依赖此字段。七对固定番不变。 / New-game kong-event snapshot; only strict true enables the added post-kong discard/replacement fan. Historical ordinary rob-kong fan is independent; seven-pairs tiers remain fixed.
+- `kongDiscardBonus` / `kongReplacementBonus`：本次计分中的事件番，不是额外付款、累计番或首胡固定档位。 / Per-win event fan, not an extra payment, accumulated bonus or frozen first-win tier.
+
+- `publicConcealedKongs` / `hideSelfDrawWins`：新局视图快照，分别公开暗杠、在进行中隐藏他家自摸胡牌；`hidden` 是响应标记，不是权威牌种。缺字段旧局不启用。见 [展示隐私](TILE-VISIBILITY.md)。 / New-game view snapshots publishing concealed kongs and masking opponent self-draw wins while live; hidden is a response marker, not a tile identity. Missing flags retain old policy.

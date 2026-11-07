@@ -25,7 +25,7 @@
 
 ## 胡牌区与实体守恒
 
-每个人都有公开胡牌区。自摸牌从暗手牌移出，实体保存在已胡实体区；胡牌区显示引用。接炮实体由原弃牌持有，第一位赢家引用它，另一位赢家显示“共胡”逻辑副本。
+每个人都有胡牌区。新局保存 `hideSelfDrawWins: true`：进行中自摸胡牌仅本人可见，其他两家见牌背，终局公开；事件、计分明细和个人历史同样过滤。缺字段旧局保留原公开策略。自摸牌从暗手牌移出，实体保存在已胡实体区；胡牌区显示引用。接炮实体由原弃牌持有，第一位赢家引用它，另一位赢家显示“共胡”逻辑副本。
 
 个人计分统计包括胡牌区中的共胡记录，但不再加一次牌河中的同一实体。144 张守恒只计实体所在位置，胡牌引用和虚拟副本不增加实体牌。
 
@@ -119,3 +119,21 @@
 - 新局保存 `allowPungUpgrade: true` 和 `pungUpgradeAfterDiscard: true`。碰后记录 `pendingPungDiscard`，直到自己实际打出一张牌才解除；暗杠、补摸或胡牌不代替这次出牌。解除后在自己的合法操作窗口可以用原有同牌或新摸同牌补杠，不要求新摸同牌。胡优先、胡后听口保持、抢杠、牌墙余量和杠分规则不变。
 - v0.7.0 误设的 `allowPungUpgrade: false` 现按“碰后先出牌”处理，不再永久禁补。没有待出牌状态的存档从本人最近一次碰/出牌事件推断；不重洗、不改手牌、不重算旧分数。更早缺少该标记或明确允许且没有新时机规则的存档保留原补杠时机，已有抢杠窗口不丢失。下一局使用修正规则。
 - 牌桌“本桌总积分”从服务端历局记录合计，包含本局暂记，分别显示已结算和本局暂记。再开一局、刷新或重连不清零，结束与归档不重复计入。离桌玩家保留原分数，新落座者从零开始；不按昵称或座位继承。大厅个人总积分仍只统计本人跨桌已结算牌局，不向同桌公开其他房间的记录。
+
+## 首胡前动作与碰后暗杠 / Pre-win choices and post-peng concealed kongs
+
+新局保存 `preHuActionChoice: true`：未首次胡牌者同时满足胡、碰、杠时可自行选择，自己的可胡摸牌也不屏蔽合法暗杠、补杠或扩杠；实际回应结算仍是胡优先于杠和碰。已胡者能胡时只允许胡，此前已确认的强制胡规则不变。
+New games save `preHuActionChoice: true`: before the first win, all legal hu/peng/kong choices remain available, including own-turn concealed, supplemental and extended kongs alongside a winning draw. Claim resolution still prioritizes actual hu responses. Prior winners with an available hu must take it.
+
+新局保存 `concealedKongAfterPungDiscard: true`：碰牌后的当前回合不得暗杠，必须真实打出一张牌；之后的正常窗口恢复暗杠。读取缺少玩家标记的存档时仍可从历史判断待出牌义务。两项新规则在旧局缺失或为 false 时保留旧行为，不补写规则、回应、历史或已结算分；schema1/2 不变。
+New games save `concealedKongAfterPungDiscard: true`: the peng claimant must actually discard before concealed kongs become available in later normal windows. Missing player markers can be inferred from history. Saved games lacking either new flag (or explicitly false) retain their former policy without rewriting rules, responses, history or scores; schemas one and two remain unchanged.
+## 杠事件加番 / Kong event fan
+
+新开局保存 `kongEventFan: true`：普通抢杠胡、杠后接炮、杠上花（本次杠后补摸自摸）各加一番，先计入总番再换算分数。普通摸牌及胡后续摸不沿用上次杠的一番。七对首次及后续仍按固定档位，不叠加事件番。大单吊、清一色、对对胡、同牌番、萝卜、付款方及即时杠分沿用已有独立规则。
+New games save `kongEventFan: true`: ordinary rob-kong, post-kong discard wins and kong replacement self-draw each add one fan before conversion to points. Natural and post-win continuation draws never inherit a previous kong bonus. Seven pairs retains its fixed tier on first and subsequent wins without event fan. Existing big-single, pure-suit, all-triplets, copy-count, radish, payer and immediate kong-payment rules remain independent.
+
+旧 schema 3 存档缺少该字段或明确为 false 时保留旧算分：普通抢杠仍加一番，杠后接炮与杠上花不补加。恢复待回应窗口不会补写字段或重算已结算历史；schema 1/2 冻结。新明细保留 `robKongBonus`，另用 `kongDiscardBonus`、`kongReplacementBonus` 标明本次来源，界面分别显示“抢杠”“杠后接炮”“杠上花”。
+Saved schema-three games with an absent/false flag keep historical scoring: ordinary rob-kong still adds one, but post-kong discards and replacement draws gain no new bonus. Restoring a pending claim neither backfills rules nor recalculates settled history; schemas one/two stay frozen. Breakdowns preserve `robKongBonus` and add source-specific `kongDiscardBonus`/`kongReplacementBonus` fields, displayed as the corresponding Chinese event labels.
+
+新局另保存 `publicConcealedKongs: true`，已成立暗杠（含后续加张）牌面对所有玩家公开，其他暗手牌不因此公开。缺字段/false 的旧局和 schema1/2 保留原策略，不改历史或计分。详见 [展示隐私](TILE-VISIBILITY.md)。
+New snapshots publish established concealed-kong faces, including extensions, without exposing unrelated concealed hands. Missing/false old snapshots and schemas one/two retain their policy, history and scoring.

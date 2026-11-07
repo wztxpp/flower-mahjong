@@ -1371,3 +1371,66 @@ test("stored pre-pattern rooms do not gain the new first-win or pure-seven-pairs
   // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
   assertGameInvariants(game);
 });
+
+// 七对在杠后接炮及补摸场景仍沿用首次固定档位，不随事件或胡牌区积累升番。
+// Seven pairs keeps its first fixed tier for post-kong claims and replacement draws, without event or win-pile growth.
+for (const snapshot of [true, false, 'absent']) {
+  for (const repeated of [false, true]) {
+    test(`seven pairs fixed tier with kong events: snapshot=${snapshot}, repeat=${repeated}`, () => {
+      let game = fixture({
+        hands: [seven, waiting, waiting],
+        drawKind: 'replacement',
+        drawTile: 13,
+        huCounts: [repeated ? 1 : 0, 0, 0],
+        priorWins: [repeated ? [13] : [], [], []],
+        head: [13, 8],
+        firstHuRadishesRevealed: true,
+      });
+      if (snapshot === 'absent') delete game.rules.kongEventFan;
+      else game.rules.kongEventFan = snapshot;
+      if (repeated) {
+        game.players[0].firstHuPattern = {
+          kind: 'sevenPairs', pureSuit: false, allTriplets: false,
+          waitTiles: [...new Set(seven)], sevenPairsFan: 3, fixedFan: 3,
+        };
+      }
+      game = doAction(JSON.parse(JSON.stringify(game)), 0, 'hu');
+      assert.equal(huEvent(game).score.fan, 3);
+      assert.equal(huEvent(game).score.kongReplacementBonus, undefined);
+      assert.equal(game.players[0].firstHuPattern.fixedFan, 3);
+      game = doAction(game, 0, 'hu');
+      assert.equal(huEvents(game).at(-1).score.fan, 3);
+      assertGameInvariants(game);
+    });
+  }
+}
+
+// 首次及再次七对接杠后炮都不能改变固定番；真正的弃牌窗口仍只由出牌者付款。
+// First/repeated seven-pairs post-kong claims keep fixed fan; the real claim window still charges only the discarder.
+for (const repeated of [false, true]) {
+  test(`seven pairs post-kong discard retains fixed tier: repeat=${repeated}`, () => {
+    let game = fixture({
+      hands: [[...waiting, 13], sevenBase, waiting],
+      drawTile: 13,
+      huCounts: [0, repeated ? 1 : 0, 0],
+      priorWins: [[], repeated ? [13] : [], []],
+      kongSeats: [0],
+      head: [8],
+      firstHuRadishesRevealed: true,
+    });
+    if (repeated) {
+      game.players[1].firstHuPattern = {
+        kind: 'sevenPairs', pureSuit: false, allTriplets: false,
+        waitTiles: [...new Set(seven)], sevenPairsFan: 3, fixedFan: 3,
+      };
+    }
+    game = doAction(game, 0, 'discard', 13);
+    game = passAll(doAction(JSON.parse(JSON.stringify(game)), 1, 'hu'));
+    const event = huEvent(game, 1);
+    assert.equal(event.source, 'kongDiscard');
+    assert.equal(event.score.fan, 3);
+    assert.equal(event.score.kongDiscardBonus, undefined);
+    assert.deepEqual(event.payments.filter(payment => payment.delta < 0).map(payment => payment.seat), [0]);
+    assertGameInvariants(game);
+  });
+}

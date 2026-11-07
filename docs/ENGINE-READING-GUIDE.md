@@ -80,8 +80,8 @@ Confirmed timing requires completing the peng claimant’s discard before later 
 
 ## 隐私与守恒 / Privacy and invariants
 
-`getPlayerView` 只给本人 hand，对手给 handCount；暗杠牌面以 null 隐藏，尚未统一处理的反应只给 respondedSeats。不要把整个 game 直接 JSON 返回。
-Return the requester’s hand, opponents’ counts, hidden kong faces, and response status, never the complete private game object.
+`getPlayerView` 只给本人 hand，对手给 handCount；新局暗杠公开，自摸胡牌对其他两家以 null/hidden 隐藏，旧局按原快照；尚未统一处理的反应只给 respondedSeats。不要把整个 game 直接 JSON 返回。
+Return the requester’s hand and opponents’ counts. New snapshots publish kong faces and hide opponent self-drawn wins until finish; old snapshots retain their policy. Return only response status, never the complete private game object.
 
 守恒是三层：实体牌总数 144；每种恰好八张；三人的 score 相加为零。再按阶段验证手牌基础张数，多的一张只能属于当前 discard 步骤的座位。winPile 是逻辑引用，不能重复计数。
 Conserve 144 physical tiles, eight of each identity, and zero-sum scores. Validate phase-dependent hand sizes. Logical win-pile references are not extra physical tiles.
@@ -95,3 +95,12 @@ The pure readability commit changes only private helpers, layout, and explanatio
 
 `applyAction` 保留原即时语义；`applyPresentedAction` 使用同一规则但在出牌/碰/杠/整批胡后设置 `game.presentation`。出牌暂停发生在计算接牌选项之前。`continuePresentedGame` 清除该标记后继续到下一个展示或决策点，不增加引擎 revision，不重复结算。`getLegalActions` 在暂停时为空；存档 rules 不变。具体标记、服务端确认和验证见 [音画节奏](PRESENTATION-PACING.md)。
 `applyAction` keeps immediate semantics. `applyPresentedAction` uses the same rules but marks presentation boundaries after discards/peng/kong/win batches, before discard-claim evaluation. Continuation clears the marker and reaches the next boundary without changing engine revision or repeating settlement. Legal actions are empty while paused; saved rules remain intact. See [presentation pacing](PRESENTATION-PACING.md).
+
+### 首胡前选择与碰后暗杠 / Pre-win choice and post-peng restriction
+
+`getDiscardClaimOptions` 在新局中同时列出未胡者的胡、明杠和碰；`getLegalActions` 把可胡判断与杠枚举分开，但已胡必胡仍提前返回。`pendingPungDiscard` 同时保护补杠时机和新局暗杠时机，只有真实出牌清除义务。新规则由 `preHuActionChoice` 和 `concealedKongAfterPungDiscard` 显式快照启用，旧局缺字段保持原行为。回归入口为 `tests/action-choice.test.js`。
+In new games, getDiscardClaimOptions lists all unwon hu/exposed-kong/peng options, while getLegalActions separates hu detection from kong enumeration but still returns early for mandatory post-win hu. pendingPungDiscard protects upgrade timing and new-game concealed-kong timing until a real discard. Explicit snapshot flags opt into the changes; absent saved flags preserve historical behavior. See tests/action-choice.test.js.
+## 杠事件计番快照 / Kong-event scoring snapshot
+
+`settleHuBatch` 在牌型固定后选择本次事件来源；七对不加事件番，普通抢杠保持原行为，其余只在 `rules.kongEventFan === true` 下开启。`calculateHuScore` 在番转分前加一次，不修改 `firstHuPattern` 或付款方。读取旧局不合并默认值，旧历史不重算。详细规则见 [当前规则](RULES.md)。
+After freezing the pattern, settleHuBatch chooses this win's event source. Seven pairs excludes event fan; ordinary rob-kong keeps its old behavior, and other sources require rules.kongEventFan === true. calculateHuScore adds it once before point conversion without changing firstHuPattern or payers. Saved-game reads do not merge defaults or recalculate history. See the current rules.

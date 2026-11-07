@@ -1319,6 +1319,9 @@ test("recovery: a replacement seat cannot inherit concealed kongs or private wai
       room.game.retiredTiles.findIndex((item) => item.tile === tile),
       1,
     );
+  // 这个回归保留旧局未公开暗杠的快照，新局公开暗杠另有隐私测试。
+  // Retain the old hidden-kong snapshot here; the privacy suite covers public new-game kongs.
+  delete room.game.rules.publicConcealedKongs;
   old.melds.push({
     type: "anGang",
     tile,

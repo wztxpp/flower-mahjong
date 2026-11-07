@@ -5651,3 +5651,92 @@ test('initially locked new sibling preserves shared prefix after a normal user u
     else delete globalThis.navigator;
   }
 });
+
+// 三个观察座位都使用左对手、本人、右对手的顺序；终局和旧局不应回到绝对座位顺序。
+// Every viewer sees left opponent, self, right opponent, including finished and older-version games.
+for (const viewerSeat of [0, 1, 2]) {
+  test(`river columns follow opponent panels with viewer ${viewerSeat} in the center`, async () => {
+    for (const schemaVersion of [1, 2, 3]) {
+      const state = fixture({ schemaVersion });
+      state.you = viewerSeat;
+      state.game.players.forEach((player) => {
+        player.hand = player.seat === viewerSeat ? [0, 1, 2, 3] : undefined;
+      });
+      // 为每家放一个独特弃牌下标，以证明仅换列，不会把别家的记录贴到错误姓名下。
+      // Give each player a distinct discard index to prove column reordering preserves record ownership.
+      state.game.discards = [0, 1, 2].map((seat) => ({ seat, tile: seat }));
+      const before = structuredClone(state);
+      const scope = setup(state);
+      const expectedSeats = [(viewerSeat + 1) % 3, viewerSeat, (viewerSeat + 2) % 3];
+      for (const phase of ["playing", "finished"]) {
+        scope.state.value.phase = phase;
+        assert.deepEqual(scope.riverPlayers.value.map((player) => player.seat), expectedSeats);
+        assert.equal(scope.riverPlayers.value[0], scope.opponents.value[0]);
+        assert.equal(scope.riverPlayers.value[2], scope.opponents.value[1]);
+        const html = await render(scope);
+        const columns = [...html.matchAll(/data-river-seat="(\d)"([\s\S]*?)(?=data-river-seat="|class="hand-panel)/g)];
+        assert.deepEqual(columns.map((column) => Number(column[1])), expectedSeats);
+        columns.forEach((column, index) => {
+          const seat = expectedSeats[index];
+          assert.match(column[2], new RegExp(`data-discard-index="${seat}"`));
+          assert.ok(column[2].includes(index === 1 ? "我的牌河" : `牌友${seat + 1}的牌河`));
+        });
+      }
+      assert.deepEqual(state.game, before.game);
+      assert.deepEqual(state.seats, before.seats);
+    }
+  });
+}
+// 三种来源显示中文事件番；关闭特殊牌型的旧快照也可读取独立来源字段，不伪造加番。
+// All three event sources get Chinese labels; non-pattern snapshots read independent source fields without inventing bonuses.
+test('kong event score labels cover pattern and legacy breakdowns without double counting', () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  for (const [type, label] of [['robKong', '抢杠'], ['kongDiscard', '杠后接炮'], ['kongReplacement', '杠上花']]) {
+    for (const patterns of [true, false]) {
+      const score = {
+        fan: 2, fanPoints: 2, radishBonus: 0, total: 2,
+        [`${type}Bonus`]: 1,
+        ...(patterns ? { patternBonuses: [{ type, fan: 1 }] } : {}),
+      };
+      const before = structuredClone(score);
+      const summary = scope.scoreSummary(score);
+      assert.equal(summary.split(`${label} +1番`).length - 1, 1);
+      assert.match(summary, /2 番 2 分/);
+      assert.deepEqual(score, before);
+    }
+  }
+  const old = scope.scoreSummary({ fan: 1, fanPoints: 1, radishBonus: 0, total: 1 });
+  assert.doesNotMatch(old, /抢杠|杠后接炮|杠上花/);
+});
+
+// 新局对手自摸的牌背、字幕及高亮都使用真实组件；终局同一个位置恢复牌面。
+// Real components show backs, captions and highlights for an opponent self-draw; finish reveals the same slot.
+test('hidden self-draw renders a back and win cue, then reveals on finish without exposing hand tiles', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  const win = { tile: null, source: 'selfDraw', hidden: true, virtual: false };
+  state.game.players[1].winPile = [win];
+  state.game.players[1].huCount = 1;
+  const scope = setup(state);
+  const event = { ...win, type: 'hu', seat: 1, fromSeat: null };
+  const pending = scope.presentWins([event], state);
+  await settle();
+  assert.equal(scope.winningEvents.value.length, 1);
+  assert.equal(scope.isWinningTile(1, 0), true);
+  assert.match(scope.winningAnnouncement.value, /牌面隐藏/);
+  const html = await render(scope);
+  assert.match(html, /自摸 · 牌面隐藏，终局公开/);
+  assert.match(html, /tile-back/);
+  assert.match(html, /winning-tile/);
+  assert.equal(scope.winLabel(win), '自摸 · 牌面隐藏，终局公开');
+  scope.clearPresentation();
+  await pending;
+  const finished = structuredClone(state);
+  finished.phase = 'finished';
+  finished.game.phase = 'finished';
+  finished.game.players[1].winPile = [{ ...win, tile: 17, hidden: false }];
+  scope.state.value = finished;
+  const finalHtml = await render(scope);
+  assert.match(finalHtml, /9筒 · 自摸/);
+  assert.doesNotMatch(finalHtml, /自摸 · 牌面隐藏，终局公开/);
+  assert.equal(scope.state.value.game.players[1].hand, undefined);
+});

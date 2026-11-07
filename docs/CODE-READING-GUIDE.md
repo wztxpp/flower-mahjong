@@ -107,3 +107,8 @@ The [mandatory-win correction](POST-HU-WIN-CORRECTION.md) connects engine allowl
 App adds received/displayed separation and a local FIFO; audio reports per-event outcomes; shared-playback coordinates complete public prefixes, same-seat success records and bounded sibling retries; the API adds local cadence and safe read-contention handling. New maintained audio/network suites join npm test. The browser server/readme are isolated synthetic acceptance helpers only, never production endpoints. See the pacing guide.
 
 - `docs/SMOOTH-PLAYBACK-VALIDATION.md`：本次自动与真实浏览器验收、证据范围和未验证项。 / Automated and real-browser acceptance, evidence scope and unverified areas.
+
+杠事件番维护入口：`shared/game.js` 的新局快照与本次计分、`src/App.vue` 的来源标签；`tests/game.test.js` 覆盖 true/false/缺字段、真实暗杠补摸与续摸、多家杠后接炮，`tests/rob-kong.test.js` 覆盖抢杠原番与恢复，`tests/special-patterns.test.js` 覆盖七对固定档位，`tests/api.test.js` 保留旧八分反馈并验证新补摸一番。`tests/ui.test.js` 验证新旧明细的中文标签且不重复展示事件番。没有新增测试文件。
+Kong-event maintenance entry: new-game snapshots and per-win scoring in shared/game.js, source labels in App.vue. Existing game tests cover true/false/absent flags, real concealed-kong replacement/continuation and multiple discard winners; rob-kong tests protect original fan/restoration; special-pattern tests protect fixed seven-pairs tiers; API tests preserve the old eight-point report and verify new replacement fan. UI tests verify Chinese labels for current/legacy breakdowns without duplicate event fan. No new test files were added.
+
+- `shared/tile-visibility.js`、`tests/tile-visibility.test.js` 与 [展示隐私](TILE-VISIBILITY.md)：新局暗杠公开、自摸胡牌按座位遮蔽，以及房间/个人历史共用过滤。 / New-game public kongs and seat-private self-draw wins, shared across room/profile projections.
