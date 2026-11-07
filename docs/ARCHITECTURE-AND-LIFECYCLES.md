@@ -124,3 +124,12 @@ Seven characters serve three or four players at start. Preferences belong to occ
 ## 观战扩展 / Spectating extension
 
 观众通过独立只读凭证进入，不占座、不参与个人成绩或播放屏障。前端保留观战/玩家两类缓存，公开动态按各局快照显示名字，所有隐私和生命周期边界见 [观战与名字动态](SPECTATING-AND-NAMED-LOGS.md)。 / Spectators use independent read-only credentials without seats, profile records or presentation gates. Separate browser caches preserve player identities, and event names follow each game's snapshot. See the dedicated guide for privacy/lifecycle boundaries.
+
+
+## 建房玩法快照 / Creation-time rule snapshot
+
+新建 `room.settings` 保存 `playerCount`、`deckCount`、`dragonStartCount`、`autoDiscardAfterHu`（默认 true）与 `bigSingleReadyPoints`（默认50，0–100000整数）。false/0是有效选择。首局及下一局按建房快照固定，旧客户端 `start.options` 仍严格校验但不能覆盖已保存字段；人数、副数和神龙仍不可通过 start.options 修改。`game.rules` 是本局权威规则，`gameMeta.config` 记录实际设置并进入公开归档/个人记录。只有房主、满员、正确版本且无进行中局才可开局，观众继续只读。
+New room.settings saves the three table dimensions plus autoDiscardAfterHu (default true) and bigSingleReadyPoints (default 50, integer 0–100000). False/zero are valid. Creation snapshots govern first/subsequent rounds; legacy start.options remain strictly validated but cannot override saved fields, and cannot change table dimensions. game.rules remains authoritative for the current game, while gameMeta.config snapshots actual settings for public archives/profile records. Starts still require host, full occupancy, current revision and no active game; spectators remain read-only.
+
+兼容按字段存在判断，不按真假值判断：缺字段旧房保留原开局/下一局选项及默认，部分配置只锁已保存字段；读取、恢复和新局都不回填旧房设置，不给旧局补规则，不改旧记录或schema1/2。新增配置元信息只为建房明确保存的字段写入。验证见 `tests/variable-room-api.test.js`（默认、校验、0值、固定续局、部分旧配置、权限、FileStore恢复）及 `tests/api.test.js` 的旧房开局选项回归。
+Compatibility checks field presence rather than truthiness: absent legacy fields retain original start/next-round options and defaults; partial snapshots lock only present fields. Reads, resumes and new rounds never backfill room settings, retrofit old game rules or alter old records/frozen schemas. New metadata fields are recorded only for explicitly saved creation settings. See the variable-room API suite and legacy start-option API regressions.

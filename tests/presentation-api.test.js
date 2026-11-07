@@ -762,8 +762,10 @@ for (const phase of ['lobby', 'finished']) {
     assert.equal(result.state.revision, viewed.revision + 1);
     assert.equal(result.state.phase, 'playing');
     assert.notEqual(result.state.game.id, viewed.game?.id);
-    assert.equal(result.state.game.rules.bigSingleReadyPoints, 80);
-    assert.equal(result.state.game.rules.autoDiscardAfterHu, false);
+    // 新房按建房默认快照开局，旧客户端的 options 不改变已固定玩法。
+    // New rooms retain creation defaults even when a legacy client supplies conflicting start options.
+    assert.equal(result.state.game.rules.bigSingleReadyPoints, 50);
+    assert.equal(result.state.game.rules.autoDiscardAfterHu, true);
     const saved = await api.store.get(api.id);
     assert.equal(saved.archivedGames?.length || 0, phase === 'finished' ? 1 : 0);
     if (before.game) {

@@ -91,8 +91,8 @@ const validTableSettings = computed(() => isPlayerCount(playerCountDraft.value) 
   isDeckCount(deckCountDraft.value) && isDragonStartCount(dragonStartCountDraft.value));
 const preferredCharacter = ref('');
 const autoDiscardAfterHu = ref(true);
-// 下一局喜钱草稿独立于本局规则；默认每家 50，数值 0 明确表示不收取。
-// The next-round ready-bonus draft is separate from active-game rules; default to 50 per payer, with numeric zero explicitly disabling payment.
+// 建房（或旧桌下一局）草稿独立于保存的房间和本局规则；0 明确表示不收取。
+// Creation (or legacy next-round) drafts stay separate from saved room/game rules; zero explicitly disables payment.
 const bigSingleReadyPoints = ref(DEFAULT_BIG_SINGLE_READY_POINTS);
 // 数字输入仍可能产生空字符串或非法小数；共用校验器要求范围内的整数，不只依赖 HTML 限制。
 // Numeric inputs can still yield empty strings or invalid fractions; shared validation requires an in-range integer rather than relying only on HTML constraints.
@@ -261,9 +261,16 @@ function opponentPosition(seat) {
 // Finished spectator panels retain prior participants, but occupancy counts only current occupants.
 const filledSeats = computed(() => (state.value?.seats || []).filter(Boolean).length);
 const isHost = computed(() => !isSpectator.value && mySeat.value === (state.value?.hostSeat ?? 0));
-const canConfigureStart = computed(
-  () => isHost.value && ['lobby', 'finished'].includes(phase.value),
-);
+// 新桌的两项规则由创建时快照确定；按字段存在判断，绝不把旧桌缺字段视为已固定默认值。
+// Creation snapshots fix these choices for new rooms; check field presence rather than inventing fixed defaults for old rooms.
+const hasFixedAutoDiscard = computed(() => Object.hasOwn(state.value?.settings || {}, 'autoDiscardAfterHu'));
+const hasFixedReadyPoints = computed(() => Object.hasOwn(state.value?.settings || {}, 'bigSingleReadyPoints'));
+const canStart = computed(() => isHost.value && ['lobby', 'finished'].includes(phase.value));
+const canConfigureStart = computed(() => canStart.value &&
+  (!hasFixedAutoDiscard.value || !hasFixedReadyPoints.value));
+// 已固定的金额不受无关本地草稿影响；只有仍使用旧开局表单的房间需要校验草稿。
+// A fixed amount is independent of stale local drafts; validate drafts only for legacy editable rooms.
+const validStartOptions = computed(() => hasFixedReadyPoints.value || validReadyPoints.value);
 // ?? 只为缺字段的旧数据补显示默认值，保留有效的 0；不能用 || 把“不收取”误改成 50。
 // ?? supplies a display default only for missing fields and preserves valid zero; || would incorrectly turn disabled payment into 50.
 const gameBigSingleReadyPoints = computed(
@@ -1786,12 +1793,27 @@ async function enterRoom() {
     error.value = '请选择3或4人、1至5副（半副递增），神龙起算张数为1至20的整数。';
     return;
   }
+  if (mode === 'create' && !validReadyPoints.value) {
+    error.value = `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数`;
+    return;
+  }
   // 先复制建房参数，异步身份准备期间后续输入不会改变已提交意图。
   // Copy settings before asynchronous identity preparation so later edits cannot change the request.
-  const settings = { playerCount: playerCountDraft.value, deckCount: deckCountDraft.value,
-    dragonStartCount: dragonStartCountDraft.value };
+  const settings = {
+    playerCount: playerCountDraft.value,
+    deckCount: deckCountDraft.value,
+    dragonStartCount: dragonStartCountDraft.value,
+    autoDiscardAfterHu: autoDiscardAfterHu.value,
+    bigSingleReadyPoints: bigSingleReadyPoints.value,
+  };
   const previous = session.value;
   const currentEpoch = resetRoomContext();
+  // 清理旧会话不能清空正在提交的新桌表单；明确失败后仍展示原选择，避免重试误用默认值。
+  // Session cleanup must not erase the submitted creation form; explicit failures retain choices instead of retrying with defaults.
+  if (mode === 'create') {
+    autoDiscardAfterHu.value = settings.autoDiscardAfterHu;
+    bigSingleReadyPoints.value = settings.bigSingleReadyPoints;
+  }
   busy.value = true;
   let credential = mode === 'create' ? null : savedRooms.get(`${mode === 'spectate' ? 'watch:' : ''}${code}`);
   try {
@@ -1844,19 +1866,19 @@ async function enterRoom() {
 async function mutate(action, start = false) {
   if (isSpectator.value) return;
   if (busy.value || offline.value || syncing.value || presentationWaiting.value || !state.value || !session.value) return;
-  if (start && (!canConfigureStart.value || filledSeats.value < tablePlayerCount.value)) return;
+  if (start && (!canStart.value || filledSeats.value < tablePlayerCount.value)) return;
   // 即使调用者绕过禁用按钮，非法金额也在发请求前返回；服务端仍会独立校验。
   // Reject invalid amounts before a request even if a caller bypasses the disabled button; the server validates independently.
-  if (start && !validReadyPoints.value) {
+  if (start && !validStartOptions.value) {
     error.value = `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数`;
     return;
   }
-  // 请求开始前复制两个草稿值；等待期间再编辑界面不能改变已经提交的开局选项。
-  // Snapshot both draft values before requesting; later edits cannot change options already submitted.
+  // 新桌只提交开局意图，由服务端读取固定规则；旧桌只提交尚未固定字段的草稿快照。
+  // New rooms submit only start intent and use server snapshots; legacy rooms send drafts only for unfixed fields.
   const startOptions = start
     ? {
-        autoDiscardAfterHu: autoDiscardAfterHu.value,
-        bigSingleReadyPoints: bigSingleReadyPoints.value,
+        ...(!hasFixedAutoDiscard.value ? { autoDiscardAfterHu: autoDiscardAfterHu.value } : {}),
+        ...(!hasFixedReadyPoints.value ? { bigSingleReadyPoints: bigSingleReadyPoints.value } : {}),
       }
     : null;
   busy.value = true;
@@ -2139,13 +2161,13 @@ onUnmounted(() => {
         <h2 id="entry-title">{{ entryMode === 'create' ? '先坐下来吧' : '朋友在等你' }}</h2>
         <p class="card-description">{{
           entryMode === 'create'
-            ? '新开一桌，选好人数和副数，再邀请朋友。'
+            ? '先定好本桌玩法，再邀请朋友来坐。'
             : '输入房间号，就能找到熟悉的牌桌。'
         }}</p>
-        <div class="entry-tabs" role="tablist" aria-label="进入牌桌方式">
+        <div class="entry-tabs" role="group" aria-label="进入牌桌方式">
           <button
-            role="tab"
-            :aria-selected="entryMode === 'create'"
+            type="button"
+            :aria-pressed="entryMode === 'create'"
             :class="{ active: entryMode === 'create' }"
             :disabled="busy || restoring"
             @click="
@@ -2155,8 +2177,8 @@ onUnmounted(() => {
             ><Icon name="plus" :size="17" />创建牌桌</button
           >
           <button
-            role="tab"
-            :aria-selected="entryMode === 'join'"
+            type="button"
+            :aria-pressed="entryMode === 'join'"
             :class="{ active: entryMode === 'join' }"
             :disabled="busy || restoring"
             @click="
@@ -2165,7 +2187,7 @@ onUnmounted(() => {
             "
             ><Icon name="users" :size="17" />加入牌桌</button
           >
-          <button role="tab" :aria-selected="entryMode === 'spectate'"
+          <button type="button" :aria-pressed="entryMode === 'spectate'"
             :class="{ active: entryMode === 'spectate' }" :disabled="busy || restoring"
             @click="entryMode = 'spectate'; error = ''">进入观战</button>
         </div>
@@ -2218,27 +2240,61 @@ onUnmounted(() => {
           <p class="character-preference-note"
             >七位角色，支持三人或四人同桌。开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
           >
-          <!-- 人数、副数与神龙门槛只在建房前设置，后续同桌各局沿用。 / Set fixed dimensions before creating; later rounds retain them. -->
-          <fieldset v-if="entryMode === 'create'" class="table-settings-fields" :disabled="busy || restoring">
+          <!-- 所有新桌选项在同一面板内配置，创建时一次提交；保留原生表单语义、键盘操作与错误关联。
+               Configure every new-room choice together and submit once at creation; preserve native semantics, keyboard controls and linked errors. -->
+          <fieldset v-if="entryMode === 'create'" class="table-settings-fields" :disabled="busy || restoring"
+            aria-describedby="table-settings-help">
             <legend>本桌玩法</legend>
+            <p id="table-settings-help" class="table-settings-intro">创建后固定，同桌每一局沿用。</p>
             <div class="table-settings-grid">
-              <label for="table-player-count">人数
+              <div class="table-setting-field">
+                <label for="table-player-count">同桌人数</label>
                 <select id="table-player-count" v-model.number="playerCountDraft">
                   <option :value="3">三人</option><option :value="4">四人</option>
                 </select>
-              </label>
-              <label for="table-deck-count">副数
-                <select id="table-deck-count" v-model.number="deckCountDraft">
+              </div>
+              <div class="table-setting-field">
+                <label for="table-deck-count">麻将副数</label>
+                <select id="table-deck-count" v-model.number="deckCountDraft" aria-describedby="deck-count-help">
                   <option v-for="count in deckChoices" :key="count" :value="count">{{ count }} 副 · {{ count * 72 }} 张</option>
                 </select>
-              </label>
-              <label for="dragon-start-count">神龙起算张数
-                <input id="dragon-start-count" v-model.number="dragonStartCountDraft" type="number"
-                  :min="MIN_DRAGON_START_COUNT" :max="MAX_DRAGON_START_COUNT" step="1" required />
-              </label>
+              </div>
+              <p id="deck-count-help" class="table-setting-help table-setting-wide">一副为条筒 18 种各 4 张，半副各加 2 张。</p>
+              <div class="table-setting-field">
+                <label for="dragon-start-count">神龙起算张数</label>
+                <div class="table-setting-input-unit">
+                  <input id="dragon-start-count" v-model.number="dragonStartCountDraft" type="number" inputmode="numeric"
+                    :min="MIN_DRAGON_START_COUNT" :max="MAX_DRAGON_START_COUNT" step="1" required
+                    :aria-invalid="!isDragonStartCount(dragonStartCountDraft)"
+                    :aria-describedby="`dragon-count-help${!isDragonStartCount(dragonStartCountDraft) ? ' dragon-count-error' : ''}${dragonStartCountDraft > deckCountDraft * 4 ? ' dragon-count-warning' : ''}`" />
+                  <span aria-hidden="true">张</span>
+                </div>
+                <p id="dragon-count-help" class="table-setting-help">10 分起，每多一张翻倍。</p>
+                <p v-if="!isDragonStartCount(dragonStartCountDraft)" id="dragon-count-error" class="table-setting-error" role="alert">请输入 1–20 的整数。</p>
+              </div>
+              <div class="table-setting-field">
+                <label for="create-ready-points">大单吊喜钱（每家）</label>
+                <div class="table-setting-input-unit">
+                  <input id="create-ready-points" v-model.number="bigSingleReadyPoints" type="number" inputmode="numeric"
+                    min="0" :max="MAX_BIG_SINGLE_READY_POINTS" step="1" required
+                    :aria-invalid="!validReadyPoints"
+                    :aria-describedby="validReadyPoints ? 'create-ready-help' : 'create-ready-help create-ready-error'" />
+                  <span aria-hidden="true">分</span>
+                </div>
+                <p id="create-ready-help" class="table-setting-help">虚拟积分，0 表示不收取。</p>
+                <p v-if="!validReadyPoints" id="create-ready-error" class="table-setting-error" role="alert">请输入 0–{{ MAX_BIG_SINGLE_READY_POINTS }} 的整数。</p>
+              </div>
+              <p v-if="dragonStartCountDraft > deckCountDraft * 4" id="dragon-count-warning" class="settings-warning table-setting-wide">起算张数超过每种牌数量，本局不会触发神龙。</p>
+              <p class="table-setting-help table-setting-wide">听成大单吊时，其他玩家各付喜钱，每人每局仅一次；后续胡牌另算。</p>
+              <div class="table-setting-toggle table-setting-wide">
+                <label for="create-auto-discard">
+                  <span>胡后自动打出 <small>{{ autoDiscardAfterHu ? '已开启' : '已关闭' }}</small></span>
+                  <input id="create-auto-discard" v-model="autoDiscardAfterHu" type="checkbox" role="switch"
+                    aria-describedby="create-auto-discard-help" />
+                </label>
+                <p id="create-auto-discard-help" class="table-setting-help">胡后没有胡、杠可选时，自动打出新牌。关闭后需点“过”继续；有合法杠仍必须杠。</p>
+              </div>
             </div>
-            <small>一副为条筒18种各4张，半副各加2张。神龙10分起算，每多一张翻倍。</small>
-            <small v-if="dragonStartCountDraft > deckCountDraft * 4" class="settings-warning">起算张数超过每种牌数量，本局不会触发神龙。</small>
           </fieldset>
           </template>
           <template v-if="entryMode !== 'create'">
@@ -2259,7 +2315,7 @@ onUnmounted(() => {
           <div v-if="error" class="inline-error" role="alert"
             ><Icon name="info" :size="17" /><span>{{ error }}</span></div
           >
-          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring || (entryMode === 'create' && !validTableSettings)"
+          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring || (entryMode === 'create' && (!validTableSettings || !validReadyPoints))"
             ><span v-if="busy || restoring" class="spinner"></span
             ><template v-else
               ><span>{{ entryMode === 'create' ? '创建一张牌桌' : entryMode === 'spectate' ? '进入房间观战' : '加入这张牌桌' }}</span
@@ -2439,12 +2495,12 @@ onUnmounted(() => {
           ><Icon name="close" :size="16" /></button
       ></div>
 
-      <!-- 仅房主在大厅或终局可配置下一局；checkbox 的本地值只在 start 请求中提交。 / Only the host in lobby or finished phase configures the next round; the local checkbox is submitted only with start. -->
+      <!-- 只有缺少建房快照字段的旧桌保留开局草稿；新桌在这里仅展示已保存规则。 / Only legacy rooms missing creation fields retain editable start drafts; new rooms show saved choices. -->
       <section v-if="canConfigureStart" class="start-options" aria-labelledby="start-options-title">
         <strong id="start-options-title">{{
           phase === 'finished' ? '下一局选项' : '开局选项'
         }}</strong>
-        <label for="auto-discard-after-hu"
+        <label v-if="!hasFixedAutoDiscard" for="auto-discard-after-hu"
           ><input
             id="auto-discard-after-hu"
             v-model="autoDiscardAfterHu"
@@ -2453,11 +2509,11 @@ onUnmounted(() => {
             aria-describedby="auto-discard-help"
           /><span>胡后自动打出</span></label
         >
-        <p id="auto-discard-help"
+        <p v-if="!hasFixedAutoDiscard" id="auto-discard-help"
           >仅在胡后没有胡、杠可选时自动打出新牌；不勾选则需点“过”继续。有合法杠仍必须杠。开局后不可更改。</p
         >
         <!-- .number 尝试把输入转为数字，computed 再做完整校验；错误提示与 aria-describedby 同步，键盘和读屏都能知道原因。 / .number attempts numeric conversion, then computed performs full validation; the error and aria-describedby stay synchronized for keyboard and screen-reader users. -->
-        <div class="ready-points-option">
+        <div v-if="!hasFixedReadyPoints" class="ready-points-option">
           <label for="big-single-ready-points">大单吊喜钱（每家）</label>
           <div class="ready-points-input"
             ><input
@@ -2488,6 +2544,12 @@ onUnmounted(() => {
             >请输入 0–{{ MAX_BIG_SINGLE_READY_POINTS }} 的整数。</p
           >
         </div>
+      </section>
+      <section v-if="hasFixedAutoDiscard || hasFixedReadyPoints" class="room-settings-recap" aria-label="创建时确定的本桌规则">
+        <strong>本桌玩法 · 创建时已确定</strong>
+        <span v-if="hasFixedAutoDiscard">胡后自动打出：{{ state.settings.autoDiscardAfterHu ? '开启' : '关闭，需点“过”继续' }}</span>
+        <span v-if="hasFixedReadyPoints">大单吊喜钱：{{ state.settings.bigSingleReadyPoints === 0 ? '0 分，不收取' : `每家 ${state.settings.bigSingleReadyPoints} 分` }}</span>
+        <small>同桌每一局沿用；如需调整，请返回大厅创建新桌。</small>
       </section>
       <!-- 所有人读取本局保存的喜钱规则，区别未启用、主动设为零与具体金额；不展示房主尚未提交的草稿。 / Everyone sees saved game rules, distinguishing unavailable, explicitly zero and positive amounts; never display the host’s unsubmitted draft here. -->
       <p v-if="game && isLatest" class="game-rule-choice"
@@ -2690,7 +2752,7 @@ onUnmounted(() => {
               <button
                 v-if="isHost"
                 class="button gold start-button"
-                :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validReadyPoints"
+                :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
                 @click="mutate(null, true)"
                 ><span v-if="busy" class="spinner"></span
                 ><Icon v-else name="sparkle" :size="18" />{{
@@ -2829,7 +2891,7 @@ onUnmounted(() => {
                 ><button
                   v-if="isHost"
                   class="button gold"
-                  :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validReadyPoints"
+                  :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
                   @click="mutate(null, true)"
                   >同桌再来一局<Icon name="arrow" :size="16" /></button
                 ><span v-else>等待房主再开一局</span
@@ -3380,7 +3442,7 @@ onUnmounted(() => {
             <section
               ><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3
               ><p
-                >{{ tablePlayerCount }}人，只用条、筒各 1–9，每种{{ tableCopies }}张，共{{ tableDeckCount * 72 }}张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至本局同牌上限，不必等一圈或换尽原听口。已经胡过的玩家能胡就必须胡，只有“胡牌”选项，包括自摸、接炮和抢杠，仍须本人点击确认。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
+                >{{ tablePlayerCount }}人，只用条、筒各 1–9，每种{{ tableCopies }}张，共{{ tableDeckCount * 72 }}张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至本局同牌上限，不必等一圈或换尽原听口。已经胡过的玩家能胡就必须胡，只有“胡牌”选项，包括自摸、接炮和抢杠，仍须本人点击确认。<template v-if="!inRoom || hasFixedAutoDiscard">“胡后自动打出”在创建牌桌前选择（默认勾选），创建后同桌每局沿用；</template><template v-else>房主可在每局开局前选择“胡后自动打出”（默认勾选）；</template>没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
               ><p
                 ><template v-if="preHuActionChoice">首次胡牌前，自己摸牌同时可胡又可杠时，可自行选择胡或合法杠，也可出牌；已胡者能胡时只能胡。</template
                 ><template v-else>自己摸牌同时可胡又可杠时，不提供杠；未胡者仍可放弃胡并出牌，已胡者只能胡。</template
@@ -3414,8 +3476,10 @@ onUnmounted(() => {
             ><section v-if="usesSpecialPatterns" class="special-pattern-rules"
               ><p v-if="!game || gameBigSingleReadyEnabled"
                 >大单吊听牌：四组碰杠完成、出牌后只剩一张手牌并能听牌时，立即结算喜钱，<template
-                  v-if="!game"
-                  >房主在每局开局前填写每家支付的分数，默认 50 分，0 分不收取</template
+                  v-if="!game && hasFixedReadyPoints"
+                  >本桌创建时确定为每家 {{ state.settings.bigSingleReadyPoints }} 分{{ state.settings.bigSingleReadyPoints === 0 ? '，不收取' : '' }}，同桌每局沿用</template
+                ><template v-else-if="!inRoom">创建牌桌前填写每家支付的分数，默认 50 分，0 分不收取，创建后同桌每局沿用</template
+                ><template v-else-if="!game">房主在每局开局前填写每家支付的分数，默认 50 分，0 分不收取</template
                 ><template v-else-if="gameBigSingleReadyPoints === 0">本局为 0 分，不收取</template
                 ><template v-else>本局其他玩家各付 {{ gameBigSingleReadyPoints }} 分</template
                 >，每人每局只结算一次；第四组杠成立时在补摸前结算。后续胡牌、杠分、萝卜与神龙另算。</p

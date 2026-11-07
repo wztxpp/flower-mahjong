@@ -164,13 +164,13 @@ Naming glossary: `snapshot` is one complete state view; `revision` is a server v
 
 ## 11. 喜钱配置与碰后补杠 / Ready-bonus configuration and pung upgrades
 
-`shared/start-options.js` 提供默认值 50、允许上限和整数校验，浏览器与服务端共用。`bigSingleReadyPoints` 是房主下一局的可编辑草稿；`gameBigSingleReadyPoints` 是本局已保存规则。0 是合法的“不收取”，因此读取旧字段时使用 `??`，不能用 `||` 把零替换成默认 50。
+`shared/start-options.js` 提供默认值 50、允许上限和整数校验，浏览器与服务端共用。`bigSingleReadyPoints` 是建房草稿，也供缺创建快照的旧房配置下一局；`gameBigSingleReadyPoints` 是本局已保存规则。0 是合法的“不收取”，因此读取旧字段时使用 `??`，不能用 `||` 把零替换成默认 50。
 
-`shared/start-options.js` supplies the default of 50, the maximum and integer validation shared by browser and server. `bigSingleReadyPoints` is the host’s editable next-round draft; `gameBigSingleReadyPoints` is the saved active-game rule. Zero validly disables payment, so legacy field fallback uses `??`, not `||`, which would replace zero with 50.
+`shared/start-options.js` supplies the default of 50, the maximum and integer validation shared by browser and server. `bigSingleReadyPoints` is the creation draft and the next-round draft for legacy rooms missing that creation field; `gameBigSingleReadyPoints` is the saved active-game rule. Zero validly disables payment, so legacy field fallback uses `??`, not `||`, which would replace zero with 50.
 
-`v-model.number` 只尝试数值转换，不保证输入必为合法整数。`validReadyPoints` 控制提示与开局按钮；`mutate` 再检查一次并把草稿复制到请求。服务端独立校验。`applyState` 只在首次拿到牌局或换局时从保存规则初始化草稿，普通终局轮询不会抹掉房主正在编辑的下一局数值。换桌恢复默认值。
+`v-model.number` 只尝试数值转换，不保证输入必为合法整数。`validReadyPoints` 控制建房提示与提交按钮；`validStartOptions` 仅在旧房金额未固定时检查此草稿，`mutate` 再检查并仅复制未固定字段。服务端独立校验。`applyState` 只在首次拿到牌局或换局时从保存规则初始化草稿，普通终局轮询不会抹掉旧房下一局编辑。换桌恢复默认值；正在提交的新桌草稿在清理会话后保留。
 
-`v-model.number` attempts numeric conversion but does not guarantee a valid integer. `validReadyPoints` controls errors and start buttons; `mutate` rechecks and copies the draft into the request. The server validates independently. `applyState` initializes the draft from saved rules only on first game load or a new game; ordinary finished-game polling does not erase next-round edits. Changing tables resets the default.
+`v-model.number` attempts numeric conversion but does not guarantee a valid integer. `validReadyPoints` controls creation errors and submission; `validStartOptions` checks the draft only for unfixed legacy amounts, and `mutate` copies only missing creation fields. The server validates independently. `applyState` initializes drafts on first game load or a new game; ordinary finished-game polling preserves legacy next-round edits. Changing tables resets defaults, while an in-flight creation retains its submitted draft after session cleanup.
 
 规则与历史显示区分“未启用，不补收”、主动设为 0 与实际每家付款金额。`bigSingleReady` 历史事件标注“听牌喜钱”，不冒充即时杠分。这里的文字解释服务端结算，不在模板里计算或收取分数。
 
@@ -222,3 +222,11 @@ The selector renders seven characters while table size follows its three/four-pl
 
 `preHuActionChoice` 与 `concealedKongAfterPungDiscard` 两个computed只读取当前v3局的显式true，分别选择首胡前完整动作与碰后延迟暗杠说明；false/缺字段仍显示旧策略。大厅讲新局默认，schema1/2继续各自独立说明。它们不计算合法动作、不改规则。九种开关组合及冻结版本回归在 `tests/ui.test.js`。
 The two computed values read explicit current-schema true flags independently. False/missing preserves old explanations; the lobby describes new defaults and frozen engines retain separate sections. No legal actions or rules are changed. The UI suite covers all nine combinations and old versions.
+
+## 统一建房面板 / Unified room creation panel
+
+`App.vue` 在建房表单一次配置人数、副数、神龙、胡后自动打出和大单吊喜钱，`enterRoom` 在清理旧会话及异步身份请求前复制完整快照。加入/观战不提交配置。所有数字输入都有帮助、错误关联；原生 select、数字框和 switch 保留键盘操作。`tabletop.css` 最后建房区统一米色/墨绿样式、48px控件和可见焦点；440px以下改为单列。
+The creation form collects all five settings. enterRoom snapshots them before session reset and asynchronous identity setup; joins/spectators never send settings. Native controls retain keyboard support, linked help/errors and visible focus; the final tabletop.css section unifies styling and stacks below 440px.
+
+房内的 `hasFixedAutoDiscard` / `hasFixedReadyPoints` 逐字段判断保存快照。新桌只读展示且 `start` 提交空 options；缺字段旧桌仍显示原开局草稿，仅提交未固定字段。`canStart` 是房主/阶段权限，`canConfigureStart` 另管旧桌编辑入口，不能把“不可编辑”误当成“不可开局”。`validStartOptions` 对已固定金额不检查无关本地草稿，确保刷新、加入及下一局不受旧输入影响。
+Per-field presence selects read-only creation settings versus legacy editable drafts. canStart handles permission/phase, separately from canConfigureStart. Fixed amounts ignore stale local drafts; starts send only missing legacy choices.

@@ -165,3 +165,6 @@ The assignment suite enumerates 512 preference combinations, with dedicated fixe
 
 [联合验收报告](FEATURE-INTEGRATION-VALIDATION.md) 记录三/四人玩家和观众的集成边界、真实浏览器与全量检查结果。新增联合场景位于现有 `tests/spectators.test.js`、`tests/ui.test.js`，未弱化媒体资产门槛。
 The integration report records player/viewer boundaries, real-browser coverage and aggregate checks. Combined cases extend the existing spectator/UI suites without relaxing media contracts.
+
+建房参数前置与统一样式沿用现有 `tests/ui.test.js`、`tests/variable-room-api.test.js`，覆盖创建默认/非法/零值、异步请求快照、重复点击、新房只读续局、部分旧房字段、恢复/观战/权限及旧局不回填。`api`、`presentation-api`、`spectators` 测试明确区分新房固定设置与旧房每局草稿。真实视觉范围见 [建房验收](ROOM-SETTINGS-VALIDATION.md)。
+Creation-setting tests extend existing suites with defaults, invalid/zero input, async snapshots, repeated clicks, fixed-room starts, partial legacy fields and read-only/restore boundaries. Browser scope is documented separately.

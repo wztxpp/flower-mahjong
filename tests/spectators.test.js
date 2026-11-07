@@ -284,7 +284,7 @@ for (const playerCount of [3, 4]) {
       return { status: response.status, ...await response.json() };
     };
     const preferences = ['wealthy', 'landlord', 'honest', 'star'];
-    const settings = { playerCount, deckCount: 2.5, dragonStartCount: 9 };
+    const settings = { playerCount, deckCount: 2.5, dragonStartCount: 9, autoDiscardAfterHu: true, bigSingleReadyPoints: 50 };
     const host = await request('rooms', { name: '整合玩家0', settings, preferredCharacter: preferences[0] });
     assert.equal(host.status, 201);
     const path = `rooms/${host.roomId}`;

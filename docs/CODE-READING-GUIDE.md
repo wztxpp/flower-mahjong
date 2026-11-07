@@ -132,3 +132,5 @@ The integration report records player/viewer boundaries, real-browser coverage a
 
 本轮角色分支验收记录为 [SEVEN-CHARACTERS-QA.md](SEVEN-CHARACTERS-QA.md)，分别列出自动检查通过项、语音试听边界和当时真实浏览器未完成项；最新联合结果以上方整合报告为准。
 The character-branch verification record retains its automated passes, listening limits and then-uncompleted browser checks; the integration report above holds the latest combined result.
+
+- [建房参数统一验收](ROOM-SETTINGS-VALIDATION.md)：创建快照与旧房兼容、统一面板、自动测试和真实浏览器验收记录。 / Creation snapshots, legacy compatibility, unified form and automated/real-browser evidence.

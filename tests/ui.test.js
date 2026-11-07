@@ -2997,7 +2997,7 @@ test("new special rules show scoring explanation while pre-feature games retain 
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
   assert.match(html, /七对首次胡后/);
-  assert.match(html, /房主在每局开局前填写每家支付的分数，默认 50 分/);
+  assert.match(html, /创建牌桌前填写每家支付的分数，默认 50 分/);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   scope = setup(
@@ -6086,4 +6086,163 @@ test('rules dialog preserves old choices and describes explicit pre-hu and post-
     assert.doesNotMatch(html, /可自行选择胡或合法杠，也可出牌|碰后当前回合不能立即暗杠/);
     assert.match(html, /本桌旧规则/);
   }
+});
+
+// 新建桌把五项参数作为同一份创建快照；原生标签、帮助、错误和状态让键盘/读屏可用。
+// New rooms submit five choices together; native labels, help, errors and states support keyboard/screen readers.
+test('creation panel unifies five choices and exposes defaults, errors and disabled states', async () => {
+  browser();
+  const scope = lobby();
+  let html = await render(scope);
+  for (const id of ['table-player-count', 'table-deck-count', 'dragon-start-count', 'create-ready-points', 'create-auto-discard']) {
+    assert.match(html, new RegExp(`for="${id}"`));
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(html, /id="create-auto-discard"[^>]*checked[^>]*role="switch"/);
+  assert.match(html, /id="create-ready-points"[^>]*value="50"/);
+  assert.match(html, /创建后固定，同桌每一局沿用/);
+  assert.match(html, /role="group" aria-label="进入牌桌方式"/);
+  scope.name.value = '创建验证';
+  globalThis.fetch = () => assert.fail('invalid creation must not request');
+  for (const amount of ['', -1, 1.5, 100001]) {
+    scope.bigSingleReadyPoints.value = amount;
+    html = await render(scope);
+    assert.match(html, /id="create-ready-points"[^>]*aria-invalid="true"/);
+    assert.match(html, /id="create-ready-error"[^>]*role="alert"/);
+    assert.match(html, /class="button primary entry-submit"[^>]*disabled/);
+    await scope.enterRoom();
+    assert.match(scope.error.value, /喜钱须为/);
+  }
+  scope.bigSingleReadyPoints.value = 0;
+  scope.dragonStartCountDraft.value = '';
+  html = await render(scope);
+  assert.match(html, /id="dragon-start-count"[^>]*aria-invalid="true"/);
+  assert.match(html, /id="dragon-count-error"[^>]*role="alert"/);
+  for (const flag of ['busy', 'restoring']) {
+    scope[flag].value = true;
+    assert.match(await render(scope), /class="table-settings-fields"[^>]*disabled/);
+    scope[flag].value = false;
+  }
+  scope.entryMode.value = 'join';
+  assert.doesNotMatch(await render(scope), /id="create-ready-points"|id="create-auto-discard"/);
+  scope.entryMode.value = 'create';
+  assert.equal(scope.bigSingleReadyPoints.value, 0);
+});
+
+// 异步创建开始前复制全部选项；重复点击和稍后的草稿变化都不能改已发送参数。
+// Snapshot every option before asynchronous creation; repeat clicks and later draft edits cannot alter submitted settings.
+test('creation snapshots automatic discard and zero bonus exactly once before reset', async () => {
+  browser();
+  const scope = lobby();
+  scope.playerToken.value = 'a'.repeat(64);
+  scope.name.value = '创建快照';
+  scope.playerCountDraft.value = 4;
+  scope.deckCountDraft.value = 2.5;
+  scope.dragonStartCountDraft.value = 9;
+  scope.autoDiscardAfterHu.value = false;
+  scope.bigSingleReadyPoints.value = 0;
+  const requests = [];
+  let release;
+  globalThis.fetch = (url, options) => {
+    requests.push({ url, body: JSON.parse(options.body) });
+    return new Promise(resolve => { release = resolve; });
+  };
+  const pending = scope.enterRoom();
+  await settle();
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, '/api/rooms');
+  assert.deepEqual(requests[0].body.settings, {
+    playerCount: 4, deckCount: 2.5, dragonStartCount: 9,
+    autoDiscardAfterHu: false, bigSingleReadyPoints: 0,
+  });
+  scope.autoDiscardAfterHu.value = true;
+  scope.bigSingleReadyPoints.value = 75;
+  await scope.enterRoom();
+  assert.equal(requests.length, 1);
+  const created = startFixture();
+  created.settings = requests[0].body.settings;
+  release(response({ roomId: created.id, token: 'test-creation-token', state: created }));
+  await pending;
+  assert.equal(scope.hasFixedAutoDiscard.value, true);
+  assert.equal(scope.hasFixedReadyPoints.value, true);
+  const html = await render(scope);
+  assert.match(html, /胡后自动打出：关闭，需点“过”继续/);
+  assert.match(html, /大单吊喜钱：0 分，不收取/);
+  assert.doesNotMatch(html, /id="auto-discard-after-hu"|id="big-single-ready-points"/);
+});
+
+// 固定新桌的开局不依赖本地草稿；旧桌或部分旧快照仅保留缺失字段的编辑入口。
+// Fixed-room starts ignore local drafts; legacy/partial snapshots retain editors only for missing fields.
+test('fixed room starts and next rounds use server settings, while partial legacy choices remain editable', async () => {
+  for (const phase of ['lobby', 'finished']) {
+    const state = startFixture(phase);
+    state.settings = { playerCount: 3, deckCount: 2, dragonStartCount: 6, autoDiscardAfterHu: false, bigSingleReadyPoints: 0 };
+    const scope = setup(state);
+    scope.bigSingleReadyPoints.value = '';
+    assert.equal(scope.canConfigureStart.value, false);
+    assert.equal(scope.validStartOptions.value, true);
+    assert.doesNotMatch(await render(scope), /id="auto-discard-after-hu"|id="big-single-ready-points"/);
+    const requests = [];
+    globalThis.fetch = async (url, options) => {
+      requests.push(JSON.parse(options.body));
+      return response({ state: { ...state, revision: state.revision + 1 } });
+    };
+    await scope.mutate(null, true);
+    assert.equal(requests.length, 1);
+    assert.deepEqual(requests[0].options, {});
+    scope.state.value.you = 1;
+    await scope.mutate(null, true);
+    assert.equal(requests.length, 1);
+    assert.match(await render(scope), /创建时已确定/);
+  }
+  for (const fixedKey of ['autoDiscardAfterHu', 'bigSingleReadyPoints']) {
+    const state = startFixture();
+    state.settings = { [fixedKey]: fixedKey === 'autoDiscardAfterHu' ? false : 0 };
+    const scope = setup(state);
+    assert.equal(scope.canConfigureStart.value, true);
+    const html = await render(scope);
+    assert.equal(html.includes('id="auto-discard-after-hu"'), fixedKey !== 'autoDiscardAfterHu');
+    assert.equal(html.includes('id="big-single-ready-points"'), fixedKey !== 'bigSingleReadyPoints');
+  }
+});
+
+// 已明确失败的创建保留原输入，不会自动重发；下一次用户点击仍用原选择。
+// An explicitly failed creation retains its form and never retries automatically; the next click still uses the original choices.
+test('failed creation retains chosen automatic-discard and ready-bonus drafts', async () => {
+  browser();
+  const scope = lobby();
+  scope.name.value = '失败保留';
+  scope.playerToken.value = 'a'.repeat(64);
+  scope.autoDiscardAfterHu.value = false;
+  scope.bigSingleReadyPoints.value = 75;
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls++;
+    return response({ error: '合成明确拒绝', code: 'TEST_REJECTED' }, 400);
+  };
+  await scope.enterRoom();
+  assert.equal(calls, 1);
+  assert.equal(scope.autoDiscardAfterHu.value, false);
+  assert.equal(scope.bigSingleReadyPoints.value, 75);
+  assert.equal(scope.busy.value, false);
+  assert.match(scope.error.value, /合成明确拒绝/);
+  const html = await render(scope);
+  assert.match(html, /id="create-ready-points"[^>]*value="75"/);
+  assert.doesNotMatch(html, /id="create-auto-discard"[^>]*checked/);
+});
+
+// 规则说明必须与新房固定值一致；旧桌继续描述每局可选，不能用新文案覆盖旧契约。
+// Rule help must match fixed new-room choices while retaining per-round wording for legacy rooms.
+test('rules help distinguishes creation snapshots from legacy per-round choices', async () => {
+  const old = setup(startFixture());
+  old.showRules.value = true;
+  assert.match(await render(old), /房主可在每局开局前选择/);
+  const current = startFixture();
+  current.settings = { autoDiscardAfterHu: false, bigSingleReadyPoints: 0 };
+  const scope = setup(current);
+  scope.showRules.value = true;
+  const html = await render(scope);
+  assert.match(html, /在创建牌桌前选择/);
+  assert.match(html, /本桌创建时确定为每家 0 分，不收取，同桌每局沿用/);
+  assert.doesNotMatch(html, /房主可在每局开局前选择|房主在每局开局前填写/);
 });

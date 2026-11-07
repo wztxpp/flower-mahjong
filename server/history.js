@@ -41,6 +41,14 @@ export function newGameMetadata(room, id, at) {
         playerCount: room.game.rules.playerCount,
         deckCount: room.game.rules.deckCount,
         dragonStartCount: room.game.rules.dragonStartCount,
+        // 仅记录建房时已固定的新增字段；旧房缺字段不伪造创建快照。
+        // Record newly fixed fields only when saved at room creation; do not invent legacy creation snapshots.
+        ...(Object.hasOwn(room.settings || {}, 'autoDiscardAfterHu') ? {
+          autoDiscardAfterHu: room.game.rules.autoDiscardAfterHu,
+        } : {}),
+        ...(Object.hasOwn(room.settings || {}, 'bigSingleReadyPoints') ? {
+          bigSingleReadyPoints: room.game.rules.bigSingleReadyPoints,
+        } : {}),
       },
     } : {}),
     participants: room.seats.map((person, seat) => ({

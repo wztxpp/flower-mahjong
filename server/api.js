@@ -9,7 +9,7 @@ import {
   getPlayerView,
 } from '../shared/game.js';
 import {
-  isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS,
+  isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS, DEFAULT_BIG_SINGLE_READY_POINTS,
   DEFAULT_PLAYER_COUNT, DEFAULT_DECK_COUNT, DEFAULT_DRAGON_START_COUNT,
   MIN_DRAGON_START_COUNT, MAX_DRAGON_START_COUNT,
   isPlayerCount, isDeckCount, isDragonStartCount,
@@ -163,12 +163,14 @@ function startRules(options) {
 // Validate and save configuration only at room creation; never backfill old rooms or resize through start options.
 function roomSettings(input) {
   if (input !== undefined && (!input || typeof input !== 'object' || Array.isArray(input) ||
-    Object.keys(input).some((key) => !['playerCount', 'deckCount', 'dragonStartCount'].includes(key))))
+    Object.keys(input).some((key) => !['playerCount', 'deckCount', 'dragonStartCount', 'autoDiscardAfterHu', 'bigSingleReadyPoints'].includes(key))))
     fail(400, 'BAD_ROOM_SETTINGS', '牌桌配置无效，请重新检查');
   const settings = {
     playerCount: DEFAULT_PLAYER_COUNT,
     deckCount: DEFAULT_DECK_COUNT,
     dragonStartCount: DEFAULT_DRAGON_START_COUNT,
+    autoDiscardAfterHu: true,
+    bigSingleReadyPoints: DEFAULT_BIG_SINGLE_READY_POINTS,
     ...input,
   };
   if (!isPlayerCount(settings.playerCount))
@@ -177,6 +179,12 @@ function roomSettings(input) {
     fail(400, 'BAD_ROOM_SETTINGS', '副数须为 1–5，每次增加半副');
   if (!isDragonStartCount(settings.dragonStartCount))
     fail(400, 'BAD_ROOM_SETTINGS', `神龙起算须为 ${MIN_DRAGON_START_COUNT}–${MAX_DRAGON_START_COUNT} 的整数`);
+  // 显式 false 和 0 都必须保留；仅省略字段才使用创建默认值。
+  // Preserve explicit false and zero; only omitted fields receive creation defaults.
+  if (typeof settings.autoDiscardAfterHu !== 'boolean')
+    fail(400, 'BAD_ROOM_SETTINGS', '胡后自动打出须为布尔值');
+  if (!isBigSingleReadyPoints(settings.bigSingleReadyPoints))
+    fail(400, 'BAD_ROOM_SETTINGS', `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数（每家支付的虚拟积分）`);
   return settings;
 }
 
@@ -1166,8 +1174,10 @@ export function createApi(store) {
         if (room.seats.some((person) => !person || person.detached))
           fail(409, 'NOT_FULL', '所有玩家都落座后才能开始');
         if (room.game && room.game.phase !== 'finished') fail(409, 'PLAYING', '这一局还没结束');
-        // 桌配置跨局固定；旧桌下一局用默认人数副数和新局规则，但不回填房间配置。
-        // Room settings persist across rounds; old rooms start new default-sized rounds without backfilling room settings.
+        // 建房快照逐字段优先于已校验的旧客户端 options，不能在首局或续局偷偷改值。
+        // Creation snapshots override validated legacy-client options field by field, on first and subsequent rounds.
+        // 旧房缺失的字段仍接受原开局选项和引擎默认值，不回填房间或改写旧局。
+        // Missing legacy-room fields retain start options/engine defaults without backfilling rooms or rewriting games.
         const rules = {
           ...startRules(body.options),
           ...(room.settings || {}),

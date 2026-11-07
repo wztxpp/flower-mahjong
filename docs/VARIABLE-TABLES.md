@@ -21,8 +21,8 @@ Former all-opponent branches expand from two to three payers without changing un
 
 ## 存档与接口 / Snapshots and API
 
-建房 POST `/api/rooms` 新增可选 `settings: {playerCount, deckCount, dragonStartCount}`，拒绝非法类型、额外键和越界数值；未传时使用3/2/6。房间 `settings` 固定，加入及 start.options 无法修改。新局 `rules` 复制参数并显式保存 `exponentialDragon:true`、`extendedCopyFan:true`。`gameMeta.config`、归档 `config` 与个人记录 `config` 保留实际新局设置；不需D1列迁移。
-Room creation accepts optional validated settings, defaulting to 3/2/6. Joining/start options cannot resize the room. New rules save the dimensions plus explicit exponentialDragon/extendedCopyFan flags. Metadata, archives and personal records preserve config without a database migration.
+建房 POST `/api/rooms` 新增可选 `settings: {playerCount, deckCount, dragonStartCount, autoDiscardAfterHu, bigSingleReadyPoints}`，拒绝非法类型、额外键和越界数值；未传时使用3/2/6/true/50。房间 `settings` 固定，加入及 start.options 无法修改。新局 `rules` 复制参数并显式保存 `exponentialDragon:true`、`extendedCopyFan:true`。`gameMeta.config`、归档 `config` 与个人记录 `config` 保留实际新局设置；不需D1列迁移。
+Room creation accepts optional validated settings, defaulting to 3/2/6/true/50. Joining/start options cannot resize the room. New rules save the dimensions plus explicit exponentialDragon/extendedCopyFan flags. Metadata, archives and personal records preserve config without a database migration.
 
 缺配置旧房/旧局按3人2副解读，不改动原对象。旧局缺两个新计分标记时保留原>8同牌番兜底和6/7/8神龙封顶，不重算已结算账目。旧房下一局属于新的明确开局，采用默认3/2/6和新规则，但不回填旧房settings。schema1/2引擎不变。
 Old saves lacking dimensions read as three seats/two decks, without mutation. Missing scoring flags preserve the original above-eight fan fallback and capped dragon table. A subsequent explicit new round uses new defaults; existing records do not change. Frozen engines one/two remain untouched.

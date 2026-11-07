@@ -187,6 +187,14 @@ async function table(t, { store, start = true, seed } = {}) {
     state,
   };
 }
+// 明确模拟升级前只保存维度的旧房；只用于验证原有 start options 契约。
+// Explicitly model a pre-upgrade dimension-only room for legacy start-option compatibility tests.
+async function legacyStartSettings(api) {
+  const room = await api.store.get(api.roomId);
+  delete room.settings.autoDiscardAfterHu;
+  delete room.settings.bigSingleReadyPoints;
+  assert.equal(await api.store.compareAndSwap(room, room.revision), true);
+}
 // 同时检查 HTTP 状态、业务错误码和可读错误信息，避免仅凭一个状态码误判通过。
 // Check HTTP status, domain code and readable error text together rather than accepting a status alone.
 function assertError(result, status, code) {
@@ -5211,6 +5219,7 @@ test("start option is host-only, validated, atomic and saved for every authentic
   const api = await table(t, {
     start: false,
   });
+  await legacyStartSettings(api);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const start = (player, options, revision = api.state.revision) =>
@@ -5321,6 +5330,7 @@ test("omitted start option defaults to automatic and next hand can change it wit
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   const api = await table(t);
+  await legacyStartSettings(api);
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assert.equal(api.state.game.rules.autoDiscardAfterHu, true);
@@ -5409,6 +5419,7 @@ test("manual post-hu HTTP pause survives FileStore reload, ignores forged rule c
     store: new FileStore(directory),
     start: false,
   });
+  await legacyStartSettings(api);
   const started = await api.request(`/api/rooms/${api.roomId}/start`, {
     method: "POST",
     token: api.host.token,
@@ -5707,6 +5718,7 @@ for (const points of [0, 75, 100000]) // 场景：HTTP 开局保存每家 ${poin
     // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
     // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
     const api = await table(t);
+  await legacyStartSettings(api);
     // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
     // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
     // 断言：检查本步骤的精确结果，尤其是一次性收费、待打牌限制及已保存规则不被重写。

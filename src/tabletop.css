@@ -2776,19 +2776,102 @@ input:focus, #preferred-character:focus {
 
 /* 变人数新增样式最后覆盖：三人不受影响，四人有独立对家，宽牌组可局部滚动。
    Variable-table overrides come last: keep three-seat layout, add the opposite seat and scroll long melds locally. */
-.table-settings-fields {
-  border: 1px solid #ddd9cd;
-  border-radius: 12px;
-  padding: 12px;
-  margin: 14px 0;
+/* 建房面板复用落座表单的米色与墨绿；原生控件统一字体、边框和点击高度，避免系统默认样式混入。
+   Match the entry form's cream/jade palette and normalize native control typography, borders and tap heights. */
+.entry-card { min-width: 0; }
+.entry-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.entry-tabs button { padding-inline: 6px; gap: 5px; white-space: nowrap; }
+.entry-card input:not([type="checkbox"]), .entry-card select {
+  min-width: 0;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #b6a580;
+  border-radius: 9px;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 16px;
+  color: #493f2f;
+  background-color: #fffdf4;
+  box-shadow: inset 0 2px 4px #7464420c;
 }
-.table-settings-fields legend { padding: 0 5px; font-size: 13px; font-weight: 600; }
-.table-settings-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
-.table-settings-grid label { min-width: 0; font-size: 12px; }
-.table-settings-grid label:last-child { grid-column: 1 / -1; }
-.table-settings-grid select, .table-settings-grid input { margin-top: 5px; width: 100%; }
-.table-settings-fields small { display: block; margin-top: 8px; color: #626b5d; line-height: 1.6; }
-.table-settings-fields .settings-warning { color: #98611f; }
+/* 深绿焦点在浅底上可辨认；fieldset 禁用会传递到子控件，无需模拟只读状态。
+   Dark-green focus stays visible on cream; native fieldset disabling propagates to its controls. */
+.entry-card :is(input, select, button):focus-visible {
+  outline: 3px solid #24583f;
+  outline-offset: 3px;
+}
+.entry-card :is(input, select):disabled { opacity: .65; cursor: not-allowed; }
+.table-settings-fields {
+  min-width: 0;
+  margin: 22px 0 0;
+  padding: 14px;
+  border: 1px solid #c7b48c;
+  border-radius: 13px;
+  background: #fff9eb80;
+}
+.table-settings-fields legend {
+  padding: 0 8px;
+  font-size: 15px;
+  font-weight: 650;
+  color: #354f39;
+  letter-spacing: .06em;
+}
+.table-settings-intro { margin: 0 0 16px; color: #6e6047; font-size: 12px; line-height: 1.6; }
+.table-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+.table-setting-field { min-width: 0; }
+.table-setting-field > label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 600; color: #574a33; }
+.table-setting-wide { grid-column: 1 / -1; }
+.table-setting-input-unit { position: relative; }
+.table-setting-input-unit input { padding-right: 30px !important; }
+.table-setting-input-unit > span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #736246; font-size: 12px; pointer-events: none; }
+/* 输入单位已独立显示，保留原生键盘步进并让数字框无需横向滚动。
+   Show units separately while retaining native keyboard stepping and avoiding horizontal input overflow. */
+.table-setting-input-unit input { appearance: textfield; -moz-appearance: textfield; }
+.table-setting-input-unit input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.table-setting-help { margin: 7px 0 0; font-size: 12px; line-height: 1.65; color: #6e6047; }
+p.table-setting-wide { margin-top: -6px; }
+.table-setting-error, .settings-warning { margin: 7px 0 0; font-size: 12px; line-height: 1.6; color: #95352b; }
+.settings-warning { padding: 9px 10px; border-radius: 7px; background: #f5e6c4; color: #795019; }
+.entry-card input[aria-invalid="true"] { border-color: #a43e32; }
+.table-setting-toggle { border-top: 1px solid #d5c29e; padding-top: 14px; }
+.table-setting-toggle label { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; cursor: pointer; }
+.table-setting-toggle label > span { font-size: 13px; font-weight: 600; color: #574a33; }
+.table-setting-toggle small { display: inline-block; margin-left: 5px; font-size: 11px; font-weight: 400; color: #6e6047; }
+/* checkbox 自身承载开关和焦点，保留 Space、checked 与 disabled 的原生语义。
+   The checkbox itself owns the switch and focus, preserving native Space, checked and disabled semantics. */
+.table-setting-toggle input {
+  appearance: none;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 26px;
+  min-height: 0;
+  padding: 3px;
+  margin: 0;
+  border: 1px solid #a18d69;
+  border-radius: 18px;
+  background: #b9ac90;
+  box-shadow: none;
+  cursor: pointer;
+}
+.table-setting-toggle input::before { content: ''; display: block; width: 18px; height: 18px; border-radius: 50%; background: #fffdf4; box-shadow: 0 1px 3px #493c2c40; }
+.table-setting-toggle input:checked { background: #2c6649; border-color: #2c6649; }
+.table-setting-toggle input:checked::before { transform: translateX(18px); }
+.room-settings-recap { display: flex; flex-wrap: wrap; gap: 9px 20px; margin: 0 0 16px; padding: 14px 18px; border: 1px solid #baa16e; border-radius: 12px; background: #fff8e8; color: #493f2f; font-size: 13px; }
+.room-settings-recap strong, .room-settings-recap small { flex-basis: 100%; }
+.room-settings-recap small { color: #6e6047; line-height: 1.6; }
+/* 最窄手机把长标签改成单列；不隐藏帮助、错误或创建按钮，也不依赖横向滚动。
+   The narrowest phones stack long labels; keep help, errors and submit visible without horizontal scrolling. */
+@media (max-width: 440px) {
+  .table-settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .entry-tabs button { font-size: 11px; gap: 3px; }
+  .entry-tabs button svg { width: 14px; height: 14px; }
+}
+/* 系统强制色保留原生 checkbox，防止自绘开关失去选中对比。
+   Restore the native checkbox in forced colors so the selected state remains distinguishable. */
+@media (forced-colors: active) {
+  .table-setting-toggle input { appearance: auto; }
+  .table-setting-toggle input::before { display: none; }
+}
 .four-player-table .opponent-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .four-player-table .opponent-seat { min-width: 0; padding: 10px; }
 .relative-seat-label { display: block; color: #e7d49b; font-size: 11px; margin-bottom: 7px; }

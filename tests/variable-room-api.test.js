@@ -50,7 +50,7 @@ for (const playerCount of [3, 4]) {
   for (let deckCount = 1; deckCount <= 5; deckCount += 0.5) {
     test(`${playerCount} players / ${deckCount} decks persists and deals exact configuration`, async () => {
       const api = harness();
-      const settings = { playerCount, deckCount, dragonStartCount: 6 };
+      const settings = { playerCount, deckCount, dragonStartCount: 6, autoDiscardAfterHu: true, bigSingleReadyPoints: 50 };
       const table = await occupiedTable(api, settings);
       const started = await api.request(`/rooms/${table.id}/start`, { revision: table.state.revision }, table.tokens[0]);
       assert.equal(started.status, 200);
@@ -73,10 +73,12 @@ for (const playerCount of [3, 4]) {
 test('creation validates configuration strictly and defaults only omitted fields', async () => {
   const api = harness();
   const created = await api.request('/rooms', { name: '默认桌' });
-  assert.deepEqual(created.state.settings, { playerCount: 3, deckCount: 2, dragonStartCount: 6 });
+  assert.deepEqual(created.state.settings, { playerCount: 3, deckCount: 2, dragonStartCount: 6, autoDiscardAfterHu: true, bigSingleReadyPoints: 50 });
   const invalid = [null, [], 'bad', { extra: true }, ...[2, 5, '4', null, 3.5].map((playerCount) => ({ playerCount })),
     ...[0.5, 5.5, 1.25, '2', null].map((deckCount) => ({ deckCount })),
-    ...[0, 21, 1.5, '6', null].map((dragonStartCount) => ({ dragonStartCount }))];
+    ...[0, 21, 1.5, '6', null].map((dragonStartCount) => ({ dragonStartCount })),
+    ...[null, 'false', 0, 1, [], {}].map((autoDiscardAfterHu) => ({ autoDiscardAfterHu })),
+    ...[-1, 1.5, 100001, Number.MAX_SAFE_INTEGER + 1, '50', null, true, [], {}].map((bigSingleReadyPoints) => ({ bigSingleReadyPoints }))];
   for (const settings of invalid) {
     const result = await api.request('/rooms', { name: '无效桌', settings });
     assert.equal(result.status, 400, JSON.stringify(settings));
@@ -91,7 +93,7 @@ test('creation validates configuration strictly and defaults only omitted fields
 
 test('four seats require full occupancy, protect tokens, reconnect and preserve next-round configuration', async () => {
   const api = harness();
-  const settings = { playerCount: 4, deckCount: 2.5, dragonStartCount: 7 };
+  const settings = { playerCount: 4, deckCount: 2.5, dragonStartCount: 7, autoDiscardAfterHu: false, bigSingleReadyPoints: 0 };
   const created = await api.request('/rooms', { name: '房主', settings });
   const path = `/rooms/${created.roomId}`;
   let result = await api.request(`${path}/start`, { revision: 0 }, created.token);
@@ -174,7 +176,7 @@ test('saved unconfigured rooms keep current rules and historical records unchang
 test('FileStore restores fourth-seat identity and immutable table configuration', async (t) => {
   const directory = await mkdtemp(join(tmpdir(), 'mahjong-variable-room-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
-  const settings = { playerCount: 4, deckCount: 1.5, dragonStartCount: 20 };
+  const settings = { playerCount: 4, deckCount: 1.5, dragonStartCount: 20, autoDiscardAfterHu: false, bigSingleReadyPoints: 75 };
   const api = harness(new FileStore(directory));
   const table = await occupiedTable(api, settings);
   const path = `/rooms/${table.id}`;
@@ -211,3 +213,65 @@ test('FileStore restores fourth-seat identity and immutable table configuration'
   assert.equal(persisted.seats[3].detached, false);
   assert.deepEqual(persisted.gameMeta.characters, original.gameMeta.characters);
 });
+
+// 新房的两项玩法在建房固定；旧客户端提交不同开局选项也不能覆盖，观战无修改权。
+// New rooms fix both rules at creation; conflicting legacy start options cannot override them and viewers remain read-only.
+for (const bigSingleReadyPoints of [0, 75, 100000]) {
+  test(`creation fixes manual play and ${bigSingleReadyPoints} ready points across rounds and roles`, async () => {
+    const api = harness();
+    const settings = { playerCount: 3, deckCount: 2, dragonStartCount: 6, autoDiscardAfterHu: false, bigSingleReadyPoints };
+    const table = await occupiedTable(api, settings);
+    const path = `/rooms/${table.id}`;
+    const spectator = await api.request(`${path}/spectate`, {});
+    assert.equal(spectator.status, 201);
+    assert.deepEqual(spectator.state.settings, settings);
+    const before = await api.store.get(table.id);
+    const body = { revision: before.revision, options: { autoDiscardAfterHu: true, bigSingleReadyPoints: 50 } };
+    assert.equal((await api.request(`${path}/start`, body, table.tokens[1])).code, 'HOST_ONLY');
+    assert.equal((await api.request(`${path}/start`, body, spectator.token)).status, 403);
+    assert.deepEqual(await api.store.get(table.id), before);
+    for (let round = 0; round < 2; round++) {
+      const saved = await api.store.get(table.id);
+      const started = await api.request(`${path}/start`, { ...body, revision: saved.revision }, table.tokens[0]);
+      assert.equal(started.status, 200);
+      assert.deepEqual(started.state.settings, settings);
+      assert.equal(started.state.game.rules.autoDiscardAfterHu, false);
+      assert.equal(started.state.game.rules.bigSingleReadyPoints, bigSingleReadyPoints);
+      const current = await api.store.get(table.id);
+      assert.deepEqual(current.gameMeta.config, settings);
+      const view = await api.request(path, undefined, spectator.token);
+      assert.deepEqual(view.state.settings, settings);
+      assert.deepEqual(view.state.game.legalActions, []);
+      assert.equal(view.state.game.players[0].hand, undefined);
+      // 只改合成终局状态，以便下一轮通过真实 start 路由验证跨局固定。
+      // Mark a synthetic finish so the real start route can verify next-round immutability.
+      current.game.phase = 'finished';
+      assert.equal(await api.store.compareAndSwap(current, current.revision), true);
+    }
+    const final = await api.store.get(table.id);
+    assert.deepEqual(final.archivedGames[0].game.config, settings);
+  });
+}
+
+// 不完整旧快照按字段兼容：已保存的值固定，缺失字段仍走原开局配置，不回填。
+// Partial legacy snapshots are compatible field by field: saved values stay fixed and absent fields retain start configuration.
+for (const fixedKey of ['autoDiscardAfterHu', 'bigSingleReadyPoints']) {
+  test(`partial legacy room keeps ${fixedKey} fixed without filling the missing setting`, async () => {
+    const api = harness();
+    const table = await occupiedTable(api, { autoDiscardAfterHu: false, bigSingleReadyPoints: 0 });
+    const saved = await api.store.get(table.id);
+    const missingKey = fixedKey === 'autoDiscardAfterHu' ? 'bigSingleReadyPoints' : 'autoDiscardAfterHu';
+    delete saved.settings[missingKey];
+    assert.equal(await api.store.compareAndSwap(saved, saved.revision), true);
+    const started = await api.request(`/rooms/${table.id}/start`, {
+      revision: saved.revision,
+      options: { autoDiscardAfterHu: true, bigSingleReadyPoints: 75 },
+    }, table.tokens[0]);
+    assert.equal(started.status, 200);
+    assert.equal(started.state.game.rules[fixedKey], saved.settings[fixedKey]);
+    assert.equal(started.state.game.rules[missingKey], missingKey === 'autoDiscardAfterHu' ? true : 75);
+    const after = await api.store.get(table.id);
+    assert.deepEqual(after.settings, saved.settings);
+    assert.equal(Object.hasOwn(after.gameMeta.config, missingKey), false);
+  });
+}
