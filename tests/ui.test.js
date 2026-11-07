@@ -1,6 +1,8 @@
+import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptionsModule from "../shared/start-options.js";
+import * as ChengduRoomSettingsModule from "../shared/chengdu-room-settings.js";
 // 编译真实 Vue 组件，验证服务端渲染、模拟浏览器交互与异步换桌边界。
 // Compile real Vue components to test SSR, simulated browser interactions and asynchronous room changes.
 // 阅读说明见 docs/TESTING-READING-GUIDE.md；固定种子与凭证仅为测试，不应移入真实用户数据。
@@ -10,8 +12,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as Vue from "vue";
 import * as CharacterAudioModule from "../src/character-audio.js";
+import * as CharacterPortraitModule from "../src/character-portraits.js";
 import * as SharedPlaybackModule from "../src/shared-playback.js";
 import * as MahjongPhotoModule from "../src/mahjong-photo-faces.js";
+import * as MahjongPresentationModule from "../src/mahjong-tile-presentation.js";
+import * as MahjongWanModule from "../src/mahjong-wan-faces.js";
 import * as Renderer from "vue/server-renderer";
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 import { getPlayerView } from "../shared/game.js";
@@ -77,15 +82,24 @@ function compileComponent(filename, dependencies = {}) {
   return component;
 }
 const Tile = compileComponent("MahjongTile.vue", {
-  "./mahjong-photo-faces.js": MahjongPhotoModule,
+  "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
+const ChengduTable = compileComponent("ChengduTable.vue", {
+  "./chengdu-event-text.js": ChengduEventTextModule,
+  "./MahjongTile.vue": Tile,
+  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+});
 const App = compileComponent("App.vue", {
+  "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
+  "./ChengduTable.vue": ChengduTable,
   "./character-audio.js": CharacterAudioModule,
+  "./character-portraits.js": CharacterPortraitModule,
   "./shared-playback.js": SharedPlaybackModule,
   "../shared/start-options.js": StartOptionsModule,
+  "../shared/chengdu-room-settings.js": ChengduRoomSettingsModule,
 });
 // 保存原始全局对象；文件结束后恢复，避免浏览器替身污染其他场景。
 // Save original globals for restoration after this file so browser substitutes do not leak.
@@ -556,6 +570,57 @@ test("eight circles and the bamboo bird use the correct original photo faces", a
   assert.doesNotMatch(back, /mahjong-faces-20261107|<image/);
   assert.match(back, /aria-label="背面牌"/);
 });
+// 实际编译的组件必须选用独立万牌原图，且保留手牌按钮与小牌河的原有语义。
+// The compiled component must select the wan atlas and preserve hand-button/small-river semantics.
+test("all nine wan tiles use their own atlas, crop, label and button state", async () => {
+  for (let tile = 18; tile <= 26; tile++) {
+    for (const small of [false, true]) {
+      const html = await Renderer.renderToString(Vue.createSSRApp(Tile, {
+        tile, small, interactive: true, selected: true, disabled: true,
+      }));
+      assert.match(html, /<button/);
+      assert.match(html, /aria-pressed="true"/);
+      assert.match(html, /disabled/);
+      assert.ok(html.includes(`aria-label="${tile - 17}万"`));
+      assert.ok(html.includes(`title="${tile - 17}万"`));
+      assert.ok(html.includes(`href="${MahjongWanModule.MAHJONG_WAN_URL}"`));
+      assert.ok(html.includes(`width="${MahjongWanModule.MAHJONG_WAN_WIDTH}"`));
+      assert.ok(html.includes(`height="${MahjongWanModule.MAHJONG_WAN_HEIGHT}"`));
+      assert.ok(html.includes(MahjongWanModule.wanFaceTransform(tile)));
+      assert.equal(html.includes("tile-small"), small);
+      assert.doesNotMatch(html, /mahjong-faces-20261107\.png/);
+    }
+  }
+});
+
+// 背面不能在图片、title或读屏标签泄漏万牌；非法输入保持空白而不是强转为牌种。
+// Backs must not reveal wan through images/tooltips/accessibility; invalid input stays blank without coercion.
+test("wan backs and invalid tile identities expose no face or rank", async () => {
+  for (let tile = 18; tile <= 26; tile++) {
+    const html = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile, back: true }));
+    assert.match(html, /aria-label="背面牌"/);
+    assert.match(html, /title="背面牌"/);
+    assert.doesNotMatch(html, /<image|mahjong-wan|[1-9]万/);
+  }
+  for (const tile of [null, -1, 18.5, 27, NaN, Infinity]) {
+    const html = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile }));
+    assert.match(html, /aria-label="空白牌"/);
+    assert.doesNotMatch(html, /<image|mahjong-wan|[1-9]万/);
+  }
+});
+
+// 每个旧牌种逐一核对原始裁切，不用几个抽样替代18张牌的兼容边界。
+// Check every old crop rather than treating a few samples as the full eighteen-face compatibility boundary.
+test("all original tile faces preserve their atlas, crop and accessible label", async () => {
+  for (let tile = 0; tile < 18; tile++) {
+    const html = await Renderer.renderToString(Vue.createSSRApp(Tile, { tile }));
+    assert.ok(html.includes(`href="${MahjongPhotoModule.MAHJONG_PHOTO_URL}"`));
+    assert.ok(html.includes(MahjongPhotoModule.photoFaceTransform(tile)));
+    assert.ok(html.includes(`aria-label="${tile % 9 + 1}${tile < 9 ? "条" : "筒"}"`));
+    assert.doesNotMatch(html, /mahjong-wan/);
+  }
+});
+
 // 场景：未变化轮询保留手牌快照，仅应用连接状态标记
 // Scenario: unchanged polling preserves the hand snapshot and only applies connection flags
 test("unchanged polling preserves the hand snapshot and only applies connection flags", async () => {
@@ -2752,9 +2817,9 @@ test("character portraits use server assignment independent of viewer position",
   const html = await render(scope);
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
-  assert.match(html, /characters\/sunny.png/);
-  assert.match(html, /characters\/sweet.png/);
-  assert.match(html, /characters\/elegant.png/);
+  assert.match(html, /characters\/sunny-base.png/);
+  assert.match(html, /characters\/sweet-base.png/);
+  assert.match(html, /characters\/elegant-base.png/);
 });
 // 场景：隐藏期间轮询后回到前台时，建立完整且静音的音频基线
 // Scenario: foreground resume establishes a full silent baseline after hidden polling
@@ -6245,4 +6310,391 @@ test('rules help distinguishes creation snapshots from legacy per-round choices'
   assert.match(html, /在创建牌桌前选择/);
   assert.match(html, /本桌创建时确定为每家 0 分，不收取，同桌每局沿用/);
   assert.doesNotMatch(html, /房主可在每局开局前选择|房主在每局开局前填写/);
+});
+
+// 成都四项必选且与花麻将草稿隔离；切换/加入/观战不能偷带另一模式参数。
+// Four Chengdu choices are required and independent of Flower drafts; switching/joining/spectating must not leak settings.
+test('Chengdu creation form has explicit accessible choices and independent Flower drafts', async () => {
+  browser();
+  const scope = lobby();
+  scope.gameModeDraft.value = 'chengdu';
+  let html = await render(scope);
+  assert.match(html, /for="game-mode"/);
+  for (const id of ['chengdu-end-condition', 'chengdu-exchange-three', 'chengdu-self-draw', 'chengdu-fan-cap']) {
+    assert.match(html, new RegExp(`for="${id}"`));
+    assert.match(html, new RegExp(`id="${id}"[^>]*required`));
+  }
+  assert.match(html, /固定四人/);
+  assert.match(html, /换牌和定缺由各人亲自选择/);
+  assert.doesNotMatch(html, /id="table-player-count"|id="create-ready-points"/);
+  assert.equal(scope.validCreationSettings.value, false);
+  scope.name.value = '成都准备';
+  globalThis.fetch = () => assert.fail('unfinished choices must not create');
+  await scope.enterRoom();
+  assert.match(scope.error.value, /请选择结束方式/);
+  scope.chengduEndConditionDraft.value = 'firstWin';
+  scope.chengduExchangeThreeDraft.value = false;
+  scope.chengduSelfDrawDraft.value = 'addFan';
+  scope.chengduFanCapDraft.value = 6;
+  scope.bigSingleReadyPoints.value = '';
+  scope.dragonStartCountDraft.value = '';
+  assert.equal(scope.validCreationSettings.value, true);
+  scope.gameModeDraft.value = 'flower';
+  assert.equal(scope.validCreationSettings.value, false);
+  scope.gameModeDraft.value = 'chengdu';
+  assert.equal(scope.chengduExchangeThreeDraft.value, false);
+  for (const entryMode of ['join', 'spectate']) {
+    scope.entryMode.value = entryMode;
+    html = await render(scope);
+    assert.doesNotMatch(html, /id="game-mode"|id="chengdu-end-condition"/);
+  }
+});
+
+// 异步建房前固定模式和四项选择，重复点击/草稿变化不可将成都请求转成花麻将。
+// Capture mode/choices before async creation; repeated clicks or draft edits cannot convert the request into Flower.
+test('Chengdu creation sends one immutable configuration and no Flower fields', async () => {
+  browser();
+  const scope = lobby();
+  scope.playerToken.value = 'a'.repeat(64);
+  scope.name.value = '成都准备';
+  scope.gameModeDraft.value = 'chengdu';
+  scope.chengduEndConditionDraft.value = 'bloodBattle';
+  scope.chengduExchangeThreeDraft.value = false;
+  scope.chengduSelfDrawDraft.value = 'addBase';
+  scope.chengduFanCapDraft.value = 5;
+  const requests = [];
+  let release;
+  globalThis.fetch = (url, options) => {
+    requests.push({ url, body: JSON.parse(options.body) });
+    return new Promise(resolve => { release = resolve; });
+  };
+  const pending = scope.enterRoom();
+  await settle();
+  assert.equal(requests.length, 1);
+  assert.deepEqual(requests[0].body.settings, {
+    playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 5,
+  });
+  assert.equal(requests[0].body.gameMode, 'chengdu');
+  scope.gameModeDraft.value = 'flower';
+  scope.chengduFanCapDraft.value = 6;
+  await scope.enterRoom();
+  assert.equal(requests.length, 1);
+  const state = startFixture();
+  state.gameMode = 'chengdu';
+  state.rulesVersion = null;
+  state.settings = requests[0].body.settings;
+  release(response({ roomId: state.id, token: 'test-chengdu-room', state }));
+  await pending;
+  assert.equal(scope.isChengduRoom.value, true);
+  assert.match(await render(scope), /5番封顶/);
+});
+
+// 成都准备房间绝不出现花麻将专属说明，满员房主/普通玩家/观众都不能触发开局请求。
+// Preparation rooms never display Flower-only rules; full hosts, ordinary players and spectators cannot issue start requests.
+test('Chengdu room shows saved choices with four seats, safe start gate and separate rules help', async () => {
+  for (const viewerRole of ['host', 'player', 'spectator']) {
+    const state = startFixture();
+    state.gameMode = 'chengdu';
+    state.rulesVersion = null;
+    state.settings = { playerCount: 4, dingque: true, endCondition: 'firstWin', exchangeThree: true, selfDraw: 'addFan', fanCap: 6 };
+    state.seats = Array.from({ length: 4 }, (_, seat) => ({ seat, name: `成都${seat + 1}`, connected: true }));
+    state.you = viewerRole === 'spectator' ? null : viewerRole === 'host' ? 0 : 2;
+    state.viewerRole = viewerRole === 'spectator' ? 'spectator' : 'player';
+    const scope = setup(state);
+    assert.equal(scope.tablePlayerCount.value, 4);
+    assert.equal(scope.canStart.value, false);
+    assert.equal(scope.canConfigureStart.value, false);
+    let html = await render(scope);
+    assert.match(html, /首胡结束/);
+    assert.match(html, /换三张：开启/);
+    assert.match(html, /先加1番再封顶/);
+    assert.match(html, /6番封顶/);
+    assert.match(html, /此服务端尚未开放成都开局/);
+    assert.doesNotMatch(html.replace(/<!--[\s\S]*?-->/g, ''), /神龙|萝卜|大单吊|同级碰、杠、胡|id="start-options-title"/);
+    if (viewerRole === 'host') assert.match(html, /class="button gold start-button"[^>]*disabled/);
+    else assert.doesNotMatch(html, /class="button gold start-button"/);
+    globalThis.fetch = () => assert.fail('Chengdu UI start must not request');
+    await scope.mutate(null, true);
+    scope.showRules.value = true;
+    html = await render(scope);
+    assert.match(html, /无人胡流局也查花猪、查叫、退杠/);
+    assert.doesNotMatch(html, /自贡花麻将 · 玩法说明|神龙留到局末/);
+    scope.showRules.value = false;
+    assert.doesNotMatch(await render(scope), /role="dialog"/);
+  }
+});
+
+// 失败保留明确选择不自动重试，导航后迟到响应不能重新打开刚离开的成都桌。
+// Failures retain explicit choices without retries; late results after navigation cannot reopen the abandoned Chengdu table.
+test('Chengdu failed creation preserves choices and late navigation results cannot restore its room', async () => {
+  browser();
+  const scope = lobby();
+  scope.playerToken.value = 'a'.repeat(64);
+  scope.name.value = '成都中断';
+  scope.gameModeDraft.value = 'chengdu';
+  scope.chengduEndConditionDraft.value = 'firstWin';
+  scope.chengduExchangeThreeDraft.value = true;
+  scope.chengduSelfDrawDraft.value = 'addBase';
+  scope.chengduFanCapDraft.value = 4;
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; return response({ error: '合成失败' }, 503); };
+  await scope.enterRoom();
+  assert.equal(calls, 1);
+  assert.equal(scope.chengduEndConditionDraft.value, 'firstWin');
+  assert.equal(scope.chengduExchangeThreeDraft.value, true);
+  assert.equal(scope.chengduSelfDrawDraft.value, 'addBase');
+  assert.equal(scope.chengduFanCapDraft.value, 4);
+  assert.equal(scope.validChengduSettings.value, true);
+  assert.match(scope.error.value, /合成失败/);
+  let release;
+  globalThis.fetch = (url) => {
+    if (url.endsWith('/leave')) return Promise.resolve(response({ ok: true }));
+    return new Promise(resolve => { release = resolve; });
+  };
+  const pending = scope.enterRoom();
+  await settle();
+  scope.resetRoomContext();
+  const state = startFixture();
+  state.gameMode = 'chengdu';
+  state.settings = { ...scope.chengduSettingsDraft.value };
+  release(response({ roomId: state.id, token: 'test-late-chengdu', state }));
+  await pending;
+  assert.equal(scope.inRoom.value, false);
+  assert.equal(scope.state.value, null);
+});
+
+// 正式成都版本才开放满员房主开局；隐藏花麻将草稿及声音屏障字段不能混入请求。
+// Only production Chengdu enables the filled-table host; hidden Flower drafts/media barrier fields never enter the request.
+test('production Chengdu host starts with empty fixed options and no Flower media protocol', async () => {
+  const state = startFixture();
+  state.gameMode = 'chengdu'; state.rulesVersion = 2;
+  state.settings = { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
+  state.seats = Array.from({ length: 4 }, (_, seat) => ({ seat, name: `成都${seat + 1}`, connected: true }));
+  const scope = setup(state);
+  scope.bigSingleReadyPoints.value = '';
+  assert.equal(scope.canStart.value, true);
+  assert.equal(scope.validStartOptions.value, true);
+  assert.equal(scope.canConfigureStart.value, false);
+  const html = await render(scope);
+  assert.match(html, /人齐了，开始牌局/);
+  assert.doesNotMatch(html, /成都开局暂未开放|创建成都准备桌/);
+  let sent;
+  globalThis.fetch = async (url, options) => {
+    sent = { url, body: JSON.parse(options.body) };
+    return { ok: true, json: async () => ({ state }) };
+  };
+  await scope.mutate(null, true);
+  assert.match(sent.url, /\/start$/);
+  assert.deepEqual(sent.body.options, {});
+  assert.equal(Object.hasOwn(sent.body, 'presentation'), false);
+  assert.equal(Object.hasOwn(sent.body, 'presentationMode'), false);
+  scope.state.value.you = 1;
+  assert.equal(scope.canStart.value, false);
+});
+
+// 成都 schema2不是花麻将v2；真实App渲染专用桌，不出现旧版升级提示和花麻将自动出牌说明。
+// Chengdu schema2 is not Flower v2; actual App renders its separate board without legacy-upgrade or Flower auto-discard text.
+test('App routes Chengdu schema two to its own table without Flower compatibility banners', async () => {
+  const state = startFixture(); state.gameMode = 'chengdu'; state.rulesVersion = 2; state.phase = 'playing';
+  state.settings = { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
+  state.seats = Array.from({ length: 4 }, (_, seat) => ({ seat, name: `成都${seat + 1}`, connected: true }));
+  state.game = { id: 'chengdu-ui-game', gameMode: 'chengdu', schemaVersion: 2, revision: 0, mySeat: 0, phase: 'dingque', dealerSeat: 0, currentSeat: null, wallCount: 55,
+    rules: state.settings, players: state.seats.map((player) => ({ seat: player.seat, handCount: 13, score: 0, melds: [], won: null, ...(player.seat === 0 ? { hand: [18, 19, 20] } : {}) })),
+    legalActions: [{ type: 'dingque', suit: 'characters' }], history: [], discards: [] };
+  const scope = setup(state);
+  assert.equal(scope.isOlderGame.value, false); assert.equal(scope.isLegacy.value, false); assert.equal(scope.isLatest.value, false);
+  const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+  assert.match(html, /aria-label="成都麻将牌桌"/); assert.match(html, /定缺万/); assert.match(html, /你的手牌/);
+  assert.doesNotMatch(html, /本桌保留 v0|胡后自动打出|萝卜|神龙|大单吊/);
+});
+
+// 真实App请求直接连真实API/MemoryStore，覆盖已注册成都从满员大厅到准备和第一手出牌。
+// Connect actual App requests to the actual API/MemoryStore, covering registered Chengdu from a full lobby through preparation and the first discard.
+test('real App and Chengdu API complete room start, exchange, dingque and first discard', async () => {
+  const handle = createApi(new MemoryStore());
+  const tokens = [];
+  const request = async (path, seat, body) => {
+    const response = await handle(new Request(`https://example.test/api/${path}`, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: seat === undefined ? {} : { authorization: `Bearer ${tokens[seat]}` },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }));
+    const payload = await response.json();
+    assert.ok(response.ok, JSON.stringify(payload));
+    return payload;
+  };
+  const created = await request('rooms', undefined, { name: '成都界面甲', gameMode: 'chengdu', settings: {
+    endCondition: 'bloodBattle', exchangeThree: true, selfDraw: 'addBase', fanCap: 4,
+  } });
+  tokens.push(created.token);
+  for (const name of ['成都界面乙', '成都界面丙', '成都界面丁'])
+    tokens.push((await request(`rooms/${created.roomId}/join`, undefined, { name })).token);
+  const scope = setup((await request(`rooms/${created.roomId}`, 0)).state);
+  scope.session.value = { roomId: created.roomId, token: tokens[0] };
+  scope.playerToken.value = '';
+  globalThis.fetch = (path, options) => handle(new Request(`https://example.test${path}`, options));
+  await scope.mutate(null, true);
+  assert.equal(scope.error.value, ''); assert.equal(scope.game.value.phase, 'exchange');
+  assert.equal(scope.game.value.schemaVersion, 2);
+  assert.match(await render(scope), /确认换三张/);
+  // 前端不代选；测试明确选择每份服务器白名单的第一项，模拟四名真实玩家分别决定。
+  // No production autoplay: this test explicitly chooses each player's first offered action to simulate independent decisions.
+  await scope.mutate(scope.game.value.legalActions[0]);
+  assert.equal(scope.error.value, '');
+  assert.ok(scope.game.value.preparation.myExchange);
+  assert.match(await render(scope), /换牌已提交，等待其他牌友/);
+  for (const seat of [1, 2, 3]) {
+    const state = (await request(`rooms/${created.roomId}`, seat)).state;
+    await request(`rooms/${created.roomId}/action`, seat, { revision: state.revision, action: state.game.legalActions[0] });
+  }
+  scope.applyState((await request(`rooms/${created.roomId}`, 0)).state);
+  assert.equal(scope.game.value.phase, 'dingque');
+  assert.match(await render(scope), /定缺条/);
+  await scope.mutate(scope.game.value.legalActions[0]);
+  for (const seat of [1, 2, 3]) {
+    const state = (await request(`rooms/${created.roomId}`, seat)).state;
+    await request(`rooms/${created.roomId}/action`, seat, { revision: state.revision, action: state.game.legalActions[0] });
+  }
+  scope.applyState((await request(`rooms/${created.roomId}`, 0)).state);
+  assert.equal(scope.game.value.phase, 'turn'); assert.equal(scope.game.value.currentSeat, 0);
+  assert.match(await render(scope), /确认出牌/);
+  const discard = scope.game.value.legalActions.find((action) => action.type === 'discard');
+  await scope.mutate(discard);
+  assert.equal(scope.error.value, ''); assert.ok(scope.game.value.history.some((event) => event.type === 'discard' && event.tile === discard.tile));
+  assert.equal(scope.state.value.presentation, null);
+  for (const player of scope.game.value.players) if (player.seat !== 0) assert.equal(player.hand, undefined);
+  scope.cancelTurnPresentation();
+});
+
+// 大厅历史按记录模式选文案；成都旧局不借当前桌昵称或展示原始英文事件type。
+// Lobby history chooses prose by record mode, never current-room names or raw English Chengdu event types.
+test('personal Chengdu records render same-round names and private-safe Chinese events', async () => {
+  browser(); const scope = lobby();
+  scope.personalHistory.value = { summary: { totalScore: 0, settledGames: 1 }, records: [{
+    roomId: 'OLDCD', gameId: 'old-chengdu', gameMode: 'chengdu', startedAt: 1, name: '旧甲', status: 'finished', score: 0,
+    players: [{ seat: 0, name: '旧甲', score: 0 }, { seat: 1, name: '旧乙', score: 0 }],
+    events: [{ type: 'discard', seat: 1, tile: 26 }, { type: 'hu', seat: 0, source: 'selfDraw', points: 9, tile: null, hidden: true }],
+  }] };
+  const html = await render(scope);
+  assert.match(html, /旧乙打出 9万/); assert.match(html, /旧甲自摸 · 9分/);
+  assert.doesNotMatch(html, />discard<|>hu<|隐藏牌/);
+});
+
+// 立绘只跟随已显示事件：排队未来胡牌、重复轮询和旧响应不能提前换脸或延长计时。
+// Portraits follow displayed events only; future queued wins, duplicate polls and stale responses cannot switch early or extend timers.
+test('portrait reactions follow local FIFO instead of future received wins', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = localPlaybackFixture(scope);
+  next.game.characters = ['sweet', 'sunny', 'elegant'];
+  next.game.history.push({ type: 'hu', seat: 1, tile: 0, source: 'discard', fromSeat: 0 });
+  scope.applyState(next);
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  for (const timer of scheduled.filter((entry) => entry.delay === 350 && !entry.cancelled)) timer.callback();
+  await settlePlayback();
+  assert.deepEqual(scope.portraitReactionsBySeat.value, { 0: 'discardLoss', 1: 'win' });
+  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-discard-loss.png');
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-win.png');
+  const reactionTimers = scheduled.filter((entry) => entry.delay === CharacterPortraitModule.PORTRAIT_REACTION_MS);
+  scope.applyState(next);
+  scope.applyState({ ...next, revision: next.revision - 1 });
+  assert.equal(scheduled.filter((entry) => entry.delay === CharacterPortraitModule.PORTRAIT_REACTION_MS).length, reactionTimers.length);
+  scope.clearPresentation();
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-win.png', 'tile-flight cleanup is independent');
+  for (const timer of reactionTimers) timer.callback();
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-base.png');
+  scope.resetRoomContext();
+});
+
+// 初次恢复只建立基线；新胡后切后台、换局及离桌立即撤下表情，晚到旧定时器无作用。
+// Initial restore baselines history; visibility/game/room changes clear reactions and invalidate late old timers.
+test('portrait reactions do not replay restored history and clear on visibility, round and room changes', async () => {
+  const initial = fixture({ schemaVersion: 3 });
+  initial.game.id = 'portrait-round';
+  initial.game.characters = ['sweet', 'sunny', 'elegant'];
+  initial.game.history = [{ type: 'hu', seat: 1, tile: null, hidden: true, source: 'selfDraw' }];
+  const scope = setup(initial);
+  scope.applyState(initial);
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  const next = structuredClone(initial);
+  next.revision++;
+  next.game.history.push({ type: 'hu', seat: 0, tile: null, hidden: true, source: 'selfDraw' });
+  scope.applyState(next);
+  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-win.png');
+  document.hidden = true;
+  scope.visibilityChanged();
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  document.hidden = false;
+  scope.visibilityChanged();
+  scope.applyState(next);
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  scope.presentWins([{ type: 'hu', seat: 0, hidden: true, source: 'selfDraw' }], next);
+  const newRound = structuredClone(next);
+  newRound.revision++;
+  newRound.game.id = 'portrait-next-round';
+  newRound.game.history = [];
+  scope.applyState(newRound);
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  scope.presentWins([{ type: 'hu', seat: 0, hidden: true, source: 'selfDraw' }], newRound);
+  scope.resetRoomContext();
+  for (const timer of scheduled.filter((entry) => entry.delay === CharacterPortraitModule.PORTRAIT_REACTION_MS)) timer.callback();
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  await settlePlayback();
+});
+
+// 成都不使用花麻将飞牌或等待，但自己的真实头像仍会换；自摸隐藏牌不需要推断身份。
+// Chengdu uses no Flower flights/wait, but its rendered portraits still react without inferring concealed self-draw identities.
+test('Chengdu portraits react for players and spectators without leaking hidden self-draw tiles', async () => {
+  for (const viewer of [0, null]) {
+    const initial = fixture({ schemaVersion: 2 });
+    initial.gameMode = 'chengdu';
+    initial.you = viewer;
+    initial.isSpectator = viewer === null;
+    initial.game.id = 'portrait-chengdu';
+    initial.game.gameMode = 'chengdu';
+    initial.game.playerCount = 4;
+    initial.game.players.push({ seat: 3, handCount: 13, melds: [], score: 0 });
+    initial.game.characters = ['sweet', 'elegant', 'sunny', 'star'];
+    initial.settings = { playerCount: 4, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
+    initial.game.rules = initial.settings;
+    const scope = setup(initial);
+    scope.applyState(initial);
+    const next = structuredClone(initial);
+    next.revision++;
+    next.game.history.push({ type: 'hu', seat: 3, tile: null, hidden: true, source: 'selfDraw' });
+    next.game.players[3].won = { tile: null, source: 'selfDraw', points: 2 };
+    scope.applyState(next);
+    await settlePlayback();
+    assert.deepEqual(scope.portraitReactionsBySeat.value, { 3: 'win' });
+    assert.equal(scope.winningEvents.value.length, 0);
+    assert.equal(scope.localPresentationBusy.value, false, 'a portrait adds no action barrier');
+    const html = await render(scope);
+    assert.match(html, /characters\/star-win.png/);
+    assert.match(html, /牌面未公开/);
+    const later = structuredClone(next);
+    later.revision++;
+    later.game.history.push({ type: 'discard', seat: 1, tile: 20 });
+    scope.applyState(later);
+    assert.equal(scope.characterForPlayer(3).portrait, '/characters/star-win.png', 'other actions cannot clear a seat reaction');
+    scope.resetRoomContext();
+  }
+});
+
+// 四人一炮三响是同一批，立绘不能沿用原飞牌最多两人的截断。
+// A four-seat triple win is one batch; portraits must not inherit the old two-flight display cap.
+test('local four-seat triple wins change all three winners and the discarder together', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const next = localPlaybackFixture(scope);
+  next.game.playerCount = 4;
+  next.game.players.push({ seat: 3, handCount: 13, huCount: 0, score: 0, melds: [], winPile: [], radishes: [] });
+  next.game.characters = ['sweet', 'elegant', 'sunny', 'star'];
+  for (const seat of [1, 2, 3]) next.game.history.push({ type: 'hu', seat, source: 'discard', tile: 4, fromSeat: 0 });
+  scope.applyState(next);
+  for (const timer of scheduled.filter((entry) => entry.delay === 350 && !entry.cancelled)) timer.callback();
+  await settlePlayback();
+  assert.deepEqual(scope.portraitReactionsBySeat.value, { 0: 'discardLoss', 1: 'win', 2: 'win', 3: 'win' });
+  scope.skipLocalPlayback();
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  scope.applyState(next);
+  assert.deepEqual(scope.portraitReactionsBySeat.value, {});
+  scope.resetRoomContext();
 });

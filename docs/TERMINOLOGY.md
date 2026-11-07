@@ -137,3 +137,58 @@ New room.settings saves the three table dimensions plus autoDiscardAfterHu (defa
 
 兼容按字段存在判断，不按真假值判断：缺字段旧房保留原开局/下一局选项及默认，部分配置只锁已保存字段；读取、恢复和新局都不回填旧房设置，不给旧局补规则，不改旧记录或schema1/2。新增配置元信息只为建房明确保存的字段写入。验证见 `tests/variable-room-api.test.js`（默认、校验、0值、固定续局、部分旧配置、权限、FileStore恢复）及 `tests/api.test.js` 的旧房开局选项回归。
 Compatibility checks field presence rather than truthiness: absent legacy fields retain original start/next-round options and defaults; partial snapshots lock only present fields. Reads, resumes and new rounds never backfill room settings, retrofit old game rules or alter old records/frozen schemas. New metadata fields are recorded only for explicitly saved creation settings. See the variable-room API suite and legacy start-option API regressions.
+
+## 麻将模式 / Mahjong modes
+
+- `gameMode`：玩法家族，`flower`（花麻将）或 `chengdu`（成都）；不是某个 rules 开关。缺字段只解释为旧花麻将，不回填。 / Rules family, not a rule toggle. Missing fields mean legacy Flower without backfill.
+- `schemaVersion`：某个模式内部的版本；只有 mode + version 才能确定引擎。旧字典的 v1/v2/v3 专指花麻将。 / A version within one mode; mode plus version selects the engine. Earlier v1/v2/v3 terminology refers to Flower.
+- `tileSet`：牌种身份集合，不是实体牌墙或副数。花麻将0–17为条筒；成都追加18–26为万，原编号不变。 / Identity catalog, not a physical wall or copy budget. Chengdu appends characters 18–26 after the existing bamboo/dots.
+- `endCondition`：成都结束方式选项，`firstWin`（一家胡结束）或 `bloodBattle`（血战到底）；不是花麻将已有 all-won 规则的重命名。 / Chengdu ending choice, not a renamed Flower all-won policy.
+- `exchangeThree`：成都是否启用换三张；交换细节由独立引擎规则确定。 / Optional three-tile exchange; its exact procedure belongs to the independent engine.
+- `dingque`：成都必须定缺，固定 true，不提供关闭玩法。 / Mandatory missing-suit declaration, fixed true.
+
+模式目录不等于已开放玩法；基础层当前拒绝成都开局。完整合同与验证见 [模式边界](GAME-MODES.md)。
+A catalog entry is not an enabled game; this foundation rejects Chengdu creation. See the mode boundary for contract and verification.
+
+## 成都准备阶段 / Chengdu preparation
+
+- `exchange` / 换三张：四家分别提交同花色三张，全部到齐才统一交换。 / Four private same-suit selections, exchanged atomically after all arrive.
+- `dingque` / 定缺：本人明确选择要清空的花色，非自动选择；缺门未清只可打缺门。 / Explicit missing-suit choice, never auto-selected; remaining missing-suit tiles restrict discards.
+- `rulesPending` / 规则闸门：开发准备完成后的停止状态，不等于开局或终局。 / A preparation-prototype stop, not playable start or finished settlement.
+- `exchangeSelections` / 换出记录、`exchangeReceipts` / 换入记录：手牌移动的私有历史引用，不是额外实体牌。 / Private historical references to physical hand transfers, not extra tiles.
+- `cycleOrdinal` / 换牌轮回序号：显式0起序号；仅成功开启换三张局推进，重连不能递增。 / Explicit zero-based index counting successful exchange-enabled starts only; reconnect never advances it.
+- `structuralWaits` / 结构听口：只以本人牌推导的可能完成牌，不等于可胡许可或查叫赔分。 / Own-tile completion candidates, not authorized wins or ready-check compensation.
+
+成都27种×4张=108张，与花麻将副数模型分离。详情见 [成都准备层](CHENGDU-ENGINE-FOUNDATION.md)。
+Chengdu has 27 identities times four copies, independently of Flower's deck model. See [the preparation guide](CHENGDU-ENGINE-FOUNDATION.md).
+- `wan` / 万：成都模式第三种花色；显示编号18–26对应一至九万，语音键为 `wan-1` 至 `wan-9`。`WAN_FACE_CROPS` 是用户万牌原图矩形，不包含玩法判定。 / Chengdu's third suit; tile IDs18–26, voice keys wan-1 through wan-9. Crop rectangles are presentation data, not rules.
+
+
+- `tilePresentation(tile)` / 牌种展示记录：通过严格整数编号取得不可变的原图URL、尺寸、裁切、读屏标签和报牌键。它不是合法动作判定或模式开关。万牌可展示不表示成都可开局，也不扩大花麻将牌种。 / An immutable media/label/voice record selected by a strict integer identity, not an action validator or mode switch. Wan media neither enables Chengdu nor expands Flower tiles.
+
+## 成都准备房间策略 / Chengdu preparation-room policy
+
+`currentEngine: null` 和空 `engines` 表示只允许房间生命周期，没有可运行游戏版本；公开 `rulesVersion: null` 不是成都schema 0或花麻将schema 1。`selfDraw` 为 `addBase`（封顶后加1分）或 `addFan`（先加1番再封顶），`fanCap` 仅4/5/6；这些建房选择不能授权开局。见 [成都房间准备](CHENGDU-ROOM-PREPARATION.md)。
+Null current engine/empty engine versions permit room lifecycle only; a null public rulesVersion is not a Chengdu/Flower schema. The self-draw and cap settings are saved choices, never authority to start games.
+
+
+## 成都回合与结算 / Chengdu turns and settlement
+
+- `developmentOnly`：仅供隔离开发，不能作为生产注册许可。 / Isolated-development marker, never production-registration permission.
+- `passedWinAtOpen`：接牌窗口开启时四家的过胡锁快照，用于完整重建资格。 / Opening passed-win locks used to reconstruct complete claim eligibility.
+- `won`：成都本局已胡并退出的记录，不是花麻将胡后继续摸打状态。 / Chengdu retirement record, distinct from Flower's post-win continued play.
+- `batchId`：同一次动作中统一结算的胡牌批次；一炮多响用同一批次选下局炮家庄。 / One atomic winning batch; simultaneous winners identify the next dealer.
+- `kongLedger`：实际已收的杠账，按原付款人逐笔退款，不把花猪罚分当作杠账。 / Actual kong receipts with original-payer refunds, separate from missing-suit penalties.
+- `settlementPending`：旧未发布原型的未决流局状态；规则已确认后拒绝此状态，不自动重算。 / Obsolete unpublished pending-draw state, now rejected without automatic recalculation.
+
+- 成都 `afterDiscardWin: singleWinnerNextMultipleDiscarder`：单人接炮胡后由胡家下一位未胡者摸，多响由炮家摸；自摸后也跳到胡家下一位未胡者。旧未发布实验值不再支持。 / Single discard wins advance after the winner, multiple wins return to the discarder; self-draw also advances after the retired winner. Obsolete unpublished experimental values reject.
+
+- `exchangeOrdinal` / `nextExchangeOrdinal`：此前成功开启换三张的局数/本局成功后应保存的局数，从0起；关闭换三张不递增，不等于房间总局数。 / Count of previously successful exchange-enabled starts / the count to persist with this start; zero-based and unchanged when exchange is disabled, distinct from total games.
+
+- `ChengduTable`：独立成都只读视图/意图组件；网络与身份在App，合法性与积分在引擎。 / Chengdu filtered-view/intent component; App owns identity/transport and the engine owns legality/scoring.
+- `selectedIndices`：本人显示手牌的临时下标集合，区别相同实体牌，只用于换三张/出牌选择，不写入权威牌局。 / Temporary displayed-hand indices distinguish identical copies for exchange/discard selection, never persisted as game authority.
+
+- 成都 `schemaVersion:2 / rulesVersion:chengdu-1 / runtimeKind:production`：正式版本三项标识，附带完整固定快照后才可运行；不是花麻将schema 2。 / Production identity requiring complete fixed snapshots, unrelated to Flower schema two.
+- `stage`：正式成都preparation/play阶段，区别于原型developmentStage；不是房间生命周期。 / Production preparation/play stage, distinct from draft developmentStage and room lifecycle.
+
+- `portraitReaction`：公开胡牌事件产生的临时立绘状态，`win`为胡者、`discardLoss`仅为弃牌炮家；不是服务端规则状态或未决回应。`CharacterPortraitReactions` 每个绝对座位独立计时。 / Transient public-win portrait state, never game authority or pending claims; independently timed per absolute seat.

@@ -230,3 +230,27 @@ The creation form collects all five settings. enterRoom snapshots them before se
 
 房内的 `hasFixedAutoDiscard` / `hasFixedReadyPoints` 逐字段判断保存快照。新桌只读展示且 `start` 提交空 options；缺字段旧桌仍显示原开局草稿，仅提交未固定字段。`canStart` 是房主/阶段权限，`canConfigureStart` 另管旧桌编辑入口，不能把“不可编辑”误当成“不可开局”。`validStartOptions` 对已固定金额不检查无关本地草稿，确保刷新、加入及下一局不受旧输入影响。
 Per-field presence selects read-only creation settings versus legacy editable drafts. canStart handles permission/phase, separately from canConfigureStart. Fixed amounts ignore stale local drafts; starts send only missing legacy choices.
+
+
+## 万牌集成后的阅读路线 / Reading the wan integration
+
+`MahjongTile.vue → mahjong-tile-presentation.js → mahjong-photo-faces.js / mahjong-wan-faces.js`：先严格校验编号，再按花色取对应原图、真实宽高与等比裁切。0–17原图和坐标不变，18–26独立万牌；背面分支不查询牌面且不输出图片、牌名或点数。读屏和title来自共享身份名称，不再把所有九条以上的牌都当筒。
+Follow the component to the presentation catalog and its two atlases. Strict IDs select exact source dimensions and proportional crops; 0–17 retain their source/crops and 18–26 use wan. Back faces resolve no artwork and expose no identity. Accessibility and tooltip labels use shared identity names rather than treating every ID above eight as dots.
+
+`character-audio.js` 对已提交弃牌取同一目录的voiceClip，再按原本绝对座位映射选择角色。七角色均支持wan-1至wan-9；没有复制播放器、变更事件游标或引入任何换牌/定缺播报。静态与真实浏览器范围分别列在 [集成验收](CHENGDU-INTEGRATION-VALIDATION.md)，不是成都可玩验收。
+Audio reads the same voice key for committed discards and retains absolute-seat persona assignment. All seven personas support wan-1 through wan-9 without duplicating the player, changing cursors or voicing private preparation. See the validation report for separate automated/browser scope, not playable Chengdu acceptance.
+
+## 成都准备房间 / Chengdu preparation rooms
+
+`gameModeDraft` 只控制建房草稿；进入后 `isChengduRoom` 只读取服务器 `state.gameMode`。成都四项草稿与花麻将草稿隔离，异步前固定请求；成都 `canStart` 恒为false，不显示花麻将专属说明。新配置校验在 `shared/chengdu-room-settings.js`，完整范围见 [成都房间准备](CHENGDU-ROOM-PREPARATION.md)。
+The mode draft controls creation only; room mode comes from the server. Independent drafts are captured before asynchronous requests; Chengdu cannot start or display Flower-only rules. The shared settings validator and dedicated guide describe the full boundary.
+
+## 成都正式牌桌 / Chengdu production table
+
+上述“成都准备房间”描述保留旧提交时点；正式版本改为服务端rulesVersion=2时允许开局。`App.vue → ChengduTable.vue`分别负责房间/网络与独立牌桌；模式判断先于版本。新组件按合法动作提供换三张、定缺、摸打、碰杠胡/过、退出及终局，不复用花麻将后胡/萝卜规则。详细责任、隐私和交互见 [成都牌桌界面](CHENGDU-PLAY-INTERFACE.md)。
+The preparation section above is historical. Production starts require server rulesVersion2. App owns room/network concerns and the new component owns Chengdu presentation, checking mode before version. See the dedicated interface guide for action, privacy and accessibility contracts.
+
+## 用户立绘表情 / User portrait reactions
+
+`presentWins → CharacterPortraitReactions → characterForPlayer`仅把已显示的公开胡事件转成每座约3秒的基础/胡牌/放炮图。local接收不提前换脸，成都共用角色呈现但不复用花麻将飞牌。资产、三响、隐私及清理边界见 [用户立绘表情](CHARACTER-PORTRAIT-REACTIONS.md)。
+The portrait path maps displayed public wins to per-seat three-second reactions. Local receipts never reveal future queue events; Chengdu shares character rendering without Flower flights. See the dedicated guide for assets, triple wins, privacy and cleanup.

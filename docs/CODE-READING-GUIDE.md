@@ -40,7 +40,12 @@ Every change starts with AGENTS.md; it links the required guides so future work 
 | `shared/legacy-game.js` | schema 1/缺版本旧局兼容。 / Version-one/missing-version compatibility. |
 | `shared/start-options.js` | 前后端共用的开局喜钱默认值、上限与金额校验。 / Shared ready-bonus defaults, bounds, and validation. |
 | `shared/character-assignment.js` | 开局角色分配与旧局角色映射。 / Character assignment and legacy mapping. |
-| `server/api.js` | HTTP 路由、输入与身份验证、规则分派、原子提交。 / Routing, validation, authorization, engine dispatch, CAS. |
+| `server/api.js` | HTTP 路由、身份与原子提交，调用模式适配器。 / Routing, identity and CAS through mode adapters. |
+| `server/game-engines.js` | 按模式与版本选引擎，隔离动作/配置/隐私/展示能力。 / Mode/version registry and action/config/privacy/pacing adapters. |
+| `server/flower-visibility.js` | 花麻将既有事件与观战公开投影。 / Existing Flower event/spectator projections. |
+| `shared/game-modes.js` | 模式名称、牌种集合与缺字段兼容。 / Mode definitions, tile sets and missing-field compatibility. |
+| `shared/tile-sets.js` | 花麻将18种、成都27种身份目录，不含副数或规则。 / Eighteen/27 identity catalogs, without copy budgets or rules. |
+| `shared/chengdu-options.js` | 已确认成都选项的独立校验，尚未开放开局。 / Confirmed Chengdu options; game creation remains disabled. |
 | `server/history.js` | 参与者快照、历史归档、本桌与个人记录投影。 / Participant snapshots, archives, table/profile records. |
 | `server/store.js` | MemoryStore 与 D1Store。 / In-memory and hosted storage. |
 | `server/node.js` | FileStore 与 Node HTTP/API 适配。 / Local-file storage and Node HTTP/API adapter. |
@@ -134,3 +139,57 @@ The integration report records player/viewer boundaries, real-browser coverage a
 The character-branch verification record retains its automated passes, listening limits and then-uncompleted browser checks; the integration report above holds the latest combined result.
 
 - [建房参数统一验收](ROOM-SETTINGS-VALIDATION.md)：创建快照与旧房兼容、统一面板、自动测试和真实浏览器验收记录。 / Creation snapshots, legacy compatibility, unified form and automated/real-browser evidence.
+
+## 模式分发维护入口 / Mode dispatch maintenance
+
+[麻将模式与版本边界](GAME-MODES.md) 解释独立模式、适配合同、18/27牌种、成都未开放范围和验证结果。新增维护测试为 `tests/game-modes.test.js`、`tests/game-mode-api.test.js`。
+[Mode/version boundaries](GAME-MODES.md) covers adapters, tile catalogs, disabled Chengdu scope and verification. Both new suites join the maintained test inventory.
+
+## 成都准备层维护入口 / Chengdu preparation maintenance
+
+新增 `shared/chengdu-contract.js`、`shared/chengdu-hand.js`、`shared/chengdu-game.js` 和 `tests/chengdu-engine.test.js`，详见 [成都引擎准备层](CHENGDU-ENGINE-FOUNDATION.md)。它们只实现隔离准备阶段、结构牌型与计分数学，正式开局和结算仍阻断；原花麻将源码与注册表不改。
+New contract, shape, preparation and test modules are documented in [the Chengdu preparation guide](CHENGDU-ENGINE-FOUNDATION.md). They implement isolated preparation, structural shapes and arithmetic only; production start/settlement remain blocked, with Flower and the registry unchanged.
+## 万牌资产维护入口 / Wan asset maintenance entry
+
+`src/mahjong-wan-faces.js` 与 `tests/wan-assets.test.js` 定义并验证用户原图、万牌18–26和SVG等比视窗；`scripts/voices/extend_wan_calls.py` 复用七角色来源追加63条万牌语音。显示接入与规则属于调用者，资产脚本不改游戏生命周期。见 [万牌素材说明](WAN-ASSETS.md)。
+The atlas module/test preserve source bytes and define wan identities18–26/proportional viewports. The offline script adds63 calls using existing personas. Rendering integration and rules belong to callers, not asset tools. See [wan assets](WAN-ASSETS.md).
+
+
+## 万牌展示集成维护入口 / Wan presentation integration
+
+`src/mahjong-tile-presentation.js` 是图片、读屏名称和报牌键的只读共同目录。`MahjongTile.vue` 与 `character-audio.js` 共用它，规则引擎不依赖展示；原条筒图集保持独立。新增 `tests/tile-presentation.test.js` 验证严格编号、不可变记录和模式闸门；UI与声音场景扩展原测试。详见 [集成验收](CHENGDU-INTEGRATION-VALIDATION.md)。
+The read-only presentation catalog joins art, accessible labels and voice keys for the tile component and audio, without engine dependencies on presentation. The new suite checks strict identities, immutable records and mode gates; existing UI/audio suites gain integration cases. See [validation](CHENGDU-INTEGRATION-VALIDATION.md).
+
+
+隔离万牌浏览器维护文件为 `tests/browser/wan-preview.html`、`wan-preview.js`、`wan-preview-narrow.html` 和 `wan-preview-server.mjs`。只编译真实组件/CSS/媒体，显式不加载主API或FileStore；复现方式见 `tests/browser/README.md`。它们不能进入部署。
+The four isolated wan-preview files compile actual components/CSS/media without the main API or FileStore. See the browser README for reproduction. Never deploy these helpers.
+
+## 成都开房准备 / Chengdu room preparation
+
+新增维护文件 `shared/chengdu-room-settings.js` 与 `tests/chengdu-room.test.js`；App使用共用严格校验，模式注册器只开放空房间，仍无可运行成都版本。前端/API/可及性及验证范围见 [成都开房与房间准备](CHENGDU-ROOM-PREPARATION.md)。
+New maintained settings/test files compose strict validation for App and a game-less room registration, with no runnable Chengdu version. See the dedicated guide for UI/API/accessibility and verification boundaries.
+
+
+## 成都回合与计分维护入口 / Chengdu turn/scoring maintenance
+
+新增 `shared/chengdu-scoring.js`、`shared/chengdu-play-policy.js`、`shared/chengdu-settlement.js`、`shared/chengdu-play.js` 与 `tests/chengdu-scoring.test.js`、`tests/chengdu-play.test.js`。阅读 [当前成都开发引擎](CHENGDU-ENGINE.md)，不要把旧准备层的历史未决项当作最新规则。正式HTTP和UI仍未开放。
+New scoring, policy, settlement and runtime modules plus scoring/play test suites are documented in [the current Chengdu guide](CHENGDU-ENGINE.md). Older preparation-stage gaps are historical; production HTTP/UI remain disabled.
+
+## 成都正式界面维护入口 / Chengdu production UI maintenance
+
+新增维护文件`src/ChengduTable.vue`、`tests/chengdu-ui.test.js`和[界面导读](CHENGDU-PLAY-INTERFACE.md)。本地正式集成替代上文历史准备版的“UI未开放”状态；是否已发布只看发布记录，不由源码功能推断。
+New maintained component/test/guide implement local production integration and supersede historical preparation-only UI statements above. Source availability is not evidence of deployment.
+
+## 成都正式纯入口 / Production Chengdu pure entry
+
+新增维护文件 `shared/chengdu-engine.js`、`shared/chengdu-production-contract.js`、`tests/chengdu-production.test.js`。正式schema 2和原型schema 1严格区分；先读[成都引擎](CHENGDU-ENGINE.md)的正式接口，再读固定快照、工厂、共享准备与回合。该分支不改注册/API/UI。
+New maintained production-entry, snapshot-contract and production-test files separate production schema two from draft schema one. Read the production contract, factory, shared preparation and turns in order. Registration/API/UI are outside this branch.
+
+成都公开动态共用维护文件`src/chengdu-event-text.js`，按本局名册格式化即时桌面及个人历史；测试在成都UI和原UI套件。 / The maintained Chengdu event formatter uses per-round names for live/public history, covered by both UI suites.
+
+[成都正式整合验收](CHENGDU-PLAY-VALIDATION.md)记录最终本地生命周期、1168项检查、独立审查及未执行浏览器/发布边界。 / Final production integration validation records lifecycle checks,1168 tests, independent review and browser/deployment limits.
+
+## 立绘反应维护清单 / Portrait-reaction inventory
+
+新增自维护 `src/character-portraits.js`、`tests/character-portraits.test.js` 与用户原图来源 `public/characters/portrait-reactions-manifest.json`；沿 `App.presentWins → CharacterPortraitReactions → characterForPlayer` 阅读。双模式、隐私、三响、取消及资产说明见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+New maintained files cover the portrait catalog/controller, focused tests and supplied-image provenance. Follow the App presentation path and the dedicated guide for mode/privacy/triple-win/cancellation contracts.

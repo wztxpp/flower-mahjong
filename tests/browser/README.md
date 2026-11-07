@@ -115,3 +115,11 @@ HTML 自动加载 `playback-observer.js`，在页面底部“真实音源观察�
 未做实际扬声器录音或波形分析，也未在真实浏览器构造“超过30秒断网且仍有未播积压再开副页”的组合；这部分只由自动测试覆盖。真实MP3超时有限，不能人为伪造结束或拉长音轨来充当该实测。start/ended观察顺序也受原生事件监听器调用顺序影响；同毫秒下一源start先于本观察器ended日志不等于声学重叠。
 
 5240–5242与5250–5252两个自建服务均已在原生Terminal Ctrl+C停止，分别通过该标签出现 `^C` 和shell提示符截图确认。未部署。最后对适配器与观察器执行 `node --check` 及 scoped ESLint通过；ESLint仅输出仓库既有 pages目录提示。完整npm test/lint/build由父任务统一验收，此浏览器工作没有重复宣称运行。
+
+## 万牌组件隔离验收 / Isolated wan component acceptance
+
+`wan-preview.html`、`wan-preview.js`、`wan-preview-narrow.html` 与 `wan-preview-server.mjs` 只用于真实MahjongTile和生产CSS/声音资源验收，不导入App/API/FileStore，不生成可玩的成都桌。普通页展示九万的大/小规格及背面；窄屏页用390px iframe触发真实CSS媒体查询。按钮串行播放63条真实MP3，并逐条显示自然ended、媒体错误或超时，不代表主观音色认证。
+The four preview files inspect the actual component, production CSS and audio without App/APIs/FileStore or a playable Chengdu table. The main page shows nine wan faces at regular/small sizes and concealed backs; a 390px iframe exercises responsive CSS. The button serially plays 63 real clips and records natural ended/error/timeout results, not subjective voice certification.
+
+在目标仓库目录运行 `node tests/browser/wan-preview-server.mjs`，访问 `http://localhost:5374/tests/browser/wan-preview.html` 或 `wan-preview-narrow.html`。服务器显式关闭主Vite配置，使用独立127.0.0.1端口；若工具shell与官方浏览器不共享localhost，须从浏览器所在电脑的授权原生终端启动。完成后停止自建进程，禁止部署这些页面。验证范围见 [集成验收](../../docs/CHENGDU-INTEGRATION-VALIDATION.md)。
+Run the server script from the target repository and open either page on localhost port 5374. It disables the main Vite config and binds a separate loopback port. If the tool shell/browser do not share localhost, start it through an authorized native terminal on the browser computer. Stop the process afterward and never deploy these pages. See the integration validation for actual scope.

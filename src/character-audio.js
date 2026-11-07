@@ -2,17 +2,19 @@
 // Audio entry: App selects new events with the cursor, then queues playback; audio never changes game state.
 // 详见 docs/FRONTEND-READING-GUIDE.md 的音频章节。 / See the audio section in docs/FRONTEND-READING-GUIDE.md.
 import { gameCharacters, SEAT_COUNT } from '../shared/character-assignment.js';
+import { tilePresentation } from './mahjong-tile-presentation.js';
+import { CHARACTER_PORTRAITS } from './character-portraits.js';
 /* 固定绝对座位，不随观察者变化：所有客户端听到相同角色。 / Fixed absolute seats, never viewer-relative: all clients hear the same character. */
 // 角色 ID 与资源路径是客户端与服务端共享契约。座位是绝对座位，不随观察者旋转。
 // Character IDs and asset paths are shared client/server contracts. Seats are absolute, not viewer-relative.
 export const CHARACTERS = Object.freeze([
-  { id: 'sweet', name: '小桃', style: '萝莉音', portrait: '/characters/sweet.png' },
-  { id: 'elegant', name: '清岚', style: '御姐音', portrait: '/characters/elegant.png' },
-  { id: 'sunny', name: '晴禾', style: '阳光少女音', portrait: '/characters/sunny.png' },
-  { id: 'landlord', name: '地主', style: '豪爽男声', portrait: '/characters/landlord.png' },
-  { id: 'honest', name: '老实人', style: '温厚男声', portrait: '/characters/honest.png' },
-  { id: 'wealthy', name: '富婆', style: '雍容女声', portrait: '/characters/wealthy.png' },
-  { id: 'star', name: '女明星', style: '明亮女声', portrait: '/characters/star.png' },
+  { id: 'sweet', name: '小桃', style: '萝莉音', portrait: CHARACTER_PORTRAITS.sweet.base },
+  { id: 'elegant', name: '清岚', style: '御姐音', portrait: CHARACTER_PORTRAITS.elegant.base },
+  { id: 'sunny', name: '晴禾', style: '阳光少女音', portrait: CHARACTER_PORTRAITS.sunny.base },
+  { id: 'landlord', name: '地主', style: '豪爽男声', portrait: CHARACTER_PORTRAITS.landlord.base },
+  { id: 'honest', name: '老实人', style: '温厚男声', portrait: CHARACTER_PORTRAITS.honest.base },
+  { id: 'wealthy', name: '富婆', style: '雍容女声', portrait: CHARACTER_PORTRAITS.wealthy.base },
+  { id: 'star', name: '女明星', style: '明亮女声', portrait: CHARACTER_PORTRAITS.star.base },
 ]);
 // 旧局没有角色分配时按绝对座位兜底；非法下标使用第一个角色。
 // For older games without assignments, fall back by absolute seat; invalid indices use the first character.
@@ -38,15 +40,11 @@ export function clipForEvent(event, characters) {
   // Reject invalid seats before building asset paths or announcing unknown players.
   if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat >= seatCount) return null;
   let clip;
-  // 牌种 0–8 为条、9–17 为筒；取余加一得到语音文件中的点数。
-  // Tile IDs 0–8 are bamboo and 9–17 dots; modulo plus one yields the spoken rank.
-  if (
-    event.type === 'discard' &&
-    Number.isInteger(event.tile) &&
-    event.tile >= 0 &&
-    event.tile < 18
-  )
-    clip = `${event.tile < 9 ? 'tiao' : 'tong'}-${(event.tile % 9) + 1}`;
+  // 仅公开的已提交弃牌查询展示目录；18–26使用万牌语音，隐藏/非法牌不发声。
+  // Only committed public discards use media lookup; 18–26 use wan calls, while hidden/invalid tiles stay silent.
+  // 资源可用不放宽花麻将0–17的服务端动作白名单，也不开放成都正式开局。
+  // Available media neither widens Flower's server action allowlist nor enables Chengdu starts.
+  if (event.type === 'discard') clip = tilePresentation(event.tile)?.voiceClip;
   else if (event.type === 'peng') clip = 'peng';
   // 胡牌只按已提交来源选择一条语音，不再额外追加“胡”。
   // A win selects one clip from its committed source, without an extra hu clip.

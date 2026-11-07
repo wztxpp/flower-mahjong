@@ -16,6 +16,7 @@ This repository is maintained by someone learning frontend development. Readabil
 
 - 本项目只使用虚拟积分。保留功能、算分、动作优先级、隐私、联机和旧桌行为。 / This game uses virtual scores. Preserve behavior, scoring, action priority, privacy, networking, and existing rooms.
 - 新规则只能通过明确的版本或开局规则快照引入。不能给已保存的旧局补默认字段以静默启用新行为。 / Introduce new rules through explicit versions or new-game snapshots; never silently retrofit saved games.
+- `gameMode` 与 `schemaVersion` 是独立维度，分发只经 `server/game-engines.js`。缺模式旧局才兼容花麻将，未知模式不能回退，成都未登记前不能借用花麻将规则/隐私/计分。见 [模式边界](docs/GAME-MODES.md)。 / Mode and schema version are independent; dispatch only through the registry. Only missing modes mean legacy Flower; unknown modes never fall back, and Chengdu cannot borrow Flower rules/privacy/scoring before registration.
 - `shared/game.js`、`shared/v2-game.js`、`shared/legacy-game.js` 是三个独立规则版本；外形相似不代表可以合并。 / The three engine versions are independent compatibility contracts, not deduplication opportunities.
 - HTTP 路径、JSON 键、动作 type、规则键、浏览器存储键、D1 列名、导出函数签名是兼容边界。局部变量可改名；协议迁移必须另有明确设计和回归测试。 / HTTP paths, JSON keys, action types, rule keys, browser storage keys, D1 columns, and exported signatures are compatibility boundaries.
 - 不提交凭证、生产 `.data`、真实牌局或个人记录；不给客户端对手手牌和未公开反应。 / Never commit credentials, production state, or personal records; never expose concealed opponent data.

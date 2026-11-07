@@ -168,3 +168,56 @@ The integration report records player/viewer boundaries, real-browser coverage a
 
 建房参数前置与统一样式沿用现有 `tests/ui.test.js`、`tests/variable-room-api.test.js`，覆盖创建默认/非法/零值、异步请求快照、重复点击、新房只读续局、部分旧房字段、恢复/观战/权限及旧局不回填。`api`、`presentation-api`、`spectators` 测试明确区分新房固定设置与旧房每局草稿。真实视觉范围见 [建房验收](ROOM-SETTINGS-VALIDATION.md)。
 Creation-setting tests extend existing suites with defaults, invalid/zero input, async snapshots, repeated clicks, fixed-room starts, partial legacy fields and read-only/restore boundaries. Browser scope is documented separately.
+
+## 模式基础层回归 / Mode-foundation regressions
+
+- `tests/game-modes.test.js`：模式与版本隔离、冻结18/27牌种目录、成都已确认选项、16场跨三代完整逐步差分、投影与展示能力。 / Mode/version isolation, immutable catalogs, confirmed choices, 16 full differential games and projection/pacing capabilities.
+- `tests/game-mode-api.test.js`：真实HTTP处理器、缺/显式模式、旧局恢复、下一局/归档、FileStore重启、角色、观战权限、CAS重复拒绝与历史归属。 / Real HTTP handler, absent/explicit modes, legacy restore, next rounds/archives, persistence, characters, spectator rights and CAS/history.
+
+这些测试不开放成都玩法，不把已确认的选项目录当成规则引擎验收。范围、命令和未验证项见 [模式边界](GAME-MODES.md)。
+These tests do not enable Chengdu or mistake option validation for engine acceptance. The mode boundary records commands and limitations.
+
+## 成都未开放准备层 / Disabled Chengdu preparation coverage
+
+`tests/chengdu-engine.test.js` 使用完整108张合成牌墙验证准备动作、隐私、多种顺序与24种子守恒、JSON/FileStore恢复、缺门优先出牌、牌型结构和自摸封顶数学；正式启动/结算与模式注册仍应拒绝。详见 [成都准备层](CHENGDU-ENGINE-FOUNDATION.md)。这不是碰杠胡/查叫/退杠完整验收，不是HTTP多人或真实浏览器验收。
+The Chengdu test suite uses complete synthetic 108-tile walls for preparation actions/privacy/order independence, 24 seeded conservation runs, JSON/FileStore recovery, missing-suit discard priority, shapes and self-draw cap arithmetic. Production start/settlement/registration must reject. See [scope](CHENGDU-ENGINE-FOUNDATION.md); this is not full peng/kong/hu/draw-refund, multiplayer HTTP or real-browser acceptance.
+万牌素材：`tests/wan-assets.test.js` 核对原PNG哈希/尺寸、九个等比矩形及18–26编号；`tests/voice-assets.test.js` 新增七角色63条实际万牌、音频来源/ASR/声学审计和 `fixtures/pre-wan-voice-hashes.json` 的旧164文件保留检查。自动检查不代替人工试听或整合牌桌视觉验收。
+Wan assets: the atlas suite checks original bytes/dimensions, nine proportional crops and identities18–26. Voice assets check all63 files, provenance/ASR/acoustic evidence and the pre-wan fixture's164 original hashes. Automated checks do not replace subjective listening or integrated table visual QA.
+
+
+## 万牌运行时集成 / Wan runtime integration
+
+`tests/tile-presentation.test.js` 核对27个只读展示记录、旧18牌映射、非法输入与规则闸门。`tests/ui.test.js` 实际编译MahjongTile，逐一验证九万的大/小牌、按钮状态、背面/非法值隐私及旧18牌全部裁切。`tests/character-audio.test.js` 验证七角色×四座×27牌路径、准备阶段静音与重连游标去重。素材哈希与原有模式/成都准备测试仍全量运行，详见 [集成验收](CHENGDU-INTEGRATION-VALIDATION.md)。
+The catalog suite checks 27 immutable records, preserved old media, invalid inputs and rule gates. Compiled-SFC UI tests check all nine wan faces at both sizes, button states, concealed/invalid privacy and all 18 original crops. Audio tests cover seven personas across four seats and 27 identities, silent preparation and reconnect deduplication. Asset-hash and existing mode/preparation suites continue in full. See the validation report.
+
+## 成都准备房间 / Chengdu preparation rooms
+
+`tests/chengdu-room.test.js` 验证24种明确配置、失败前不写入、固定四席、开局失败关闭、观战只读及FileStore重启/换人。`tests/ui.test.js` 新增四项检查原生必选表单、模式草稿隔离、请求快照/重复点击、房间回显、开局阻断与迟到响应。原“禁止建立成都房间”断言改为“禁止创建成都game/运行引擎”，并保留每个实际启动与隐私入口的拒绝断言。
+The new room suite covers all choices, fail-before-write validation, fixed seats, closed starts, read-only viewers and restart/replacement. Four UI cases cover forms, draft separation, captured/single-flight requests, room presentation and stale navigation. Former room-rejection assertions now protect actual game creation/engine reads, retaining all start/privacy gates.
+
+
+## 成都开发回合验收 / Chengdu runtime acceptance
+
+新增 `tests/chengdu-scoring.test.js` 与 `tests/chengdu-play.test.js`，覆盖已确认计分、完整回合、抢杠、多胡/过胡、流局计划和未决阻断、幂等、隐私/重启/CAS及24种子完整回放。审查发现的五个边界均新增回归。完整范围及没有运行的真实浏览器/发布验收见 [成都指南](CHENGDU-ENGINE.md)。
+New scoring/play suites cover confirmed scoring, full turns, robbery, multi/passed wins, draw plans/gates/idempotence, privacy/restart/CAS and 24 full seeded replays. Five review findings have explicit regressions. Scope and unrun browser/release acceptance appear in [the guide](CHENGDU-ENGINE.md).
+
+成都后续确认已加入现有 `tests/chengdu-play.test.js`：三种杠金额不可覆盖、查叫/退杠不可选反规则、缺门未清的碰杠、单胡/自摸/多响接摸、跳过退出者与花猪退杠且不重复查叫。首胡流局的未决整批阻断继续有测试。
+Follow-up Chengdu confirmations extend the existing play suite: fixed kong prices and settlement choices, pre-clearance melds, single/self/multiple-win continuation, retired-seat skipping, and offender refunds without duplicate ready penalties. Atomic pending first-win draw handling remains covered.
+
+成都后续确认回归：`chengdu-engine.test.js` 验证固定顺时针起点、只按启用局推进及纯重试；`chengdu-play.test.js` 验证首胡流局和血战相同结算、原付款人退杠及重复结算不入账，并继续覆盖胡者退出和单胡/多响续摸。
+Subsequent Chengdu confirmation tests cover fixed clockwise origin, enabled-only advancement and pure retries, identical first-win/blood-battle draw settlement, original-payer refunds and idempotence, retaining winner-retirement and continuation coverage.
+
+### 成都界面 / Chengdu interface
+
+`tests/chengdu-ui.test.js`直接编译真实组件，12项覆盖：重复牌三张选择、非同色拒绝、轮询保留与换手清除选择、提交后锁定、定缺白名单、缺门出牌、反应窗口、同步阻断、观众/补位无私有手牌、已胡退出/隐藏牌、流局账目、公开日志及座位方向。`ui.test.js`另覆盖正式开局空options及schema2不落入花麻将v2。它们是SSR/响应式交互测试，不是真实浏览器布局或声音验收。
+The dedicated real-SFC suite covers exchange multisets, selection lifecycle, preparation/turn allowlists, blocked input, read-only privacy, retirement, settlement, event masking and seat direction. App tests cover empty-options production starts and mode/version separation. These are SSR/reactive interaction tests, not browser-layout/listening acceptance.
+
+`tests/chengdu-production.test.js` 是正式schema 2专项：拒绝原型/混合标记/缺快照，固定逆时针和启用局换牌轮回，单胡/自摸退出与多响炮家接摸，准备隐私、暗杠公开、自摸终局公开、归档重复过滤、四种模式整局JSON恢复。不访问真实房间；后端CAS和浏览器另测。
+Production tests cover draft/mixed/incomplete-save rejection, fixed direction/exchange cycle, winner retirement/continuation, preparation privacy, public established kongs, finished self-draw disclosure, archive idempotence and four-mode full-game JSON recovery. No real rooms are used; backend CAS/browser coverage is separate.
+
+正式整合新增真实App→API→MemoryStore换三张/定缺/首次出牌回归，捕获并修复动作版本证明不应依赖Flower播放字段的问题。`chengdu-api.test.js`补齐无媒体字段证明、缺字段、错误/过期版本与重复请求无写入；历史文案测试证明旧局名字与隐藏牌保持不变。 / Integration now exercises actual App/API/MemoryStore preparation and first discard, guarding mode-owned action proofs independent of Flower media, rejected-proof no-write semantics and private-safe historical prose.
+
+## 立绘反应 / Portrait reactions
+
+`tests/character-portraits.test.js`验证公开事件映射、三/四座、三响、隐藏牌零读取、独立定时器/过期回调、素材兜底、预热与用户PNG哈希。`tests/ui.test.js`实际编译App验证local队列时机、重复/旧快照、重连/后台/换局/换桌清理、成都玩家/观众、自摸隐私、三响及明确略过。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+The new unit suite covers public mapping, seat bounds, triple wins, no concealed-tile reads, independent/stale timers, fallbacks, preloads and supplied PNG hashes. Compiled-App tests cover FIFO timing, deduplication, restore/cancellation, Chengdu players/spectators, self-draw privacy, triple wins and skip.

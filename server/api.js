@@ -1,32 +1,15 @@
 // HTTP 接口：验证输入和身份 → 复制房间 → 修改 → 原子保存 → 返回私人视图。
 // HTTP API: validate input/identity → clone room → mutate → atomically save → return a private view.
-import {
-  createGame,
-  dealerForNextGame,
-  applyAction,
-  applyPresentedAction,
-  continuePresentedGame,
-  getPlayerView,
-} from '../shared/game.js';
-import {
-  isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS, DEFAULT_BIG_SINGLE_READY_POINTS,
-  DEFAULT_PLAYER_COUNT, DEFAULT_DECK_COUNT, DEFAULT_DRAGON_START_COUNT,
-  MIN_DRAGON_START_COUNT, MAX_DRAGON_START_COUNT,
-  isPlayerCount, isDeckCount, isDragonStartCount,
-} from '../shared/start-options.js';
+import { engineFor, modeForRoom, GameModeError } from './game-engines.js';
 import { nameEvent } from '../shared/event-names.js';
-import { authenticatesSpectator, issueSpectatorToken, spectatorGameView } from './spectators.js';
-import { applyAction as applyV2Action, getPlayerView as getV2View } from '../shared/v2-game.js';
-import {
-  applyAction as applyLegacyAction,
-  getPlayerView as getLegacyView,
-} from '../shared/legacy-game.js';
+import { authenticatesSpectator, issueSpectatorToken } from './spectators.js';
 import {
   ensureGameMetadata,
   newGameMetadata,
   archiveFinishedGame,
   recordsForProfile,
   tableScores,
+  playerSummary,
 } from './history.js';
 import {
   assignCharacters,
@@ -34,26 +17,6 @@ import {
   isCharacterId,
   preferredCharacter,
 } from '../shared/character-assignment.js';
-// 根据该局保存的版本选引擎；旧局绝不在重连时偷偷升级。
-// Choose the engine from the saved game version; reconnecting never upgrades an existing game.
-function engineFor(game) {
-  if (game.schemaVersion === 3)
-    return {
-      apply: applyAction,
-      view: getPlayerView,
-    };
-  if (game.schemaVersion === 2)
-    return {
-      apply: applyV2Action,
-      view: getV2View,
-    };
-  if (game.schemaVersion === undefined || game.schemaVersion === 1)
-    return {
-      apply: applyLegacyAction,
-      view: getLegacyView,
-    };
-  fail(409, 'UNSUPPORTED_GAME_VERSION', '这桌使用了更新的规则版本，请刷新页面后重试');
-}
 // 可预期的业务错误同时携带 HTTP 状态、机器错误码和给玩家看的提示。
 // Expected API errors carry an HTTP status, machine code, and player-facing message.
 export class ApiError extends Error {
@@ -126,68 +89,6 @@ function characterPreference(value) {
     fail(400, 'BAD_CHARACTER', '请选择有效的偏好角色，或留空随机分配');
   }
 }
-// 仅接受已知开局选项并分别校验布尔/金额类型；省略选项保留新局默认值。
-// Accept known start options and validate boolean/amount types separately; omission preserves new-game defaults.
-function startRules(options) {
-  // 未传选项时让新局默认值处理；不能用此入口重写正在进行的局。
-  // Missing options defer to new-game defaults; this entry cannot rewrite an active game.
-  if (options === undefined) return {};
-  if (
-    !options ||
-    typeof options !== 'object' ||
-    Array.isArray(options) ||
-    Object.keys(options).some(
-      (key) => !['autoDiscardAfterHu', 'bigSingleReadyPoints'].includes(key),
-    ) ||
-    (Object.hasOwn(options, 'autoDiscardAfterHu') &&
-      typeof options.autoDiscardAfterHu !== 'boolean')
-  ) {
-    fail(400, 'BAD_START_OPTIONS', '开局选项无效，请重新检查');
-  }
-  // 与前端共用金额边界；服务端仍独立验证，不能只相信数字输入框。
-  // Share amount bounds with the client but validate independently on the server.
-  if (
-    Object.hasOwn(options, 'bigSingleReadyPoints') &&
-    !isBigSingleReadyPoints(options.bigSingleReadyPoints)
-  ) {
-    fail(
-      400,
-      'BAD_START_OPTIONS',
-      `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数（每家支付的虚拟积分）`,
-    );
-  }
-  return { ...options };
-}
-
-// 配置只在建桌时校验和保存；旧桌读取时不补字段，下一局也不能通过 options 改人数。
-// Validate and save configuration only at room creation; never backfill old rooms or resize through start options.
-function roomSettings(input) {
-  if (input !== undefined && (!input || typeof input !== 'object' || Array.isArray(input) ||
-    Object.keys(input).some((key) => !['playerCount', 'deckCount', 'dragonStartCount', 'autoDiscardAfterHu', 'bigSingleReadyPoints'].includes(key))))
-    fail(400, 'BAD_ROOM_SETTINGS', '牌桌配置无效，请重新检查');
-  const settings = {
-    playerCount: DEFAULT_PLAYER_COUNT,
-    deckCount: DEFAULT_DECK_COUNT,
-    dragonStartCount: DEFAULT_DRAGON_START_COUNT,
-    autoDiscardAfterHu: true,
-    bigSingleReadyPoints: DEFAULT_BIG_SINGLE_READY_POINTS,
-    ...input,
-  };
-  if (!isPlayerCount(settings.playerCount))
-    fail(400, 'BAD_ROOM_SETTINGS', '人数须为三人或四人');
-  if (!isDeckCount(settings.deckCount))
-    fail(400, 'BAD_ROOM_SETTINGS', '副数须为 1–5，每次增加半副');
-  if (!isDragonStartCount(settings.dragonStartCount))
-    fail(400, 'BAD_ROOM_SETTINGS', `神龙起算须为 ${MIN_DRAGON_START_COUNT}–${MAX_DRAGON_START_COUNT} 的整数`);
-  // 显式 false 和 0 都必须保留；仅省略字段才使用创建默认值。
-  // Preserve explicit false and zero; only omitted fields receive creation defaults.
-  if (typeof settings.autoDiscardAfterHu !== 'boolean')
-    fail(400, 'BAD_ROOM_SETTINGS', '胡后自动打出须为布尔值');
-  if (!isBigSingleReadyPoints(settings.bigSingleReadyPoints))
-    fail(400, 'BAD_ROOM_SETTINGS', `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数（每家支付的虚拟积分）`);
-  return settings;
-}
-
 // Request 流只能读一次；WeakMap 缓存同一请求的解析 Promise，且不永久持有请求。
 // A Request stream is single-use; WeakMap caches its parsing promise without retaining it forever.
 const requestBodies = new WeakMap();
@@ -244,15 +145,25 @@ function connected(person, now = Date.now()) {
 // First ask the engine for a seat-filtered view; never return the full stored game.
 function publicRoom(room, seat, viewerRole = 'player') {
   const isSpectator = viewerRole === 'spectator';
-  // 观战也遵守版本边界；不猜测尚不支持的未来规则存档。
-  // Spectators also respect version boundaries instead of guessing future save formats.
+  // 房间模式与局模式一致后，由引擎决定玩家、换座者和观众各自可见的信息。
+  // After matching room/game modes, the engine owns player, replacement and spectator visibility.
+  const mode = modeForRoom(room);
   const engine = room.game ? engineFor(room.game) : null;
-  const game = room.game
-    ? {
-        ...(isSpectator ? spectatorGameView(room.game) : engine.view(room.game, seat)),
-        schemaVersion: room.game.schemaVersion ?? 1,
-      }
-    : null;
+  const isFormerParticipant = !isSpectator &&
+    room.gameMeta?.participants[seat]?.tokenHash !== undefined &&
+    room.gameMeta.participants[seat].tokenHash !== room.seats[seat]?.tokenHash;
+  let game = null;
+  if (engine) {
+    let view;
+    if (isSpectator) view = engine.spectatorView(room.game);
+    else if (isFormerParticipant) view = engine.formerParticipantView(room.game, seat);
+    else view = engine.view(room.game, seat);
+    game = {
+      ...view,
+      schemaVersion: room.game.schemaVersion ?? 1,
+      ...(room.game.gameMode !== undefined ? { gameMode: room.game.gameMode } : {}),
+    };
+  }
   if (game) game.id = room.gameMeta?.id || `legacy-${room.createdAt}`;
   if (game) game.characters = gameCharacters(room.gameMeta?.characters, game.players.length);
   if (game)
@@ -263,44 +174,9 @@ function publicRoom(room, seat, viewerRole = 'player') {
   // 名字只按本局快照替换；不以当前座位占用者覆盖旧局归属。
   // Resolve names only against this game snapshot, never replacement occupants.
   if (game) game.history = game.history.map((event) => nameEvent(event, game.participantNames));
-  // A newly seated player may see the completed result, not the previous occupant's private hand.
-  // 换座后即使座位号相同，也必须隐藏上一位参与者的手牌、暗杠和诊断。
-  // A replacement occupant must not see the former participant’s hand, concealed kongs, or diagnostics.
-  if (
-    game && !isSpectator &&
-    room.gameMeta?.participants[seat]?.tokenHash !== undefined &&
-    room.gameMeta.participants[seat].tokenHash !== room.seats[seat]?.tokenHash
-  ) {
-    for (const player of game.players) {
-      delete player.hand;
-      player.melds = player.melds.map((meld) =>
-        meld.type === 'anGang' &&
-        !(game.schemaVersion === 3 && game.rules.publicConcealedKongs === true)
-          ? {
-              type: 'anGang',
-              tile: null,
-              tiles: Array(meld.tiles.length).fill(null),
-              hidden: true,
-              ...(meld.extended
-                ? {
-                    extended: true,
-                  }
-                : {}),
-            }
-          : meld,
-      );
-    }
-    game.drawnTile = null;
-    game.legalActions = [];
-    game.scoreBreakdown = null;
-    game.waitTiles = [];
-    game.lockedWaits = [];
-    game.huLockActive = false;
-    game.huDiagnostic = null;
-    if (game.specialHuPattern !== undefined) game.specialHuPattern = null;
-  }
   return {
     id: room.id,
+    ...(room.gameMode !== undefined ? { gameMode: room.gameMode } : {}),
     revision: room.revision,
     phase: room.game ? (room.game.phase === 'finished' ? 'finished' : 'playing') : 'lobby',
     hostSeat: room.hostSeat,
@@ -310,7 +186,9 @@ function publicRoom(room, seat, viewerRole = 'player') {
     you: seat,
     viewerRole,
     createdAt: room.createdAt,
-    rulesVersion: game?.schemaVersion ?? 3,
+    // 仅准备的模式没有规则版本，明确返回 null，不能用花麻将版本伪装成都已可开局。
+    // Preparation-only modes have no rules version: null never impersonates playable Chengdu with a Flower version.
+    rulesVersion: game?.schemaVersion ?? mode.currentEngine?.schemaVersion ?? null,
     seats: room.seats.map((person, index) => {
       if (!person) return null;
       // 参与者按凭证摘要识别，不按座位号或昵称继承上一人的本局数据。
@@ -330,7 +208,7 @@ function publicRoom(room, seat, viewerRole = 'player') {
         characterId: isCurrentParticipant ? (game?.characters[index] ?? null) : null,
         score: player?.score ?? 0,
         handCount: player?.handCount ?? 0,
-        huCount: player?.huCount ?? 0,
+        huCount: player ? playerSummary(room.game, player).huCount : 0,
         melds: player?.melds ?? [],
         radishes: player?.radishes ?? [],
         winPile: player?.winPile ?? [],
@@ -508,8 +386,10 @@ function recordPresence(room, seat, presence, now = Date.now()) {
   // Skip presentation telemetry only, retaining ordinary heartbeats and strict start revision/seat/CAS checks; registration resumes after creation.
   // 本地队列无需全桌播放选举，进行中的本地模式也不写页面租约。
   // Local queues need no table-wide playback election, so active local games also skip page leases.
+  // 成都显式关闭租约；花麻将旧版本未声明此能力时仍保持原遥测行为。
+  // Chengdu explicitly disables leases; absent capability flags preserve older Flower telemetry behavior.
   if (!presence || !room.game || room.game.phase === 'finished' ||
-    room.gameMeta?.presentationMode === 'local') return false;
+    room.gameMeta?.presentationMode === 'local' || engineFor(room.game).presentationPresence === false) return false;
   const clients = room.seats[seat].presentationClients || [];
   const previous = clients.find((client) => client.clientId === presence.clientId);
   if (previous && now - previous.at < 1000 &&
@@ -611,6 +491,14 @@ function createPresentationGate(room, now = Date.now()) {
   electPresentationClients(room, now);
 }
 
+// 有展示标记却无续进能力的存档不能交给别的引擎；失败发生在提交之前。
+// A saved presentation without matching continuation support cannot borrow another engine; reject before commit.
+function continueGamePresentation(game) {
+  const presentation = engineFor(game).presentation;
+  if (!presentation) fail(409, 'UNSUPPORTED_PRESENTATION', '这局规则不支持音画续进');
+  return presentation.continue(game);
+}
+
 // 只继续已经提交的动作；不选择碰、杠、胡或过。下一次暂停必须使用全新屏障。
 // Continue only committed actions, never choose claims or passes. A subsequent pause gets a fresh gate.
 function settlePresentation(room, now = Date.now()) {
@@ -620,7 +508,7 @@ function settlePresentation(room, now = Date.now()) {
   // Advance at most one committed segment per request; new deadlines start now, never catch up a backlog.
   if (gate.mode === 'local') {
     if (now < gate.expiresAt) return false;
-    room.game = continuePresentedGame(room.game);
+    room.game = continueGamePresentation(room.game);
     if (room.game.phase === 'finished' && !room.gameMeta.finishedAt) room.gameMeta.finishedAt = now;
     createPresentationGate(room, now);
     return true;
@@ -631,7 +519,7 @@ function settlePresentation(room, now = Date.now()) {
   gate.requiredSeats = requiredSeats;
   if (now < gate.expiresAt && !requiredSeats.every((seat) => gate.completedSeats.includes(seat)))
     return changed;
-  room.game = continuePresentedGame(room.game);
+  room.game = continueGamePresentation(room.game);
   if (room.game.phase === 'finished' && !room.gameMeta.finishedAt)
     room.gameMeta.finishedAt = now;
   createPresentationGate(room, now);
@@ -898,7 +786,8 @@ export function createApi(store) {
       // Create the first occupant, a separate seat secret, and no game; return credentials only after insertion.
       if (method === 'POST' && url.pathname === '/api/rooms') {
         const body = await bodyOf(request),
-          settings = roomSettings(body.settings),
+          mode = modeForRoom({ gameMode: body.gameMode }),
+          settings = mode.roomSettings(body.settings),
           name = playerName(body.name),
           preference = characterPreference(body.preferredCharacter);
         throttle(request);
@@ -921,6 +810,7 @@ export function createApi(store) {
             id: randomCode(),
             revision: 0,
             hostSeat: 0,
+            ...(body.gameMode !== undefined ? { gameMode: mode.id } : {}),
             settings,
             seats: Array.from({ length: settings.playerCount }, (_, seat) => seat === 0 ? person : null),
             spectatorKey: randomToken(),
@@ -950,6 +840,10 @@ export function createApi(store) {
       const [, id, operation] = match;
       let room = await store.get(id);
       if (!room) fail(404, 'ROOM_NOT_FOUND', '没有找到这个房间，请检查房间号');
+      // 不支持的存档先拒绝，再处理心跳、落座或观战签名；不能写入后才在公开投影失败。
+      // Reject unsupported saves before heartbeat/join/spectator-key writes, not after a commit fails projection.
+      modeForRoom(room);
+      if (room.game) engineFor(room.game);
       const playerHash = await profileHashFor(store, request);
       // 与落座一样由房间邀请进入，但只发独立观战能力；不占座、不绑成绩、不参与屏障。
       // Admit through the room invitation like joining, but grant a separate read-only capability without seats, records or gates.
@@ -1178,8 +1072,9 @@ export function createApi(store) {
         // Creation snapshots override validated legacy-client options field by field, on first and subsequent rounds.
         // 旧房缺失的字段仍接受原开局选项和引擎默认值，不回填房间或改写旧局。
         // Missing legacy-room fields retain start options/engine defaults without backfilling rooms or rewriting games.
+        const mode = modeForRoom(room);
         const rules = {
-          ...startRules(body.options),
+          ...mode.startRules(body.options),
           ...(room.settings || {}),
         };
         const next = structuredClone(room);
@@ -1187,17 +1082,30 @@ export function createApi(store) {
         ensureGameMetadata(next);
         if (next.game) (next.archivedGames ||= []).push(archiveFinishedGame(next));
         const now = Date.now();
-        next.game = createGame({
-          dealerSeat: dealerForNextGame(next.game),
-          rules,
-        });
+        // 模式可用上一局和房间计数器准备新局；所有返回字段只在同一次房间 CAS 成功后保存。
+        // A mode may use the previous game and room counter; returned room fields persist only in the same successful CAS.
+        // 花麻将继续原有调用路径，成都不会借用它的庄家或洗牌规则。
+        // Flower retains its exact creation path; Chengdu never borrows its dealer or shuffle rules.
+        if (mode.startGame) {
+          const started = mode.startGame({ room, rules });
+          next.game = started.game;
+          Object.assign(next, started.roomUpdates);
+        } else {
+          next.game = mode.createGame({
+            dealerSeat: mode.dealerForNextGame(next.game),
+            rules,
+          });
+        }
+        // 只延续建房显式保存的模式；旧房不补字段，花麻将引擎本身也保持原样。
+        // Carry only an explicit creation mode; do not backfill old rooms or change the Flower engine.
+        if (room.gameMode !== undefined) next.game.gameMode = mode.id;
         delete next.presentation;
         next.gameMeta = newGameMetadata(next, randomToken().slice(0, 32), now);
         // 展示能力按本局保存而非改规则；旧浏览器加入同局后也不能绕过节奏。
         // Save presentation capability per game, not as a rule; older clients cannot bypass it later.
-        if (body.presentation === true || body.presentationMode === 'local')
+        if (mode.currentEngine.presentation && (body.presentation === true || body.presentationMode === 'local'))
           next.gameMeta.presentationEnabled = true;
-        if (body.presentationMode === 'local') next.gameMeta.presentationMode = 'local';
+        if (mode.currentEngine.presentation && body.presentationMode === 'local') next.gameMeta.presentationMode = 'local';
         recordPresence(next, seat, presentationPresence(request));
         next.seats[seat].lastSeen = now;
         // 角色在开局时统一分配并保存；重连读取同一映射，不重新抽签。
@@ -1212,15 +1120,18 @@ export function createApi(store) {
           state: publicRoom(next, seat),
         });
       }
-      // 先验证动作结构，只提取 type/tile；实际合法性由该局版本引擎决定。
-      // Validate action shape and copy only type/tile; the saved-version engine decides legality.
+      // 先由模式校验动作结构和可传字段，再由该局版本引擎决定实际合法性。
+      // The mode validates action shape/fields, then the saved-version engine decides actual legality.
       if (method === 'POST' && operation === 'action') {
         const body = await bodyOf(request);
         // 新浏览器可用局 ID 和引擎版本证明牌面仍相同；心跳只改房间版本，不应误拒打牌。
         // Modern clients can prove the same game state by game ID/revision; presence-only room changes must not reject moves.
         // 旧客户端仍严格匹配房间版本；任何实际动作改变引擎版本，最后仍必须通过房间 CAS。
         // Legacy clients retain strict room revisions; actual moves change game revision and final room CAS still applies.
-        const hasCurrentGameProof = (body.presentation === true || body.presentationMode === 'local') &&
+        // 成都明确支持无播放字段的局证明；花麻将三版继续原有显式播放协议，不按版本数字猜能力。
+        // Chengdu explicitly supports proofs without playback fields; all Flower versions retain their existing playback opt-in.
+        const supportsActionGameProof = room.game && engineFor(room.game).actionGameProof === true;
+        const hasCurrentGameProof = (supportsActionGameProof || body.presentation === true || body.presentationMode === 'local') &&
           body.gameId === room.gameMeta?.id && Number.isSafeInteger(body.gameRevision) &&
           body.gameRevision === room.game?.revision;
         // 一旦请求提供局证明，两项必须完整且匹配；不能用新的房间版本掩盖旧局证明。
@@ -1232,22 +1143,10 @@ export function createApi(store) {
         if (room.presentation || room.game?.presentation)
           fail(409, 'PRESENTATION_PENDING', '请等待动画和语音播放完成');
         if (!room.game) fail(409, 'NOT_STARTED', '房主还没有开始这局');
-        const supplied = body.action;
-        if (
-          !supplied ||
-          typeof supplied !== 'object' ||
-          Array.isArray(supplied) ||
-          typeof supplied.type !== 'string'
-        )
-          fail(400, 'BAD_ACTION', '操作格式不正确');
-        const action = {
-          type: supplied.type,
-        };
-        if (supplied.tile !== undefined) {
-          if (!Number.isInteger(supplied.tile) || supplied.tile < 0 || supplied.tile > 17)
-            fail(400, 'BAD_TILE', '牌的编号不正确');
-          action.tile = supplied.tile;
-        }
+        // 动作字段和牌种范围属于本模式；未来成都交换三张/定缺不能经花麻将解析器处理。
+        // Action fields and tile bounds belong to the mode; Chengdu exchange/dingque must never use the Flower parser.
+        modeForRoom(room);
+        const action = engineFor(room.game).parseAction(body.action);
         // 游戏状态必须完全未变才重试；索引只关联一次，每轮重新构建独立待提交状态。
         // Retry only an identical game/lifecycle; link the profile index once and rebuild each candidate from fresh storage.
         let indexAlreadyLinked = false;
@@ -1259,7 +1158,7 @@ export function createApi(store) {
           ensureGameMetadata(next);
           // 只有无旧屏障的真实动作才可启用新传输模式；不迁移已保存的旧段或规则。
           // Only a real action without an old gate may opt in; never migrate saved gates or rules.
-          if (body.presentationMode === 'local' && room.game.schemaVersion === 3) {
+          if (body.presentationMode === 'local' && engine.presentation) {
             next.gameMeta.presentationEnabled = true;
             next.gameMeta.presentationMode = 'local';
           }
@@ -1267,10 +1166,10 @@ export function createApi(store) {
           try {
             // 把原牌局交给规则引擎产生下一状态；失败不提交房间副本。
             // Let the engine produce the next state from the original game; failure never commits the clone.
-            if (body.presentation === true && room.game.schemaVersion === 3)
+            if (body.presentation === true && engine.presentation)
               next.gameMeta.presentationEnabled = true;
-            next.game = next.gameMeta.presentationEnabled === true && room.game.schemaVersion === 3
-              ? applyPresentedAction(room.game, seat, action)
+            next.game = next.gameMeta.presentationEnabled === true && engine.presentation
+              ? engine.presentation.apply(room.game, seat, action)
               : engine.apply(room.game, seat, action);
           } catch (error) {
             fail(422, 'ILLEGAL_ACTION', error.message || '当前不能这样操作');
@@ -1286,7 +1185,7 @@ export function createApi(store) {
             return json({ state: publicRoom(next, seat) });
           } catch (error) {
             if (!(error instanceof ApiError) || error.code !== 'STALE_STATE' ||
-              error.isCompareAndSwapConflict !== true || !hasCurrentGameProof || room.game.schemaVersion !== 3 || attempt === 3) throw error;
+              error.isCompareAndSwapConflict !== true || !hasCurrentGameProof || !engine.presentation || attempt === 3) throw error;
             const latest = await store.get(room.id);
             if (!differsOnlyInPresence(room, latest)) throw error;
             // 只在明确未写入的 CAS 冲突后重算；身份再次校验，积分和事件不从失败副本复用。
@@ -1299,7 +1198,7 @@ export function createApi(store) {
       }
       fail(405, 'METHOD', '不支持这种操作');
     } catch (error) {
-      if (error instanceof ApiError)
+      if (error instanceof ApiError || error instanceof GameModeError)
         return json(
           {
             error: error.message,

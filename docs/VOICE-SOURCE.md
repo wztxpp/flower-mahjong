@@ -75,3 +75,11 @@
 **未进行人工主观试听。** ASR可能将报牌识别为同音字或不同声调的字；脚本只将孤立转写与目标的字面差异（移除标点并统一数字后）列为待复核，不擅自认定发音正确或错误。完整上下文识别也可能受提示词影响，不是音色差异、声调或表演质量认证。每个新角色的真实录音都需要实际试听才能作主观确认。
 
 女明星最初“八筒／九筒”的完整上下文识别为“八头／九头”。本次用同一参考、成品种子偏移100生成新的两条独立候选，完整序列识别改为“八桶／九桶”，与目标普通话同音；最终采用新候选并重新审计。没有拼接其他角色、改变音调或裁剪载体句。该改进仍不是人工声调认证；最终来源记录保留实际新种子与哈希。
+
+## 2026-11-07：七角色万牌扩展
+
+新增七角色各一至九万共63条真实MP3，83.92秒、1,070,388字节。旧164文件与原有clip元数据全部保留；当前清单224条可播放、227个存储文件。原创参考、固定Qwen修订、本地CPU流程与完整检查见 [万牌素材记录](WAN-ASSETS.md) 及 `voice-wan-audit.json`。
+Added63 real one-to-nine-wan clips across seven personas,83.92 seconds/1,070,388 bytes. All164 old files/clip metadata remain unchanged;224 active calls and227 stored files. See the source/provenance and complete audit.
+
+七套无目标词提示的整序列ASR都识别出一至九万；36条孤立ASR仍有字面差异，原文保留。未人工试听，不能把序列识别正确称为声调、音色或表演认证。没有使用真人样本、付费服务或升降调伪装新角色。
+All seven unprompted full-sequence ASR runs recognized one through nine wan;36 isolated-ASR differences are retained. No subjective listening was performed, so sequence matches do not certify tones, persona or performance. No real-person samples, paid service or pitch-shifted persona substitutes were used.

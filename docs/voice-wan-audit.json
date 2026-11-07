@@ -1,0 +1,4490 @@
+{
+  "date": "2026-11-07",
+  "paidServiceUsed": false,
+  "realPersonVoiceSampleUsed": false,
+  "subjectiveListeningCompleted": false,
+  "originalAudioPreserved": true,
+  "originalAudioHashes": {
+    "landlord/tiao-1.mp3": "893d8d2eb41ac8e4ad35fcb1db1bb943941a014b377835458d5da1d2995333e4",
+    "landlord/peng.mp3": "86503d77fccc1445e521cc7bfce82c0fb767cbec1e4f91eea1b5a5b9ffd2ac2b",
+    "landlord/tong-9.mp3": "2b9ffd6a42afa34907bcbf98b5744de57fc61111e0740a4c97b0773820a97d3c",
+    "landlord/tiao-9.mp3": "0ead0c916242a93b63db6a81a8c4a5a29bbc09dd58c1d28edb15dcea96ac54aa",
+    "landlord/tiao-5.mp3": "b3275240c362bf692fd1dfca90c9267ef6ac7d866bca2d1d3ffd0e08d35b3e1d",
+    "landlord/tong-4.mp3": "3f1bf2e29fbaafe0538695a3aee2da902abb1acadc041414e724fdcf5ccbb8ce",
+    "landlord/tiao-6.mp3": "916f32bc94b748da9fb482d02b2f31c67a635374114a8de4a2ca8a13b223a376",
+    "landlord/tiao-2.mp3": "ccf00f376d111e25b80a690357a5021c0120827872da1b2acd791cfccccc7131",
+    "landlord/tiao-4.mp3": "47448d07992fca5b6b300b562d08c5f9e6abc702fdc16788c10594965785ae2f",
+    "landlord/tong-7.mp3": "d314a0b641faa0da7c3871c0c4dd7e01abf0b3e0e1585fbfd3dc4eef805acc05",
+    "landlord/tong-6.mp3": "7c05edf4c65bff30d12ca3b66ff276d9a3c7475ffaaeee27787b088799821500",
+    "landlord/tong-5.mp3": "c99751e5e18e9126c94df23021268b032b55d638b5f2681c1f5c4b7d05b12516",
+    "landlord/zimo.mp3": "d7a409fa3b8c875111ca7817ab617dd21a76fea6ee4034e55c39dfa9b56b7152",
+    "landlord/tong-8.mp3": "8528d4bba3666bb676b78288c0488f6b02131e39cd3c64adead66c168eacf38a",
+    "landlord/tiao-3.mp3": "60505f69d5b59183856377a6f928679af04640b6ca7fc45b911f5063633debfc",
+    "landlord/gang.mp3": "2eefad46e5b77e51267e4a4252b7694f7cc91c82486d74abad581dac742375f8",
+    "landlord/tong-1.mp3": "b5d43dbbec8736e458bb646a1a5d7d9601ab3d678b1757af52ef984c1bc515ee",
+    "landlord/fangpao.mp3": "9ee5feb28dc2899e6797e8f6b0200d18530a315c68de0aec68166617b5990a7e",
+    "landlord/tiao-7.mp3": "e9b5ce843a50266f247675478fcc7325837ecd6cab32a73f4156e21fd62e913c",
+    "landlord/qianggang.mp3": "bcdf8bd7ad2130cf96f71d8ace423f60989d81645b28bb90b66130b42d95704e",
+    "landlord/tong-3.mp3": "cbd87195f257fd1d368466c7e7e1d11318d7da38bcd700179311e537ad407607",
+    "landlord/tong-2.mp3": "53dfaf44f6b2996a7a656a385325ac2948ea1453f8fe2303663b616f3f4b4d1c",
+    "landlord/tiao-8.mp3": "430f0004986d9912d48d13e346c1e36e790455ed2e2fe653a1f9f10dc3785565",
+    "elegant/tiao-1.mp3": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+    "elegant/peng.mp3": "fa303362806264068cdc962f42966953fd23bddc60100f0cc75fc855b7908d26",
+    "elegant/tong-9.mp3": "4491f30b0f74329b80935dae92ba4127f6f0d460cf8b6517dacdc54488b14180",
+    "elegant/tiao-9.mp3": "c63bdd893a25decc2661d9181a80212ba83067be023bff910de963e112f6a31d",
+    "elegant/tiao-5.mp3": "30990700e2c270f3dded0b653459eaf174b2b10cff96f181d010595fbd9fc63f",
+    "elegant/tong-4.mp3": "621d8947584703b74b0b99cbb579489f44face7d266d387d9ebd4fd2eb02c8d0",
+    "elegant/tiao-6.mp3": "55136995acc085d6133ba8c2475c959b93e10f2a303d1a88b9e3c7c1ebd94f7f",
+    "elegant/tiao-2.mp3": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+    "elegant/tiao-4.mp3": "0bd1ab58ec93c02c6f127b85c7cebe7685a743122ab64e6686eefb9e3306fdf0",
+    "elegant/tong-7.mp3": "73d206aef717b8597e9560efe4352b7deedbe46890e5ed273595e3e77f159041",
+    "elegant/tong-6.mp3": "0a8c3b945fec58b4c4d337e0430b7c5e8e2e9ecb7d487dd7bd1e631bd28ac14a",
+    "elegant/tong-5.mp3": "727d38288b27f30b37ff8f8944fc923fa6e15eaac0c53a46af27d45b6fa3ad32",
+    "elegant/zimo.mp3": "b3320771baac4cffd43237ad55fedd8a247844f8e0348f8047bf11035ca21aac",
+    "elegant/tong-8.mp3": "668eb838375096f5ad3972d0ef0d72691d25bb6326998ac5e8a0ec662f433f5a",
+    "elegant/hu.mp3": "85cd3b0cc6c9a72ba29d720ca68c781a92849470a77eaa3d8a8683790586ad07",
+    "elegant/tiao-3.mp3": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+    "elegant/gang.mp3": "37ae60f572b524242bfe92d30e00d598e59df6706a0d2d36da5e0767d0e47f74",
+    "elegant/tong-1.mp3": "0a712a1368195a864b834b49b919df4aa4ba58c5204aeac930ce25070065bdd4",
+    "elegant/fangpao.mp3": "e84cc16c7d9afee819f55fb347e441cde033bb3e090d155101e7dd334325dc10",
+    "elegant/tiao-7.mp3": "80b0abd9e9120193fb73f93df4dc54e56f6b3a1659dbe8abd9bb7ccad3c75dd2",
+    "elegant/qianggang.mp3": "a7fcbfc0cbc630bb76ed92308c44889734527e663d6a69dd48a545b42d939709",
+    "elegant/tong-3.mp3": "17da611f88c61f93ebba7c4357ef42a30f405f8b5b78a85675d43f6f8b6df6d6",
+    "elegant/tong-2.mp3": "47648edcdb43a5616c293992a6de132cfe035fbddfd0a6df73fd579b514e09b5",
+    "elegant/tiao-8.mp3": "8c102d9353610c4e749b5c0488b53e4e25fc76a257a48a429328b7a266c99d28",
+    "wealthy/tiao-1.mp3": "7f6e617325fa505ca1c3a99976f6a7032530ca901f0fe30b5572705a7e94afa9",
+    "wealthy/peng.mp3": "f3c116fc88af04928508d4b23a2cbad7f9356c3a3492f3105364005aeb9160fc",
+    "wealthy/tong-9.mp3": "9291ab16236f1a9b75a47b50238633303da0d4bdf45813375d059635d7a87403",
+    "wealthy/tiao-9.mp3": "fc2b1e3f073d7e71cf3e1c73052192237ad5654ddecc4789cc98d8c4f0293cd7",
+    "wealthy/tiao-5.mp3": "b010edeb5bec84c72a60c23d3171eb50ba6ea863c1ed504a13aae65669db6767",
+    "wealthy/tong-4.mp3": "ee15f0950b5ad33fe480dacd0f99faa1fc2fcef1664f1da6b62fc733a066ba50",
+    "wealthy/tiao-6.mp3": "4d55eb6636ef974a77f4b48318c7f09cb5c46edecb32e98a8cc1ab2d36aa691a",
+    "wealthy/tiao-2.mp3": "d9a8ce2bb7594e89c72b87e69c7f6bcfec5e90571f415de8abbd0353fc2aaaf8",
+    "wealthy/tiao-4.mp3": "173a04847e9354d98eea98c492121fc00b2597245ca15ecd5ac231d68fd6bd40",
+    "wealthy/tong-7.mp3": "7d1576ca9c67c406e8b9431dde948747185c35848e7085f6f5738d76317969db",
+    "wealthy/tong-6.mp3": "ee363d432cc3db4249578a176de698abf621c35ec82c157ed4f38229a395800b",
+    "wealthy/tong-5.mp3": "0c3db02c333872cb1e8dcf8cdc5d8d63d1bb81b4bb9f82e49d5fcdf52af83417",
+    "wealthy/zimo.mp3": "90dae948d9f798c312dd4d2e646e55cdb84bf3d027a03709bcb507876a328c27",
+    "wealthy/tong-8.mp3": "272217110aafaf0251543bfc8bb73de4c30c5d0386e6d11dd92fbee01896da8c",
+    "wealthy/tiao-3.mp3": "85500149f80162afef14a45092a97cac0f804f20b852b7dc3cb3f1a4e7b488c7",
+    "wealthy/gang.mp3": "80a643d1ed32346efc25bd39d8176af2b7d0731ba303a918282d3de29e348b40",
+    "wealthy/tong-1.mp3": "27d3c41b1a94af36bfd8d86e2941c953bf91798f5a68b3c3fb1f5fd6c59ae2f9",
+    "wealthy/fangpao.mp3": "7a12c7956e36e7730cf10ae745f87ebdf42fe06627f02d68496abff96c9ee82b",
+    "wealthy/tiao-7.mp3": "a90a789353ec9c1c85fe5dac688262d6ece459e28d23f2c563d594c11605f1cc",
+    "wealthy/qianggang.mp3": "f2853ba45567594492c40e67de2fbb19acb09af0f436d465d9ad5fff81e54a91",
+    "wealthy/tong-3.mp3": "7201aaed390838df63742474843f1986b8e01d3e841585791a91834e476c1020",
+    "wealthy/tong-2.mp3": "66190b4af2e655d9f23c75159e5e80e12f6f908ada48647685e627e76f306cd0",
+    "wealthy/tiao-8.mp3": "ddb00b27af59048a8c2251acbe671d3cfd8ea7f27935f0bbfe458f191dbe4f0e",
+    "sweet/tiao-1.mp3": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+    "sweet/peng.mp3": "4d854b83ae7a0d9154c9c9a7b88ff2b90a4113e8ef45e079aacf5b01afa24bae",
+    "sweet/tong-9.mp3": "232ca14c34fede3ed8026faf2f0c394cfc9aadbf5e09a9ce560cd20241805f82",
+    "sweet/tiao-9.mp3": "ead21a56cba09ef52b0994ee5e9fda1ee64e73d8075f696034ee67a6e62b090b",
+    "sweet/tiao-5.mp3": "f0023da5d107a2c2d9ef976f3bee4f27d6c0c56dce2ae5135d39e28adb69748e",
+    "sweet/tong-4.mp3": "139dc0548ae96d2b788938f9afa6bc5f741a73df77abaccbb6d44a2800c883a2",
+    "sweet/tiao-6.mp3": "66b378712b335d37b6906e2ba2839335138993a334c8c555acb0194f7c4c672c",
+    "sweet/tiao-2.mp3": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+    "sweet/tiao-4.mp3": "b9673c20e871698f04ad3f7104f1713fdce5818c7c791e1e39b38420f7630a74",
+    "sweet/tong-7.mp3": "700f0456ddc547cb456dc8c648849c82e0ba8a5f4ce0538a8dee32061520e81a",
+    "sweet/tong-6.mp3": "9ad1de0e4974ba0faf0b46c87d4ffb88b4d3206910bd4fec6edf383a9dd19f37",
+    "sweet/tong-5.mp3": "dc9e6dc02a2f45f078015f787ee2f3583245784727a03bd731b31d9beec58f97",
+    "sweet/zimo.mp3": "f7479694a8abfeb7429d4e29b2cf72bfdaabc4a549bfc47526d5572fff4a36b4",
+    "sweet/tong-8.mp3": "69d56b84558a809c0e333169f4ce8816d7a98fd566ec540a904fd57355d6f5af",
+    "sweet/hu.mp3": "6b21c6f03c33b6ac9be869cdfd13f06ded3f99a33cb8d134d2070efb35529883",
+    "sweet/tiao-3.mp3": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+    "sweet/gang.mp3": "e817d78ed353d545bb8995b472f4b68d0fce35949304e8e293b0c2ae2e5d5f15",
+    "sweet/tong-1.mp3": "86803fdf2a1bcd58b0e2c37ebb641140a2d85880200749d8d50f1340fbd0f3e8",
+    "sweet/fangpao.mp3": "056d0b7f8df9666b79d9b03ff33d9a6de73fd4a81000bab820740e602c89c6b1",
+    "sweet/tiao-7.mp3": "ec71d03801b0b547aa99e9b29459d066cece112d5cc24b0bac759a199b9a48f7",
+    "sweet/qianggang.mp3": "8e0e09d2f349b942a0bcaa3fc4a38140aba992c920383e0d229d0325afed920e",
+    "sweet/tong-3.mp3": "ee74704462fda250839bec6deeac763d805338b02295899d579a769e94706005",
+    "sweet/tong-2.mp3": "a0bd5d4796fd70c3c880935d1ee010854df2b778787f4eae9debb0e0bf44bc1f",
+    "sweet/tiao-8.mp3": "255b4f89706863ddef8c691508c5fa9a637bad8bca53c488b2ec48cc616d31dc",
+    "sunny/tiao-1.mp3": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+    "sunny/peng.mp3": "f110a6612b3307619b87ded6a77c61f51d51b997be82c908f17dea67b7ee22ed",
+    "sunny/tong-9.mp3": "7ca7f57b40adafdc98bf29f39858e5a13c8d2d876851aaa0afe8f7484647fb80",
+    "sunny/tiao-9.mp3": "87baaa4a6937ffbb19eac46d5f70245701ea1d37e5d641fc1b5a57c124bc8f6d",
+    "sunny/tiao-5.mp3": "b5660b513df9010135d955e729796001f4e4e5260f0d351096367d273960dc69",
+    "sunny/tong-4.mp3": "cb59271f5c36c5428cdd9e19884067e67ef1360fd4851a6fe61f7915cedeabda",
+    "sunny/tiao-6.mp3": "d0c96f297d4b95306a3b32c89acf9bcdefcdbe03892db05f05c09ffb3b71dbf3",
+    "sunny/tiao-2.mp3": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+    "sunny/tiao-4.mp3": "23527a4a889593b8a39cc51a865149609cffb32deb213fcf4c39e490c3092c18",
+    "sunny/tong-7.mp3": "0733878447fc8bdc6c4277080a86fab606ab7ed12422fb3bb4a17086f932abb2",
+    "sunny/tong-6.mp3": "9271a695a65fceff2ba8d0cd6efd2277a257bc9e65c084982247c94342a7871d",
+    "sunny/tong-5.mp3": "e27601a95592d2659bd5a9fd67960035d5214a046fc54eaff75b3c36a78edf80",
+    "sunny/zimo.mp3": "8da543dedb7b7483580ded3e7ce72c0f2b7e8733624b2a6fc5b5f20141f88703",
+    "sunny/tong-8.mp3": "3cd85fdd5b3199d6f69b1aa5f4de8f9683b620eda5f78b416c4a15a40d6458d3",
+    "sunny/hu.mp3": "a619c71fe85dffd3f33706c1f022d52da053f31e1e9045ca356440c8ccc16967",
+    "sunny/tiao-3.mp3": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+    "sunny/gang.mp3": "82b5d73a46dd7a0a8359011a44220415294a237da752415725d9e8096ff0b2d1",
+    "sunny/tong-1.mp3": "a5ece2ba458b8ddf8fcfcd0f8627e4d793ff80e0afa45716917d6a58255f19c2",
+    "sunny/fangpao.mp3": "f05104e7ae2d845d29ca6dc6860d3cbfb551a0938d01226879b69050c6d0d756",
+    "sunny/tiao-7.mp3": "a3130141f7b923761b9c5d8ae5e54532ac9bd990f6ddd649fb33076b7633ed62",
+    "sunny/qianggang.mp3": "8bb618f3903e3862db395bd85708ecb7ece115f40a17637ffacdea55918dec6e",
+    "sunny/tong-3.mp3": "041dc18e945165e200a89ceee5738e8f5f5bb9f18a778af75491ede6362a0a04",
+    "sunny/tong-2.mp3": "522b730384b817d2aa9892abdcf8481b46501c1be6960efd6f713f124e441bf9",
+    "sunny/tiao-8.mp3": "37f3edb3f36a92d02f56fad8629b0c489e8f191e0d27631d1dee3697d47801db",
+    "star/tiao-1.mp3": "8abd2f840f8c801dd0f842bed120ef43ba119a7f720a4e7e137441fc1b5bdda6",
+    "star/peng.mp3": "d14be6bb80c2453cb35378e174f219319c272073db46b7240aa72d4e063851d1",
+    "star/tong-9.mp3": "d22b58fce9787adc6492f4d37f0c8a376ec636a5e50de21b43e0b0ad28dc77ae",
+    "star/tiao-9.mp3": "0ae7c8d6d7f6d63352c5bcdb55ad6757e9bc4ba33ef2af49d150f736bae227a0",
+    "star/tiao-5.mp3": "d1e4d7d2612e4b082fcfa28380c61ada4eba4d5c9b18c33df26d84f3a4f7d057",
+    "star/tong-4.mp3": "57a3f6f6398947b8fcb63368592d3dda2293b9c119706e1b9f3f72c143bdaf53",
+    "star/tiao-6.mp3": "f1b154aca154771d8f1c6b708793542c271a0e2c62aa04a5488cce0c74c9e09c",
+    "star/tiao-2.mp3": "deecfbc36dbf7c287f3a14cf46bca88cabf8baa7729b8047fda5b1803997e58f",
+    "star/tiao-4.mp3": "4db6119a86cae43e0a7316b29a66b464c419b2bf0156adc6be936b01a85d921d",
+    "star/tong-7.mp3": "472ac542303bda2cea37fe3f4635213d053d4591b1e77f96a6fe7d95b02c5a26",
+    "star/tong-6.mp3": "1b11fab575f38d7aa3e4a06782338859fd58870a9229a7547133735682b0fc21",
+    "star/tong-5.mp3": "57f5dccc497243c565fc64c0285ca01a0aa5f7d52e1557ee004513896431a560",
+    "star/zimo.mp3": "1188d0616c4e526612d4134942be09387f565e683b86a51f765f17e8d549ab3c",
+    "star/tong-8.mp3": "646b0b86e7ddd423fd536724cd960669398b9d5b5c54878ee0332590e28c00ee",
+    "star/tiao-3.mp3": "cadbbbf3f8b9e09286d759562c42e74c321c1adf5fd3b209af92812130ae34df",
+    "star/gang.mp3": "91059190cc2456d1065081ff8eca096b925f0c5a34f73cbab073e87bcfa35db2",
+    "star/tong-1.mp3": "e8044dd7ad58ff1feaba22f94b286a09ce2cac943ec97845915ae4be88c88a01",
+    "star/fangpao.mp3": "9c25253454dab12207c7e4d74bc89993e8af868ab37ddbb10b7dade6ea87bdad",
+    "star/tiao-7.mp3": "ce4e42f4bb88f5664595144646f6791e1667e87b7ab0880e758e80e49ea86391",
+    "star/qianggang.mp3": "c204d0374adf9e07e7c3f34dc83854543be63d990e5c2b6bd58b4a44b77e84df",
+    "star/tong-3.mp3": "5bcb73bc50f00af50be7d4fb82ef64de4f56c3bc76b81827cf30f8e330b4b554",
+    "star/tong-2.mp3": "e98436de02151e76e50e7ccacb88442c73506910743677d1fcee75bd807402a6",
+    "star/tiao-8.mp3": "f470fa5803db9e0436616a18952bd537cc8d3f28af8da6570eafcf0cfc7ae643",
+    "honest/tiao-1.mp3": "0c877996b615a1844c73e84f942ccfa67a71743498b770ed4b3fcc3e2dfa9661",
+    "honest/peng.mp3": "daa79b58e4c35f41b88b165f0685bcbf63f81e0175c25f983627ecfcf0478c46",
+    "honest/tong-9.mp3": "41e0186ccd0de5ebc53a4e76dc30789d75de73dcc193373f116eb02357216c59",
+    "honest/tiao-9.mp3": "9c44cda15a70d3ffd005ed1a874e2c6603ab8664f1b482bf7007f39fb54e00d9",
+    "honest/tiao-5.mp3": "97cc776cc21375a0fbe5a0ca6a03f12cbf206fae170d29c771ce029d91bf0720",
+    "honest/tong-4.mp3": "4e5d5e6b8baf4fa16ea5bb175b1af35a402420cc9acf30f0a009ab2d707f7b05",
+    "honest/tiao-6.mp3": "4ca53e45dda451911b2d1f2f8f86a8718d6c6ad473939cbcc9e8979ba35a157e",
+    "honest/tiao-2.mp3": "905464884fb24ccddaa3fa87bbd12af77e1a9671a628b6fa5eeb9ebe62dce613",
+    "honest/tiao-4.mp3": "7b43a73986c47c45d758e672c426364214cc817ddf71a05849b5c86c022f476d",
+    "honest/tong-7.mp3": "9b2afc2d14f4237f79abdab7257ac4f9a5e52523279fb6a95eb6a780cfffd15f",
+    "honest/tong-6.mp3": "61637286d7556ea997ec0ca1a20dec3e4998f5d46d3892f4ee7cc67e2ba61488",
+    "honest/tong-5.mp3": "75a6a154944a6ade1f5f3f64a27b84f3c32686ad132173aefa71a38a53d5336d",
+    "honest/zimo.mp3": "0388f2eeccf92fcf7f61b22435b07e2facc9e1aa5f07bf884d0cfbd200cd4d6e",
+    "honest/tong-8.mp3": "fb4c8746d134c14709037f52396e112126a2dc86ca0b735a05d7987449f110f6",
+    "honest/tiao-3.mp3": "01ca82be76f43cd48f4bc18b278c44d3c153218839d4f87c82655a6d93b44926",
+    "honest/gang.mp3": "c2aeb06f64a7fe13fa23dbf40ac1d193e7584705624381068b8279526aee1b40",
+    "honest/tong-1.mp3": "a0ba1e597c5ce01832faf0a80ee8227f269b061ae0713d079916350bf81aa8f9",
+    "honest/fangpao.mp3": "d35f54cc6a1b0cb2a6e5569741486fcfd3cc7936f5c6a42b6f6888556380dc8c",
+    "honest/tiao-7.mp3": "b0abe20ad554a0cd313eb1401cec8a1ca320bbd09d9594802688f62193cc360c",
+    "honest/qianggang.mp3": "67c9c0c96746e73d9c3230b1423ba6d0664a75c1cd382197b1a4253a21db7330",
+    "honest/tong-3.mp3": "de691333fb05010f2a94efd532f36c6e66c5eb406b62457be8426d1461321c52",
+    "honest/tong-2.mp3": "4eb1c40d83dfb57c5ac9f541cbea4b21cd533f2e7ed28fe10bd35d404db4dc6c",
+    "honest/tiao-8.mp3": "feca61871b16979dd4d2be8a79a4d7046768d260b085924bd418e960d6cfb00c"
+  },
+  "recordings": {
+    "sweet/wan-1": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677103,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "62a8fe33ba980bdf1b172d2efefd27277a721ab91e2e107a4da9e0c75e1d3bcb",
+      "wavSha256": "6b0f56bd623d0dff214f33929c6d634fd83f8d5118e33b008af626110619973b",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 22.081034898757935,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "以外",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08530285209417343,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sweet/wan-2": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677104,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "1ccf4c3421399be4531ead0bbe81b606c1cfea67c292b3053a2097c53e832845",
+      "wavSha256": "a2a52438ce3f2ee484220302b50c8a14adda47de22895e2328d947b7d4d6493b",
+      "sampleRate": 24000,
+      "durationSeconds": 1.36,
+      "mp3Bytes": 17324,
+      "generationSeconds": 19.944847583770752,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二、一!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08973037451505661,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sweet/wan-3": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677105,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "e71463a26afa1173c60368e0e4729a8c7a865267ab789c420f6bb0a544a74556",
+      "wavSha256": "2e2a6ece8712572a1f583a6a25384b2b2b59e88fb4023e288c49375fc9079205",
+      "sampleRate": 24000,
+      "durationSeconds": 1.36,
+      "mp3Bytes": 17324,
+      "generationSeconds": 22.29191493988037,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "So what?",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08425570279359818,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sweet/wan-4": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677106,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "c6449f9f3d654df348cc854d3ceffd050be452f2dcacdca9611d18e8c0fd3018",
+      "wavSha256": "63c85f8187adc06e141dc9b57e6587487b23f34e16308da1827a93efb3e89129",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 16.201495885849,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "四萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09077780693769455,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sweet/wan-5": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677107,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "7a8ee5e399328eb5c4c7e4ae31a31f6e9b1e811635f0670c2ff2047ce536364c",
+      "wavSha256": "31f1dba6da587359c78a4b13bc09de5d14dd1c8966c02378fd8b0e59c583304d",
+      "sampleRate": 24000,
+      "durationSeconds": 1.36,
+      "mp3Bytes": 17324,
+      "generationSeconds": 17.596907138824463,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "五万。",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08829417824745178,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sweet/wan-6": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677108,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "88677351a1dc6dd85b91df2c8cab105aebc9433c00aabe0a237965f4fd973ea7",
+      "wavSha256": "42849a90d33bf6097fae562a74b6a51aaa1578a62b1228d601572910c7359d3c",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 15.658029556274414,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "6万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09542485326528549,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sweet/wan-7": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677109,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "92ee2a08e219050d53bfd8fc1afd9cb20767aaefacefec728dce9d0fff25643c",
+      "wavSha256": "afc85881818d79596fc80c5b2d59fed31ae5b4a7bba942cee787dc0d5bd22ca8",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 23.44261622428894,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "7万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09121176600456238,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sweet/wan-8": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677110,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "3151edc93b8fad52ae55f159eb47ad7668892f67b2602df4458205535f275f85",
+      "wavSha256": "8ff7624a28a01eb32d298c3f6acc4b850ec66d91890a492a2004c31424b7ae30",
+      "sampleRate": 24000,
+      "durationSeconds": 1.04,
+      "mp3Bytes": 13580,
+      "generationSeconds": 15.05405592918396,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "八萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08241637051105499,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sweet/wan-9": {
+      "identity": {
+        "voice": "sweet",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "seed": 677111,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "61279d2eb1c4da7ba5574ba970d6139b7879763b0cf85019cfbb1dd9608a981e",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sweet/tiao-1.mp3",
+            "sha256": "73c041eebdc04683c2b3c11549d4dc1cbd2d0871ca90cc39a74181f1ef0a7f6b",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sweet/tiao-2.mp3",
+            "sha256": "0ac119c12d98f16f6e7b65a64717931ec51010ed401a55533538775cc8b6acec",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sweet/tiao-3.mp3",
+            "sha256": "abfa13bbf090e97d6abe0923ed8091b78ad192367e176a1ffd4cef6764a0948a",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 5.66,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "15ebaa40ed0cd17d4ebcf4243b116321811901127b73420fe6eb1956fccc349d",
+      "wavSha256": "f908a63c020d8d12d764afd527a5a2fa390c4fce479d0f924557bf57a0789a99",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 13.258064031600952,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "酒瘟。",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09439501166343689,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-1": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677207,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "ca32e714ad7d85630f83a323f610301f9244c7e180160d01246244cc31922b1d",
+      "wavSha256": "111230e6a4fc720d4e838807e00a55d868bb1becaca991d20b0c884fc4788342",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 12.627286672592163,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "疑问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09629929810762405,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-2": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677208,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "12b5a37e77aa9266be7d73cc2030ee8089a57f2df53b59ce460d189e50174150",
+      "wavSha256": "5d65bc8f42130171fb8fb8db35b7fb8e39ac451ac6e68cbe06d3930f9a153edc",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 14.124891519546509,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二汶",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08478395640850067,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-3": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677209,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "3336844ee329c504b75f2c6347782903531ee84a1d2ccb9e78fb99f305b2beda",
+      "wavSha256": "37d94a4dfa400a34b6e6dc4d869fbc98ebbbe7c149b735c354fd23e51e7f60c0",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 15.119920015335083,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "3 问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09039327502250671,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-4": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677210,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "b9c6b51cd668816b9a964527b1cd391f96581916a81c14898cfcd210b1a815fa",
+      "wavSha256": "5956647a81babcbc3575d18821463be4e93db924f6f26d2e17b3fc2d86268b70",
+      "sampleRate": 24000,
+      "durationSeconds": 1.44,
+      "mp3Bytes": 18188,
+      "generationSeconds": 25.010493993759155,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "四吻",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08370475471019745,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-5": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677211,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "4c176450eb9ecf4472191caf445b3b23284a20bc57433798130d5fc3f1ca62e8",
+      "wavSha256": "49b229d5b851c48761f3e63bb5b8113a64f874e2062a6e1ce77163e3e0a53e4e",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 13.212659358978271,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "五 问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0889725387096405,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-6": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677212,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "2c185bc46b054f54efddee4aa75827002c662f92a08d0cdede98200c66942e92",
+      "wavSha256": "823e93e07b990594b2151e1d57ba6d7229cf8db4da0254759bcbc1708cff3c56",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 12.610135078430176,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "六吻",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08954419940710068,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "elegant/wan-7": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677213,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "ca166fc3f8b003d24300f7d4aeb1ddfbc9af19c9782d5b5350896b1929a6df8d",
+      "wavSha256": "5013ec79047cebca6a3373b302a2ab89fe331bd8e8fc882f56ddc543baa29810",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 12.964290618896484,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "7 万。",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08870960026979446,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "elegant/wan-8": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677214,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "cb9c409535b2a36add266f330b1fcb7c45071c5d533442cde0cfb538c26a5996",
+      "wavSha256": "0c1028147b9b43d8f21eaf27c959e6a900f9d192d54f419e8aa8a19a9cab98d0",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 13.490049362182617,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "八万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08321013301610947,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "elegant/wan-9": {
+      "identity": {
+        "voice": "elegant",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "seed": 677215,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "509e16575439c182726786ff3bd232c8dbff6a53e97ca1e8a518fdc032efeacc",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/elegant/tiao-1.mp3",
+            "sha256": "39dc8764a4c1efbe34d546eec2f4f57f4530778923bb54a87f160643eb48ba25",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/elegant/tiao-2.mp3",
+            "sha256": "dfb38cdd7e9e46940c0d6cbcab535d5e7f06ebf3764f49bc5f7aa4b984c15dcf",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/elegant/tiao-3.mp3",
+            "sha256": "bcfadc6bc83b08b8e52dff217ed5d792eea47b5b6c439b833fa6425f3c354b5b",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 3.98,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "deb5e8d65b040cad3c6e00a8d3804a6844035486250da2debd3c85e59f20bcd9",
+      "wavSha256": "27ac62963b5b21824fcbbe9bbd48de6c9f4d6aaefc7a283f09d5a872a3e98d54",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 12.407603740692139,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "九萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09227827191352844,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sunny/wan-1": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677309,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "fff9c1bd86ab649436a0e5c4dd19da185fc07254dd329ce1e0e986e610b9ac0a",
+      "wavSha256": "6140533be146617f8a9d99938214ac232f00f919ec26aacb807964513f5c738d",
+      "sampleRate": 24000,
+      "durationSeconds": 1.6000416666666666,
+      "mp3Bytes": 20204,
+      "generationSeconds": 14.522524356842041,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "以外。",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0677596926689148,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-2": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677310,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "5d19fb1dd0eba94026b04c36610355b1c04d17eb0294fe04d59c7499bf61f84e",
+      "wavSha256": "600f9e6b110fd25d9ec12509c61a92b3df8ee003f34089d28a5c6d7b493b5952",
+      "sampleRate": 24000,
+      "durationSeconds": 1.84,
+      "mp3Bytes": 23084,
+      "generationSeconds": 18.714125156402588,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "阿威",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06943736225366592,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-3": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677311,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "1fa7aafc2f4dc6e711f61e82ed278daba177785788008082fe795c19d951cc7b",
+      "wavSha256": "aed323c776247faf4e98307129c528283220b828be66057429bb3b318afac913",
+      "sampleRate": 24000,
+      "durationSeconds": 2.08,
+      "mp3Bytes": 25964,
+      "generationSeconds": 24.840932846069336,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "So what?",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.060961924493312836,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-4": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677312,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "ec107b22e86a7831685287288631d253ce3496ee2f1e57aae7091cdc8279acc3",
+      "wavSha256": "fdadb7d5bed9e30420a74b0cf2a361e9fe6655ec050c6ffce56741b9a4856288",
+      "sampleRate": 24000,
+      "durationSeconds": 2.32,
+      "mp3Bytes": 28844,
+      "generationSeconds": 27.322306871414185,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "四位",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06580039113759995,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-5": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677313,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "3d36170822382a0b2081613602c1f452cc115afaba4c0cf7b27e636d90ed9ffa",
+      "wavSha256": "50d5e065f0348f484ff43095bce6504872fc8e277c1f427a0f2db4337b4433ce",
+      "sampleRate": 24000,
+      "durationSeconds": 2.48,
+      "mp3Bytes": 30860,
+      "generationSeconds": 30.59754228591919,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "5万!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.060889702290296555,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "sunny/wan-6": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677314,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "1a3193c27c6060a9dda1b8ab7625d5815090c05edb22d6189a185ee61f2e87b0",
+      "wavSha256": "4ee04b44e77f6736bd4ecd7e009f3a3c141a65fb661e4e9ec10b13f6786a2837",
+      "sampleRate": 24000,
+      "durationSeconds": 2.0,
+      "mp3Bytes": 25100,
+      "generationSeconds": 23.83901333808899,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "柳外",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06236725673079491,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-7": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677315,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "8e691975f1494e2b970bedd45d83176f4f32019a2ee0e4719525e70d25eb0253",
+      "wavSha256": "afc763c48ea9b8d48488270a4012aeec732cb70e024116b7422637d789c69907",
+      "sampleRate": 24000,
+      "durationSeconds": 1.92,
+      "mp3Bytes": 23948,
+      "generationSeconds": 37.20633554458618,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "期待!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06531738489866257,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-8": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677316,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "14b7bd07e058604ed33500219b547c3b97ed107f59079d26010add068cdd17a5",
+      "wavSha256": "e5ca0e662357205598df1a47b9f786e545f496bb7ae58a6c2e61ef5c3b90df86",
+      "sampleRate": 24000,
+      "durationSeconds": 2.08,
+      "mp3Bytes": 25964,
+      "generationSeconds": 22.642672300338745,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "把握",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06473557651042938,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "sunny/wan-9": {
+      "identity": {
+        "voice": "sunny",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "seed": 677317,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "text": "一条。二条。三条。",
+        "sha256": "5056f7a916d0f3f8f126a8aacfee3b0758e135322c1272d10141eb7cb64cb580",
+        "sourceClips": [
+          {
+            "call": "tiao-1",
+            "src": "/voices/sunny/tiao-1.mp3",
+            "sha256": "951f5c4a71fa511b8ea20fcddacb97543ae84244964b5ee2bde47f0a5ba90fa6",
+            "text": "一条"
+          },
+          {
+            "call": "tiao-2",
+            "src": "/voices/sunny/tiao-2.mp3",
+            "sha256": "c575dedd67fdccb931e012f03a9ed840a933fa77027b5489d3b4acac8382b91e",
+            "text": "二条"
+          },
+          {
+            "call": "tiao-3",
+            "src": "/voices/sunny/tiao-3.mp3",
+            "sha256": "6e7ab9ad641033c5b989ff57c4d3996a5d2256ede848e92a798defea8bfb6389",
+            "text": "三条"
+          }
+        ],
+        "durationSeconds": 4.38,
+        "interClipSilenceSeconds": 0.15,
+        "method": "Recovered from existing original generated character clips; original intermediate reference WAV was unavailable in this execution environment."
+      },
+      "sha256": "863e19ae7d95ef9faf643a9891a71523f1abdcf49eb017111f925a45019a97ba",
+      "wavSha256": "715365b55491848a133ff0c6768e2899bd7dfca57c8361992778c07a2f938255",
+      "sampleRate": 24000,
+      "durationSeconds": 0.8,
+      "mp3Bytes": 10700,
+      "generationSeconds": 9.956852197647095,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "9万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09853348881006241,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "landlord/wan-1": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677411,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "19600bc775ab6150eca88eb9fff82de80ca6965a565cfe2b02913febed8e7b08",
+      "wavSha256": "0cf4932fa1299f0cf461c4e6a56d73868e8fce290b2cd43953acfb28d3afd131",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 14.84639024734497,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "疑问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08537071198225021,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "landlord/wan-2": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677412,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "1b6a08b0af7aaf0f10eb275f1561d1f81c0ddb90878cda56f20cb986b372d437",
+      "wavSha256": "aadbfa5c48ebe6176a2e66cc76588562bd68538b03e1ebfee7b708eb5773a8d5",
+      "sampleRate": 24000,
+      "durationSeconds": 0.88,
+      "mp3Bytes": 11564,
+      "generationSeconds": 12.527756214141846,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二、二、一",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09945601969957352,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "landlord/wan-3": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677413,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "23f97e382f367dbdb35286388373eadb16d742a2338bb23a28531cc5c15bdebc",
+      "wavSha256": "a5429168238f8a014e348126d077f36966a17447fffe1a546b30e0a9f6e04adc",
+      "sampleRate": 24000,
+      "durationSeconds": 3.44,
+      "mp3Bytes": 42380,
+      "generationSeconds": 31.90768837928772,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "三万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.057924624532461166,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "landlord/wan-4": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677414,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "66def0cc22401cc0a2786b7cbe49536fe002b8b2003e55e685051f745ef1c6bd",
+      "wavSha256": "2f57e2a831a36cb7f21a343bc0bc0aeecfe24dc25f7bf9c19996a61e784be072",
+      "sampleRate": 24000,
+      "durationSeconds": 0.96,
+      "mp3Bytes": 12428,
+      "generationSeconds": 11.536876916885376,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "4萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08731657266616821,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "landlord/wan-5": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677415,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "871cf88445bcf73d59f6289227f3e5732c1e8c2eee8348c22b5fcf987538b10f",
+      "wavSha256": "216aab07b69fa0f9e179c1ee1d66218ea2d74f29b0c5584efa04bf9915eaea9e",
+      "sampleRate": 24000,
+      "durationSeconds": 0.96,
+      "mp3Bytes": 12428,
+      "generationSeconds": 10.810911655426025,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "挖",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08177502453327179,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "landlord/wan-6": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677416,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "8caea57b50bd14aeadcf701a4a727255f433269250e9edfe5d0ec798a04fcd16",
+      "wavSha256": "103688467638e3ffdc04472cce97225b44d90e4db2486250a4ee988568aa0cbd",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 15.411402463912964,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "60,000",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09450143575668335,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "landlord/wan-7": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677417,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "99d7f39fad89fa78852d3b93f88692cb8d13d9d32dd95e73033a1635b5e2544e",
+      "wavSha256": "e28464a13adada9059142dad2ae56d5b8f977507e80ca82a96deb7823ad9d24e",
+      "sampleRate": 24000,
+      "durationSeconds": 1.04,
+      "mp3Bytes": 13580,
+      "generationSeconds": 12.022514820098877,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "七万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0825798511505127,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "landlord/wan-8": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677418,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "92ce829d629bd76b4c2258e6a336bd7fedfce56b58e29252aa8022125bd3ca35",
+      "wavSha256": "8661f73fe877900267613d5c73d585d1657fc72bdc428dfe4b83e815ffa11f00",
+      "sampleRate": 24000,
+      "durationSeconds": 0.8,
+      "mp3Bytes": 10700,
+      "generationSeconds": 10.31632685661316,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "八萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09508073329925537,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "landlord/wan-9": {
+      "identity": {
+        "voice": "landlord",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "seed": 677419,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.68,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "landlord",
+            "direction": "原创虚构的四十岁成年男性地主角色，豪爽老练，自信爽朗。男中低音，胸腔共鸣厚实，略带自然沙感，吐字清楚，报牌有干脆的劲头，平静中透着丰富阅历。普通话清晰自然，不要夸张方言，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671411,
+          "sha256": "eb9cae851049cbffbc8678594aee7a0f1a56cc3cf837808e46def4d70884eace",
+          "durationSeconds": 7.68,
+          "generationSeconds": 101.99629354476929
+        }
+      },
+      "sha256": "a38ee03a0a6e7f12f6ce067912ebf1a237e48d4d153dcf8f221e0185f8170b46",
+      "wavSha256": "a0efbf2f5d5322384eb6d38f0e369d4628e19fa84e47ee01f303c9ee2b0a50f4",
+      "sampleRate": 24000,
+      "durationSeconds": 2.96,
+      "mp3Bytes": 36620,
+      "generationSeconds": 30.048234939575195,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "九万!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.05993559956550598,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "honest/wan-1": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677513,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "e22ef84e527a3c6bf317376671abd04b5dfa034c00f89a19ff7f7d00edaf8516",
+      "wavSha256": "db6278f176b4ccd73bc6a8a33bf71b85c7adebfa037ba6ad2773f38a3a8b3021",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 13.251140356063843,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "一萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.07219443470239639,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "honest/wan-2": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677514,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "9f26565b6a0ecef494d78e0e1e0d49ccca44f03afbb41221c0d0c305513be4e2",
+      "wavSha256": "a10d73678f040ac13f83846909f09692bcba08f4cada00d69475ce0fc9465b1c",
+      "sampleRate": 24000,
+      "durationSeconds": 0.56,
+      "mp3Bytes": 7820,
+      "generationSeconds": 22.27700972557068,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二、二、一",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.11394435912370682,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "honest/wan-3": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677515,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "bcd3486abfe350cd299b5a1eef11a76d870514f1f3441cba6d90501259ad2edb",
+      "wavSha256": "6728bf64f0c4075ff3fbc28729f5cf5ff88de592c02d569fc39613b05400c0a8",
+      "sampleRate": 24000,
+      "durationSeconds": 0.96,
+      "mp3Bytes": 12428,
+      "generationSeconds": 14.992188453674316,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "稍微",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08739253878593445,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "honest/wan-4": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677516,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "4b126f37a12f1606eedc69928f3ecebf24ad96d84cf04deeceba8b0d404397ad",
+      "wavSha256": "35cc10d41a3f905ab714449510a9058b0048e4b61a9f276619608b36e1a3de87",
+      "sampleRate": 24000,
+      "durationSeconds": 0.72,
+      "mp3Bytes": 9548,
+      "generationSeconds": 12.335971355438232,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "四萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.11055373400449753,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "honest/wan-5": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677517,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "839639c9aadd1323165a61e9242470334fc699153ee4643b811e6d9a10f2e445",
+      "wavSha256": "b38102f1839e5be0b0fbf57536380ab7ae68213f6b91c27af9f6b8f64d5106c3",
+      "sampleRate": 24000,
+      "durationSeconds": 0.88,
+      "mp3Bytes": 11564,
+      "generationSeconds": 13.13797664642334,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "挖!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.05574183166027069,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "honest/wan-6": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677518,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "c35b9f38d4f1ab2e4b7b1f1bae6192901980d4936db7d6bf871ff389d1ece257",
+      "wavSha256": "9d1428abd2a1213b29c03506bffc0ea715d0b9d99cef3819fe8ef9ed03cd5283",
+      "sampleRate": 24000,
+      "durationSeconds": 0.64,
+      "mp3Bytes": 8684,
+      "generationSeconds": 10.71428918838501,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "6",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.1059943214058876,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "honest/wan-7": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677519,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "d6bd1c07738f19278b1664535a1a5b3800b3f9878523e6c37a528811e7f0afad",
+      "wavSha256": "9a44bb005542858f2497ca922f3e53868a9bd6045415e88d3d2a5ab41c885ab5",
+      "sampleRate": 24000,
+      "durationSeconds": 0.88,
+      "mp3Bytes": 11564,
+      "generationSeconds": 14.366472959518433,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "期望!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08087331056594849,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "honest/wan-8": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677520,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "0d647db231be94bac1750b3c95b639ddcef30bc7597bc49ba5dd38b8d55b5792",
+      "wavSha256": "db01cb4681fdacaa785cd2a2a0bc28b3da2a70c833e6892f8f1c50d888aa399b",
+      "sampleRate": 24000,
+      "durationSeconds": 0.88,
+      "mp3Bytes": 11564,
+      "generationSeconds": 13.005959272384644,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "八萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09164437651634216,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "honest/wan-9": {
+      "identity": {
+        "voice": "honest",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "seed": 677521,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.04,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "honest",
+            "direction": "原创虚构的三十五岁成年男性老实人角色，朴实温厚，诚恳友善。自然中音，柔和温暖，口腔共鸣结实但不粗哑，节奏踏实平稳，像亲切可靠的邻家大哥，清楚干净地报麻将牌。不要傻气结巴，不要刻意卖萌，不要喊叫，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671513,
+          "sha256": "91ca92812bf50e76481df4621060a5564481cf0d5b7b357a4a156fe899c55482",
+          "durationSeconds": 7.04,
+          "generationSeconds": 75.0164258480072
+        }
+      },
+      "sha256": "ec1fd086cd3c0db3734c5e99bb05e7a036da196fef51311fc8f3f60f18701fd7",
+      "wavSha256": "0020f2e2a7ec462159c6d6a06fc995d656bbc02b0d5d252da7476b643cbba3b4",
+      "sampleRate": 24000,
+      "durationSeconds": 0.72,
+      "mp3Bytes": 9548,
+      "generationSeconds": 13.21140170097351,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "九萬!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.10090472549200058,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "wealthy/wan-1": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677617,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "c81ad1115be24c967d7e7959f75287069c2a5eb473d3925c00b2a76862e6b987",
+      "wavSha256": "2ebf0e201c178402a9f50c2d2afec5273307c4b76ad012a3f7da0b77768abb4e",
+      "sampleRate": 24000,
+      "durationSeconds": 1.36,
+      "mp3Bytes": 17324,
+      "generationSeconds": 22.675218105316162,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "疑问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0810391828417778,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-2": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677618,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "fc9e6f52dd7d8fed933e9e3e0c742e037f5832b2d6edfea54b69a435bf66cfa4",
+      "wavSha256": "7192abe5e75440ebbc28d7dfd2e9f958d1caae0dfc385f5c220adb40c65ebff9",
+      "sampleRate": 24000,
+      "durationSeconds": 2.0,
+      "mp3Bytes": 25100,
+      "generationSeconds": 31.131580591201782,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二位",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.07809066772460938,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-3": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677619,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "7ffd4407ce3305be317e534c37f8c91762dd12162b43df1f76881f1c842297d8",
+      "wavSha256": "5a7d2c9f5c3f971ef93e2b205b4cdce8d3368fdf321c587987646a4dc105d0df",
+      "sampleRate": 24000,
+      "durationSeconds": 2.56,
+      "mp3Bytes": 31724,
+      "generationSeconds": 31.926724433898926,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "三万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06906107813119888,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "wealthy/wan-4": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677620,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "fb307126bb11c9c0d26f716da1ffd63eda3a6bd707c43f38446f8496329a8ff0",
+      "wavSha256": "ab981e23269b024e31879f209267d9ed280fd2b6e4849e5197ce554746dc3834",
+      "sampleRate": 24000,
+      "durationSeconds": 1.76,
+      "mp3Bytes": 22220,
+      "generationSeconds": 23.433074235916138,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "斯文",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.06719127297401428,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-5": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677621,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "a603d08d9f6c146559e32d9e12686b66efb82cb917313c025ed433c13feff06e",
+      "wavSha256": "525fefbfefc973f1eb9aac9bdb41701ed087ba846fbd5791997e8714355185ad",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 35.91368556022644,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "五萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09153354167938232,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "wealthy/wan-6": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677622,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "1377438128ea86c42b373ac9b82c79dd15e7f3bded1b907ab16903db85b8b8c9",
+      "wavSha256": "cc351707e7cd0e567757a3fda78a747d127cc4c68e925de495ba61af8a8328a1",
+      "sampleRate": 24000,
+      "durationSeconds": 1.28,
+      "mp3Bytes": 16460,
+      "generationSeconds": 24.031516313552856,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "六文",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08496320247650146,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-7": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677623,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "07c762c3961de2bf2523167137034b06af9cf88ca51840cf3b177a103070948d",
+      "wavSha256": "0b501c3adb2ae53ecd7da94e925e177689710d26990c741267a708aed80ee323",
+      "sampleRate": 24000,
+      "durationSeconds": 1.84,
+      "mp3Bytes": 23084,
+      "generationSeconds": 19.871575832366943,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "期吻",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0696011632680893,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-8": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677624,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "8246f191ef9f4eb76214377191f53b9ca19d0d1afb6f9f7582a5512b3891bd39",
+      "wavSha256": "efa7e3940b90d0f1e9f69e51f8414114769cfa413c7d52fe84900dfcdd6f5da7",
+      "sampleRate": 24000,
+      "durationSeconds": 1.2,
+      "mp3Bytes": 15308,
+      "generationSeconds": 13.525298595428467,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "把握",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09260735660791397,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "wealthy/wan-9": {
+      "identity": {
+        "voice": "wealthy",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "seed": 677625,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 9.12,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "wealthy",
+            "direction": "原创虚构的四十岁成熟女性富婆角色，成熟从容，有气场，慵懒中保持利落。醇厚圆润的女性中低音，声音饱满顺滑，克制而自信，语调优雅，像见惯世面且享受牌局的女主人。短促清晰报牌，不要气声耳语，不要嗲声，不要拖尾，不要模仿任何真人，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671617,
+          "sha256": "f8420201c8dbbf3c09d4fa0bf6b4c33d9da637ae49d1b162b116c9606ec2d49d",
+          "durationSeconds": 9.12,
+          "generationSeconds": 111.11329817771912
+        }
+      },
+      "sha256": "ef4670d9b6858732d10f12982b76a5c472d8a959947b246a16c815809da0ff2a",
+      "wavSha256": "86fa74c02d6115ecf4ee5aceaf995dac70df788e4f2c9c47ac276ed238630595",
+      "sampleRate": 24000,
+      "durationSeconds": 1.28,
+      "mp3Bytes": 16460,
+      "generationSeconds": 14.985665321350098,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "酒瘟",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.0948408767580986,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "star/wan-1": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-1",
+        "text": "一万",
+        "modelInputText": "一万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677719,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "d01e5247ed2d6d2bc4fcfb1d1e1fa4a2d67ebf96eb23529f5d3751c6a4dc196b",
+      "wavSha256": "02cc83fdd541896b838a9ee9aa0eaf639795d6e6e6e0b9fe3efcd7b8a2a0da21",
+      "sampleRate": 24000,
+      "durationSeconds": 1.28,
+      "mp3Bytes": 16460,
+      "generationSeconds": 15.080692052841187,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "一万",
+      "transcript": "提问",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.07883754372596741,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "star/wan-2": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-2",
+        "text": "二万",
+        "modelInputText": "二万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677720,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "9bf37122a210f395bc608322c131478e620da943ffefc2f27416389b6405e7ec",
+      "wavSha256": "f11da78f9272809c9dd729a22cc696118a8469e9686ec5eba76906b5db658666",
+      "sampleRate": 24000,
+      "durationSeconds": 0.88,
+      "mp3Bytes": 11564,
+      "generationSeconds": 55.00380229949951,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "二万",
+      "transcript": "二萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.09604153037071228,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-3": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-3",
+        "text": "三万",
+        "modelInputText": "三万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677721,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "aa32da09c0714aadd6eb8739db4426918124ec04ff2b752e3f4e7a5fb96a000a",
+      "wavSha256": "39f727652801a5c2db4f15d8843f985dec9746b41f81a79e479c8a2e936ca307",
+      "sampleRate": 24000,
+      "durationSeconds": 1.36,
+      "mp3Bytes": 17324,
+      "generationSeconds": 16.97914481163025,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "三万",
+      "transcript": "三萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08166559785604477,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-4": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-4",
+        "text": "四万",
+        "modelInputText": "四万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677722,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "4ed3ff0ce9590f0feae5341e775af9dfde3061e7fe27043bad36e777696f46f7",
+      "wavSha256": "67271c961427f6f7e820755752a2877d6dbe86ed36e9930121ed2de92d4eef2b",
+      "sampleRate": 24000,
+      "durationSeconds": 1.28,
+      "mp3Bytes": 16460,
+      "generationSeconds": 23.237730979919434,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "四万",
+      "transcript": "四万。",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08519554138183594,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-5": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-5",
+        "text": "五万",
+        "modelInputText": "五万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677723,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "f52579cd5af3c0fc70c83120cc0b197a8a6e9ebfffbaa35413e2bbc9755ccd04",
+      "wavSha256": "26634b8713122950dc1dd47c9c02393d502c2be1b1a13f05f0ae24ed7c1957b2",
+      "sampleRate": 24000,
+      "durationSeconds": 1.12,
+      "mp3Bytes": 14444,
+      "generationSeconds": 21.841415405273438,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "五万",
+      "transcript": "虎万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08585076779127121,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    },
+    "star/wan-6": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-6",
+        "text": "六万",
+        "modelInputText": "六万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677724,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "640d2860bfc99ca05c9a6f420d2f3b7c9dd4a51cdef0cc7e6f90d87312814c4c",
+      "wavSha256": "15c862cf8e645371213f7e955cd3eb9edbf8bb3c8e0fa9f3ff9e17a5662235b5",
+      "sampleRate": 24000,
+      "durationSeconds": 0.8,
+      "mp3Bytes": 10700,
+      "generationSeconds": 12.93708610534668,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "六万",
+      "transcript": "六萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.10127390921115875,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-7": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-7",
+        "text": "七万",
+        "modelInputText": "七万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677725,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "09c7ee11f216e9b30aa7fe58536472667c08d192e751d9a0043d5e772dbf3649",
+      "wavSha256": "16c205940de8ace47b21e37d80429f8041f4b111a6ea61fb981e4e02769bb391",
+      "sampleRate": 24000,
+      "durationSeconds": 1.52,
+      "mp3Bytes": 19340,
+      "generationSeconds": 18.74282741546631,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "七万",
+      "transcript": "7万",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.07798197865486145,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-8": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-8",
+        "text": "八万",
+        "modelInputText": "八万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677726,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "ffec8c2d53c9823d2b60d18e21c4e9effcdb1c81e22689799e619e9f6c78550b",
+      "wavSha256": "e8d5be48458aa8860bf6ac1e3b9a8f3c7340973442218349fc7b3ca2523e963a",
+      "sampleRate": 24000,
+      "durationSeconds": 1.04,
+      "mp3Bytes": 13580,
+      "generationSeconds": 41.521183490753174,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "八万",
+      "transcript": "8萬",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.08085355162620544,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": false
+    },
+    "star/wan-9": {
+      "identity": {
+        "voice": "star",
+        "call": "wan-9",
+        "text": "九万",
+        "modelInputText": "九万。",
+        "model": "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
+        "modelRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+        "referenceSha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "seed": 677727,
+        "dtype": "bfloat16",
+        "generationOptions": {
+          "non_streaming_mode": true,
+          "max_new_tokens": 80,
+          "do_sample": true,
+          "temperature": 0.75,
+          "top_p": 1.0,
+          "subtalker_dosample": true,
+          "subtalker_temperature": 0.8
+        }
+      },
+      "reference": {
+        "method": "Reused original synthetic VoiceDesign reference verified against shipped manifest",
+        "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+        "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+        "durationSeconds": 7.84,
+        "originalReferenceMetadata": {
+          "identity": {
+            "voice": "star",
+            "direction": "原创虚构的二十八岁成年女性明星角色，明亮精致，有表现力。清亮通透的女性中高音，字音圆润清晰，微笑着自信报牌，有适度舞台感染力与灵动语调，但保持自然短促。不要唱歌，不要夸张尖叫，不要幼态撒娇，绝不模仿任何真实明星或演员，不要念说明文字。",
+            "referenceText": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。",
+            "designRevision": "5ecdb67327fd37bb2e042aab12ff7391903235d3",
+            "baseRevision": "5d83992436eae1d760afd27aff78a71d676296fc",
+            "text": "准备好了吗？一条，二条，三筒，九筒。碰！杠！胡！这局真开心。"
+          },
+          "seed": 671719,
+          "sha256": "4b079341b83e3c2b71d963b43fa33dac228aeaedf583715d908c265fc94847fd",
+          "durationSeconds": 7.84,
+          "generationSeconds": 127.11807990074158
+        }
+      },
+      "sha256": "190936878b63551f2aba3538a40f0cb776855386b3d695eddc63a6a59d11c1bc",
+      "wavSha256": "4844a9b0e732d7f1de5534730db860573b9450e029b7fb0a5feae683c5180d87",
+      "sampleRate": 24000,
+      "durationSeconds": 0.72,
+      "mp3Bytes": 9548,
+      "generationSeconds": 15.387101411819458,
+      "generationDate": "2026-11-07",
+      "wavClippingFraction": 0.0,
+      "text": "九万",
+      "transcript": "久安!",
+      "mp3DecodeChecked": true,
+      "decodedRms": 0.11219918727874756,
+      "mp3ClippingFraction": 0.0,
+      "isolatedAsrLiteralDifference": true
+    }
+  },
+  "contextualChecks": {
+    "sweet": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.2
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.5499999999999998,
+          "endSeconds": 2.91
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 3.26,
+          "endSeconds": 4.62
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 4.97,
+          "endSeconds": 6.17
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 6.52,
+          "endSeconds": 7.88
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 8.23,
+          "endSeconds": 9.43
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 9.780000000000001,
+          "endSeconds": 10.900000000000002
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 11.250000000000002,
+          "endSeconds": 12.290000000000003
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 12.640000000000002,
+          "endSeconds": 13.760000000000002
+        }
+      ],
+      "transcript": "一万、二万、三万、四万、五万、六万、七万、八万、九万。",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "elegant": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.12
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.4700000000000002,
+          "endSeconds": 2.67
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 3.02,
+          "endSeconds": 4.140000000000001
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 4.49,
+          "endSeconds": 5.93
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 6.28,
+          "endSeconds": 7.4
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 7.75,
+          "endSeconds": 8.870000000000001
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 9.22,
+          "endSeconds": 10.34
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 10.690000000000001,
+          "endSeconds": 11.89
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 12.240000000000002,
+          "endSeconds": 13.440000000000001
+        }
+      ],
+      "transcript": "一萬、二萬、三萬、四萬、五萬、六萬、七萬、八萬、九萬",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "sunny": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.6000625
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.9500625,
+          "endSeconds": 3.7900625000000003
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 4.1400625,
+          "endSeconds": 6.2200625
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 6.570062500000001,
+          "endSeconds": 8.8900625
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 9.2400625,
+          "endSeconds": 11.720062500000001
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 12.0700625,
+          "endSeconds": 14.0700625
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 14.4200625,
+          "endSeconds": 16.340062500000002
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 16.6900625,
+          "endSeconds": 18.7700625
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 19.1200625,
+          "endSeconds": 19.9200625
+        }
+      ],
+      "transcript": "一万、二万、三万、四万、五万、六万、七万、八万、九万。",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "landlord": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.12
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.4700000000000002,
+          "endSeconds": 2.35
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 2.7,
+          "endSeconds": 6.140000000000001
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 6.49,
+          "endSeconds": 7.45
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 7.800000000000001,
+          "endSeconds": 8.760000000000002
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 9.110000000000001,
+          "endSeconds": 10.31
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 10.66,
+          "endSeconds": 11.7
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 12.05,
+          "endSeconds": 12.850000000000001
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 13.200000000000001,
+          "endSeconds": 16.16
+        }
+      ],
+      "transcript": "一万、二万、三万、四万、五万、六万、七万、八万、九万。",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "honest": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.12
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.4700000000000002,
+          "endSeconds": 2.0300000000000002
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 2.3800000000000003,
+          "endSeconds": 3.3400000000000003
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 3.6900000000000004,
+          "endSeconds": 4.41
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 4.76,
+          "endSeconds": 5.64
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 5.99,
+          "endSeconds": 6.63
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 6.98,
+          "endSeconds": 7.86
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 8.21,
+          "endSeconds": 9.090000000000002
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 9.440000000000001,
+          "endSeconds": 10.160000000000002
+        }
+      ],
+      "transcript": "一万 二万 三万 四万 五万 六万 七万 八万 九万",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "wealthy": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.36
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.71,
+          "endSeconds": 3.71
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 4.0600000000000005,
+          "endSeconds": 6.620000000000001
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 6.970000000000001,
+          "endSeconds": 8.73
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 9.08,
+          "endSeconds": 10.28
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 10.629999999999999,
+          "endSeconds": 11.909999999999998
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 12.259999999999998,
+          "endSeconds": 14.099999999999998
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 14.449999999999998,
+          "endSeconds": 15.649999999999997
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 15.999999999999996,
+          "endSeconds": 17.279999999999998
+        }
+      ],
+      "transcript": "一万、二万、三万、四万、五万、六万、七万、八万、九万。",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    },
+    "star": {
+      "calls": [
+        "wan-1",
+        "wan-2",
+        "wan-3",
+        "wan-4",
+        "wan-5",
+        "wan-6",
+        "wan-7",
+        "wan-8",
+        "wan-9"
+      ],
+      "boundaries": [
+        {
+          "call": "wan-1",
+          "startSeconds": 0.0,
+          "endSeconds": 1.28
+        },
+        {
+          "call": "wan-2",
+          "startSeconds": 1.63,
+          "endSeconds": 2.51
+        },
+        {
+          "call": "wan-3",
+          "startSeconds": 2.86,
+          "endSeconds": 4.22
+        },
+        {
+          "call": "wan-4",
+          "startSeconds": 4.57,
+          "endSeconds": 5.8500000000000005
+        },
+        {
+          "call": "wan-5",
+          "startSeconds": 6.2,
+          "endSeconds": 7.32
+        },
+        {
+          "call": "wan-6",
+          "startSeconds": 7.67,
+          "endSeconds": 8.47
+        },
+        {
+          "call": "wan-7",
+          "startSeconds": 8.82,
+          "endSeconds": 10.34
+        },
+        {
+          "call": "wan-8",
+          "startSeconds": 10.690000000000001,
+          "endSeconds": 11.73
+        },
+        {
+          "call": "wan-9",
+          "startSeconds": 12.080000000000002,
+          "endSeconds": 12.800000000000002
+        }
+      ],
+      "transcript": "一万 二万 三万 四万 五万 六万 七万 八万 九万",
+      "initialPrompt": null,
+      "expectedSequence": "一万，二万，三万，四万，五万，六万，七万，八万，九万",
+      "literalSequenceMatched": true
+    }
+  },
+  "asrModel": "Systran/faster-whisper-small",
+  "asrRevision": "536b0662742c02347bc0e980a01041f333bce120",
+  "verifiedModelFiles": {
+    "Qwen3-TTS-12Hz-0.6B-Base": {
+      "config.json": {
+        "sha256": "2e714c787c8edb98b05432685cddb634add2de4d4e645f653d68251ef72ba011",
+        "bytes": 4494,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "preprocessor_config.json": {
+        "sha256": "efdde1022ea9d76928bf7a9cd53139138f5ba2e466e837f08f6105ab1af1c119",
+        "bytes": 127,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "vocab.json": {
+        "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+        "bytes": 2776833,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "merges.txt": {
+        "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+        "bytes": 1671839,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "README.md": {
+        "sha256": "181187b6057906bd960bc7f938d0b7a16652509776a0d52c4885b4ae5ccda0ea",
+        "bytes": 3640,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "generation_config.json": {
+        "sha256": "f1b90b4513f3b34c62851049e2492d7b4c5940daf1276f89c82b8ef04127f3aa",
+        "bytes": 245,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "tokenizer_config.json": {
+        "sha256": "dc3c31c3bdaedd5016382bb3cbe07323026775ad51f5a4fb564505992ae4a670",
+        "bytes": 7344,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "model.safetensors": {
+        "sha256": "180b3b10eb1c9f1b4db7806d5475bae3071c0243c299d49926bab1da3b6946f6",
+        "bytes": 1829344272,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      ".gitattributes": {
+        "sha256": "11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361",
+        "bytes": 1519,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "speech_tokenizer/config.json": {
+        "sha256": "ee65bb901c876664ab8707c487157aa1a6ee57c65969b28fb5ec9dc211e68167",
+        "bytes": 2336,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "speech_tokenizer/preprocessor_config.json": {
+        "sha256": "fcb3805e597e786d4067706e602f6688524640f8d3396790e2e09b5942fcbdfb",
+        "bytes": 234,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "speech_tokenizer/configuration.json": {
+        "sha256": "6bc26d64eb5024b4d1dab5a52371958b429256d6c9d59787f1f5294a54e0cebd",
+        "bytes": 76,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      },
+      "speech_tokenizer/model.safetensors": {
+        "sha256": "836b7b357f5ea43e889936a3709af68dfe3751881acefe4ecf0dbd30ba571258",
+        "bytes": 682293092,
+        "downloadRevision": "5d83992436eae1d760afd27aff78a71d676296fc"
+      }
+    },
+    "faster-whisper-small": {
+      "config.json": {
+        "sha256": "b55496ac7940a7ae47d2c01eab40edfd8701feec1229d9cce3b40014383fb828",
+        "bytes": 2370,
+        "downloadRevision": "536b0662742c02347bc0e980a01041f333bce120"
+      },
+      "model.bin": {
+        "sha256": "3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671",
+        "bytes": 483546902,
+        "downloadRevision": "536b0662742c02347bc0e980a01041f333bce120"
+      },
+      "vocabulary.txt": {
+        "sha256": "34ce3fe1c5041027b3f8d42912270993f986dbc4bb34cf27f951e34a1e453913",
+        "bytes": 459861,
+        "downloadRevision": "536b0662742c02347bc0e980a01041f333bce120"
+      },
+      "tokenizer.json": {
+        "sha256": "fb7b63191e9bb045082c79fd742a3106a12c99513ab30df4a0d47fa6cb6fd0ab",
+        "bytes": 2203239,
+        "downloadRevision": "536b0662742c02347bc0e980a01041f333bce120"
+      }
+    }
+  },
+  "asrCpuThreads": 2,
+  "asrOptions": {
+    "language": "zh",
+    "beam_size": 5,
+    "condition_on_previous_text": false,
+    "vad_filter": false,
+    "no_speech_threshold": null
+  },
+  "runtime": {
+    "torch": "2.8.0+cpu",
+    "qwen-tts": "0.1.1",
+    "transformers": "4.57.3",
+    "faster-whisper": "1.2.1",
+    "soundfile": "0.14.0",
+    "numpy": "2.5.4"
+  },
+  "limitations": "ASR is not human listening or a guarantee of persona consistency, pronunciation or tone. Raw transcripts are retained.",
+  "uncertainCalls": [
+    "sweet/wan-1",
+    "sweet/wan-2",
+    "sweet/wan-3",
+    "sweet/wan-9",
+    "elegant/wan-1",
+    "elegant/wan-2",
+    "elegant/wan-3",
+    "elegant/wan-4",
+    "elegant/wan-5",
+    "elegant/wan-6",
+    "sunny/wan-1",
+    "sunny/wan-2",
+    "sunny/wan-3",
+    "sunny/wan-4",
+    "sunny/wan-6",
+    "sunny/wan-7",
+    "sunny/wan-8",
+    "landlord/wan-1",
+    "landlord/wan-2",
+    "landlord/wan-5",
+    "landlord/wan-6",
+    "honest/wan-2",
+    "honest/wan-3",
+    "honest/wan-5",
+    "honest/wan-6",
+    "honest/wan-7",
+    "wealthy/wan-1",
+    "wealthy/wan-2",
+    "wealthy/wan-4",
+    "wealthy/wan-6",
+    "wealthy/wan-7",
+    "wealthy/wan-8",
+    "wealthy/wan-9",
+    "star/wan-1",
+    "star/wan-5",
+    "star/wan-9"
+  ]
+}

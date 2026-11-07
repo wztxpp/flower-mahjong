@@ -7018,3 +7018,26 @@ button svg {
 .start-options .ready-points-error {
   color: #9a3026;
 }
+
+/* 成都准备界面复用原表单布局，只补模式说明与安全提示；不覆盖牌桌后置样式。
+   Chengdu preparation reuses form layout, adding only mode/help styles without overriding tabletop rules. */
+.mode-choice { margin-bottom: 20px; }
+.mode-choice .field-label { margin-top: 0; }
+.chengdu-settings-fields { border-color: #97b9ab; }
+.chengdu-pending-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #cbb58b;
+  border-radius: 10px;
+  background: #fff7e6;
+  color: #614b23;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.chengdu-room-recap .chengdu-pending-note { width: 100%; margin-top: 4px; }
+.chengdu-settings-fields select:focus-visible,
+.mode-choice select:focus-visible { outline: 3px solid #426957; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .chengdu-settings-fields .table-settings-grid { grid-template-columns: minmax(0, 1fr); }
+  .chengdu-pending-note { padding: 10px 12px; }
+}

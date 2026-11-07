@@ -6,8 +6,8 @@
 - `shared/v2-game.js`：保存局 schemaVersion=2 的兼容引擎。 / Compatibility engine for saved schema version 2.
 - `shared/legacy-game.js`：schemaVersion=1 或缺字段的旧局。 / Legacy engine for version 1 or missing version.
 
-它们有相同导出接口但不同规则，不能仅因为代码相似就合并。`server/api.js` 的 `engineFor` 负责选择，前端不能选择一个有利规则版本来处理同一局。
-They have similar exported interfaces but different contracts. server/api.js selects the engine; the browser cannot choose a more favorable version for one saved game.
+它们有相同导出接口但不同规则，不能仅因为代码相似就合并。`server/game-engines.js` 的 `engineFor` 先按模式、再按版本选择，前端不能选择一个有利规则版本来处理同一局。
+They have similar exported interfaces but different contracts. server/game-engines.js selects the mode and then its engine version; the browser cannot choose a more favorable version for one saved game.
 
 这三个文件是纯 JavaScript 模块：没有 DOM、Vue、网络或数据库。先用测试种子创建局，再给 `applyAction` 一个座位和动作，即可重放。
 These modules have no DOM, Vue, network, or database. Create a seeded game and pass a seat/action to applyAction to replay it.
@@ -109,3 +109,23 @@ After freezing the pattern, settleHuBatch chooses this win's event source. Seven
 
 [可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
 [Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+## 成都模式基础 / Chengdu mode foundation
+
+三个现有版本都属于花麻将，不能把成都理解为花麻将 v4。模式适配器的读取、动作、历史与音画合同见 [模式边界](GAME-MODES.md)。成都只登记27牌目录与已确认选项，尚无可运行引擎；不能复用花麻将的胡后续摸、萝卜、神龙或付款规则。
+All three existing engines belong to Flower; Chengdu is not Flower v4. See the mode boundary for views/actions/history/pacing. Chengdu currently has a 27-identity catalog and confirmed choices only, not a runnable engine; never inherit Flower continuation, radishes, dragons or payers.
+
+## 成都独立准备模块 / Independent Chengdu preparation modules
+
+后续开发先读 [成都引擎准备层](CHENGDU-ENGINE-FOUNDATION.md)，再读 contract 的未决闸门、hand 的纯结构、game 的视图/动作/守恒。先有结构判断不代表已定义牌型番数；先有封顶数学不代表已定义付款。正式 `createGame`/`settleGame` 仍抛错，不能借用花麻将续摸完成局。
+Read [the Chengdu guide](CHENGDU-ENGINE-FOUNDATION.md), then contract gates, pure hand shapes, and game projections/actions/invariants. Shapes do not assign fan, and cap arithmetic does not assign payers. Production creation/settlement still throw; Flower continuation cannot complete this prototype.
+
+## 成都开发回合 / Chengdu development turns
+
+[当前成都指南](CHENGDU-ENGINE.md) 更新已确认番表、清一色组合、过胡锁、一炮多响、庄家和花猪固定赔付。按 scoring → play 的视图/合法动作 → 回应/杠胡 → settlement → 不变量阅读。开发策略不等于用户正式选项，正式注册仍阻断。
+[The current guide](CHENGDU-ENGINE.md) covers confirmed scoring/stacking, passed wins, multi-win batches, dealer and fixed penalties. Read scoring, views/actions, claims/kongs/wins, draw plans and invariants in order. Experimental policies are not public user choices; production registration stays blocked.
+
+## 成都正式版本 / Production Chengdu version
+
+最新正式纯入口改为 `chengdu-engine.js`，保存独立schema 2、rulesVersion和runtimeKind。`chengdu-production-contract.js` 固定座位方向、展示和轮回，旧原型createGame仍阻断。双方共用确定性准备/回合算法，但外部正式入口严格拒绝原型与混合标记。首胡流局已确认同血战三项结算，旧pending不再支持。见[最新合同](CHENGDU-ENGINE.md)。
+The production entry uses separate schema two/rules/runtime identifiers and fixed geometry, visibility and cycle contracts. Legacy draft creation remains blocked. Deterministic mechanics are shared, but production rejects drafts/mixed flags. First-win draws now use the same three settlements; obsolete pending states reject.

@@ -11,10 +11,15 @@ import { performance } from "node:perf_hooks";
 import * as Vue from "vue";
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 import * as Audio from "../../src/character-audio.js";
+// 当前App还依赖共享播放协调器；旧基准缺少此依赖会在编译阶段失败。
+// Current App also imports shared playback; omitting it makes the old harness fail during compilation.
+import * as SharedPlayback from "../../src/shared-playback.js";
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptions from "../../shared/start-options.js";
-import * as PhotoFaces from "../../src/mahjong-photo-faces.js";
+// 基准测试装载实际媒体目录，保持与生产组件相同的依赖图。
+// Load the real media catalog so the benchmark uses the production component's dependency graph.
+import * as TilePresentation from "../../src/mahjong-tile-presentation.js";
 // 基线取自本地 Git 对象；比较前应确认该提交存在，脚本不会联网获取缺失提交。
 // Read the baseline from local Git objects; confirm it exists first. The script does not fetch a missing revision.
 const baseline = process.argv[2] || "1de15e9a43ce373a4b408d3fd6b8cddd2aa9247c";
@@ -94,7 +99,7 @@ const tile = component(
   "MahjongTile.vue",
   readFileSync(new URL("../../src/MahjongTile.vue", import.meta.url), "utf8"),
   {
-    "./mahjong-photo-faces.js": PhotoFaces,
+    "./mahjong-tile-presentation.js": TilePresentation,
   },
 );
 const icon = component(
@@ -105,6 +110,7 @@ const deps = {
   "./MahjongTile.vue": tile,
   "./Icon.vue": icon,
   "./character-audio.js": Audio,
+  "./shared-playback.js": SharedPlayback,
   "../shared/start-options.js": StartOptions,
 };
 // 旧版与当前版共用当前牌组件等依赖；比较的是 App 差异，不是整站历史资产差异。
@@ -129,6 +135,17 @@ const node = (type, text = "") => ({
   parent: null,
   tagName: type.toUpperCase(),
   style: {},
+  // 新建房表单包含原生select；模拟只读选项集合，供Vue的v-model指令挂载而非模拟浏览器布局。
+  // The creation form contains native selects; expose options for Vue v-model mounting, not browser layout.
+  get options() {
+    return this.children.filter((child) => child.type === 'option');
+  },
+  get value() {
+    return this.props.value ?? '';
+  },
+  set value(value) {
+    this.props.value = value;
+  },
   addEventListener() {},
   removeEventListener() {},
   setAttribute() {},

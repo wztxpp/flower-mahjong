@@ -1,5 +1,4 @@
-import { nameEvent } from '../shared/event-names.js';
-import { visibleHistoryEvent } from '../shared/tile-visibility.js';
+import { engineFor, modeForRoom } from './game-engines.js';
 
 // 记录层：把房间生命周期与局内规则隔离，保存可验证的参与身份和公开成绩。
 // History layer: separate room lifecycle from game rules and preserve verifiable participation and public scores.
@@ -30,27 +29,15 @@ export function ensureGameMetadata(room) {
 // 开局拍下参与者身份快照；后续换座或改名不能改变历史归属。
 // Snapshot participant identities at start so later seat replacements cannot change history ownership.
 export function newGameMetadata(room, id, at) {
+  const config = modeForRoom(room).gameConfiguration(room);
   return {
     id,
     startedAt: at,
     finishedAt: null,
-    // 新局保存实际规则参数的独立快照；旧元信息不补配置，避免伪造历史规则。
-    // Snapshot actual new-round configuration independently; never fabricate configuration for old metadata.
-    ...(room.game?.rules?.playerCount !== undefined ? {
-      config: {
-        playerCount: room.game.rules.playerCount,
-        deckCount: room.game.rules.deckCount,
-        dragonStartCount: room.game.rules.dragonStartCount,
-        // 仅记录建房时已固定的新增字段；旧房缺字段不伪造创建快照。
-        // Record newly fixed fields only when saved at room creation; do not invent legacy creation snapshots.
-        ...(Object.hasOwn(room.settings || {}, 'autoDiscardAfterHu') ? {
-          autoDiscardAfterHu: room.game.rules.autoDiscardAfterHu,
-        } : {}),
-        ...(Object.hasOwn(room.settings || {}, 'bigSingleReadyPoints') ? {
-          bigSingleReadyPoints: room.game.rules.bigSingleReadyPoints,
-        } : {}),
-      },
-    } : {}),
+    // 配置由本模式选择公开字段；旧局不回填，显式模式也保留在记录中。
+    // Each mode selects public configuration fields; never backfill old games, and preserve an explicit mode in records.
+    ...(room.game?.gameMode !== undefined ? { gameMode: room.game.gameMode } : {}),
+    ...(config ? { config } : {}),
     participants: room.seats.map((person, seat) => ({
       seat,
       name: person.name,
@@ -59,49 +46,10 @@ export function newGameMetadata(room, id, at) {
     })),
   };
 }
-// Explicit public-event fields avoid copying a future engine's private fields.
-// 公开事件用白名单复制字段，防止未来新增私人字段被自动带出。
-// Copy public events through an allowlist so future private fields cannot leak automatically.
-export function publicEvents(game, viewerSeat = null, participantNames = []) {
-  const allowed = [
-    'revision',
-    'type',
-    'seat',
-    'source',
-    'message',
-    'tile',
-    'fromSeat',
-    'points',
-    'payments',
-    'score',
-    'newRadishes',
-    'radish',
-    'reason',
-    'automatic',
-    'afterKong',
-    'dragons',
-    'kongSource',
-    'kongType',
-    'radishDeferred',
-    'pendingKongRadishes',
-    'hidden',
-  ];
-  return (game.history || []).map((storedEvent) => {
-    // 个人历史也有座位权限；进行中不能从大厅记录绕过牌桌遮牌。
-    // Profile history has seat permissions too; lobby records must not bypass live-table masking.
-    const event = visibleHistoryEvent(game, storedEvent, viewerSeat);
-    const result = {};
-    // 摸牌事件即使含 tile 也不复制；其他允许字段深拷贝，避免共享可变对象。
-    // Never copy a draw tile; deep-clone other allowed values to avoid shared mutable objects.
-    for (const key of allowed)
-      if (event[key] !== undefined && !(event.type === 'draw' && key === 'tile'))
-        result[key] = structuredClone(event[key]);
-    // 重新生成摸牌文案，防止旧引擎的原始 message 暴露摸到的牌。
-    // Rebuild draw messages so original engine text cannot reveal the drawn tile.
-    if (event.type === 'draw')
-      result.message = `${Number.isInteger(event.seat) ? event.seat + 1 : ''}号位${event.source === 'replacement' ? '杠后补牌' : event.source === 'continuation' ? '胡后补摸' : '摸了一张牌'}。`;
-    return nameEvent(result, participantNames);
-  });
+// 历史和现场视图共用同一个模式/版本选择，避免成都记录误套花麻将的白名单或隐私规则。
+// History and live views share mode/version dispatch; Chengdu records must not inherit Flower allowlists or privacy rules.
+export function publicEvents(game, viewerSeat = null, participantNames = [], archived = false) {
+  return engineFor(game, { archived }).publicEvents(game, viewerSeat, participantNames);
 }
 /** Keep all historical scores and public events, without copying private walls/hands forever. */
 // 归档只留下元信息、成绩和公开事件，不永久复制私人手牌或牌墙。
@@ -113,15 +61,16 @@ export function archiveFinishedGame(room) {
     updatedAt: room.updatedAt,
     game: {
       schemaVersion: game.schemaVersion || 1,
+      ...(game.gameMode !== undefined ? { gameMode: game.gameMode } : {}),
       // 使用本局快照而非此刻房间属性，归档不能被之后的对象变更影响。
       // Archive the round snapshot rather than mutable current-room properties.
       ...(room.gameMeta?.config ? { config: structuredClone(room.gameMeta.config) } : {}),
+      ...(game.runtimeKind ? { runtimeKind: game.runtimeKind, rulesVersion: game.rulesVersion } : {}),
       phase: 'finished',
       finishReason: game.finishReason,
       players: game.players.map((player) => ({
         score: player.score,
-        huCount: player.huCount || 0,
-        kongCount: player.kongCount || 0,
+        ...playerSummary(game, player),
       })),
       history: publicEvents(game),
     },
@@ -169,13 +118,14 @@ export function recordsForProfile(room, playerHash) {
             ? 'detached'
             : 'playing',
         score: game.players[seat].score,
-        huCount: game.players[seat].huCount || 0,
+        huCount: playerSummary(game, game.players[seat], entry.archived).huCount,
         startedAt: meta.startedAt,
         startedAtEstimated: Boolean(meta.startedAtEstimated),
         finishedAtEstimated: Boolean(meta.finishedAtEstimated),
         updatedAt: entry.updatedAt,
         finishedAt: finished ? meta.finishedAt || entry.updatedAt : null,
         rulesVersion: game.schemaVersion || 1,
+        ...(game.gameMode !== undefined ? { gameMode: game.gameMode } : {}),
         // 当前与归档记录采用同一局配置；缺配置旧历史仍保持原样。
         // Live and archived records expose the same round configuration; old records remain unconfigured.
         ...(meta.config ? { config: structuredClone(meta.config) } : {}),
@@ -185,7 +135,7 @@ export function recordsForProfile(room, playerHash) {
           name: meta.participants[index]?.name || `${index + 1}号位`,
           score: player.score,
         })),
-        events: publicEvents(game, seat, meta.participants.map((person) => person?.name)),
+        events: publicEvents(game, seat, meta.participants.map((person) => person?.name), entry.archived),
       });
     }
   }
@@ -269,4 +219,11 @@ export function tableScores(room) {
     ...row,
     detached: row.detached ?? true,
   }));
+}
+
+// 公共统计只由所属模式派生；不把花麻将的huCount字段补进成都权威玩家状态。
+// Derive public counts through the mode without adding Flower huCount fields to authoritative Chengdu players.
+export function playerSummary(game, player, archived = false) {
+  const engine = engineFor(game, { archived });
+  return engine.playerSummary ? engine.playerSummary(player) : { huCount: player.huCount || 0, kongCount: player.kongCount || 0 };
 }

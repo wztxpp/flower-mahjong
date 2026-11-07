@@ -1,6 +1,8 @@
+import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptionsModule from "../shared/start-options.js";
+import * as ChengduRoomSettingsModule from "../shared/chengdu-room-settings.js";
 // 邀请复制的浏览器能力降级与用户可见反馈。
 // Invitation copying, browser-capability fallbacks and visible feedback.
 // 阅读说明见 docs/TESTING-READING-GUIDE.md；固定种子与凭证仅为测试，不应移入真实用户数据。
@@ -10,8 +12,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as Vue from "vue";
 import * as CharacterAudioModule from "../src/character-audio.js";
+import * as CharacterPortraitModule from "../src/character-portraits.js";
 import * as SharedPlaybackModule from "../src/shared-playback.js";
-import * as MahjongPhotoModule from "../src/mahjong-photo-faces.js";
+// 测试装载器跟随真实组件的媒体目录依赖，不在复制邀请测试里另造牌面映射。
+// Follow the real component's media dependency rather than duplicating its mapping in invitation tests.
+import * as MahjongPresentationModule from "../src/mahjong-tile-presentation.js";
 import { parse, compileScript, compileTemplate } from "@vue/compiler-sfc";
 
 // Compile the shipped SFCs, as ui.test.js does. A small in-memory Vue renderer
@@ -69,15 +74,24 @@ function compileComponent(filename, dependencies = {}) {
   return component;
 }
 const Tile = compileComponent("MahjongTile.vue", {
-  "./mahjong-photo-faces.js": MahjongPhotoModule,
+  "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
+const ChengduTable = compileComponent("ChengduTable.vue", {
+  "./chengdu-event-text.js": ChengduEventTextModule,
+  "./MahjongTile.vue": Tile,
+  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+});
 const App = compileComponent("App.vue", {
+  "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
+  "./ChengduTable.vue": ChengduTable,
   "./character-audio.js": CharacterAudioModule,
+  "./character-portraits.js": CharacterPortraitModule,
   "./shared-playback.js": SharedPlaybackModule,
   "../shared/start-options.js": StartOptionsModule,
+  "../shared/chengdu-room-settings.js": ChengduRoomSettingsModule,
 });
 // 保存属性描述符而不只是值，恢复时保留可写性和访问器语义。
 // Save property descriptors, not just values, to restore writability and accessor semantics.

@@ -42,8 +42,8 @@ Prefer is/has/can/should for booleans, plural collections, …Index for indexes,
 规则引擎用 `applyAction` 复制旧局，再验证、转换、检查守恒；服务端用房间 revision 原子保存。客户端只提交意图，不能自行改权威积分或决定合法动作。只返回当前座位可见的数据。
 The engine copies state in applyAction, validates and transitions it, then checks invariants. The server saves using room-revision compare-and-swap. The client submits intent; it does not authoritatively score or decide legal actions. Return only the requesting seat's authorized view.
 
-保存的 `schemaVersion` 决定规则引擎；保存的 rules 决定旧局行为。新建默认规则只能影响新局。离席不是删除房间，刷新不是重开，旧座位号不是身份，昵称不是凭证。
-Saved schemaVersion selects the engine, and saved rules govern existing games. New defaults affect new games only. Leaving is not deleting, refreshing is not restarting, a reused seat is not identity, and a nickname is not a credential.
+保存的 `gameMode` 与 `schemaVersion` 共同决定规则引擎；缺模式旧局只兼容花麻将。保存的 rules 决定旧局行为。新建默认规则只能影响新局。离席不是删除房间，刷新不是重开，旧座位号不是身份，昵称不是凭证。
+Saved gameMode and schemaVersion select the engine; only a missing mode means legacy Flower. Saved rules govern existing games. New defaults affect new games only. Leaving is not deleting, refreshing is not restarting, a reused seat is not identity, and a nickname is not a credential.
 
 ## 6. 异步与前端 / Async and frontend
 

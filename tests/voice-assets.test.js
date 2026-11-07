@@ -9,9 +9,9 @@ import { createHash } from "node:crypto";
 import { LEGACY_CHARACTER_IDS } from "../shared/character-assignment.js";
 import { CHARACTERS, clipsForEvent } from "../src/character-audio.js";
 const root = new URL("../public/", import.meta.url);
-// 场景：发布包包含 161 个当前使用且各不相同的生成叫牌音频，以及三个保留的旧版胡牌资源
-// Scenario: release includes 161 active distinct generated calls plus three retained legacy hu assets
-test("release includes 161 active distinct generated calls plus three retained legacy hu assets", () => {
+// 场景：花牌仍使用原161条各不相同的叫牌音频；成麻新增63条不替换这些资源
+// Scenario: flower calls retain 161 distinct generated calls alongside the wan extension
+test("flower calls retain 161 distinct generated calls alongside the wan extension", () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const hashes = new Set();
@@ -47,7 +47,7 @@ test("release includes 161 active distinct generated calls plus three retained l
       readdirSync(new URL(`voices/${character.id}/`, root)).filter(
         (file) => file.endsWith(".mp3"),
       ).length,
-      LEGACY_CHARACTER_IDS.includes(character.id) ? 24 : 23,
+      LEGACY_CHARACTER_IDS.includes(character.id) ? 33 : 32,
     );
     // 逐项覆盖 paths；同一组检查用于每个样本，顺序以代码列出的集合为准。
     // Exercise each entry in paths with the same checks, preserving the listed order.
@@ -98,15 +98,15 @@ test("manifest active calls match runtime paths and retain unused hu provenance 
   );
   // 核对事件消费或播放顺序；未提交、过期与已消费事件不应重复播报。
   // Check event consumption/playback order; uncommitted, expired or consumed events must not replay.
-  assert.equal(manifest.clipCount, 161);
-  assert.equal(manifest.expectedClipCount, 161);
-  assert.equal(manifest.storedClipCount, 164);
+  assert.equal(manifest.clipCount, 224);
+  assert.equal(manifest.expectedClipCount, 224);
+  assert.equal(manifest.storedClipCount, 227);
   assert.equal(manifest.legacyClipCount, 3);
   // 逐项覆盖 CHARACTERS；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in CHARACTERS with the same checks, preserving the listed order.
   for (const character of CHARACTERS) {
     const voice = manifest.voices[character.id];
-    assert.equal(Object.keys(voice.clips).length, 23);
+    assert.equal(Object.keys(voice.clips).length, 32);
     assert.equal(voice.clips.hu, undefined);
     assert.equal(voice.clips.qianggang.text, "抢杠");
     if (LEGACY_CHARACTER_IDS.includes(character.id)) {
@@ -152,4 +152,69 @@ test("portrait manifest matches seven transparent production PNGs", () => {
     assert.equal(bytes[25], 6, `${entry.id}: PNG must retain RGBA color type`);
     assert.ok(entry.fully_transparent_fraction > 0, `${entry.id}: alpha audit must report transparent pixels`);
   }
+});
+
+// 万牌扩展须保持七角色全部164条既有MP3，不仅原三角色72条。
+// Wan extension preserves all164 preexisting MP3 files across seven personas, not just the first72.
+test('wan extension preserves all 164 existing seven-character recordings', () => {
+  const baseline = JSON.parse(readFileSync(new URL('fixtures/pre-wan-voice-hashes.json', import.meta.url), 'utf8'));
+  assert.equal(Object.keys(baseline.hashes).length, 164);
+  for (const [path, expectedHash] of Object.entries(baseline.hashes)) {
+    const bytes = readFileSync(new URL(path.slice(1), root));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), expectedHash, path);
+  }
+});
+
+// 63条新录音必须有对应成品、独立哈希、参考来源及原样ASR；数量增加不能冒充质量审听。
+// All63 calls need actual files, unique hashes, reference provenance and raw ASR; counts do not certify listening.
+test('all seven personas have nine audited original wan calls', () => {
+  const manifest = JSON.parse(readFileSync(new URL('voices/manifest.json', root), 'utf8'));
+  const audit = JSON.parse(readFileSync(new URL('../docs/voice-wan-audit.json', import.meta.url), 'utf8'));
+  const hashes = new Set(Object.values(audit.originalAudioHashes));
+  assert.equal(hashes.size, 164);
+  assert.equal(Object.keys(audit.recordings).length, 63);
+  assert.equal(audit.subjectiveListeningCompleted, false);
+  assert.equal(audit.paidServiceUsed, false);
+  assert.equal(audit.realPersonVoiceSampleUsed, false);
+  assert.equal(audit.originalAudioPreserved, true);
+  assert.equal(manifest.quality.wanExtension.clipCount, 63);
+  for (const character of CHARACTERS) {
+    const voice = manifest.voices[character.id];
+    assert.equal(audit.contextualChecks[character.id].calls.length, 9);
+    assert.equal(audit.contextualChecks[character.id].initialPrompt, null);
+    assert.equal(typeof audit.contextualChecks[character.id].transcript, 'string');
+    for (let rank = 1; rank <= 9; rank += 1) {
+      const call = `wan-${rank}`;
+      const expectedText = `${'一二三四五六七八九'[rank - 1]}万`;
+      const clip = voice.clips[call];
+      const recording = audit.recordings[`${character.id}/${call}`];
+      const bytes = readFileSync(new URL(clip.src.slice(1), root));
+      const hash = createHash('sha256').update(bytes).digest('hex');
+      assert.equal(clip.text, expectedText);
+      assert.equal(clip.src, `/voices/${character.id}/${call}.mp3`);
+      assert.equal(clip.sha256, hash);
+      assert.equal(recording.sha256, hash);
+      assert.equal(recording.text, expectedText);
+      assert.equal(recording.identity.modelInputText, `${expectedText}。`);
+      assert.equal(recording.identity.voice, character.id);
+      assert.equal(recording.identity.call, call);
+      assert.equal(recording.identity.referenceSha256, recording.reference.sha256);
+      assert.equal(recording.identity.modelRevision, '5d83992436eae1d760afd27aff78a71d676296fc');
+      assert.equal(recording.mp3DecodeChecked, true);
+      assert.ok(recording.durationSeconds >= 0.2 && recording.durationSeconds <= 6.5);
+      assert.ok(recording.decodedRms >= 0.001);
+      assert.ok(recording.mp3ClippingFraction <= 0.001);
+      assert.equal(typeof recording.transcript, 'string');
+      assert.equal(hashes.has(hash), false, `${character.id}/${call}: duplicate audio`);
+      hashes.add(hash);
+      if (recording.reference.sourceClips) {
+        for (const source of recording.reference.sourceClips) {
+          assert.equal(source.sha256, voice.clips[source.call].sha256);
+        }
+      } else {
+        assert.equal(recording.reference.sha256, voice.reference.sha256);
+      }
+    }
+  }
+  assert.equal(hashes.size, 227);
 });

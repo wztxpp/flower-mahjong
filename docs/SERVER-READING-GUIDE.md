@@ -84,9 +84,9 @@ If two requests both read revision 8, both may prepare revision 9. `compareAndSw
 
 ## 5. 隐私与版本边界 / Privacy and version boundaries
 
-`engineFor` 按已保存的 `schemaVersion` 选择当前、v2 或旧引擎。只有新局使用当前版本；重连和读取不迁移手牌或积分。未知的新版本明确报错，不猜测规则。
+`server/game-engines.js` 的 `engineFor` 先按已保存的 `gameMode` 选择模式，再按该模式的 `schemaVersion` 选版本；花麻将仍有当前、v2 或旧引擎。只有新局使用当前版本；重连和读取不迁移手牌或积分。未知的新版本明确报错，不猜测规则。
 
-`engineFor` selects current, v2, or legacy engines by saved `schemaVersion`. Only new games use current rules; reads/reconnects never migrate hands or scores. Unknown newer versions fail explicitly rather than guessing.
+`engineFor` in server/game-engines.js selects saved gameMode first, then that mode’s schemaVersion; Flower retains current, v2 and legacy engines. Only new games use current rules; reads/reconnects never migrate hands or scores. Unknown newer versions fail explicitly rather than guessing.
 
 `publicRoom` 先调用引擎的玩家视图过滤，再返回白名单字段。刚换座的人即使坐在同一下标，也不能读取上一人的手牌、暗杠、待胡牌或诊断。`publicEvents` 同样只复制允许的字段，并重新生成摸牌文案，避免从事件文字泄露牌。
 
@@ -186,3 +186,8 @@ New room.settings saves the three table dimensions plus autoDiscardAfterHu (defa
 
 兼容按字段存在判断，不按真假值判断：缺字段旧房保留原开局/下一局选项及默认，部分配置只锁已保存字段；读取、恢复和新局都不回填旧房设置，不给旧局补规则，不改旧记录或schema1/2。新增配置元信息只为建房明确保存的字段写入。验证见 `tests/variable-room-api.test.js`（默认、校验、0值、固定续局、部分旧配置、权限、FileStore恢复）及 `tests/api.test.js` 的旧房开局选项回归。
 Compatibility checks field presence rather than truthiness: absent legacy fields retain original start/next-round options and defaults; partial snapshots lock only present fields. Reads, resumes and new rounds never backfill room settings, retrofit old game rules or alter old records/frozen schemas. New metadata fields are recorded only for explicitly saved creation settings. See the variable-room API suite and legacy start-option API regressions.
+
+## 模式与生命周期分工 / Modes versus lifecycle
+
+[模式边界](GAME-MODES.md) 是后续成都接入入口：API保留鉴权/CAS/角色/座位/观战凭证，模式适配器负责输入、状态转换、公开配置、三类视图和事件。`server/flower-visibility.js` 保存原花麻将投影，不反向依赖历史模块。
+The mode boundary describes Chengdu integration: API keeps auth/CAS/characters/seats/spectator capabilities; adapters own inputs/transitions/configuration/views/events. Flower projections live in server/flower-visibility.js without importing history.

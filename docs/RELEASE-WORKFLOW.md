@@ -14,3 +14,8 @@ Production v0.6.1 was deployed from Sites source `be1ff55b934299474d30cd32fae6d3
 The old `db/migrations/*.sql` files are retained for manual SQL deployments. They are byte-for-byte equivalent to the numbered SQL files in `drizzle/`. They are alternatives, not additional migrations: never apply both sets to the same database. The existing production Site uses Drizzle's applied migration history; do not rerun old migrations or recreate tables.
 
 Hosted builds use `npm run build`, which emits `dist/client` and the Worker bundle under `dist/server`. The default `npm start` is the Wrangler local-worker runtime. The standalone Node server remains available with `node server/start.js`; it expects an appropriate static build and its own private `.data` directory. Never expose `.data` or copy production records into the public repository.
+
+## 安装可复现性 / Reproducible installation
+
+2026-11-08发布检查发现旧锁文件把`source-map`的版本与下载地址误写为不存在的`0.6.4`，但完整性哈希一直属于`0.6.1`。本次恢复为官方存在且满足`source-map-support`的`^0.6.0`要求的`0.6.1`，保留原哈希；这也与此前通过测试的已安装版本一致。发布前须从修正后的锁文件完整安装并重新执行测试和构建，不能仅依赖已有`node_modules`掩盖锁文件错误。
+The 2026-11-08 release check found a nonexistent source-map 0.6.4 version/download URL in the older lockfile, while its integrity hash already belonged to 0.6.1. The lock now restores the official 0.6.1 release, satisfying source-map-support's ^0.6.0 requirement and retaining the original hash. This matches the previously tested installed version. Install from the corrected lockfile and rerun tests/builds before publication rather than relying on existing node_modules to hide lockfile errors.

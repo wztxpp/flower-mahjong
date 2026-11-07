@@ -146,3 +146,19 @@ python scripts/voices/extend_characters.py --phase audit \
 
 阶段开始/结束核对原72条文件哈希。审计先在工作目录隔离运行，全部92条解码、来源核对、逐条与上下文ASR完成后，才合并原清单；旧三角色元数据保留。新角色不生成旧 `hu`，每角色只有23条当前报牌。成功后预期161条当前报牌，加三条旧胡，共164个MP3。此处是流程说明，不是已生成或已试听证明；实际交付以资源、清单及审计报告为准。
 Every phase checks the original 72 file hashes. Isolated auditing must complete for all 92 new calls before the manifest is merged, preserving old voice metadata. New voices have 23 current calls and no legacy hu. A successful final pack has 161 current calls and three legacy files, totaling 164 MP3s. These instructions describe the workflow, not proof of generation or listening; inspect the actual assets, manifest and reports.
+
+## 七角色一至九万 / Seven-persona wan extension
+
+保留旧七角色164个MP3与原条目元数据，追加63个 `wan-1` 至 `wan-9`。`extend_wan_calls.py` 使用已有参考；找不到时从该角色已发布一条/二条/三条恢复，不设计新声线。执行前先按 `docs/voice-characters-audit.json` 的官方固定下载记录流式校验本地Base/ASR模型文件。
+Preserve all164 old files/metadata and add63 wan calls. Reuse verified original references, or recover from the same persona's shipped bamboo1/2/3. Before work, stream-verify local Base/ASR files against the pinned official download record.
+
+```sh
+python scripts/voices/extend_wan_calls.py --phase generate \
+  --model-root /path/to/models --work-dir /path/to/wan-work \
+  --reference-dir /path/to/original-references --threads 4
+python scripts/voices/extend_wan_calls.py --phase audit \
+  --model-root /path/to/models --work-dir /path/to/wan-work --threads 4
+```
+
+`--partial` 仅用于审计：已完成文件的预审和缓存只写工作目录，不合并清单。`--force` 对生成强制出新候选、对审计强制重新ASR。缓存身份包含模型、依赖、设置和音频哈希。原有清单基线不可删除来掩盖旧资源变化。最终审计写 `docs/voice-wan-audit.json`，保留无提示整序列及每词原始转写；不声称人工试听。
+For audits, --partial reviews available calls and writes only work-directory reports/cache, never a manifest. --force regenerates selected clips or reruns ASR. Cache identity covers model/dependencies/settings/hash. Never remove baseline to hide modified old assets. Final audit retains raw isolated and unprompted sequence transcripts without claiming human listening.

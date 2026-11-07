@@ -44,3 +44,9 @@ The sections below document the earlier design, not the active image source. The
 - 累计萝卜与最近一次增加分别显示。胡牌增量来自 `history.newRadishes`；杠牌增量来自 `history.radish`，不把累计数量误标成这次翻牌。
 - 所有行动来自 `legalActions`，胡牌诊断只读自己返回的 `huDiagnostic`。诊断说明当前状态，不宣称已复原早先无法胡牌的具体牌局。
 - 旧规则牌桌继续显示旧规则、手动摸牌，并提供保留当前牌桌的新标签页入口。新桌才启用第二版规则。
+
+
+## 新增独立万牌图集 / Additional independent wan atlas
+
+18–26通过 `src/mahjong-tile-presentation.js` 选择用户571×109万牌原图，与原条筒图集分别保留；九个3:4裁切等比放入相同60×80视窗。所有使用MahjongTile的展示位置自然支持新牌面，无需复制牌壳、CSS或动画。背面仍优先，读屏名称为1万至9万。只扩展展示，不扩展花麻将合法牌种或开放成都规则。原图字节与裁切详见 [万牌素材](WAN-ASSETS.md)。
+Identities 18–26 select the user's separate 571×109 wan atlas through the shared presentation catalog, preserving the original bamboo/dot atlas. Nine proportional 3:4 crops use the same 60×80 viewport; component consumers need no copied tile shell/CSS/animation. Hidden backs remain first and labels say 1万 through 9万. Presentation does not expand Flower legality or enable Chengdu. See asset provenance and crop details.

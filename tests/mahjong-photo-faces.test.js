@@ -77,10 +77,12 @@ test('the exact user-supplied PNG is bundled locally', () => {
 test('back tiles never render a face and accessible tile names remain', () => {
   const component = readFileSync(new URL('../src/MahjongTile.vue', import.meta.url), 'utf8');
   assert.match(component, /v-if="back"/);
-  assert.match(component, /v-else-if="faceTransform"/);
+  assert.match(component, /v-else-if="face"/);
   assert.match(component, /:aria-label="label"/);
   assert.match(component, /:aria-pressed="interactive \? selected : undefined"/);
-  assert.match(component, /:width="MAHJONG_PHOTO_WIDTH"/);
-  assert.match(component, /:height="MAHJONG_PHOTO_HEIGHT"/);
+  // 尺寸现在取自所选图集记录，逐一原图/万牌数值由真实组件渲染测试核对。
+  // Dimensions now come from the selected atlas record; compiled-component tests verify each actual source size.
+  assert.match(component, /:width="face.width"/);
+  assert.match(component, /:height="face.height"/);
   assert.doesNotMatch(component, /circlePositions|bambooPositions/);
 });

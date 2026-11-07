@@ -4,7 +4,7 @@
 
 1. `src/App.vue` 从服务器视图的 `legalActions` 展示按钮，玩家点击提交动作意图。 / App renders server-supplied legal actions and submits intent.
 2. 本地开发由 Vite 中间件进入 `server/node.js`；托管环境由 `server/worker.js` 进入；两者都调用 `server/api.js`。 / Vite/Node and hosted Worker adapters share the same API.
-3. API 校验凭证、房间修订号和输入，复制房间，从保存的 `schemaVersion` 选择引擎。 / The API verifies credentials, revision, and input, copies the room, and selects the saved engine version.
+3. API 校验凭证、房间修订号和输入，复制房间，由 `server/game-engines.js` 按保存的 `gameMode` 与 `schemaVersion` 选择引擎。 / The API verifies credentials, revision, and input, copies the room, and dispatches by saved mode/version through the registry.
 4. `applyAction` 从合法动作中精确匹配，在局副本变更状态、跑必要的自动步骤、检查守恒。 / The engine matches the allowlist, mutates a game copy, advances automatic steps, and checks invariants.
 5. API 更新需要的元信息/房间版本，用 store 的原子比较保存；已结束局只在下一次 start 时加入 archivedGames。发生并发冲突时不覆盖别人的更新。 / The API updates metadata and persists through CAS without overwriting a concurrent update; archivedGames receives a finished game only at the next start.
 6. `getPlayerView` 隐藏对手私有信息，返回当前座位可见的结果；Vue 接收最新且仍属于当前会话的响应。 / A private projection removes concealed opponent data; Vue accepts only a current-session response.
@@ -133,3 +133,34 @@ New room.settings saves the three table dimensions plus autoDiscardAfterHu (defa
 
 兼容按字段存在判断，不按真假值判断：缺字段旧房保留原开局/下一局选项及默认，部分配置只锁已保存字段；读取、恢复和新局都不回填旧房设置，不给旧局补规则，不改旧记录或schema1/2。新增配置元信息只为建房明确保存的字段写入。验证见 `tests/variable-room-api.test.js`（默认、校验、0值、固定续局、部分旧配置、权限、FileStore恢复）及 `tests/api.test.js` 的旧房开局选项回归。
 Compatibility checks field presence rather than truthiness: absent legacy fields retain original start/next-round options and defaults; partial snapshots lock only present fields. Reads, resumes and new rounds never backfill room settings, retrofit old game rules or alter old records/frozen schemas. New metadata fields are recorded only for explicitly saved creation settings. See the variable-room API suite and legacy start-option API regressions.
+
+## 模式不新增一套房间 / Modes reuse room lifecycles
+
+模式在建房固定，一桌续局沿用。准备换三张/定缺应属于成都局内阶段，不能复制房间/身份/观战服务或借用花麻将自动续进代选。房间、局、版本、牌种与展示能力的明确合同见 [模式边界](GAME-MODES.md)。
+Room mode is fixed at creation across rounds. Chengdu exchange/dingque belongs inside its game, without duplicating identity/room/spectator services or using Flower continuation to choose for players. See the mode boundary for explicit contracts.
+
+## 成都准备层开发边界 / Chengdu preparation development boundary
+
+[成都准备层](CHENGDU-ENGINE-FOUNDATION.md) 只新增局内 `exchange → dingque → rulesPending`，不复制身份、房间、历史、离席或存储服务。JSON/FileStore恢复不增加轮回、不重发牌、不自动代选。正式引擎未注册，HTTP只允许成都准备房间，仍拒绝正式开局；开发状态不得以花麻将的版本/播放续进处理。
+[The Chengdu preparation layer](CHENGDU-ENGINE-FOUNDATION.md) adds game-local exchange/dingque/rule-gate phases without duplicating identities, rooms, history, departure or storage. JSON/FileStore recovery never advances the exchange cycle, redeals or decides for players. HTTP supports preparation rooms only, never starts, and Flower version/presentation behavior must not process these drafts.
+
+
+## 牌种媒体与玩法隔离 / Tile media versus game modes
+
+界面与声音通过 `src/mahjong-tile-presentation.js` 读取统一的27牌种媒体目录；它只依赖共享身份目录和两个原图定位模块。服务端继续在各模式适配器校验合法范围，花麻将只能0–17，成都仅允许准备房间，正式开局/结算仍拒绝。万牌声音只跟随公开已提交的弃牌事件，沿用原游标、队列、静音和取消；换三张与定缺私有选择不播报。
+UI/audio read one 27-identity media catalog depending only on shared identities and atlas-coordinate modules. Server mode adapters retain their own valid ranges: Flower 0–17, with Chengdu preparation rooms only and game start/settlement still rejected. Wan calls follow committed public discards through existing cursors/queues/mute/cancellation; private exchange and dingque choices stay silent.
+
+## 成都开发回合生命周期 / Chengdu development turn lifecycle
+
+独立 `chengdu-play.js` 在最后定缺后原子进入 turn，支持 claim/血战退出/finished，流局规则确认后不再接受旧settlementPending状态。完整回应集合按开启快照重建，结算事件及退款标记保护恢复幂等。仍复用原存储/CAS，无第二套身份、房间或历史服务；生产适配/UI未接。见 [当前成都指南](CHENGDU-ENGINE.md)。
+The independent runtime atomically enters turns after dingque, supports claims/retirement/finish and rejects obsolete settlementPending states now that draw rules are confirmed. Opening snapshots reconstruct claim eligibility; settlement/refund records protect recovery idempotence. Existing store/CAS remains, with no separate identity/room/history service or production UI integration. See [the guide](CHENGDU-ENGINE.md).
+
+## 成都正式开局边界 / Production Chengdu start boundary
+
+正式schema 2从完整安全随机牌墙创建，不升级schema 1原型；最后定缺自动进入turn。房间在成功开局CAS时一并保存nextExchangeOrdinal，只在启用换三张局递增。隐私沿用已确认基线并保存明确快照；公开历史重滤幂等，归档摘要不得当完整状态校验。引擎不持有房间身份或存储权限。
+Production schema two starts from a complete secure shuffle, never promotes schema-one drafts, and enters turns after final dingque. The room CAS saves the next exchange ordinal only on successful enabled starts. Explicit visibility snapshots and idempotent archive filtering preserve privacy; archived summaries are not full runtime state. The engine owns no room identity or storage authority.
+
+## 立绘反馈生命周期 / Portrait-feedback lifecycle
+
+立绘从实际显示的公开事件派生，独立每座约3秒，既不修改权威状态也不增加动作屏障。普通轮询/飞牌结束不清；后台、换局、历史缩短、换桌、明确略过及卸载清除并使旧计时器失效。完整边界见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+Portraits derive from displayed public events and expire independently per seat without authority or action barriers. Lifecycle resets invalidate timers; normal polls/flights do not. See the dedicated guide.

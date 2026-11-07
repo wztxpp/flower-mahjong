@@ -5,6 +5,10 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
+import ChengduTable from './ChengduTable.vue';
+import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
+import { chengduEventText } from './chengdu-event-text.js';
+import { isChengduRoomSettings, CHENGDU_FAN_CAPS } from '../shared/chengdu-room-settings.js';
 import { SharedPlaybackCoordinator } from './shared-playback.js';
 // 开局选项与服务端共用默认值、上限和校验，避免两端接受不同的输入。
 // Share start-option defaults, limits and validation with the server so both sides accept the same inputs.
@@ -35,6 +39,13 @@ const voiceStatus = ref('locked');
 const voiceMuted = ref(false);
 const winningEvents = ref([]);
 const winningFlights = ref([]);
+// 立绘与飞牌独立到期，普通动作不能提前撤下另一个座位的表情。
+// Portraits expire independently from tile flights; ordinary actions cannot clear another seat's reaction.
+const portraitReactionsBySeat = ref({});
+const portraitImageCache = new Map();
+const portraitReactions = new CharacterPortraitReactions({
+  onChange: (reactions) => { portraitReactionsBySeat.value = reactions; },
+});
 let winningTimer;
 let winningSafetyTimer;
 let winningAnimations = [];
@@ -83,6 +94,21 @@ let voiceVisibilityEpoch = 0;
 // Form and UI state are separate from server snapshots; selecting a tile does not discard it.
 // 建房草稿仅在创建请求时提交；加入已有房间不能覆盖本桌的固定参数。
 // Creation drafts are submitted only for a new room; joining cannot overwrite fixed room settings.
+// 成都选择先保持空白，由房主明确选择；切回花麻将时保留两份独立草稿。
+// Keep Chengdu choices blank until selected; switching modes preserves independent drafts.
+const gameModeDraft = ref('flower');
+const chengduEndConditionDraft = ref('');
+const chengduExchangeThreeDraft = ref('');
+const chengduSelfDrawDraft = ref('');
+const chengduFanCapDraft = ref('');
+const chengduSettingsDraft = computed(() => ({
+  playerCount: 4, dingque: true,
+  endCondition: chengduEndConditionDraft.value,
+  exchangeThree: chengduExchangeThreeDraft.value,
+  selfDraw: chengduSelfDrawDraft.value,
+  fanCap: chengduFanCapDraft.value,
+}));
+const validChengduSettings = computed(() => isChengduRoomSettings(chengduSettingsDraft.value));
 const playerCountDraft = ref(DEFAULT_PLAYER_COUNT);
 const deckCountDraft = ref(DEFAULT_DECK_COUNT);
 const dragonStartCountDraft = ref(DEFAULT_DRAGON_START_COUNT);
@@ -97,6 +123,11 @@ const bigSingleReadyPoints = ref(DEFAULT_BIG_SINGLE_READY_POINTS);
 // 数字输入仍可能产生空字符串或非法小数；共用校验器要求范围内的整数，不只依赖 HTML 限制。
 // Numeric inputs can still yield empty strings or invalid fractions; shared validation requires an in-range integer rather than relying only on HTML constraints.
 const validReadyPoints = computed(() => isBigSingleReadyPoints(bigSingleReadyPoints.value));
+// 只校验当前玩法；隐藏的另一模式草稿不阻挡创建，也不被发送。
+// Validate the selected mode only; hidden drafts neither block creation nor enter the request.
+const validCreationSettings = computed(() => gameModeDraft.value === 'chengdu'
+  ? validChengduSettings.value
+  : gameModeDraft.value === 'flower' && validTableSettings.value && validReadyPoints.value);
 const name = ref('');
 const roomCode = ref(roomFromLocation());
 const entryMode = ref(roomCode.value ? (spectatorFromLocation() ? 'spectate' : 'join') : 'create');
@@ -145,14 +176,19 @@ const failedLeaves = new Map();
 // computed caches derived values and recalculates when dependencies change; do not request data or change rules inside it.
 const inRoom = computed(() => !!state.value && !!session.value);
 const game = computed(() => state.value?.game || null);
+// 房间内只认服务端模式，不能被大厅草稿或 schemaVersion 切换；缺模式旧桌仍按花麻将显示。
+// In a room, trust only its saved mode, never lobby drafts/schemaVersion; absent legacy modes remain Flower.
+const isChengduRoom = computed(() => state.value?.gameMode === 'chengdu');
+const isChengduContext = computed(() => inRoom.value ? isChengduRoom.value :
+  entryMode.value === 'create' && gameModeDraft.value === 'chengdu');
 // 观众没有“本人座位”；null 不可退化为 0，否则会误展示房主按钮和第一席私有面板。
 // Spectators have no own seat; null must not become zero and enable host controls or seat-zero private panels.
 const isSpectator = computed(() => state.value?.viewerRole === 'spectator');
 const mySeat = computed(() => isSpectator.value ? null : state.value?.you ?? game.value?.mySeat ?? 0);
 // 旧桌使用开局版本的规则；这些开关只选择兼容展示，不能把旧局静默升级。
 // Existing games retain their starting rules; these flags select compatible display rather than silently upgrading a game.
-const isLegacy = computed(() => !!game.value && (game.value.schemaVersion ?? 1) < 2);
-const isLatest = computed(() => !game.value || game.value.schemaVersion >= 3);
+const isLegacy = computed(() => !isChengduRoom.value && !!game.value && (game.value.schemaVersion ?? 1) < 2);
+const isLatest = computed(() => !isChengduRoom.value && (!game.value || game.value.schemaVersion >= 3));
 const usesSpecialPatterns = computed(
   () => !game.value || game.value.rules?.specialHuPatterns === true,
 );
@@ -164,7 +200,7 @@ const preHuActionChoice = computed(() => !game.value ||
   (isLatest.value && game.value.rules?.preHuActionChoice === true));
 const concealedKongAfterPungDiscard = computed(() => !game.value ||
   (isLatest.value && game.value.rules?.concealedKongAfterPungDiscard === true));
-const isOlderGame = computed(() => !!game.value && !isLatest.value);
+const isOlderGame = computed(() => !isChengduRoom.value && !!game.value && !isLatest.value);
 const postHu = computed(() => !isLegacy.value && (me.value?.huCount || 0) > 0);
 const huDiagnostic = computed(() => (!isLegacy.value ? game.value?.huDiagnostic : null));
 const phase = computed(() => state.value?.phase || 'lobby');
@@ -265,12 +301,14 @@ const isHost = computed(() => !isSpectator.value && mySeat.value === (state.valu
 // Creation snapshots fix these choices for new rooms; check field presence rather than inventing fixed defaults for old rooms.
 const hasFixedAutoDiscard = computed(() => Object.hasOwn(state.value?.settings || {}, 'autoDiscardAfterHu'));
 const hasFixedReadyPoints = computed(() => Object.hasOwn(state.value?.settings || {}, 'bigSingleReadyPoints'));
-const canStart = computed(() => isHost.value && ['lobby', 'finished'].includes(phase.value));
-const canConfigureStart = computed(() => canStart.value &&
+// 成都开局仍须服务端明确登记正式版本；旧准备服务端的 null 版本不能被前端自行开放。
+// Chengdu starts require a registered production version; a legacy preparation server with null version remains gated.
+const canStart = computed(() => (!isChengduRoom.value || state.value?.rulesVersion === 2) && isHost.value && ['lobby', 'finished'].includes(phase.value));
+const canConfigureStart = computed(() => !isChengduRoom.value && canStart.value &&
   (!hasFixedAutoDiscard.value || !hasFixedReadyPoints.value));
 // 已固定的金额不受无关本地草稿影响；只有仍使用旧开局表单的房间需要校验草稿。
 // A fixed amount is independent of stale local drafts; validate drafts only for legacy editable rooms.
-const validStartOptions = computed(() => hasFixedReadyPoints.value || validReadyPoints.value);
+const validStartOptions = computed(() => isChengduRoom.value || hasFixedReadyPoints.value || validReadyPoints.value);
 // ?? 只为缺字段的旧数据补显示默认值，保留有效的 0；不能用 || 把“不收取”误改成 50。
 // ?? supplies a display default only for missing fields and preserves valid zero; || would incorrectly turn disabled payment into 50.
 const gameBigSingleReadyPoints = computed(
@@ -408,6 +446,7 @@ const statusTitle = computed(() => {
     return ['allPlayersHu', 'allThreeHu', 'all_players_hu'].includes(game.value?.finishReason)
       ? '所有玩家都胡了，本局结束'
       : '本局圆满结束';
+  if (isChengduRoom.value) return filledSeats.value === 4 ? '四位已落座，等待房主开局' : '成都牌桌，等待朋友落座';
   if (phase.value === 'lobby') return filledSeats.value === tablePlayerCount.value ? '牌友已到齐' : '等牌友，一起开局';
   if (mustHu.value) return '已经胡过，这张必须胡';
   if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong')
@@ -436,6 +475,7 @@ const statusDetail = computed(() => {
   if (isSpectator.value) return '只读观战，不占座位；仅展示公开牌面和本局动态。';
   if (syncing.value) return '正在确认刚才的操作结果，请稍等。';
   if (offline.value) return '连接暂时中断，正在尝试重新连接';
+  if (isChengduRoom.value) return '四家落座后由房主开始，换三张与定缺都由本人选择。';
   if (presentationWaiting.value && state.value?.presentationMode === 'local')
     return localAnnouncement.value || '本机展示结束即可操作，不等待其他设备的声音。';
   if (presentationWaiting.value)
@@ -489,9 +529,10 @@ const finishText = computed(
 );
 // 为页眉提供简短阶段文字，详细等待原因由上面的状态计算负责。
 // Provide a short phase label; the status computations above explain detailed waiting reasons.
-const statusLabel = computed(() =>
-  phase.value === 'lobby' ? '等待开局' : phase.value === 'finished' ? '本局结束' : '正在牌局中',
-);
+const statusLabel = computed(() => {
+  if (phase.value === 'lobby') return isChengduRoom.value ? '房间准备' : '等待开局';
+  return phase.value === 'finished' ? '本局结束' : '正在牌局中';
+});
 
 // 按钮先解锁浏览器音频，再切换静音；偏好保存失败不阻断牌局。
 // Unlock browser audio or toggle mute; preference storage failure must not stop play.
@@ -533,7 +574,7 @@ function unlockVoice(event) {
 // 优先采用服务端本局角色，再读座位偏好及兼容角色，最后按绝对座位兜底。
 // Prefer the server-assigned game character, then seat preferences and compatibility identity, then absolute-seat fallback.
 function characterForPlayer(seat) {
-  return (
+  const character = (
     CHARACTERS.find(
       (character) =>
         character.id ===
@@ -546,6 +587,9 @@ function characterForPlayer(seat) {
     ) ||
     characterForSeat(seat, tablePlayerCount.value)
   );
+  // 本人、对手大立绘/头像和成都牌桌共享同一绝对座位的短暂表情。
+  // Self, opponent portraits/avatars and Chengdu share one transient reaction per absolute seat.
+  return { ...character, portrait: portraitForCharacter(character, portraitReactionsBySeat.value[seat]) };
 }
 // 同时记录牌种和显示下标；再次点击同一张取消选择，同牌种的两张仍可区分。
 // Track both tile type and display index; clicking the same instance deselects it, even when tile types repeat.
@@ -848,7 +892,13 @@ function clearPresentation() {
 }
 // 从已提交事件构建短暂胡牌反馈；最多展示最近两次，并等待 DOM 更新后测量飞牌坐标。
 // Build transient feedback from committed wins; keep the latest two and measure flight coordinates after the DOM update.
+// 成都组件直接显示权威赢家；花麻将旧飞牌定位与等待不应用到另一模式。
+// Chengdu renders confirmed winners directly; Flower flight targeting/waits never apply across modes.
 function presentWins(events, snapshot) {
+  // 跟随真正显示的事件，而非applyState刚接收的未来队列；不读取隐藏的胡牌牌面。
+  // Follow events actually displayed, not future queued receipts in applyState; never inspect hidden winning tiles.
+  if (!document.hidden) portraitReactions.present(events, snapshot.game?.players?.length || tablePlayerCount.value);
+  if (snapshot.gameMode === 'chengdu') return Promise.resolve();
   const wins = events.filter(
     (event) =>
       event.type === 'hu' && (event.hidden === true ||
@@ -1199,7 +1249,9 @@ function queueLocalPresentation(events, snapshot, receipt = null) {
     const sameWinBatch = previous?.type === 'hu' && event.type === 'hu' &&
       event.source !== 'selfDraw' && previous.source === event.source &&
       previous.tile === event.tile && previous.fromSeat === event.fromSeat && previous.seat !== event.seat &&
-      group.length < 2;
+      // 四人桌允许一炮三响；立绘保留所有赢家，飞牌仍沿用自己的显示上限。
+      // Four-seat triple wins stay in one portrait batch; tile flights retain their separate display limit.
+      group.length < (snapshot.game.players?.length || 3) - 1;
     if (sameWinBatch) group.push(event);
     else groups.push([event]);
   }
@@ -1244,6 +1296,7 @@ async function playLocalPresentationBatch(batch, generation) {
 function skipLocalPlayback() {
   if (!receivedState || receivedState.presentationMode !== 'local') return;
   cancelTurnPresentation();
+  portraitReactions.reset();
   state.value = receivedState;
   // 把当前已知历史作为明确略过的新基线，不在下一次轮询偷偷补回来。
   // Explicitly baseline the currently known history so the next poll cannot replay what the user skipped.
@@ -1303,6 +1356,7 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
   const silent = document.hidden || (next.presentationMode !== 'local' &&
     (offline.value || (lastVoiceSync > 0 && now - lastVoiceSync > 5000)));
   if (newGame || silent) {
+    portraitReactions.reset();
     if (next.presentationMode === 'local' || localPresentationRunning) cancelTurnPresentation();
     if (turnPresentation) turnPresentation.events = [];
     characterAudio.clear();
@@ -1340,7 +1394,12 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
     // Legacy synchronization may cancel this page generation; register afterwards so the new baseline survives.
     registerPlayback();
   }
-  if (newGame) characterAudio.warmWins(next.game?.characters);
+  if (newGame) {
+    characterAudio.warmWins(next.game?.characters);
+    // 浏览器才预热静态反应图；SSR/测试不需要Image，缓存不参与任何牌局状态。
+    // Only browsers warm static reaction art; SSR needs no Image, and the cache holds no game state.
+    if (typeof Image !== 'undefined') warmCharacterPortraits(next.game?.characters, portraitImageCache);
+  }
   if (!discardOptions.value.some((action) => action.tile === selectedTile.value)) {
     selectedTile.value = null;
     selectedHandIndex.value = null;
@@ -1477,6 +1536,7 @@ function historyDate(value) {
 // 切桌的失效屏障：提升 epoch、取消旧读取、清理 UI；保留各桌凭证及待确认离席。
 // Room-change invalidation barrier: advance epoch, abort old reads and reset UI while retaining room credentials and pending departures.
 function resetRoomContext() {
+  portraitReactions.reset();
   cancelTurnPresentation();
   receivedState = null;
   voiceCursor.reset();
@@ -1759,6 +1819,7 @@ async function refresh() {
 // 切到后台或回来都重置语音基线，防止恢复页面时补播旧动作。
 // Reset the audio baseline on visibility changes so returning to the page never replays old actions.
 function visibilityChanged() {
+  portraitReactions.reset();
   if (state.value?.presentationMode === 'local') {
     cancelTurnPresentation();
     if (receivedState) state.value = receivedState;
@@ -1781,6 +1842,7 @@ async function enterRoom() {
   const cleanName = typeof name.value === 'string' ? name.value.trim() : '';
   const code = roomCode.value.trim().toUpperCase();
   const mode = entryMode.value;
+  const selectedGameMode = gameModeDraft.value;
   if (mode !== 'spectate' && !cleanName) {
     error.value = '先给自己取个落座名吧。';
     return;
@@ -1789,30 +1851,48 @@ async function enterRoom() {
     error.value = '请输入正确的 8 位房间号。';
     return;
   }
-  if (mode === 'create' && !validTableSettings.value) {
+  if (mode === 'create' && selectedGameMode === 'chengdu' && !validChengduSettings.value) {
+    error.value = '请选择结束方式、是否换三张、自摸方式和封顶番数。';
+    return;
+  }
+  if (mode === 'create' && !['flower', 'chengdu'].includes(selectedGameMode)) {
+    error.value = '请选择支持的麻将玩法。';
+    return;
+  }
+  if (mode === 'create' && selectedGameMode === 'flower' && !validTableSettings.value) {
     error.value = '请选择3或4人、1至5副（半副递增），神龙起算张数为1至20的整数。';
     return;
   }
-  if (mode === 'create' && !validReadyPoints.value) {
+  if (mode === 'create' && selectedGameMode === 'flower' && !validReadyPoints.value) {
     error.value = `大单吊喜钱须为 0–${MAX_BIG_SINGLE_READY_POINTS} 的整数`;
     return;
   }
   // 先复制建房参数，异步身份准备期间后续输入不会改变已提交意图。
   // Copy settings before asynchronous identity preparation so later edits cannot change the request.
-  const settings = {
+  const settings = selectedGameMode === 'chengdu' ? { ...chengduSettingsDraft.value } : {
     playerCount: playerCountDraft.value,
     deckCount: deckCountDraft.value,
     dragonStartCount: dragonStartCountDraft.value,
     autoDiscardAfterHu: autoDiscardAfterHu.value,
     bigSingleReadyPoints: bigSingleReadyPoints.value,
   };
+  const flowerDraft = {
+    autoDiscardAfterHu: autoDiscardAfterHu.value,
+    bigSingleReadyPoints: bigSingleReadyPoints.value,
+  };
+  // 花麻将保留原来缺模式的请求合同；只有成都显式携带新模式，加入/观战不带建房快照。
+  // Preserve Flower's omitted-mode contract; only Chengdu sends its explicit mode, never on join/spectate.
+  const creationPayload = mode === 'create' ? {
+    settings,
+    ...(selectedGameMode === 'chengdu' ? { gameMode: selectedGameMode } : {}),
+  } : {};
   const previous = session.value;
   const currentEpoch = resetRoomContext();
   // 清理旧会话不能清空正在提交的新桌表单；明确失败后仍展示原选择，避免重试误用默认值。
   // Session cleanup must not erase the submitted creation form; explicit failures retain choices instead of retrying with defaults.
   if (mode === 'create') {
-    autoDiscardAfterHu.value = settings.autoDiscardAfterHu;
-    bigSingleReadyPoints.value = settings.bigSingleReadyPoints;
+    autoDiscardAfterHu.value = flowerDraft.autoDiscardAfterHu;
+    bigSingleReadyPoints.value = flowerDraft.bigSingleReadyPoints;
   }
   busy.value = true;
   let credential = mode === 'create' ? null : savedRooms.get(`${mode === 'spectate' ? 'watch:' : ''}${code}`);
@@ -1833,7 +1913,7 @@ async function enterRoom() {
       body: credential || mode === 'spectate'
         ? {}
         : { name: cleanName, preferredCharacter: preferredCharacter.value || null,
-          ...(mode === 'create' ? { settings } : {}) },
+          ...creationPayload },
       token: credential?.token || null,
     });
     const nextSession = credential || { roomId: data.roomId, token: data.token, name: cleanName, viewerRole: data.state.viewerRole || 'player' };
@@ -1876,7 +1956,7 @@ async function mutate(action, start = false) {
   // 新桌只提交开局意图，由服务端读取固定规则；旧桌只提交尚未固定字段的草稿快照。
   // New rooms submit only start intent and use server snapshots; legacy rooms send drafts only for unfixed fields.
   const startOptions = start
-    ? {
+    ? isChengduRoom.value ? {} : {
         ...(!hasFixedAutoDiscard.value ? { autoDiscardAfterHu: autoDiscardAfterHu.value } : {}),
         ...(!hasFixedReadyPoints.value ? { bigSingleReadyPoints: bigSingleReadyPoints.value } : {}),
       }
@@ -1906,8 +1986,7 @@ async function mutate(action, start = false) {
         token: credential.token,
         body: {
           revision,
-          presentation: true,
-          presentationMode: 'local',
+          ...(!isChengduRoom.value ? { presentation: true, presentationMode: 'local' } : {}),
           ...(start ? { options: startOptions } : { action, ...actionGame }),
         },
       },
@@ -2073,14 +2152,14 @@ onUnmounted(() => {
   >
     <!-- 全局页眉提供声音、换桌和规则入口；按钮事件只调用上面的处理函数。 / The global header exposes audio, room navigation and rules; button events call the handlers above. -->
     <header class="site-header">
-      <div class="brand" aria-label="花间，自贡花麻将">
+      <div class="brand" :aria-label="isChengduContext ? '花间，成都麻将' : '花间，自贡花麻将'">
         <svg class="brand-mark" viewBox="0 0 42 42" aria-hidden="true">
           <path
             d="M21 5c8-1 7 10 7 10s11-1 10 7-10 6-10 6 1 11-7 10-6-10-6-10-11 1-10-7 10-6 10-6-1-11 6-10Z"
           />
           <circle cx="21.5" cy="21.5" r="3.5" />
         </svg>
-        <div class="brand-name">花间 <span>自贡花麻将</span></div>
+        <div class="brand-name">花间 <span>{{ isChengduContext ? '成都麻将' : '自贡花麻将' }}</span></div>
       </div>
       <div class="header-actions">
         <button
@@ -2132,16 +2211,16 @@ onUnmounted(() => {
     <!-- 没有已验证会话和快照时显示大厅，不以历史缓存决定自动入桌。 / Show the lobby without both a verified session and snapshot; cached history does not auto-enter a room. -->
     <main v-if="!inRoom" class="welcome-layout">
       <section class="welcome-story">
-        <p class="eyebrow"><span></span> 三四人同桌 · 自贡味道</p>
+        <p class="eyebrow"><span></span> {{ isChengduContext ? '四人同桌 · 成都麻将' : '三四人同桌 · 自贡味道' }}</p>
         <h1>花开一桌，<br />好牌<span class="gold-text">慢慢来。</span></h1>
         <p class="welcome-description"
-          >只有条筒，也有花样。<br />叫上牌友，把熟悉的热闹搬到线上。</p
+          >{{ isChengduContext ? '万条筒齐，先把牌桌备好。' : '只有条筒，也有花样。' }}<br />叫上牌友，把熟悉的热闹搬到线上。</p
         >
-        <div class="hero-illustration" aria-label="三张条筒麻将牌的装饰插图" role="img">
+        <div class="hero-illustration" :aria-label="isChengduContext ? '万、条、筒麻将牌的装饰插图' : '三张条筒麻将牌的装饰插图'" role="img">
           <div class="illustration-ring ring-one"></div
           ><div class="illustration-ring ring-two"></div>
           <span class="art-flower flower-one">✦</span><span class="art-flower flower-two">✧</span>
-          <div class="hero-tile hero-tile-left"><MahjongTile :tile="11" /></div>
+          <div class="hero-tile hero-tile-left"><MahjongTile :tile="isChengduContext ? 18 : 11" /></div>
           <div class="hero-tile hero-tile-center"><MahjongTile :tile="0" /></div>
           <div class="hero-tile hero-tile-right"><MahjongTile :tile="13" /></div>
           <div class="illustration-caption"><span></span> 条筒之间，自有乐趣 <span></span></div>
@@ -2196,6 +2275,16 @@ onUnmounted(() => {
           <strong>{{ roomCode }}</strong></p
         >
         <form @submit.prevent="enterRoom">
+          <!-- 玩法是建房身份，加入或观战只读目标房间，不允许在这里覆盖已有模式。
+               Mode belongs to room creation; joining/spectating reads the target room without overriding its mode. -->
+          <div v-if="entryMode === 'create'" class="mode-choice">
+            <label class="field-label" for="game-mode">麻将玩法</label>
+            <select id="game-mode" v-model="gameModeDraft" :disabled="busy || restoring" aria-describedby="game-mode-help">
+              <option value="flower">自贡花麻将</option>
+              <option value="chengdu">成都麻将 · 四人牌桌</option>
+            </select>
+            <p id="game-mode-help" class="table-setting-help">{{ gameModeDraft === 'chengdu' ? '固定四人、万条筒108张，选择本桌玩法后邀请朋友。' : '沿用现有花麻将规则，可选三人或四人。' }}</p>
+          </div>
           <p v-if="entryMode === 'spectate'" class="spectator-entry-note">输入朋友分享的房间号即可观战，无需落座名，不占玩家位置。</p>
           <template v-else>
           <label class="field-label" for="player-name"
@@ -2238,11 +2327,51 @@ onUnmounted(() => {
             ></div
           >
           <p class="character-preference-note"
-            >七位角色，支持三人或四人同桌。开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
+            >七位角色，{{ isChengduContext ? '成都固定四人同桌' : '支持三人或四人同桌' }}。开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
           >
+          <!-- 固定四人/定缺无需可切换控件，四个未确认默认值的选择使用必填原生下拉框。
+               Four seats/dingque are fixed; native required selects collect the four choices without assuming defaults. -->
+          <fieldset v-if="entryMode === 'create' && gameModeDraft === 'chengdu'" class="table-settings-fields chengdu-settings-fields"
+            :disabled="busy || restoring" aria-describedby="chengdu-settings-help chengdu-settings-pending">
+            <legend>成都本桌玩法</legend>
+            <p id="chengdu-settings-help" class="table-settings-intro">固定四人 · 万、条、筒共108张 · 必须定缺。创建后同桌沿用。</p>
+            <div class="table-settings-grid">
+              <div class="table-setting-field">
+                <label for="chengdu-end-condition">结束方式</label>
+                <select id="chengdu-end-condition" v-model="chengduEndConditionDraft" required>
+                  <option disabled value="">请选择结束方式</option>
+                  <option value="firstWin">首胡结束</option><option value="bloodBattle">血战到底</option>
+                </select>
+              </div>
+              <div class="table-setting-field">
+                <label for="chengdu-exchange-three">换三张</label>
+                <select id="chengdu-exchange-three" v-model="chengduExchangeThreeDraft" required>
+                  <option disabled value="">请选择是否换三张</option>
+                  <option :value="true">开启换三张</option><option :value="false">不换三张</option>
+                </select>
+              </div>
+              <div class="table-setting-field">
+                <label for="chengdu-self-draw">自摸方式</label>
+                <select id="chengdu-self-draw" v-model="chengduSelfDrawDraft" required aria-describedby="chengdu-self-draw-help">
+                  <option disabled value="">请选择自摸方式</option>
+                  <option value="addBase">自摸加底</option><option value="addFan">自摸加番</option>
+                </select>
+                <p id="chengdu-self-draw-help" class="table-setting-help">加底：封顶后加1分；加番：先加1番再封顶。</p>
+              </div>
+              <div class="table-setting-field">
+                <label for="chengdu-fan-cap">封顶番数</label>
+                <select id="chengdu-fan-cap" v-model.number="chengduFanCapDraft" required>
+                  <option disabled value="">请选择封顶番数</option>
+                  <option v-for="cap in CHENGDU_FAN_CAPS" :key="cap" :value="cap">{{ cap }}番封顶</option>
+                </select>
+              </div>
+            </div>
+            <p v-if="!validChengduSettings" class="table-setting-help">请完成上面四项选择，再创建准备桌。</p>
+            <p id="chengdu-settings-pending" class="chengdu-pending-note">四人到齐后由房主开始；换牌和定缺由各人亲自选择，只使用虚拟积分。</p>
+          </fieldset>
           <!-- 所有新桌选项在同一面板内配置，创建时一次提交；保留原生表单语义、键盘操作与错误关联。
                Configure every new-room choice together and submit once at creation; preserve native semantics, keyboard controls and linked errors. -->
-          <fieldset v-if="entryMode === 'create'" class="table-settings-fields" :disabled="busy || restoring"
+          <fieldset v-if="entryMode === 'create' && gameModeDraft === 'flower'" class="table-settings-fields" :disabled="busy || restoring"
             aria-describedby="table-settings-help">
             <legend>本桌玩法</legend>
             <p id="table-settings-help" class="table-settings-intro">创建后固定，同桌每一局沿用。</p>
@@ -2315,10 +2444,10 @@ onUnmounted(() => {
           <div v-if="error" class="inline-error" role="alert"
             ><Icon name="info" :size="17" /><span>{{ error }}</span></div
           >
-          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring || (entryMode === 'create' && (!validTableSettings || !validReadyPoints))"
+          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring || (entryMode === 'create' && !validCreationSettings)"
             ><span v-if="busy || restoring" class="spinner"></span
             ><template v-else
-              ><span>{{ entryMode === 'create' ? '创建一张牌桌' : entryMode === 'spectate' ? '进入房间观战' : '加入这张牌桌' }}</span
+              ><span>{{ entryMode === 'create' ? (gameModeDraft === 'chengdu' ? '创建成都牌桌' : '创建一张牌桌') : entryMode === 'spectate' ? '进入房间观战' : '加入这张牌桌' }}</span
               ><Icon name="arrow" :size="20" /></template
             ><span v-if="busy || restoring">{{
               restoring ? '正在回到牌桌…' : entryMode === 'spectate' ? '正在进入观战…' : '正在为你落座…'
@@ -2331,7 +2460,7 @@ onUnmounted(() => {
           ></div
         >
         <div class="card-bottom"
-          ><span>条筒1–5副</span><i>·</i><span>全员胡完收桌</span><i>·</i><span>萝卜加分</span></div
+          ><template v-if="isChengduContext"><span>四人 · 108张</span><i>·</i><span>必须定缺</span><i>·</i><span>仅房间准备</span></template><template v-else><span>条筒1–5副</span><i>·</i><span>全员胡完收桌</span><i>·</i><span>萝卜加分</span></template></div
         >
       </section>
       <!-- 大厅跨桌记录属于匿名个人身份，和当前牌桌总积分是两个不同范围。 / Cross-room lobby history belongs to anonymous identity and is distinct from the current table ledger. -->
@@ -2402,7 +2531,7 @@ onUnmounted(() => {
                 ></div
               ><ol v-if="record.events?.length"
                 ><li v-for="(event, index) in record.events" :key="index"
-                  >{{ event.message || event.type || '积分记录'
+                  >{{ record.gameMode === 'chengdu' ? chengduEventText(event, record.players.map((player) => player.name)) : event.message || event.type || '积分记录'
                   }}<span v-if="typeof event.delta === 'number'">
                     · {{ scoreLabel(event.delta) }} 分</span
                   ></li
@@ -2423,10 +2552,10 @@ onUnmounted(() => {
     <main v-else class="room-layout">
       <div class="room-heading">
         <div class="room-title"
-          ><span class="eyebrow">{{ phase === 'lobby' ? '牌桌准备中' : `${tablePlayerCount}人花麻将` }}</span
+          ><span class="eyebrow">{{ isChengduRoom ? '四人成都麻将' : phase === 'lobby' ? '牌桌准备中' : `${tablePlayerCount}人花麻将` }}</span
           ><h1>{{
             phase === 'lobby'
-              ? '朋友来齐，就开桌。'
+              ? isChengduRoom ? '先坐一桌，玩法准备中。' : '朋友来齐，就开桌。'
               : phase === 'finished'
                 ? '好牌好聚，下桌再续。'
                 : '此刻，正好一桌。'
@@ -2443,6 +2572,18 @@ onUnmounted(() => {
         >
       </div>
       <div v-if="isSpectator" class="spectator-banner" role="status"><strong>观战中</strong><span>不占座 · 不能打牌 · 暗手与进行中的自摸牌面不公开</span></div>
+      <!-- 成都只展示建房快照；不借用花麻将的喜钱、萝卜、神龙或碰杠规则说明。
+           Chengdu displays saved room choices only, never Flower bonus/radish/dragon/kong rules. -->
+      <section v-if="isChengduRoom" class="room-settings-recap chengdu-room-recap" aria-labelledby="chengdu-room-title">
+        <strong id="chengdu-room-title">成都本桌玩法 · 创建时已确定</strong>
+        <span>固定四人 · 万、条、筒共108张 · 必须定缺</span>
+        <span>结束方式：{{ state.settings.endCondition === 'firstWin' ? '首胡结束' : '血战到底' }}</span>
+        <span>换三张：{{ state.settings.exchangeThree ? '开启' : '关闭' }}</span>
+        <span>自摸：{{ state.settings.selfDraw === 'addBase' ? '加底（封顶后加1分）' : '加番（先加1番再封顶）' }}</span>
+        <span>{{ state.settings.fanCap }}番封顶</span>
+        <p id="chengdu-room-pending" class="chengdu-pending-note">{{ state.rulesVersion === 2 ? '四人到齐后由房主开始；本桌选项每局沿用。' : '此服务端尚未开放成都开局，请等待版本更新。' }}</p>
+        <small>角色偏好、邀请和观战共用原房间流程；角色会在正式开局时分配。</small>
+      </section>
       <!-- 兼容提示按本局保存的规则开关出现，更新前端不会改写已开局的规则。 / Compatibility banners follow saved game flags; updating the frontend does not rewrite an active game. -->
       <div v-if="isLatest && game?.rules?.radishCountsWinPile === false" class="legacy-banner"
         ><Icon name="info" :size="15" /><span
@@ -2562,14 +2703,14 @@ onUnmounted(() => {
         }}</strong>
         · 听牌时结算，每人每局一次</p
       >
-      <p v-if="game && !isLegacy" class="game-rule-choice"
+      <p v-if="!isChengduRoom && game && !isLegacy" class="game-rule-choice"
         >{{ phase === 'finished' ? '上一局' : '本局' }}胡后自动打出：<strong>{{
           gameAutoDiscardAfterHu ? '已开启' : '已关闭，需点“过”继续'
         }}</strong>
         · 开局时确定</p
       >
 
-      <p class="game-rule-choice turn-direction-note"
+      <p v-if="!isChengduRoom" class="game-rule-choice turn-direction-note"
         >行牌方向：<strong>{{
           counterclockwise
             ? (tablePlayerCount === 4 ? '逆时针 · 自己 → 右手边 → 对家 → 左手边' : '逆时针 · 自己 → 右手边 → 左手边')
@@ -2578,7 +2719,7 @@ onUnmounted(() => {
         · 同级碰、杠、胡按此顺序，不按点击先后</p
       >
 
-      <p class="game-rule-choice pung-upgrade-note"
+      <p v-if="!isChengduRoom" class="game-rule-choice pung-upgrade-note"
         ><strong>{{
           pungUpgradeAfterDiscard
             ? '碰后先打出一张，之后轮到自己时可以补杠。'
@@ -2587,12 +2728,13 @@ onUnmounted(() => {
         已成立的杠仍可逐张加至本局每种牌的上限（{{ tableCopies }} 张）。</p
       >
 
-      <p class="game-rule-choice table-settings-summary">
+      <p v-if="!isChengduRoom" class="game-rule-choice table-settings-summary">
         本桌固定：<strong>{{ tablePlayerCount }}人 · {{ tableDeckCount }}副 · {{ tableDeckCount * 72 }}张</strong>
         · 神龙 <template v-if="exponentialDragon">{{ tableDragonStartCount }}张起10分，每多一张翻倍</template>
         <template v-else>保留旧局6/7/8张分表</template>
       </p>
-      <div class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
+      <ChengduTable v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" />
+      <div v-else class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
         <section class="table-column" :aria-label="`${tablePlayerCount}人麻将牌桌`">
           <div class="table-surface" :class="{ 'lobby-table': phase === 'lobby' }">
             <div class="table-topline"
@@ -2752,11 +2894,12 @@ onUnmounted(() => {
               <button
                 v-if="isHost"
                 class="button gold start-button"
-                :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
+                :aria-describedby="isChengduRoom ? 'chengdu-room-pending' : undefined"
+                :disabled="!canStart || filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
                 @click="mutate(null, true)"
                 ><span v-if="busy" class="spinner"></span
                 ><Icon v-else name="sparkle" :size="18" />{{
-                  filledSeats < tablePlayerCount ? `等待另外 ${tablePlayerCount - filledSeats} 位牌友` : '人齐了，开始牌局'
+                  isChengduRoom && state.rulesVersion !== 2 ? '成都开局暂未开放' : filledSeats < tablePlayerCount ? `等待另外 ${tablePlayerCount - filledSeats} 位牌友` : '人齐了，开始牌局'
                 }}</button
               >
               <div v-else class="waiting-host"><span class="pulse-dot"></span>等待房主开始</div>
@@ -2891,7 +3034,7 @@ onUnmounted(() => {
                 ><button
                   v-if="isHost"
                   class="button gold"
-                  :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
+                  :disabled="!canStart || filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
                   @click="mutate(null, true)"
                   >同桌再来一局<Icon name="arrow" :size="16" /></button
                 ><span v-else>等待房主再开一局</span
@@ -3271,7 +3414,7 @@ onUnmounted(() => {
               ><li v-if="!history.length" class="history-empty">牌局的第一笔，等你来写。</li></ol
             ></section
           >
-          <section class="sidebar-card rules-card"
+          <section v-if="!isChengduRoom" class="sidebar-card rules-card"
             ><div class="sidebar-title"
               ><Icon name="book" :size="18" /><h2>自贡的花样</h2
               ><span class="version-tag">原型</span></div
@@ -3331,7 +3474,19 @@ onUnmounted(() => {
           ><Icon name="close" :size="21"
         /></button>
         <!-- 规则说明按本局版本分支展示；此处是文字说明，真正计分与合法动作在服务端。 / Rules text follows the current game version; scoring and legal actions are implemented on the server. -->
-        <template v-if="showRules"
+        <template v-if="showRules && isChengduContext">
+          <span class="eyebrow">成都麻将 · 四人牌桌</span>
+          <h2 id="rules-title">本桌成都玩法</h2>
+          <div class="rules-modal-body">
+            <section><h3>固定四人，必须定缺</h3><p>使用万、条、筒各一至九，每种四张，共108张。角色与观战沿用现有房间能力。</p></section>
+            <section><h3>建房时选择</h3><p>首胡结束或血战到底、是否换三张、自摸加底或加番、4/5/6番封顶。选项在建房时保存，加入者不能改写。</p></section>
+            <section><h3>准备与行牌</h3><p>开启换三张的局按顺时针、对家、逆时针循环，从顺时针开始；须选择同一花色三张。四家都定缺后开始逆时针摸打，必须先打缺门牌，不可吃牌。碰后先出一张，再能暗杠或补杠。</p></section>
+            <section><h3>胡牌与结束</h3><p>支持一炮多响。胡过即退出本局；单人胡后由胡家下家摸，一炮多响由炮家摸。首胡模式处理完同一张牌的所有胡牌后结束，血战模式三家胡后结束。无人胡流局也查花猪、查叫、退杠。</p></section>
+            <section><h3>虚拟积分</h3><p>平胡1番，对对胡2番，七对、金钩钓、清一色3番；清一色叠加其他牌型加2番，每根加1番。4/5/6番封顶分别为8/16/32分。自摸加底在封顶后加1分，加番在封顶前加1番。暗杠每家2分、补杠每家1分、直杠向放杠者收2分。暗手不公开。</p></section>
+          </div>
+          <button class="button primary modal-confirm" @click="showRules = false">了解，返回牌桌</button>
+        </template>
+        <template v-else-if="showRules"
           ><span class="eyebrow">先玩一局，再把细节磨好</span
           ><h2 id="rules-title">自贡花麻将 · 玩法说明</h2
           ><div class="rules-provisional"
@@ -3572,7 +3727,7 @@ onUnmounted(() => {
         <template v-else
           ><span class="eyebrow">好朋友，坐一桌</span><h2 id="invite-title">复制牌桌邀请</h2
           ><p class="invite-modal-note"
-            >浏览器未允许自动复制，请选中下方链接并复制，发给两位朋友。</p
+            >浏览器未允许自动复制，请选中下方链接并复制，发给其他 {{ tablePlayerCount - 1 }} 位朋友。</p
           ><label class="field-label" for="invite-link">房间 {{ state.id }}</label
           ><input
             id="invite-link"

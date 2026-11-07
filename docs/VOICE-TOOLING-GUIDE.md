@@ -88,3 +88,8 @@ The eighth maintained Python entry defines four independent adult voices and reu
 
 生成结果与审计未完成之前，不得把四角色制作配置当作已交付音频。人工试听仍是独立且未自动完成的工作。
 Until generation and auditing finish, configuration is not delivered audio. Human listening remains a separate step that automation does not perform.
+
+## 万牌增量入口 / Wan extension entry
+
+第九个入口 `extend_wan_calls.py` 只追加七角色各九条万牌。完整参数/种子/参考/WAV哈希参与缓存核验；任何原164条变化都会停止，所有63条审计完成才写清单。详细来源、数量与自动ASR限制见 [万牌素材说明](WAN-ASSETS.md)。
+The ninth authoring entry adds nine wan calls per persona. Cache validation includes complete settings/seed/reference/WAV hashes. Changed original files stop the process; only all63 audited clips permit manifest writes. See the asset contract and ASR limitations.

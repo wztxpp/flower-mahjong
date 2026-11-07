@@ -64,3 +64,8 @@ See the [integration report](FEATURE-INTEGRATION-VALIDATION.md) for combined cha
 
 角色来源分支当时的最终测试、语音限制和未完成浏览器项见 [七角色验收记录](SEVEN-CHARACTERS-QA.md)。
 See [the verification record](SEVEN-CHARACTERS-QA.md) for the source branch’s historical final tests, voice-review limits and then-uncompleted browser checks.
+
+## 用户三态立绘更新 / Supplied three-state portrait update
+
+以上生成清单保留其历史文件来源。新的基础/胡牌/放炮立绘采用用户原PNG及独立清单，覆盖运行时目录，不改变角色ID或声音；当前素材与完整事件/生命周期契约见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+The generated manifest above remains historical provenance. Supplied PNG sets use a separate catalog/manifest without changing IDs or voices; the new guide records current assets and lifecycle contracts.

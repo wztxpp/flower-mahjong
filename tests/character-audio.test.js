@@ -20,6 +20,50 @@ const state = (history, revision = history.length, id = "game-1") => ({
     characters: ["sunny", "sweet", "elegant"],
   },
 });
+// 七种角色都沿用明确绝对座位映射；万牌1–9必须逐一映射，而不改旧条/筒路径。
+// All seven personas retain absolute-seat assignment; wan 1–9 map individually without changing old paths.
+test("every persona maps all nine wan discards at each four-player seat", () => {
+  for (const character of CHARACTERS) {
+    for (let seat = 0; seat < 4; seat++) {
+      const characters = ["sweet", "elegant", "sunny", "landlord"];
+      characters[seat] = character.id;
+      for (let tile = 0; tile < 27; tile++) {
+        const prefix = ["tiao", "tong", "wan"][Math.floor(tile / 9)];
+        const expected = `/voices/${character.id}/${prefix}-${tile % 9 + 1}.mp3`;
+        assert.equal(clipForEvent({ type: "discard", seat, tile }, characters), expected);
+        assert.deepEqual(clipsForEvent({ type: "discard", seat, tile }, characters), [expected]);
+      }
+    }
+  }
+});
+
+// 新增媒体不播放换牌/定缺的私有选择、隐藏摸牌、非法牌种或非法座位。
+// New media never voices private exchange/dingque choices, concealed draws, invalid tiles or invalid seats.
+test("wan media leaves preparation, hidden tiles and invalid identities silent", () => {
+  const characters = ["sweet", "elegant", "sunny", "star"];
+  for (const type of ["draw", "exchange", "exchangeThree", "dingque", "exchangeSubmitted", "dingqueSubmitted"]) {
+    assert.equal(clipForEvent({ type, seat: 0, tile: 18 }, characters), null);
+  }
+  for (const tile of [null, undefined, "18", -1, 18.5, 27, NaN, Infinity]) {
+    assert.equal(clipForEvent({ type: "discard", seat: 0, tile }, characters), null);
+  }
+  for (const seat of [null, undefined, "0", -1, 0.5, 4]) {
+    assert.equal(clipForEvent({ type: "discard", seat, tile: 18 }, characters), null);
+  }
+});
+
+// 新鲜万牌事件走同一游标，重连不补旧声，重复快照不重播；没有另起队列或新规则。
+// Fresh wan events use the same cursor; reconnect and repeated snapshots remain silent, without a second queue or rule.
+test("wan calls retain the committed-event cursor and reconnect baseline", () => {
+  const cursor = new ActionVoiceCursor();
+  const first = { type: "discard", seat: 0, tile: 18 };
+  const second = { type: "discard", seat: 1, tile: 26 };
+  assert.deepEqual(cursor.consume(state([first])), []);
+  assert.deepEqual(cursor.consume(state([first, second])), ["/voices/sweet/wan-9.mp3"]);
+  assert.deepEqual(cursor.consume(state([first, second])), []);
+  cursor.reset();
+  assert.deepEqual(cursor.consume(state([first, second])), []);
+});
 // 场景：每个角色提供 23 个正确语音片段，仅播报已确认的出牌、碰、胡、杠
 // Scenario: 23 correct clips per character, only confirmed discard/peng/hu/kong
 test("23 correct clips per character, only confirmed discard/peng/hu/kong", () => {
