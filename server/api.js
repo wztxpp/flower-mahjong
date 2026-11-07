@@ -8,7 +8,14 @@ import {
   continuePresentedGame,
   getPlayerView,
 } from '../shared/game.js';
-import { isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS } from '../shared/start-options.js';
+import {
+  isBigSingleReadyPoints, MAX_BIG_SINGLE_READY_POINTS,
+  DEFAULT_PLAYER_COUNT, DEFAULT_DECK_COUNT, DEFAULT_DRAGON_START_COUNT,
+  MIN_DRAGON_START_COUNT, MAX_DRAGON_START_COUNT,
+  isPlayerCount, isDeckCount, isDragonStartCount,
+} from '../shared/start-options.js';
+import { nameEvent } from '../shared/event-names.js';
+import { authenticatesSpectator, issueSpectatorToken, spectatorGameView } from './spectators.js';
 import { applyAction as applyV2Action, getPlayerView as getV2View } from '../shared/v2-game.js';
 import {
   applyAction as applyLegacyAction,
@@ -152,6 +159,27 @@ function startRules(options) {
   return { ...options };
 }
 
+// 配置只在建桌时校验和保存；旧桌读取时不补字段，下一局也不能通过 options 改人数。
+// Validate and save configuration only at room creation; never backfill old rooms or resize through start options.
+function roomSettings(input) {
+  if (input !== undefined && (!input || typeof input !== 'object' || Array.isArray(input) ||
+    Object.keys(input).some((key) => !['playerCount', 'deckCount', 'dragonStartCount'].includes(key))))
+    fail(400, 'BAD_ROOM_SETTINGS', '牌桌配置无效，请重新检查');
+  const settings = {
+    playerCount: DEFAULT_PLAYER_COUNT,
+    deckCount: DEFAULT_DECK_COUNT,
+    dragonStartCount: DEFAULT_DRAGON_START_COUNT,
+    ...input,
+  };
+  if (!isPlayerCount(settings.playerCount))
+    fail(400, 'BAD_ROOM_SETTINGS', '人数须为三人或四人');
+  if (!isDeckCount(settings.deckCount))
+    fail(400, 'BAD_ROOM_SETTINGS', '副数须为 1–5，每次增加半副');
+  if (!isDragonStartCount(settings.dragonStartCount))
+    fail(400, 'BAD_ROOM_SETTINGS', `神龙起算须为 ${MIN_DRAGON_START_COUNT}–${MAX_DRAGON_START_COUNT} 的整数`);
+  return settings;
+}
+
 // Request 流只能读一次；WeakMap 缓存同一请求的解析 Promise，且不永久持有请求。
 // A Request stream is single-use; WeakMap caches its parsing promise without retaining it forever.
 const requestBodies = new WeakMap();
@@ -206,25 +234,32 @@ function connected(person, now = Date.now()) {
 }
 // 先调用引擎的按座位隐私过滤，绝不直接返回保存的完整 game。
 // First ask the engine for a seat-filtered view; never return the full stored game.
-function publicRoom(room, seat) {
+function publicRoom(room, seat, viewerRole = 'player') {
+  const isSpectator = viewerRole === 'spectator';
+  // 观战也遵守版本边界；不猜测尚不支持的未来规则存档。
+  // Spectators also respect version boundaries instead of guessing future save formats.
+  const engine = room.game ? engineFor(room.game) : null;
   const game = room.game
     ? {
-        ...engineFor(room.game).view(room.game, seat),
+        ...(isSpectator ? spectatorGameView(room.game) : engine.view(room.game, seat)),
         schemaVersion: room.game.schemaVersion ?? 1,
       }
     : null;
   if (game) game.id = room.gameMeta?.id || `legacy-${room.createdAt}`;
-  if (game) game.characters = gameCharacters(room.gameMeta?.characters);
+  if (game) game.characters = gameCharacters(room.gameMeta?.characters, game.players.length);
   if (game)
     game.participantNames = game.players.map(
       (_, index) =>
-        room.gameMeta?.participants[index]?.name || room.seats[index]?.name || `${index + 1}号位`,
+        (room.gameMeta ? room.gameMeta.participants[index]?.name : room.seats[index]?.name) || `牌友 ${index + 1}`,
     );
+  // 名字只按本局快照替换；不以当前座位占用者覆盖旧局归属。
+  // Resolve names only against this game snapshot, never replacement occupants.
+  if (game) game.history = game.history.map((event) => nameEvent(event, game.participantNames));
   // A newly seated player may see the completed result, not the previous occupant's private hand.
   // 换座后即使座位号相同，也必须隐藏上一位参与者的手牌、暗杠和诊断。
   // A replacement occupant must not see the former participant’s hand, concealed kongs, or diagnostics.
   if (
-    game &&
+    game && !isSpectator &&
     room.gameMeta?.participants[seat]?.tokenHash !== undefined &&
     room.gameMeta.participants[seat].tokenHash !== room.seats[seat]?.tokenHash
   ) {
@@ -261,7 +296,11 @@ function publicRoom(room, seat) {
     revision: room.revision,
     phase: room.game ? (room.game.phase === 'finished' ? 'finished' : 'playing') : 'lobby',
     hostSeat: room.hostSeat,
+    // 只公开已保存的新桌配置；缺字段的旧桌保持缺字段，不伪造规则迁移。
+    // Expose only explicitly saved settings; missing legacy settings remain absent.
+    ...(room.settings ? { settings: { ...room.settings } } : {}),
     you: seat,
+    viewerRole,
     createdAt: room.createdAt,
     rulesVersion: game?.schemaVersion ?? 3,
     seats: room.seats.map((person, index) => {
@@ -294,7 +333,7 @@ function publicRoom(room, seat) {
     // 只公开播放屏障的白名单；不发送引擎内部续行动作或任何凭证。
     // Expose only gate metadata, never private engine continuations or credentials.
     ...(room.gameMeta?.presentationMode === 'local' ? { presentationMode: 'local' } : {}),
-    presentation: room.presentation ? {
+    presentation: !isSpectator && room.presentation ? {
       ...(room.presentation.mode === 'local' ? { mode: 'local' } : {}),
       id: room.presentation.id,
       gameId: room.presentation.gameId,
@@ -306,7 +345,12 @@ function publicRoom(room, seat) {
       remainingMs: Math.max(0, room.presentation.expiresAt - Date.now()),
     } : null,
     tableScores: tableScores(room),
-    lifecycle: room.lifecycleLog || [],
+    // 生命周期也只给公开字段；旧事件缺名字时不借现任玩家猜测历史身份。
+    // Lifecycle events also expose only public fields; missing old names never borrow current occupants.
+    lifecycle: (room.lifecycleLog || []).map((entry) => ({
+      type: entry.type, seat: entry.seat, at: entry.at, hostSeat: entry.hostSeat,
+      ...(entry.name ? { name: entry.name } : {}), message: entry.message,
+    })),
   };
 }
 // 房间操作用 Authorization 中的座位凭证；格式正确不等于已匹配到座位。
@@ -390,13 +434,14 @@ function selectHost(room) {
 }
 // 进出桌日志独立于麻将动作历史，不改变牌墙或计分。
 // Room arrival/departure logs are separate from game actions and do not alter tiles or scores.
-function logLifecycle(room, type, seat, at) {
+function logLifecycle(room, type, seat, at, participantName = room.seats[seat]?.name) {
   (room.lifecycleLog ||= []).push({
     type,
     seat,
     at,
     hostSeat: room.hostSeat,
-    message: type === 'leave' ? `${seat + 1}号位离开牌桌。` : `${seat + 1}号位重新连接牌桌。`,
+    name: participantName,
+    message: `${participantName || `${seat + 1}号位`}${type === 'leave' ? '离开牌桌' : '重新连接牌桌'}。`,
   });
 }
 // 客户端版本必须是安全整数并与读取的房间一致，防止用旧牌面发动作。
@@ -845,6 +890,7 @@ export function createApi(store) {
       // Create the first occupant, a separate seat secret, and no game; return credentials only after insertion.
       if (method === 'POST' && url.pathname === '/api/rooms') {
         const body = await bodyOf(request),
+          settings = roomSettings(body.settings),
           name = playerName(body.name),
           preference = characterPreference(body.preferredCharacter);
         throttle(request);
@@ -867,7 +913,9 @@ export function createApi(store) {
             id: randomCode(),
             revision: 0,
             hostSeat: 0,
-            seats: [person, null, null],
+            settings,
+            seats: Array.from({ length: settings.playerCount }, (_, seat) => seat === 0 ? person : null),
+            spectatorKey: randomToken(),
             game: null,
             createdAt: now,
             updatedAt: now,
@@ -888,13 +936,53 @@ export function createApi(store) {
       // 仅匹配约定的房间号与操作后缀，未知路径不会误落入其他操作。
       // Match only the room-code and operation grammar; unknown routes cannot fall through to another action.
       const match = url.pathname.match(
-        /^\/api\/rooms\/([A-Z2-9]{8})(?:\/(join|action|start|leave|resume|presentation))?$/,
+        /^\/api\/rooms\/([A-Z2-9]{8})(?:\/(join|action|start|leave|resume|presentation|spectate))?$/,
       );
       if (!match) fail(404, 'NOT_FOUND', '没有找到这个接口');
       const [, id, operation] = match;
       let room = await store.get(id);
       if (!room) fail(404, 'ROOM_NOT_FOUND', '没有找到这个房间，请检查房间号');
       const playerHash = await profileHashFor(store, request);
+      // 与落座一样由房间邀请进入，但只发独立观战能力；不占座、不绑成绩、不参与屏障。
+      // Admit through the room invitation like joining, but grant a separate read-only capability without seats, records or gates.
+      if (method === 'POST' && operation === 'spectate') {
+        await bodyOf(request);
+        throttle(request);
+        // 首位观众建立服务端签名秘密；CAS 竞争只在明确未写入后重读，不覆盖玩家动作。
+        // The first viewer creates the server signing secret; retry only proven CAS nonwrites without overwriting player moves.
+        for (let attempt = 0; !room.spectatorKey && attempt < 4; attempt++) {
+          const next = structuredClone(room);
+          next.spectatorKey = randomToken();
+          try {
+            await commit(store, room, next);
+            room = next;
+          } catch (error) {
+            if (!(error instanceof ApiError) || error.isCompareAndSwapConflict !== true) throw error;
+            room = await store.get(id);
+            if (!room) fail(404, 'ROOM_NOT_FOUND', '没有找到这个房间');
+          }
+        }
+        if (!room.spectatorKey) fail(409, 'STALE_STATE', '牌桌正在更新，请重新进入观战');
+        return json({ roomId: id, token: await issueSpectatorToken(room), state: publicRoom(room, null, 'spectator') }, 201);
+      }
+      const bearerToken = request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1] || '';
+      if (bearerToken.startsWith('watch.')) {
+        if (!await authenticatesSpectator(room, bearerToken))
+          fail(401, 'UNAUTHORIZED', '观战凭证失效，请重新进入观战');
+        if (method === 'POST' && operation === 'leave') {
+          await bodyOf(request);
+          return json({ left: true, detached: false, roomId: id });
+        }
+        if (method === 'POST' && operation === 'resume') await bodyOf(request);
+        else if (!(method === 'GET' && !operation))
+          fail(403, 'SPECTATOR_READ_ONLY', '观战模式不能执行玩家操作');
+        // 观战轮询不更新座位心跳/租约，不触发引擎续行，读取始终无副作用。
+        // Spectator polling never changes player presence, leases or engine progression.
+        const since = url.searchParams.get('since');
+        if (method === 'GET' && since !== null && /^\d+$/.test(since) && Number(since) === room.revision)
+          return json({ unchanged: true, revision: room.revision, connections: room.seats.map((person) => connected(person)) });
+        return json({ state: publicRoom(room, null, 'spectator') });
+      }
       // 加入只允许大厅或已结束局；进行中不可换人，抢座用 CAS 决胜。
       // Joining is allowed only before a game or after it finishes; CAS resolves concurrent seat claims.
       if (method === 'POST' && operation === 'join') {
@@ -907,12 +995,12 @@ export function createApi(store) {
           fail(409, 'NAME_TAKEN', '已有同名玩家，请换一个落座名字');
         if (playerHash && room.seats.some((person) => person?.playerHash === playerHash))
           fail(409, 'ALREADY_SEATED', '你已在这桌落座，请使用原来的座位凭证重连');
-        // 未指定座位时找第一个空位；指定座位也必须为 0、1、2 且无人占用。
-        // Choose the first empty seat when omitted; explicit seats must be 0, 1, or 2 and vacant.
+        // 未指定座位时找第一个空位；指定座位必须在本桌建房时固定的座位范围内。
+        // Choose the first vacancy when omitted; explicit seats must stay within this room’s fixed capacity.
         let seat = body.seat;
         if (seat === undefined) seat = room.seats.findIndex((person) => !person);
-        if (!Number.isInteger(seat) || seat < 0 || seat > 2)
-          fail(409, 'ROOM_FULL', '三个位置都坐满了');
+        if (!Number.isInteger(seat) || seat < 0 || seat >= room.seats.length)
+          fail(409, 'ROOM_FULL', '这桌位置都坐满了或座位无效');
         if (room.seats[seat]) fail(409, 'SEAT_TAKEN', '这个座位已有人，请换一个位置');
         const token = randomToken(),
           next = structuredClone(room);
@@ -991,7 +1079,7 @@ export function createApi(store) {
           }
           settlePresentation(next);
           selectHost(next);
-          if (!wasDetached) logLifecycle(next, 'leave', seat, Date.now());
+          if (!wasDetached) logLifecycle(next, 'leave', seat, Date.now(), room.seats[seat].name);
           try {
             await commit(store, room, next);
             return json({
@@ -1076,9 +1164,14 @@ export function createApi(store) {
         revisionMatches(body, room);
         if (seat !== room.hostSeat) fail(403, 'HOST_ONLY', '只有房主可以开始');
         if (room.seats.some((person) => !person || person.detached))
-          fail(409, 'NOT_FULL', '三位玩家都落座后才能开始');
+          fail(409, 'NOT_FULL', '所有玩家都落座后才能开始');
         if (room.game && room.game.phase !== 'finished') fail(409, 'PLAYING', '这一局还没结束');
-        const rules = startRules(body.options);
+        // 桌配置跨局固定；旧桌下一局用默认人数副数和新局规则，但不回填房间配置。
+        // Room settings persist across rounds; old rooms start new default-sized rounds without backfilling room settings.
+        const rules = {
+          ...startRules(body.options),
+          ...(room.settings || {}),
+        };
         const next = structuredClone(room);
         await bindProfile(store, next, seat, playerHash);
         ensureGameMetadata(next);
@@ -1101,6 +1194,8 @@ export function createApi(store) {
         // Assign and save characters once at game start; reconnects reuse the mapping.
         next.gameMeta.characters = assignCharacters(
           next.seats.map((person) => person.preferredCharacter),
+          undefined,
+          next.seats.length,
         );
         await commit(store, room, next);
         return json({

@@ -127,3 +127,22 @@ Carrier rescue first generates review-only phrases, then extracts a manually ver
 - `audit` 并非只读，会写报告及满足条件时的清单；`--partial` 在文件齐全时仍可写清单。 / Audit writes reports and, when complete, manifests; partial mode can still write a complete manifest.
 - 扩展脚本是带固定数量前提的历史迁移，尤其自摸/放炮扩展不可盲目套用到任意更新后的清单。 / Extension scripts are historical migrations with fixed count assumptions, especially the win-call extension; do not blindly apply them to newer manifests.
 - 不使用 `python -O` 跑审计；它会关闭重要 assert。载体、裁剪、上下文报告会覆盖指定目标，不具备逐条复用缓存。 / Do not audit with python -O, which disables important assertions. Carrier generation, extraction and context reports overwrite targets without per-clip reuse caches.
+
+## 四角色增量入口 / Four additional character voices
+
+`extend_characters.py` 为地主 `landlord`、老实人 `honest`、富婆 `wealthy`、女明星 `star` 提供独立成年原创声音方向及种子。它复用已有固定修订的官方 VoiceDesign 与 Base，绝不将旧声音变调或复制成新角色。此入口只接受预先下载的本地模型，不负责安装、下载或发布。
+The extension defines independent original adult directions and seeds, reuses the pinned official models, and never substitutes pitch-shifted or copied legacy voices. It requires prepared local weights and does not install, download or publish anything.
+
+```bash
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 OMP_NUM_THREADS=4
+python scripts/voices/extend_characters.py --phase references \
+  --model-root /workspace/shared/mahjong-models --work-dir /workspace/shared/mahjong-new-voices
+python scripts/voices/extend_characters.py --phase clips \
+  --model-root /workspace/shared/mahjong-models --work-dir /workspace/shared/mahjong-new-voices
+python scripts/voices/extend_characters.py --phase audit \
+  --asr-model /workspace/shared/mahjong-models/faster-whisper-small \
+  --work-dir /workspace/shared/mahjong-new-voices
+```
+
+阶段开始/结束核对原72条文件哈希。审计先在工作目录隔离运行，全部92条解码、来源核对、逐条与上下文ASR完成后，才合并原清单；旧三角色元数据保留。新角色不生成旧 `hu`，每角色只有23条当前报牌。成功后预期161条当前报牌，加三条旧胡，共164个MP3。此处是流程说明，不是已生成或已试听证明；实际交付以资源、清单及审计报告为准。
+Every phase checks the original 72 file hashes. Isolated auditing must complete for all 92 new calls before the manifest is merged, preserving old voice metadata. New voices have 23 current calls and no legacy hu. A successful final pack has 161 current calls and three legacy files, totaling 164 MP3s. These instructions describe the workflow, not proof of generation or listening; inspect the actual assets, manifest and reports.

@@ -1,6 +1,7 @@
 // 新局展示隐私回归：真实引擎动作、HTTP 与历史均验证，不改变权威牌区/计分。
 // New-game presentation privacy: verify real engine actions, HTTP and records without changing authority/scoring.
 import test from 'node:test';
+import { nameEvent } from '../shared/event-names.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createGame, applyPresentedAction, continuePresentedGame, getPlayerView, assertGameInvariants } from '../shared/game.js';
@@ -80,7 +81,7 @@ test('continuation draw is distinct from hidden winning tile; repeated self-draw
     assert.deepEqual(view.players[0].winPile, game.players[0].winPile);
     assert.deepEqual(view.retiredTiles, game.retiredTiles);
     assert.deepEqual(view.history, game.history);
-    assert.deepEqual(recordsForProfile(historyRoom(finished), `profile-${seat}`)[0].events, game.history);
+    assert.deepEqual(recordsForProfile(historyRoom(finished), `profile-${seat}`)[0].events, game.history.map((event) => nameEvent(event, ['玩家0', '玩家1', '玩家2'])));
   }
   assert.deepEqual(archiveFinishedGame(historyRoom(finished)).game.history, game.history);
 });

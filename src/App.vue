@@ -12,6 +12,9 @@ import {
   DEFAULT_BIG_SINGLE_READY_POINTS,
   MAX_BIG_SINGLE_READY_POINTS,
   isBigSingleReadyPoints,
+  DEFAULT_PLAYER_COUNT, DEFAULT_DECK_COUNT, DEFAULT_DRAGON_START_COUNT,
+  MIN_DRAGON_START_COUNT, MAX_DRAGON_START_COUNT,
+  isPlayerCount, isDeckCount, isDragonStartCount,
 } from '../shared/start-options.js';
 import {
   ActionVoiceCursor,
@@ -78,6 +81,14 @@ let voiceNeedsBaseline = false;
 let voiceVisibilityEpoch = 0;
 // 表单与页面状态独立于服务端快照；选择手牌并不等于已经打出。
 // Form and UI state are separate from server snapshots; selecting a tile does not discard it.
+// 建房草稿仅在创建请求时提交；加入已有房间不能覆盖本桌的固定参数。
+// Creation drafts are submitted only for a new room; joining cannot overwrite fixed room settings.
+const playerCountDraft = ref(DEFAULT_PLAYER_COUNT);
+const deckCountDraft = ref(DEFAULT_DECK_COUNT);
+const dragonStartCountDraft = ref(DEFAULT_DRAGON_START_COUNT);
+const deckChoices = Array.from({ length: 9 }, (_, index) => 1 + index * 0.5);
+const validTableSettings = computed(() => isPlayerCount(playerCountDraft.value) &&
+  isDeckCount(deckCountDraft.value) && isDragonStartCount(dragonStartCountDraft.value));
 const preferredCharacter = ref('');
 const autoDiscardAfterHu = ref(true);
 // 下一局喜钱草稿独立于本局规则；默认每家 50，数值 0 明确表示不收取。
@@ -88,7 +99,7 @@ const bigSingleReadyPoints = ref(DEFAULT_BIG_SINGLE_READY_POINTS);
 const validReadyPoints = computed(() => isBigSingleReadyPoints(bigSingleReadyPoints.value));
 const name = ref('');
 const roomCode = ref(roomFromLocation());
-const entryMode = ref(roomCode.value ? 'join' : 'create');
+const entryMode = ref(roomCode.value ? (spectatorFromLocation() ? 'spectate' : 'join') : 'create');
 // session 保存本桌访问凭证；state 保存服务端裁剪后的本人可见快照，不能推测对手手牌。
 // session holds room credentials; state holds the server-filtered snapshot for this viewer, never inferred opponent hands.
 const session = ref(null);
@@ -134,7 +145,10 @@ const failedLeaves = new Map();
 // computed caches derived values and recalculates when dependencies change; do not request data or change rules inside it.
 const inRoom = computed(() => !!state.value && !!session.value);
 const game = computed(() => state.value?.game || null);
-const mySeat = computed(() => state.value?.you ?? game.value?.mySeat ?? 0);
+// 观众没有“本人座位”；null 不可退化为 0，否则会误展示房主按钮和第一席私有面板。
+// Spectators have no own seat; null must not become zero and enable host controls or seat-zero private panels.
+const isSpectator = computed(() => state.value?.viewerRole === 'spectator');
+const mySeat = computed(() => isSpectator.value ? null : state.value?.you ?? game.value?.mySeat ?? 0);
 // 旧桌使用开局版本的规则；这些开关只选择兼容展示，不能把旧局静默升级。
 // Existing games retain their starting rules; these flags select compatible display rather than silently upgrading a game.
 const isLegacy = computed(() => !!game.value && (game.value.schemaVersion ?? 1) < 2);
@@ -142,17 +156,39 @@ const isLatest = computed(() => !game.value || game.value.schemaVersion >= 3);
 const usesSpecialPatterns = computed(
   () => !game.value || game.value.rules?.specialHuPatterns === true,
 );
+// 规则说明只读本局显式快照；缺字段/false 的旧局不能被大厅的新默认文案覆盖。
+// Rule text reads explicit game snapshots; absent/false old flags must not inherit new-lobby wording.
+// 这里只选择说明，不计算合法动作；冻结旧引擎仍使用各自专用说明区。
+// This selects explanatory text, never legal actions; frozen engines retain their separate rule sections.
+const preHuActionChoice = computed(() => !game.value ||
+  (isLatest.value && game.value.rules?.preHuActionChoice === true));
+const concealedKongAfterPungDiscard = computed(() => !game.value ||
+  (isLatest.value && game.value.rules?.concealedKongAfterPungDiscard === true));
 const isOlderGame = computed(() => !!game.value && !isLatest.value);
 const postHu = computed(() => !isLegacy.value && (me.value?.huCount || 0) > 0);
 const huDiagnostic = computed(() => (!isLegacy.value ? game.value?.huDiagnostic : null));
 const phase = computed(() => state.value?.phase || 'lobby');
-// 0、1、2 是服务端绝对座位。合并占座资料与本局玩家时先填默认值，并排除不属于本局的新占座者。
-// 0, 1 and 2 are absolute server seats. Merge seat and game-player data over defaults, excluding new occupants outside this game.
+// 本局规则优先于房间配置；旧桌只在显示时用3人2副，不写回存档。
+// Prefer the active snapshot; display legacy rooms as three players/two decks without mutating them.
+// 部分界面夹具或连接中过渡快照可能只含占用座位，不能把占座数当成配置人数。
+// Partial/connecting views may list only occupants; occupancy is not the configured table size.
+const tablePlayerCount = computed(() => game.value?.rules?.playerCount ??
+  state.value?.settings?.playerCount ??
+  (isPlayerCount(state.value?.seats?.length) ? state.value.seats.length : DEFAULT_PLAYER_COUNT));
+const tableDeckCount = computed(() => game.value?.rules?.deckCount ??
+  state.value?.settings?.deckCount ?? DEFAULT_DECK_COUNT);
+const tableDragonStartCount = computed(() => game.value?.rules?.dragonStartCount ??
+  state.value?.settings?.dragonStartCount ?? DEFAULT_DRAGON_START_COUNT);
+const tableCopies = computed(() => tableDeckCount.value * 4);
+const exponentialDragon = computed(() => !game.value || game.value.rules?.exponentialDragon === true);
+const extendedCopyFan = computed(() => !game.value || game.value.rules?.extendedCopyFan === true);
+// 绝对座位来自本桌人数，与角色池数量无关；新占座者不能继承上一局手牌。
+// Absolute seats follow table size, not character count; replacement occupants cannot inherit old hands.
 const seats = computed(() =>
-  [0, 1, 2].map((seat) => {
+  Array.from({ length: tablePlayerCount.value }, (_, seat) => {
     const occupant = state.value?.seats?.find((player) => player?.seat === seat);
     const participant =
-      occupant && occupant.isCurrentParticipant !== false
+      (isSpectator.value && game.value) || (occupant && occupant.isCurrentParticipant !== false)
         ? game.value?.players?.find((player) => player.seat === seat)
         : null;
     return {
@@ -166,6 +202,13 @@ const seats = computed(() =>
       winPile: [],
       ...(occupant || {}),
       ...(participant || {}),
+      // 观众终局仍看原参赛者的公开牌区，不能让换座者的名字接管上一局。
+      // After finish spectators still see the original participants' public zones, never replacement names.
+      ...(isSpectator.value && game.value ? {
+        name: game.value.participantNames?.[seat] || `牌友 ${seat + 1}`,
+        connected: Boolean(occupant?.isCurrentParticipant !== false && occupant?.connected),
+        detached: !occupant || occupant.isCurrentParticipant === false || occupant.detached,
+      } : {}),
     };
   }),
 );
@@ -179,7 +222,7 @@ const scoreSeats = computed(() =>
       }))
     : seats.value,
 );
-const me = computed(() => seats.value[mySeat.value]);
+const me = computed(() => seats.value[mySeat.value] || { name: '', melds: [], radishes: [], winPile: [], isCurrentParticipant: false });
 const tableScoreRows = computed(() => state.value?.tableScores || []);
 // 新规则要求碰后实际打出一张才解锁补杠，不是永久禁止。旧 v3 的 allowPungUpgrade:false 也显示修正后的先出牌要求；其他旧局仍保留原时机说明。
 // The corrected rule unlocks pung upgrading after an actual discard, not a permanent ban. Old v3 allowPungUpgrade:false games also show this discard-first rule; other older games retain their timing description.
@@ -193,17 +236,31 @@ const pungUpgradeAfterDiscard = computed(
 const counterclockwise = computed(
   () => !game.value || game.value.rules?.turnDirection === 'counterclockwise',
 );
-// 取模把绝对座位转成相对本人的两位对手；仅用于布局，不重新计算轮转规则。
-// Modulo maps absolute seats to this viewer’s two opponents for layout, not turn-rule calculation.
-const opponents = computed(() => [
-  seats.value[(mySeat.value + 1) % 3],
-  seats.value[(mySeat.value + 2) % 3],
-]);
-// 牌河从左到右复用对手面板的左右顺序，并将本人放在中间；不排序或修改服务端座位/弃牌快照。
-// Reuse the opponent panels' left/right order with the viewer in the center; never sort or mutate server seats/discards.
-const riverPlayers = computed(() => [opponents.value[0], me.value, opponents.value[1]]);
-const filledSeats = computed(() => seats.value.filter((seat) => seat.name).length);
-const isHost = computed(() => mySeat.value === (state.value?.hostSeat ?? 0));
+// 玩家显示左、对（仅四人）、右；观众显示全部绝对座位，不虚构本人席位。
+// Players see left/opposite (four seats only)/right; spectators see every absolute seat without an invented own seat.
+const opponents = computed(() => isSpectator.value ? seats.value :
+  Array.from({ length: tablePlayerCount.value - 1 }, (_, index) =>
+    seats.value[(mySeat.value + index + 1) % tablePlayerCount.value],
+  ),
+);
+const riverPlayers = computed(() => {
+  if (isSpectator.value) return seats.value;
+  return tablePlayerCount.value === 4
+    ? [opponents.value[0], opponents.value[1], me.value, opponents.value[2]]
+    : [opponents.value[0], me.value, opponents.value[1]];
+});
+// 公开位置标签仅供玩家布局/读屏；观众没有相对座位，不标记任何对家。
+// Position labels serve player layout/accessibility; spectators have no relative/opposite seat.
+function opponentPosition(seat) {
+  if (isSpectator.value) return '';
+  const offset = (seat - mySeat.value + tablePlayerCount.value) % tablePlayerCount.value;
+  if (tablePlayerCount.value === 4 && offset === 2) return '对家';
+  return offset === 1 ? '左手边' : '右手边';
+}
+// 终局观战面板保留原参赛者，但落座数量只按当前占用者计算。
+// Finished spectator panels retain prior participants, but occupancy counts only current occupants.
+const filledSeats = computed(() => (state.value?.seats || []).filter(Boolean).length);
+const isHost = computed(() => !isSpectator.value && mySeat.value === (state.value?.hostSeat ?? 0));
 const canConfigureStart = computed(
   () => isHost.value && ['lobby', 'finished'].includes(phase.value),
 );
@@ -229,7 +286,7 @@ const presentationWaiting = computed(
   () => localPresentationBusy.value || Boolean(state.value?.presentation),
 );
 const legalActions = computed(() =>
-  presentationWaiting.value ? [] : game.value?.legalActions || [],
+  isSpectator.value || presentationWaiting.value ? [] : game.value?.legalActions || [],
 );
 // 复制后排序，不就地修改权威手牌；将最后一张同种摸牌移至末尾，仅改变显示顺序。
 // Sort a copy rather than mutating authoritative hands; move the last matching drawn tile to the end for display only.
@@ -275,7 +332,7 @@ const currentPlayer = computed(() => seats.value[game.value?.currentSeat]);
 // Group once per server snapshot instead of rescanning the entire river for
 // each seat's count, empty check and tile list on every local UI update.
 const discardsBySeat = computed(() => {
-  const groups = [[], [], []];
+  const groups = seats.value.map(() => []);
   for (const [index, discard] of (game.value?.discards || []).entries()) {
     if (groups[discard.seat])
       groups[discard.seat].push({
@@ -342,9 +399,9 @@ const statusTitle = computed(() => {
       : '等待动画与语音结束';
   if (phase.value === 'finished')
     return ['allPlayersHu', 'allThreeHu', 'all_players_hu'].includes(game.value?.finishReason)
-      ? '三家都胡了，本局结束'
+      ? '所有玩家都胡了，本局结束'
       : '本局圆满结束';
-  if (phase.value === 'lobby') return filledSeats.value === 3 ? '牌友已到齐' : '等牌友，一起开局';
+  if (phase.value === 'lobby') return filledSeats.value === tablePlayerCount.value ? '牌友已到齐' : '等牌友，一起开局';
   if (mustHu.value) return '已经胡过，这张必须胡';
   if (game.value?.phase === 'claim' && game.value?.claim?.kind === 'robKong')
     return legalActions.value.length
@@ -369,6 +426,7 @@ const statusTitle = computed(() => {
 // 先解释同步或断线，再解释规则状态；文字只描述服务端状态，不驱动牌局。
 // Explain synchronization or disconnection before rule state; text describes server state without driving play.
 const statusDetail = computed(() => {
+  if (isSpectator.value) return '只读观战，不占座位；仅展示公开牌面和本局动态。';
   if (syncing.value) return '正在确认刚才的操作结果，请稍等。';
   if (offline.value) return '连接暂时中断，正在尝试重新连接';
   if (presentationWaiting.value && state.value?.presentationMode === 'local')
@@ -394,11 +452,11 @@ const statusDetail = computed(() => {
         : '请选择可用操作；胡牌优先，明杠其次，再到碰。'
       : '所有需要回应的牌友选择后，继续下一轮。';
   if (phase.value === 'lobby')
-    return filledSeats.value === 3
+    return filledSeats.value === tablePlayerCount.value
       ? isHost.value
         ? '你是房主，随时可以开始。'
         : '请等待房主开始牌局。'
-      : `还差 ${3 - filledSeats.value} 位牌友，把邀请链接发给他们吧。`;
+      : `还差 ${tablePlayerCount.value - filledSeats.value} 位牌友，把邀请链接发给他们吧。`;
   if (isMyTurn.value && game.value?.turnStep === 'draw')
     return isLegacy.value ? '本桌沿用旧规则，点击“摸一张”继续。' : '自动发牌，无需点击摸牌。';
   if (isMyTurn.value && postHu.value)
@@ -415,9 +473,9 @@ const statusDetail = computed(() => {
 const finishText = computed(
   () =>
     ({
-      allPlayersHu: '三家均已胡牌，本局结束，积分已结算。',
-      allThreeHu: '三家均已胡牌，本局结束，积分已结算。',
-      all_players_hu: '三家均已胡牌，本局结束，积分已结算。',
+      allPlayersHu: '所有玩家均已胡牌，本局结束，积分已结算。',
+      allThreeHu: '所有玩家均已胡牌，本局结束，积分已结算。',
+      all_players_hu: '所有玩家均已胡牌，本局结束，积分已结算。',
       wallExhausted: '牌墙已空，积分已结算。可以相约再来一桌。',
       wall_exhausted: '牌墙已空，积分已结算。可以相约再来一桌。',
     })[game.value?.finishReason] || '积分已结算，可以相约再来一桌。',
@@ -479,7 +537,7 @@ function characterForPlayer(seat) {
       (character) =>
         character.id === state.value?.seats?.find((player) => player?.seat === seat)?.characterId,
     ) ||
-    characterForSeat(seat)
+    characterForSeat(seat, tablePlayerCount.value)
   );
 }
 // 同时记录牌种和显示下标；再次点击同一张取消选择，同牌种的两张仍可区分。
@@ -528,7 +586,7 @@ function actionLabel(action) {
             meld.type !== 'peng' &&
             meld.tile === action.tile &&
             meld.tiles?.length >= 4 &&
-            meld.tiles.length < 8,
+            meld.tiles.length < tableCopies.value,
         )
       : null;
   return (
@@ -659,6 +717,16 @@ function flash(text) {
 function roomFromLocation() {
   return (new URLSearchParams(window.location.search).get('room') || '').trim().toUpperCase();
 }
+// 地址只标记显示模式，不包含任何凭证；是否能读取仍由服务端独立验签。
+// The URL marks display mode only, never credentials; the server still verifies read access.
+function spectatorFromLocation() {
+  return new URLSearchParams(window.location.search).get('view') === 'spectator';
+}
+// 同一桌的观战与落座凭证分开保存，切换身份不能覆盖仍可重连的玩家凭证。
+// Cache spectator and player credentials separately so viewing cannot overwrite a resumable player seat.
+function sessionKey(value) {
+  return `${value.viewerRole === 'spectator' ? 'watch:' : ''}${value.roomId.toUpperCase()}`;
+}
 // 这里只检查房间号和令牌的格式，真正的座位权限仍由服务端验证。
 // Validate room-code and token shape only; the server still authenticates the seat.
 function validSession(value) {
@@ -667,7 +735,9 @@ function validSession(value) {
     typeof value.roomId === 'string' &&
     /^[A-Z2-9]{8}$/.test(value.roomId.toUpperCase()) &&
     typeof value.token === 'string' &&
-    /^[a-f0-9]{64}$/.test(value.token)
+    (value.viewerRole === 'spectator'
+      ? /^watch\.[a-f0-9]{64}\.[a-f0-9]{64}$/.test(value.token)
+      : /^[a-f0-9]{64}$/.test(value.token))
   );
 }
 // 读取并解析 JSON；隐私模式或损坏数据只产生提示，不让页面崩溃。
@@ -709,7 +779,7 @@ function loadSavedSessions() {
   if (rooms && typeof rooms === 'object' && !Array.isArray(rooms))
     Object.values(rooms).forEach((value) => {
       if (validSession(value))
-        savedRooms.set(value.roomId.toUpperCase(), {
+        savedRooms.set(sessionKey(value), {
           ...value,
           roomId: value.roomId.toUpperCase(),
         });
@@ -717,7 +787,7 @@ function loadSavedSessions() {
   const active = readStorage('sessionStorage', STORAGE_KEY);
   if (validSession(active)) {
     const value = { ...active, roomId: active.roomId.toUpperCase() };
-    savedRooms.set(value.roomId, value);
+    savedRooms.set(sessionKey(value), value);
     return value;
   }
   return null;
@@ -726,15 +796,18 @@ function loadSavedSessions() {
 // Update the reactive active session and persist this tab’s room credential map.
 function saveSession(value) {
   session.value = value;
-  if (value) savedRooms.set(value.roomId.toUpperCase(), value);
+  if (value) savedRooms.set(sessionKey(value), value);
   writeStorage('sessionStorage', ROOMS_KEY, Object.fromEntries(savedRooms));
   writeStorage('sessionStorage', STORAGE_KEY, value);
 }
 // 可选 token 校验防止旧请求删除同一房间的新凭证。
 // The optional token guard prevents an old request from deleting newer credentials for the same room.
 function forgetSession(roomId, token) {
-  if (token && savedRooms.get(roomId)?.token !== token) return;
-  savedRooms.delete(roomId);
+  const key = token ? [...savedRooms.keys()].find((key) =>
+    savedRooms.get(key)?.roomId === roomId && savedRooms.get(key)?.token === token,
+  ) : roomId;
+  if (!key) return;
+  savedRooms.delete(key);
   writeStorage('sessionStorage', ROOMS_KEY, Object.fromEntries(savedRooms));
 }
 // 按服务端确认的胡牌来源选择展示文字。
@@ -1478,7 +1551,7 @@ function persistDepartures() {
 // 同一房间共用一个离席 Promise；先保存意图，失败仍保留可重试记录。
 // Deduplicate departures by room; persist intent first and retain it when confirmation fails.
 function queueLeave(previous) {
-  if (!previous?.roomId) return Promise.resolve();
+  if (!previous?.roomId || previous.viewerRole === 'spectator') return Promise.resolve();
   if (pendingLeaves.has(previous.roomId)) return pendingLeaves.get(previous.roomId);
   failedLeaves.set(previous.roomId, previous);
   persistDepartures();
@@ -1502,6 +1575,7 @@ function updateRoomUrl(roomId, replace = false) {
   url.search = '';
   url.hash = '';
   if (roomId) url.searchParams.set('room', roomId);
+  if (roomId && session.value?.viewerRole === 'spectator') url.searchParams.set('view', 'spectator');
   if (url.toString() !== window.location.href)
     window.history[replace ? 'replaceState' : 'pushState']({}, '', url);
 }
@@ -1512,11 +1586,13 @@ async function routeFromLocation(initialSession = null) {
   const previous = session.value || connectingSession || initialSession;
   const currentEpoch = resetRoomContext();
   roomCode.value = target;
-  entryMode.value = target ? 'join' : 'create';
+  const viewing = spectatorFromLocation();
+  entryMode.value = target ? (viewing ? 'spectate' : 'join') : 'create';
   const departure =
-    previous && previous.roomId !== target ? queueLeave(previous) : Promise.resolve();
+    previous && (previous.roomId !== target || (previous.viewerRole === 'spectator') !== viewing)
+      ? queueLeave(previous) : Promise.resolve();
   const leaving = Promise.all([departure, ...[...failedLeaves.values()].map(queueLeave)]);
-  const credential = target ? savedRooms.get(target) : null;
+  const credential = target ? savedRooms.get(`${viewing ? 'watch:' : ''}${target}`) : null;
   // 无论缓存了哪张桌或哪个身份，主页都只进入大厅。
   // The root is always a lobby, regardless of any stored room or identity.
   if (!target || !credential) {
@@ -1535,9 +1611,9 @@ async function routeFromLocation(initialSession = null) {
   try {
     await leaving;
     await waitForLeaves();
-    await ensureProfile();
+    if (credential.viewerRole !== 'spectator') await ensureProfile();
     if (epoch !== currentEpoch) return;
-    if (savedRooms.get(target)?.token !== credential.token) {
+    if (savedRooms.get(sessionKey(credential))?.token !== credential.token) {
       connectingSession = null;
       loadHistory();
       return;
@@ -1560,7 +1636,7 @@ async function routeFromLocation(initialSession = null) {
   } catch (failure) {
     if (epoch !== currentEpoch) return;
     connectingSession = null;
-    if ([401, 403, 404, 410].includes(failure.status)) forgetSession(target);
+    if ([401, 403, 404, 410].includes(failure.status)) forgetSession(target, credential.token);
     saveSession(null);
     error.value =
       failure.name === 'AbortError'
@@ -1609,7 +1685,8 @@ async function refresh() {
   clearTimeout(pollTimer);
   const started = performance.now();
   const currentEpoch = epoch;
-  const roomId = session.value.roomId;
+  const credential = { ...session.value };
+  const roomId = credential.roomId;
   const voiceEpoch = voiceVisibilityEpoch;
   const controller = new AbortController();
   pollController = controller;
@@ -1648,9 +1725,11 @@ async function refresh() {
     if ([401, 403, 404, 410].includes(failure.status) || failure.code === 'SEAT_DETACHED') {
       const message = [404, 410].includes(failure.status)
         ? '这个房间已过期或不存在。可以重新开桌，或输入新的房间号。'
-        : '此座位的会话已失效，请重新加入房间。';
+        : credential.viewerRole === 'spectator'
+          ? '观战会话已失效，请重新进入观战。'
+          : '此座位的会话已失效，请重新加入房间。';
       resetRoomContext();
-      if (failure.code !== 'SEAT_DETACHED') forgetSession(roomId);
+      if (failure.code !== 'SEAT_DETACHED') forgetSession(roomId, credential.token);
       error.value =
         failure.code === 'SEAT_DETACHED'
           ? '此座位已离桌。可使用这桌的邀请链接明确重连，或返回大厅。'
@@ -1695,38 +1774,47 @@ async function enterRoom() {
   const cleanName = typeof name.value === 'string' ? name.value.trim() : '';
   const code = roomCode.value.trim().toUpperCase();
   const mode = entryMode.value;
-  if (!cleanName) {
+  if (mode !== 'spectate' && !cleanName) {
     error.value = '先给自己取个落座名吧。';
     return;
   }
-  if (mode === 'join' && !/^[A-Z2-9]{8}$/.test(code)) {
+  if (mode !== 'create' && !/^[A-Z2-9]{8}$/.test(code)) {
     error.value = '请输入正确的 8 位房间号。';
     return;
   }
+  if (mode === 'create' && !validTableSettings.value) {
+    error.value = '请选择3或4人、1至5副（半副递增），神龙起算张数为1至20的整数。';
+    return;
+  }
+  // 先复制建房参数，异步身份准备期间后续输入不会改变已提交意图。
+  // Copy settings before asynchronous identity preparation so later edits cannot change the request.
+  const settings = { playerCount: playerCountDraft.value, deckCount: deckCountDraft.value,
+    dragonStartCount: dragonStartCountDraft.value };
   const previous = session.value;
   const currentEpoch = resetRoomContext();
   busy.value = true;
-  let credential = mode === 'join' ? savedRooms.get(code) : null;
+  let credential = mode === 'create' ? null : savedRooms.get(`${mode === 'spectate' ? 'watch:' : ''}${code}`);
   try {
     if (previous) await queueLeave(previous);
     await waitForLeaves();
-    await ensureProfile();
+    if (mode !== 'spectate') await ensureProfile();
     if (currentEpoch !== epoch) return;
-    credential = mode === 'join' ? savedRooms.get(code) : null;
+    credential = mode === 'create' ? null : savedRooms.get(`${mode === 'spectate' ? 'watch:' : ''}${code}`);
     connectingSession = credential;
     const path =
       mode === 'create'
         ? '/api/rooms'
-        : `/api/rooms/${encodeURIComponent(code)}/${credential ? 'resume' : 'join'}`;
+        : `/api/rooms/${encodeURIComponent(code)}/${credential ? 'resume' : mode === 'spectate' ? 'spectate' : 'join'}`;
     const voiceEpoch = voiceVisibilityEpoch;
     const data = await api(path, {
       method: 'POST',
-      body: credential
+      body: credential || mode === 'spectate'
         ? {}
-        : { name: cleanName, preferredCharacter: preferredCharacter.value || null },
+        : { name: cleanName, preferredCharacter: preferredCharacter.value || null,
+          ...(mode === 'create' ? { settings } : {}) },
       token: credential?.token || null,
     });
-    const nextSession = credential || { roomId: data.roomId, token: data.token, name: cleanName };
+    const nextSession = credential || { roomId: data.roomId, token: data.token, name: cleanName, viewerRole: data.state.viewerRole || 'player' };
     if (currentEpoch !== epoch) {
       compensateStaleSession(nextSession);
       return;
@@ -1736,7 +1824,7 @@ async function enterRoom() {
     applyState(data.state, voiceEpoch);
     if (!state.value) throw new Error('牌桌状态未能加载，请刷新当前页面重试。');
     updateRoomUrl(nextSession.roomId);
-    flash(mode === 'create' ? '牌桌已准备好，邀请两位朋友来坐。' : '落座成功，欢迎来到牌桌。');
+    flash(mode === 'spectate' ? '已进入观战，不占玩家座位。' : mode === 'create' ? '牌桌已准备好，邀请朋友来坐。' : '落座成功，欢迎来到牌桌。');
   } catch (failure) {
     if (currentEpoch === epoch) {
       connectingSession = null;
@@ -1754,8 +1842,9 @@ async function enterRoom() {
 // 发送用户选择的合法动作及 revision；冲突或网络不确定时先同步，不猜测成功也不重放操作。
 // Send the chosen action with revision; on conflict or uncertain transport, synchronize instead of assuming success or replaying it.
 async function mutate(action, start = false) {
+  if (isSpectator.value) return;
   if (busy.value || offline.value || syncing.value || presentationWaiting.value || !state.value || !session.value) return;
-  if (start && (!canConfigureStart.value || filledSeats.value < 3)) return;
+  if (start && (!canConfigureStart.value || filledSeats.value < tablePlayerCount.value)) return;
   // 即使调用者绕过禁用按钮，非法金额也在发请求前返回；服务端仍会独立校验。
   // Reject invalid amounts before a request even if a caller bypasses the disabled button; the server validates independently.
   if (start && !validReadyPoints.value) {
@@ -1954,6 +2043,7 @@ onUnmounted(() => {
   <div
     class="app-shell"
     :class="{
+      'is-spectator': isSpectator,
       'in-game': inRoom && phase !== 'lobby',
       'in-room': inRoom,
       'has-room-route': !!roomCode || restoring || busy,
@@ -2020,10 +2110,10 @@ onUnmounted(() => {
     <!-- 没有已验证会话和快照时显示大厅，不以历史缓存决定自动入桌。 / Show the lobby without both a verified session and snapshot; cached history does not auto-enter a room. -->
     <main v-if="!inRoom" class="welcome-layout">
       <section class="welcome-story">
-        <p class="eyebrow"><span></span> 三人一桌 · 自贡味道</p>
+        <p class="eyebrow"><span></span> 三四人同桌 · 自贡味道</p>
         <h1>花开一桌，<br />好牌<span class="gold-text">慢慢来。</span></h1>
         <p class="welcome-description"
-          >只有条筒，也有花样。<br />叫上两位牌友，把熟悉的热闹搬到线上。</p
+          >只有条筒，也有花样。<br />叫上牌友，把熟悉的热闹搬到线上。</p
         >
         <div class="hero-illustration" aria-label="三张条筒麻将牌的装饰插图" role="img">
           <div class="illustration-ring ring-one"></div
@@ -2035,8 +2125,8 @@ onUnmounted(() => {
           <div class="illustration-caption"><span></span> 条筒之间，自有乐趣 <span></span></div>
         </div>
         <div class="welcome-features"
-          ><span><Icon name="users" :size="17" />三人实时同桌</span
-          ><span><Icon name="soundoff" :size="17" />三位角色，声声有别</span
+          ><span><Icon name="users" :size="17" />三人或四人同桌</span
+          ><span><Icon name="soundoff" :size="17" />多位角色，声声有别</span
           ><span><Icon name="shield" :size="17" />仅虚拟积分</span></div
         >
       </section>
@@ -2049,7 +2139,7 @@ onUnmounted(() => {
         <h2 id="entry-title">{{ entryMode === 'create' ? '先坐下来吧' : '朋友在等你' }}</h2>
         <p class="card-description">{{
           entryMode === 'create'
-            ? '新开一桌，邀请两位朋友一起玩。'
+            ? '新开一桌，选好人数和副数，再邀请朋友。'
             : '输入房间号，就能找到熟悉的牌桌。'
         }}</p>
         <div class="entry-tabs" role="tablist" aria-label="进入牌桌方式">
@@ -2075,12 +2165,17 @@ onUnmounted(() => {
             "
             ><Icon name="users" :size="17" />加入牌桌</button
           >
+          <button role="tab" :aria-selected="entryMode === 'spectate'"
+            :class="{ active: entryMode === 'spectate' }" :disabled="busy || restoring"
+            @click="entryMode = 'spectate'; error = ''">进入观战</button>
         </div>
         <p v-if="roomCode && !inRoom" class="invite-destination"
           >{{ restoring ? '正在连接邀请中的牌桌' : '将进入牌桌' }}
           <strong>{{ roomCode }}</strong></p
         >
         <form @submit.prevent="enterRoom">
+          <p v-if="entryMode === 'spectate'" class="spectator-entry-note">输入朋友分享的房间号即可观战，无需落座名，不占玩家位置。</p>
+          <template v-else>
           <label class="field-label" for="player-name"
             >你的落座名 <span>让朋友一眼认出你</span></label
           >
@@ -2121,9 +2216,32 @@ onUnmounted(() => {
             ></div
           >
           <p class="character-preference-note"
-            >开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
+            >七位角色，支持三人或四人同桌。开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
           >
-          <template v-if="entryMode === 'join'">
+          <!-- 人数、副数与神龙门槛只在建房前设置，后续同桌各局沿用。 / Set fixed dimensions before creating; later rounds retain them. -->
+          <fieldset v-if="entryMode === 'create'" class="table-settings-fields" :disabled="busy || restoring">
+            <legend>本桌玩法</legend>
+            <div class="table-settings-grid">
+              <label for="table-player-count">人数
+                <select id="table-player-count" v-model.number="playerCountDraft">
+                  <option :value="3">三人</option><option :value="4">四人</option>
+                </select>
+              </label>
+              <label for="table-deck-count">副数
+                <select id="table-deck-count" v-model.number="deckCountDraft">
+                  <option v-for="count in deckChoices" :key="count" :value="count">{{ count }} 副 · {{ count * 72 }} 张</option>
+                </select>
+              </label>
+              <label for="dragon-start-count">神龙起算张数
+                <input id="dragon-start-count" v-model.number="dragonStartCountDraft" type="number"
+                  :min="MIN_DRAGON_START_COUNT" :max="MAX_DRAGON_START_COUNT" step="1" required />
+              </label>
+            </div>
+            <small>一副为条筒18种各4张，半副各加2张。神龙10分起算，每多一张翻倍。</small>
+            <small v-if="dragonStartCountDraft > deckCountDraft * 4" class="settings-warning">起算张数超过每种牌数量，本局不会触发神龙。</small>
+          </fieldset>
+          </template>
+          <template v-if="entryMode !== 'create'">
             <label class="field-label room-code-label" for="room-code">房间号</label>
             <input
               id="room-code"
@@ -2141,23 +2259,23 @@ onUnmounted(() => {
           <div v-if="error" class="inline-error" role="alert"
             ><Icon name="info" :size="17" /><span>{{ error }}</span></div
           >
-          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring"
+          <button class="button primary entry-submit" type="submit" :disabled="busy || restoring || (entryMode === 'create' && !validTableSettings)"
             ><span v-if="busy || restoring" class="spinner"></span
             ><template v-else
-              ><span>{{ entryMode === 'create' ? '创建一张牌桌' : '加入这张牌桌' }}</span
+              ><span>{{ entryMode === 'create' ? '创建一张牌桌' : entryMode === 'spectate' ? '进入房间观战' : '加入这张牌桌' }}</span
               ><Icon name="arrow" :size="20" /></template
             ><span v-if="busy || restoring">{{
-              restoring ? '正在回到牌桌…' : '正在为你落座…'
+              restoring ? '正在回到牌桌…' : entryMode === 'spectate' ? '正在进入观战…' : '正在为你落座…'
             }}</span></button
           >
         </form>
         <div class="entry-note"
           ><Icon name="info" :size="16" /><p
-            >三人到齐，由房主开始。每位牌友使用自己的浏览器加入，不设机器人。</p
+            >本桌人数到齐，由房主开始。每位牌友使用自己的浏览器加入，不设机器人。</p
           ></div
         >
         <div class="card-bottom"
-          ><span>条筒双副</span><i>·</i><span>三家胡完收桌</span><i>·</i><span>萝卜加分</span></div
+          ><span>条筒1–5副</span><i>·</i><span>全员胡完收桌</span><i>·</i><span>萝卜加分</span></div
         >
       </section>
       <!-- 大厅跨桌记录属于匿名个人身份，和当前牌桌总积分是两个不同范围。 / Cross-room lobby history belongs to anonymous identity and is distinct from the current table ledger. -->
@@ -2249,7 +2367,7 @@ onUnmounted(() => {
     <main v-else class="room-layout">
       <div class="room-heading">
         <div class="room-title"
-          ><span class="eyebrow">{{ phase === 'lobby' ? '牌桌准备中' : '三人花麻将' }}</span
+          ><span class="eyebrow">{{ phase === 'lobby' ? '牌桌准备中' : `${tablePlayerCount}人花麻将` }}</span
           ><h1>{{
             phase === 'lobby'
               ? '朋友来齐，就开桌。'
@@ -2268,6 +2386,7 @@ onUnmounted(() => {
           ></div
         >
       </div>
+      <div v-if="isSpectator" class="spectator-banner" role="status"><strong>观战中</strong><span>不占座 · 不能打牌 · 暗手与进行中的自摸牌面不公开</span></div>
       <!-- 兼容提示按本局保存的规则开关出现，更新前端不会改写已开局的规则。 / Compatibility banners follow saved game flags; updating the frontend does not rewrite an active game. -->
       <div v-if="isLatest && game?.rules?.radishCountsWinPile === false" class="legacy-banner"
         ><Icon name="info" :size="15" /><span
@@ -2358,7 +2477,7 @@ onUnmounted(() => {
             /><span>虚拟积分 / 家</span></div
           >
           <p id="ready-points-help"
-            >听成大单吊的一瞬间，另外两家各付此分数，每人每局仅一次。默认 50，填 0
+            >听成大单吊的一瞬间，其他玩家各付此分数，每人每局仅一次。默认 50，填 0
             则不收取；开局后不可更改，后续胡牌另算。</p
           >
           <p
@@ -2377,7 +2496,7 @@ onUnmounted(() => {
             ? '未启用，不补收'
             : gameBigSingleReadyPoints === 0
               ? '0 分，不收取'
-              : `另外两家各付 ${gameBigSingleReadyPoints} 分`
+              : `另外${tablePlayerCount - 1}家各付 ${gameBigSingleReadyPoints} 分`
         }}</strong>
         · 听牌时结算，每人每局一次</p
       >
@@ -2391,7 +2510,7 @@ onUnmounted(() => {
       <p class="game-rule-choice turn-direction-note"
         >行牌方向：<strong>{{
           counterclockwise
-            ? '逆时针 · 自己 → 右手边 → 左手边'
+            ? (tablePlayerCount === 4 ? '逆时针 · 自己 → 右手边 → 对家 → 左手边' : '逆时针 · 自己 → 右手边 → 左手边')
             : '顺时针 · 本局保留原方向，下一局改为逆时针'
         }}</strong>
         · 同级碰、杠、胡按此顺序，不按点击先后</p
@@ -2403,18 +2522,23 @@ onUnmounted(() => {
             ? '碰后先打出一张，之后轮到自己时可以补杠。'
             : '本局保留原补杠时机；下一局碰后须先打出一张，再允许补杠。'
         }}</strong>
-        已成立的杠仍可逐张加至第五至八张。</p
+        已成立的杠仍可逐张加至本局每种牌的上限（{{ tableCopies }} 张）。</p
       >
 
-      <div class="play-layout">
-        <section class="table-column" aria-label="三人麻将牌桌">
+      <p class="game-rule-choice table-settings-summary">
+        本桌固定：<strong>{{ tablePlayerCount }}人 · {{ tableDeckCount }}副 · {{ tableDeckCount * 72 }}张</strong>
+        · 神龙 <template v-if="exponentialDragon">{{ tableDragonStartCount }}张起10分，每多一张翻倍</template>
+        <template v-else>保留旧局6/7/8张分表</template>
+      </p>
+      <div class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
+        <section class="table-column" :aria-label="`${tablePlayerCount}人麻将牌桌`">
           <div class="table-surface" :class="{ 'lobby-table': phase === 'lobby' }">
             <div class="table-topline"
               ><span
                 ><i :class="{ disconnected: offline }"></i
                 >{{ offline ? '重新连接中' : '实时牌桌' }}</span
               ><span
-                >{{ filledSeats }}/3 位落座 <span class="table-top-divider">·</span>
+                >{{ filledSeats }}/{{ tablePlayerCount }} 位落座 <span class="table-top-divider">·</span>
                 {{ statusLabel }}</span
               ></div
             >
@@ -2424,8 +2548,9 @@ onUnmounted(() => {
                 v-for="player in opponents"
                 :key="player.seat"
                 class="opponent-seat"
-                :class="{ 'seat-current': isTurn(player), 'seat-empty': !player.name }"
+                :class="{ 'seat-current': isTurn(player), 'seat-empty': !player.name, 'opposite-seat': opponentPosition(player.seat) === '对家' }"
               >
+                <span v-if="!isSpectator && tablePlayerCount === 4" class="relative-seat-label">{{ opponentPosition(player.seat) }}</span>
                 <div
                   v-if="player.name"
                   class="character-portrait"
@@ -2565,15 +2690,15 @@ onUnmounted(() => {
               <button
                 v-if="isHost"
                 class="button gold start-button"
-                :disabled="filledSeats < 3 || busy || offline || syncing || !validReadyPoints"
+                :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validReadyPoints"
                 @click="mutate(null, true)"
                 ><span v-if="busy" class="spinner"></span
                 ><Icon v-else name="sparkle" :size="18" />{{
-                  filledSeats < 3 ? `等待另外 ${3 - filledSeats} 位牌友` : '人齐了，开始牌局'
+                  filledSeats < tablePlayerCount ? `等待另外 ${tablePlayerCount - filledSeats} 位牌友` : '人齐了，开始牌局'
                 }}</button
               >
               <div v-else class="waiting-host"><span class="pulse-dot"></span>等待房主开始</div>
-              <button v-if="filledSeats < 3" class="table-link" @click="copyInvite"
+              <button v-if="filledSeats < tablePlayerCount" class="table-link" @click="copyInvite"
                 ><Icon :name="copyDone ? 'check' : 'link'" :size="15" />{{
                   copyDone ? '邀请链接已复制' : '复制链接，邀请朋友'
                 }}</button
@@ -2648,7 +2773,7 @@ onUnmounted(() => {
                     {{ game.pendingKongRadishes || 0 }} 张已成杠累计。</span
                   ></div
                 >
-                <p>三家共用这一池，后续胡牌不再加六张。</p>
+                <p>全桌共用这一池，后续胡牌不再加六张。</p>
               </section>
               <!-- 牌河保留被碰杠或胡过的记录；v-memo 的依赖包含认领与高亮，防止缓存旧外观。 / The river retains claimed records; v-memo dependencies include claims and highlights so cached appearance stays current. -->
               <div class="discard-area"
@@ -2704,7 +2829,7 @@ onUnmounted(() => {
                 ><button
                   v-if="isHost"
                   class="button gold"
-                  :disabled="filledSeats < 3 || busy || offline || syncing || !validReadyPoints"
+                  :disabled="filledSeats < tablePlayerCount || busy || offline || syncing || !validReadyPoints"
                   @click="mutate(null, true)"
                   >同桌再来一局<Icon name="arrow" :size="16" /></button
                 ><span v-else>等待房主再开一局</span
@@ -2714,6 +2839,7 @@ onUnmounted(() => {
             </div>
 
             <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
+            <template v-if="!isSpectator">
             <div class="own-character-label"
               >{{ phase === 'lobby' ? '偏好预览：' : ''
               }}{{
@@ -2748,11 +2874,12 @@ onUnmounted(() => {
                 >{{ scoreLabel(me.score) }}<small>分</small></span
               ></div
             >
+            </template>
           </div>
 
           <!-- 只有本局参与者才显示私有手牌和动作，新落座的下一局玩家不能操作旧局。 / Only current-game participants see the private hand/actions; newly seated next-round players cannot act in the old round. -->
           <section
-            v-if="game && me.isCurrentParticipant !== false"
+            v-if="!isSpectator && game && me.isCurrentParticipant !== false"
             class="hand-panel"
             aria-label="我的手牌与操作"
           >
@@ -2933,7 +3060,7 @@ onUnmounted(() => {
             ><div class="sidebar-title"
               ><span class="sidebar-icon"><Icon name="users" :size="19" /></span
               ><h2>好朋友，坐一桌</h2></div
-            ><p>把链接发给两位朋友，<br />他们输入名字就能落座。</p
+            ><p>把链接发给朋友，<br />他们输入名字就能落座。</p
             ><div class="invite-code"
               ><span>本桌房间号</span><strong>{{ state.id }}</strong></div
             ><button class="button primary" @click="copyInvite"
@@ -3090,14 +3217,14 @@ onUnmounted(() => {
               ><div
                 ><span class="rule-number">01</span
                 ><div
-                  ><strong>条筒双副，三人同桌</strong><p>没有万字，每种条筒各八张。</p></div
+                  ><strong>{{ tablePlayerCount }}人同桌，{{ tableDeckCount }}副条筒</strong><p>没有万字，每种条筒各{{ tableCopies }}张。</p></div
                 ></div
               ><div
                 ><span class="rule-number">02</span
                 ><div
                   ><strong>{{ isLegacy ? '胡不离桌，好牌继续' : '自动摸牌，胡后固定' }}</strong
                   ><p>{{
-                    isLegacy ? '本桌沿用开局时的旧规则。' : '胡后不换手牌，三家都胡即结束。'
+                    isLegacy ? '本桌沿用开局时的旧规则。' : '胡后不换手牌，全员都胡即结束。'
                   }}</p></div
                 ></div
               ><div
@@ -3253,16 +3380,19 @@ onUnmounted(() => {
             <section
               ><h3><span>一</span>自动摸牌，胡后可以连续自摸</h3
               ><p
-                >三人，只用条、筒各 1–9，每种八张，共 144
-                张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至八张，不必等一圈或换尽原听口。已经胡过的玩家能胡就必须胡，只有“胡牌”选项，包括自摸、接炮和抢杠，仍须本人点击确认。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
+                >{{ tablePlayerCount }}人，只用条、筒各 1–9，每种{{ tableCopies }}张，共{{ tableDeckCount * 72 }}张。首局一号位坐庄，同桌下一局由上一局第一个胡牌的人坐庄并先出牌，房主开局权限不变。未胡时选牌打出；胡后原手牌固定，仍可连续自摸和合法暗杠、补杠、逐张加杠至本局同牌上限，不必等一圈或换尽原听口。已经胡过的玩家能胡就必须胡，只有“胡牌”选项，包括自摸、接炮和抢杠，仍须本人点击确认。房主可在每局开局前选择“胡后自动打出”（默认勾选）；没有胡、杠可选时，勾选则自动打出新牌，不勾选则需点“过”才能过回合，局中不能更改。已胡且不能胡这张新牌时，有合法杠必须杠，不能跳过或打出新牌；胡后杠仍须保持原听口。</p
               ><p
-                >自己摸牌同时可胡又可杠时，不提供杠；未胡者仍可放弃胡并出牌，已胡者只能胡。三家都至少胡过一次，或牌墙摸完，本局结束。</p
+                ><template v-if="preHuActionChoice">首次胡牌前，自己摸牌同时可胡又可杠时，可自行选择胡或合法杠，也可出牌；已胡者能胡时只能胡。</template
+                ><template v-else>自己摸牌同时可胡又可杠时，不提供杠；未胡者仍可放弃胡并出牌，已胡者只能胡。</template
+                >所有玩家都至少胡过一次，或牌墙摸完，本局结束。</p
               ></section
             >
             <section
               ><h3><span>二</span>接牌时，按实际选择回应</h3
               ><p
-                >未胡玩家打出的牌，若你尚未胡过，可胡也可碰、但不可明杠时，可选择胡、碰或过；可胡又可明杠时，只提供胡或过。你已胡过且本张可胡时，只提供胡。多人回应时，胡优先于明杠，明杠优先于碰。同级按{{
+                ><template v-if="preHuActionChoice">尚未胡过时，对可接的弃牌，胡、碰、明杠及过均按实际合法动作保留，可自行选择。</template
+                ><template v-else>未胡玩家打出的牌，若你尚未胡过，可胡也可碰、但不可明杠时，可选择胡、碰或过；可胡又可明杠时，只提供胡或过。</template
+                >你已胡过且本张可胡时，只提供胡。多人回应时，胡优先于明杠，明杠优先于碰。同级按{{
                   counterclockwise ? '逆时针' : '本局原顺时针'
                 }}顺序决定，和点击先后无关。</p
               ><p
@@ -3272,7 +3402,9 @@ onUnmounted(() => {
             <section class="rob-kong-rules"
               ><h3><span>抢</span>补杠先等抢杠</h3
               ><p v-if="pungUpgradeAfterDiscard"
-                >刚碰完、还没有打出一张牌时不能补杠；先打出一张，之后轮到自己且符合其他合法条件时，可以用原先留在手里的同牌或后来摸到的同牌补杠，不要求刚摸到同牌。暗杠后的补摸不能代替这次出牌。已成立的明杠或暗杠仍可逐张加到第五至八张。</p
+                >刚碰完、还没有打出一张牌时不能补杠；先打出一张，之后轮到自己且符合其他合法条件时，可以用原先留在手里的同牌或后来摸到的同牌补杠，不要求刚摸到同牌。暗杠后的补摸不能代替这次出牌。已成立的明杠或暗杠仍可逐张加到第五张，直到本局同牌上限。</p
+              ><p v-if="concealedKongAfterPungDiscard"
+                >本局碰后必须先实际打出一张牌，才能在后续合法窗口暗杠；碰后当前回合不能立即暗杠。</p
               ><p
                 >补杠、已有杠再加一张，都先给别人抢杠胡的机会。未胡者可胡或过，已胡者可胡就只能胡，不能碰或杠。无人抢胡才形成杠、收杠分、翻萝卜并补摸；有人抢胡则不形成这次杠，胡牌仅由追加牌的杠牌者付款，普通抢杠加
                 1 番；七对抢杠不加番，萝卜仍计算。</p
@@ -3285,7 +3417,7 @@ onUnmounted(() => {
                   v-if="!game"
                   >房主在每局开局前填写每家支付的分数，默认 50 分，0 分不收取</template
                 ><template v-else-if="gameBigSingleReadyPoints === 0">本局为 0 分，不收取</template
-                ><template v-else>本局另外两家各付 {{ gameBigSingleReadyPoints }} 分</template
+                ><template v-else>本局其他玩家各付 {{ gameBigSingleReadyPoints }} 分</template
                 >，每人每局只结算一次；第四组杠成立时在补摸前结算。后续胡牌、杠分、萝卜与神龙另算。</p
               ><p v-else
                 >本局保留原计分，不补收听牌分；下一局房主可在开局前填写大单吊喜钱，默认每家 50 分，0
@@ -3304,7 +3436,7 @@ onUnmounted(() => {
               ><p
                 >自己的手牌区、碰杠区、胡牌区合计：同种牌恰好四张加 1 番，五张加 2 番，六张加 3
                 番，七张加 4 番，八张加 5 番。基础为 1 番，例如六张同牌加到 4
-                番。八张以上的逻辑同牌统计尚未确认，保持原处理；实体每种仍只有八张。</p
+                番。<template v-if="extendedCopyFan">四张起每增加一张再加一番，九张加六番，之后同样递增。</template><template v-else>本局保留旧同牌加番，八张以上不额外增加该项；下一局启用每张一番。</template></p
               ><p>胡牌区每胡一次添一张；一炮多响的“共胡”只作本人的计分记录，不增加实体牌总量。</p
               ><p class="fan-scale"
                 >1 番 1 分 · 2 番 2 分 · 3 番 4 分 · 4 番 8 分<br />5 番 10 分 · 6 番 12 分 · 7 番
@@ -3316,7 +3448,7 @@ onUnmounted(() => {
               ><p
                 >萝卜从全桌第一次胡牌才开始翻：首胡翻 6 张，加上首胡前每次成功杠累计的 1
                 张。首胡前只记次数，不提前翻牌；首胡后每次成功杠再翻 1
-                张。被抢的补杠不算成功杠。已翻萝卜全部保留，三家共用，牌墙不足只翻余下的牌。</p
+                张。被抢的补杠不算成功杠。已翻萝卜全部保留，全桌共用，牌墙不足只翻余下的牌。</p
               ><p
                 >每次胡牌重新计算番分与共享萝卜匹配分。同牌数量相乘，例如计分牌有两张二筒，共享萝卜有两张二筒，加
                 4 分。<template v-if="game?.rules?.radishCountsWinPile === false"
@@ -3330,8 +3462,8 @@ onUnmounted(() => {
             <section
               ><h3><span>五</span>即时杠分与胡牌付款</h3
               ><p
-                >明杠由出牌者付 2 分；暗杠另外两家各付 2
-                分；补杠，以及逐张加到第五至第八张，另外两家每次各付 1 分，每次计 1 张萝卜并补 1
+                >明杠由出牌者付 2 分；暗杠其他玩家各付 2
+                分；补杠，以及逐张加到第五张，直到本局同牌上限，其他玩家每次各付 1 分，每次计 1 张萝卜并补 1
                 张牌，首胡前的萝卜留到首胡一起翻。杠分立即结算。</p
               ><p
                 ><template v-if="game?.rules?.selfDrawOnlyUnwon === undefined && game"
@@ -3341,9 +3473,9 @@ onUnmounted(() => {
                     v-if="game && !game.rules?.finalHuPaymentExceptions"
                     >本局保留开局时的终局付款规则。</template
                   ><template v-else
-                    >但第三家首胡结束牌局时特殊：普通自摸仍由另外两家各付（明杠后补摸另按下述规则）；接已经胡过者的杠后弃牌，只由出牌者付。多人同次胡先全部处理再结束，终局例外只用于本次首次胡的赢家。</template
+                    >但最后一家首胡结束牌局时特殊：普通自摸仍由其他玩家各付（明杠后补摸另按下述规则）；接已经胡过者的杠后弃牌，只由出牌者付。多人同次胡先全部处理再结束，终局例外只用于本次首次胡的赢家。</template
                   ></template
-                >接别人弃牌明杠后，本次补摸胡只由该明杠的出牌者付款；自己摸来的暗杠、补杠、加杠后补摸胡才由另外两家付款。杠后打出的牌被胡，仍只由该张牌的出牌者付款。即时杠分和局末神龙独立结算。每次操作记录显示实际付款方。<template
+                >接别人弃牌明杠后，本次补摸胡只由该明杠的出牌者付款；自己摸来的暗杠、补杠、加杠后补摸胡才由其他玩家付款。杠后打出的牌被胡，仍只由该张牌的出牌者付款。即时杠分和局末神龙独立结算。每次操作记录显示实际付款方。<template
                   v-if="usesSpecialPatterns"
                   >大单吊改为加 2 番，与对对胡不重复计；清一色可另加 2
                   番，萝卜仍另算。局末神龙独立结算。</template
@@ -3356,18 +3488,15 @@ onUnmounted(() => {
             <section
               ><h3><span>六</span>神龙留到局末，只结一次</h3
               ><p
-                >本人的手牌区、碰杠区、胡牌区，加上全桌共享萝卜：同牌六张 10 分、七张 20
-                分、八张及以上 40
-                分。神龙不再加入每次胡牌分，而在本局结束时单独结算一次，记录与即时杠分分开展示。</p
+                >本人的手牌区、碰杠区、胡牌区，加上全桌共享萝卜：<template v-if="exponentialDragon">同牌{{ tableDragonStartCount }}张起10分，每多一张翻倍（10、20、40、80……）。</template><template v-else>本局保留旧神龙：六张10分、七张20分、八张及以上40分封顶。</template>神龙不再加入每次胡牌分，而在本局结束时单独结算一次，记录与即时杠分分开展示。</p
               ><p
-                >普通加番只计算自己的三个牌区，不含萝卜；萝卜匹配分另算。神龙才合并全桌共享萝卜计数，由另外两家各付。多种神龙相加、八张以上按
-                40 分封顶、流局及未胡者也参与，暂按这些方式处理，资格细节仍待核对。</p
+                >普通加番只计算自己的三个牌区，不含萝卜；萝卜匹配分另算。神龙才合并全桌共享萝卜计数，由其他玩家各付。多种神龙相加，流局及未胡者也参与，暂按这些方式处理，资格细节仍待核对。</p
               ></section
             >
             <section class="pending-rules"
               ><h3><span>!</span>未确认的边界会明确保留</h3
               ><p
-                >超过八张的逻辑同牌加番仍待核对，不代表自贡各地统一打法。请以本桌显示的实际结算为准。</p
+                >本桌遵循开局时保存的规则；旧局不改账，下一局才启用新规则。不同地方的打法可能不同，请以本桌显示的实际结算为准。</p
               ><p
                 >只有出牌、碰、胡、杠会播放角色语音，可在右上角关闭。自摸、放炮、抢杠各播对应的一条语音，不再追加“胡”。无机器人、无倒计时。正常选牌不会自动代打。带本桌房间号的页面刷新可重连原座位，主页只进入大厅。离桌不会清除积分记录。只使用虚拟积分。</p
               ></section

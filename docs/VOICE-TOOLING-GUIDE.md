@@ -13,8 +13,8 @@ These Python files author offline assets. They do not run for browser announceme
 6. `scripts/voices/extend_qianggang.py`：抢杠扩展，旧胡元数据转为兼容条目，保留音频字节。 / Rob-kong extension, moving old hu metadata into legacy entries while preserving audio bytes.
 7. `scripts/voices/README.md`：安装、固定版本、操作示例与历史来源。 / Installation, pinned versions, operational examples and historical provenance.
 
-本清单覆盖全部七个自维护 Python 脚本。依赖锁、模型、WAV、MP3、生成的 JSON 审计和清单不是手工注释目标。
-This inventory covers all seven maintained Python scripts. Dependency locks, models, WAV/MP3 assets and generated JSON audits/manifests are not manual annotation targets.
+以上七个基础自维护 Python 脚本加上文末新增的 `extend_characters.py`，共八个制作入口。依赖锁、模型、WAV、MP3、生成的 JSON 审计和清单不是手工注释目标。
+The seven base Python scripts above plus extend_characters.py below form eight authoring entries. Dependency locks, models, WAV/MP3 assets and generated JSON audits/manifests are not manual annotation targets.
 
 ## 数据流与副作用 / Data flow and side effects
 
@@ -64,8 +64,8 @@ Crop start/end are seconds, rounded to sample indexes for a half-open Python sli
 
 ## 旧版本与审计限制 / Legacy behavior and audit limits
 
-当前每角色 23 条可播放、1 条旧胡，共 69 条可播放和 72 个 MP3。旧胡位于 `legacyClips`，不是当前胜利播报。自摸、放炮、抢杠各播对应词，不追加胡。资源迁移与玩法判断是不同层，不要在制作脚本里修改游戏规则。
-Each voice currently has 23 playable calls and one legacy hu: 69 playable calls and 72 MP3 files. Legacy hu lives in legacyClips, outside current win announcements. Each win type plays its corresponding call without appended hu. Asset migration and game-rule evaluation are separate layers.
+原三角色每人23条可播放、1条旧胡，共69条可播放和72个MP3；四角色扩展另加92条，当前合计161条可播放、164个MP3。旧胡位于 `legacyClips`，不是当前胜利播报。自摸、放炮、抢杠各播对应词，不追加胡。资源迁移与玩法判断是不同层，不要在制作脚本里修改游戏规则。
+The original three voices each retain 23 playable calls and one legacy hu, totaling 69 active calls and 72 files. Four additions contribute 92 calls, bringing the current pack to 161 active calls and 164 MP3 files. Legacy hu lives in legacyClips, outside current win announcements. Each win type plays its corresponding call without appended hu. Asset migration and game-rule evaluation are separate layers.
 
 `extend_win_calls.py` 是历史迁移：其 23/69 数量断言及包含 hu 的上下文属于那次扩展，不是对任意后续清单都正确的通用迁移。`extend_qianggang.py` 另有 23 可播放/24 存储/总 72 的断言，并要求旧 hu 条目。重跑历史迁移前先确认基线，不要通过删除断言强行通过。
 The win-call script is a historical migration: its 23/69 counts and hu context belong to that extension, not every later manifest. The rob-kong migration separately expects 23 playable/24 stored per voice, 72 overall and an existing hu entry. Check baselines before rerunning historical migrations; never remove assertions just to force success.
@@ -80,3 +80,11 @@ Never upload model weights, tokens, credentials, virtual environments or interme
 
 纯注释验证可通过 `ast.parse` 比较前后 AST，并用 `py_compile` 指定仓库外的 pyc 路径，不导入模型、不运行 main，也不生成媒体。本次脚本注释保留原始 docstring，避免改变 `argparse(description=__doc__)` 的 CLI 文案与语法树。
 For comment-only verification, compare parsed ASTs and compile with an explicit out-of-repository pyc path, without importing models, running main or generating media. Script annotations preserve existing docstrings so argparse descriptions and ASTs remain unchanged.
+
+## 四名新增角色 / Four additional characters
+
+`extend_characters.py` 是第八个自维护Python入口：独立配置地主、老实人、富婆、女明星的成年原创声线，复用 `generate.py` 的生成行为；先保存旧72文件及清单基线，任何阶段前后验证哈希。新增音频在隔离目录执行逐条与上下文ASR，齐全且来源一致才合并清单，保留原角色全部来源和旧胡。工作目录必须与生成、审计一致，不得删除基线来掩盖旧音频变化。
+The eighth maintained Python entry defines four independent adult voices and reuses generate.py. It saves the original 72-file/manifest baseline and validates hashes before and after each phase. It runs isolated per-clip and contextual ASR before merging a complete, provenance-verified manifest, retaining all original voice metadata and legacy hu. Share the same work directory across phases; never remove its baseline to conceal changes.
+
+生成结果与审计未完成之前，不得把四角色制作配置当作已交付音频。人工试听仍是独立且未自动完成的工作。
+Until generation and auditing finish, configuration is not delivered audio. Human listening remains a separate step that automation does not perform.

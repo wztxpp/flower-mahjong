@@ -3,6 +3,7 @@
 // 阅读说明见 docs/TESTING-READING-GUIDE.md；固定种子与凭证仅为测试，不应移入真实用户数据。
 // See docs/TESTING-READING-GUIDE.md; seeded data and test credentials must stay separate from real user data.
 import test from "node:test";
+import { nameEvent } from "../shared/event-names.js";
 import { visibleHistoryEvent } from "../shared/tile-visibility.js";
 import assert from "node:assert/strict";
 import { createServer, request as httpRequest } from "node:http";
@@ -4030,7 +4031,7 @@ test("v3 HTTP rob-kong settles both winners clockwise regardless of response ord
       for (const state of states)
         assert.deepEqual(
           state.game.history.filter((event) => event.type === "hu"),
-          events.map((event) => visibleHistoryEvent(stored, event, state.you)),
+          events.map((event) => nameEvent(visibleHistoryEvent(stored, event, state.you), state.game.participantNames)),
         );
       assertError(
         await api.clients[responseOrder[1]].action(revision, {
@@ -4806,7 +4807,7 @@ test("v3 HTTP reported ordinary four-dot discard offers repeat hu before natural
   // 逐项覆盖 states；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in states with the same checks, preserving the listed order.
   for (const state of states)
-    assert.deepEqual(state.game.history, stored.history.map((event) => visibleHistoryEvent(stored, event, state.you)));
+    assert.deepEqual(state.game.history, stored.history.map((event) => nameEvent(visibleHistoryEvent(stored, event, state.you), state.game.participantNames)));
 });
 // 场景：v3 HTTP 再次荣胡规则变化保留已胡来源保护，并保持 v2 锁定规则不变
 // Scenario: v3 HTTP repeat-discard change preserves won-source protection and frozen v2 lock
@@ -5075,7 +5076,7 @@ test("v3 HTTP ready single payment is atomic, visible to all, and cannot be dupl
   // Exercise each entry in after with the same checks, preserving the listed order.
   for (const state of after) {
     assert.equal(state.revision, views[0].revision + 1);
-    assert.deepEqual(state.game.history, stored.history.map((event) => visibleHistoryEvent(stored, event, state.you)));
+    assert.deepEqual(state.game.history, stored.history.map((event) => nameEvent(visibleHistoryEvent(stored, event, state.you), state.game.participantNames)));
     assert.deepEqual(
       state.game.players.map((p) => p.score),
       [100, -50, -50],
@@ -5199,7 +5200,7 @@ test("v3 HTTP legacy game without ready-payment flag retains its ledger and does
   assert.equal(stored.players[0].bigSingleReadyPaid, undefined);
   assert.deepEqual(
     (await api.host.get()).body.state.game.history,
-    stored.history,
+    stored.history.map((event) => nameEvent(event, ["东家", "南家", "西家"])),
   );
 });
 // 场景：开局选项仅房主可操作，经过验证后原子保存，并对所有已验证玩家可见
@@ -5902,7 +5903,7 @@ test("custom ready payment survives FileStore reload and ignores forged options 
       state.game.players.map((p) => p.score),
       [160, -80, -80],
     );
-    assert.deepEqual(state.game.history, saved.game.history);
+    assert.deepEqual(state.game.history, saved.game.history.map((event) => nameEvent(event, state.game.participantNames)));
   }
 });
 // Scenario: HTTP real peng discard and later held-tile upgrade persist through reload (old v0.7.0=${oldRoom})

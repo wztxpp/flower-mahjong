@@ -1,3 +1,4 @@
+import { nameEvent } from '../shared/event-names.js';
 import { visibleHistoryEvent } from '../shared/tile-visibility.js';
 
 // 记录层：把房间生命周期与局内规则隔离，保存可验证的参与身份和公开成绩。
@@ -33,6 +34,15 @@ export function newGameMetadata(room, id, at) {
     id,
     startedAt: at,
     finishedAt: null,
+    // 新局保存实际规则参数的独立快照；旧元信息不补配置，避免伪造历史规则。
+    // Snapshot actual new-round configuration independently; never fabricate configuration for old metadata.
+    ...(room.game?.rules?.playerCount !== undefined ? {
+      config: {
+        playerCount: room.game.rules.playerCount,
+        deckCount: room.game.rules.deckCount,
+        dragonStartCount: room.game.rules.dragonStartCount,
+      },
+    } : {}),
     participants: room.seats.map((person, seat) => ({
       seat,
       name: person.name,
@@ -44,7 +54,7 @@ export function newGameMetadata(room, id, at) {
 // Explicit public-event fields avoid copying a future engine's private fields.
 // 公开事件用白名单复制字段，防止未来新增私人字段被自动带出。
 // Copy public events through an allowlist so future private fields cannot leak automatically.
-function publicEvents(game, viewerSeat = null) {
+export function publicEvents(game, viewerSeat = null, participantNames = []) {
   const allowed = [
     'revision',
     'type',
@@ -82,7 +92,7 @@ function publicEvents(game, viewerSeat = null) {
     // Rebuild draw messages so original engine text cannot reveal the drawn tile.
     if (event.type === 'draw')
       result.message = `${Number.isInteger(event.seat) ? event.seat + 1 : ''}号位${event.source === 'replacement' ? '杠后补牌' : event.source === 'continuation' ? '胡后补摸' : '摸了一张牌'}。`;
-    return result;
+    return nameEvent(result, participantNames);
   });
 }
 /** Keep all historical scores and public events, without copying private walls/hands forever. */
@@ -95,6 +105,9 @@ export function archiveFinishedGame(room) {
     updatedAt: room.updatedAt,
     game: {
       schemaVersion: game.schemaVersion || 1,
+      // 使用本局快照而非此刻房间属性，归档不能被之后的对象变更影响。
+      // Archive the round snapshot rather than mutable current-room properties.
+      ...(room.gameMeta?.config ? { config: structuredClone(room.gameMeta.config) } : {}),
       phase: 'finished',
       finishReason: game.finishReason,
       players: game.players.map((player) => ({
@@ -155,13 +168,16 @@ export function recordsForProfile(room, playerHash) {
         updatedAt: entry.updatedAt,
         finishedAt: finished ? meta.finishedAt || entry.updatedAt : null,
         rulesVersion: game.schemaVersion || 1,
+        // 当前与归档记录采用同一局配置；缺配置旧历史仍保持原样。
+        // Live and archived records expose the same round configuration; old records remain unconfigured.
+        ...(meta.config ? { config: structuredClone(meta.config) } : {}),
         finishReason: game.finishReason || null,
         players: game.players.map((player, index) => ({
           seat: index,
           name: meta.participants[index]?.name || `${index + 1}号位`,
           score: player.score,
         })),
-        events: publicEvents(game, seat),
+        events: publicEvents(game, seat, meta.participants.map((person) => person?.name)),
       });
     }
   }

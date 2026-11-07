@@ -1,0 +1,770 @@
+{
+  "method": "faster-whisper-small / CPU int8 / Chinese / beam_size=5",
+  "initialPrompt": "麻将报牌，一至九条，一至九筒，碰、胡、杠。",
+  "interClipSilenceSeconds": 0.35,
+  "limitations": "Context assists recognition of isolated syllables; this is not subjective listening or a guarantee of pronunciation.",
+  "voices": {
+    "landlord": {
+      "calls": [
+        {
+          "call": "tiao-1",
+          "text": "一条",
+          "sha256": "893d8d2eb41ac8e4ad35fcb1db1bb943941a014b377835458d5da1d2995333e4",
+          "startSeconds": 0.0,
+          "endSeconds": 0.8
+        },
+        {
+          "call": "tiao-2",
+          "text": "二条",
+          "sha256": "ccf00f376d111e25b80a690357a5021c0120827872da1b2acd791cfccccc7131",
+          "startSeconds": 1.15,
+          "endSeconds": 2.51
+        },
+        {
+          "call": "tiao-3",
+          "text": "三条",
+          "sha256": "60505f69d5b59183856377a6f928679af04640b6ca7fc45b911f5063633debfc",
+          "startSeconds": 2.86,
+          "endSeconds": 5.18
+        },
+        {
+          "call": "tiao-4",
+          "text": "四条",
+          "sha256": "47448d07992fca5b6b300b562d08c5f9e6abc702fdc16788c10594965785ae2f",
+          "startSeconds": 5.53,
+          "endSeconds": 7.69
+        },
+        {
+          "call": "tiao-5",
+          "text": "五条",
+          "sha256": "b3275240c362bf692fd1dfca90c9267ef6ac7d866bca2d1d3ffd0e08d35b3e1d",
+          "startSeconds": 8.04,
+          "endSeconds": 9.4
+        },
+        {
+          "call": "tiao-6",
+          "text": "六条",
+          "sha256": "916f32bc94b748da9fb482d02b2f31c67a635374114a8de4a2ca8a13b223a376",
+          "startSeconds": 9.75,
+          "endSeconds": 10.79
+        },
+        {
+          "call": "tiao-7",
+          "text": "七条",
+          "sha256": "e9b5ce843a50266f247675478fcc7325837ecd6cab32a73f4156e21fd62e913c",
+          "startSeconds": 11.14,
+          "endSeconds": 12.66
+        },
+        {
+          "call": "tiao-8",
+          "text": "八条",
+          "sha256": "430f0004986d9912d48d13e346c1e36e790455ed2e2fe653a1f9f10dc3785565",
+          "startSeconds": 13.01,
+          "endSeconds": 13.97
+        },
+        {
+          "call": "tiao-9",
+          "text": "九条",
+          "sha256": "0ead0c916242a93b63db6a81a8c4a5a29bbc09dd58c1d28edb15dcea96ac54aa",
+          "startSeconds": 14.32,
+          "endSeconds": 15.12
+        },
+        {
+          "call": "tong-1",
+          "text": "一筒",
+          "sha256": "b5d43dbbec8736e458bb646a1a5d7d9601ab3d678b1757af52ef984c1bc515ee",
+          "startSeconds": 15.47,
+          "endSeconds": 16.67
+        },
+        {
+          "call": "tong-2",
+          "text": "二筒",
+          "sha256": "53dfaf44f6b2996a7a656a385325ac2948ea1453f8fe2303663b616f3f4b4d1c",
+          "startSeconds": 17.02,
+          "endSeconds": 18.14
+        },
+        {
+          "call": "tong-3",
+          "text": "三筒",
+          "sha256": "cbd87195f257fd1d368466c7e7e1d11318d7da38bcd700179311e537ad407607",
+          "startSeconds": 18.49,
+          "endSeconds": 20.01
+        },
+        {
+          "call": "tong-4",
+          "text": "四筒",
+          "sha256": "3f1bf2e29fbaafe0538695a3aee2da902abb1acadc041414e724fdcf5ccbb8ce",
+          "startSeconds": 20.36,
+          "endSeconds": 21.48
+        },
+        {
+          "call": "tong-5",
+          "text": "五筒",
+          "sha256": "c99751e5e18e9126c94df23021268b032b55d638b5f2681c1f5c4b7d05b12516",
+          "startSeconds": 21.83,
+          "endSeconds": 22.87
+        },
+        {
+          "call": "tong-6",
+          "text": "六筒",
+          "sha256": "7c05edf4c65bff30d12ca3b66ff276d9a3c7475ffaaeee27787b088799821500",
+          "startSeconds": 23.22,
+          "endSeconds": 24.5
+        },
+        {
+          "call": "tong-7",
+          "text": "七筒",
+          "sha256": "d314a0b641faa0da7c3871c0c4dd7e01abf0b3e0e1585fbfd3dc4eef805acc05",
+          "startSeconds": 24.85,
+          "endSeconds": 26.13
+        },
+        {
+          "call": "tong-8",
+          "text": "八筒",
+          "sha256": "8528d4bba3666bb676b78288c0488f6b02131e39cd3c64adead66c168eacf38a",
+          "startSeconds": 26.48,
+          "endSeconds": 27.52
+        },
+        {
+          "call": "tong-9",
+          "text": "九筒",
+          "sha256": "2b9ffd6a42afa34907bcbf98b5744de57fc61111e0740a4c97b0773820a97d3c",
+          "startSeconds": 27.87,
+          "endSeconds": 28.75
+        },
+        {
+          "call": "peng",
+          "text": "碰",
+          "sha256": "86503d77fccc1445e521cc7bfce82c0fb767cbec1e4f91eea1b5a5b9ffd2ac2b",
+          "startSeconds": 29.1,
+          "endSeconds": 30.06
+        },
+        {
+          "call": "gang",
+          "text": "杠",
+          "sha256": "2eefad46e5b77e51267e4a4252b7694f7cc91c82486d74abad581dac742375f8",
+          "startSeconds": 30.41,
+          "endSeconds": 30.89
+        },
+        {
+          "call": "zimo",
+          "text": "自摸",
+          "sha256": "d7a409fa3b8c875111ca7817ab617dd21a76fea6ee4034e55c39dfa9b56b7152",
+          "startSeconds": 31.24,
+          "endSeconds": 32.2
+        },
+        {
+          "call": "fangpao",
+          "text": "放炮",
+          "sha256": "9ee5feb28dc2899e6797e8f6b0200d18530a315c68de0aec68166617b5990a7e",
+          "startSeconds": 32.55,
+          "endSeconds": 33.59
+        },
+        {
+          "call": "qianggang",
+          "text": "抢杠",
+          "sha256": "bcdf8bd7ad2130cf96f71d8ace423f60989d81645b28bb90b66130b42d95704e",
+          "startSeconds": 33.94,
+          "endSeconds": 35.7
+        }
+      ],
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 29.88,
+          "text": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒，七筒，八筒，九筒，碰，",
+          "avgLogProbability": -0.05009239730990936
+        },
+        {
+          "start": 30.0,
+          "end": 36.0,
+          "text": "刚 字摸 仿炮 强杠",
+          "avgLogProbability": -0.6645661559369829
+        }
+      ],
+      "transcript": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒，七筒，八筒，九筒，碰，刚 字摸 仿炮 强杠"
+    },
+    "honest": {
+      "calls": [
+        {
+          "call": "tiao-1",
+          "text": "一条",
+          "sha256": "0c877996b615a1844c73e84f942ccfa67a71743498b770ed4b3fcc3e2dfa9661",
+          "startSeconds": 0.0,
+          "endSeconds": 1.04
+        },
+        {
+          "call": "tiao-2",
+          "text": "二条",
+          "sha256": "905464884fb24ccddaa3fa87bbd12af77e1a9671a628b6fa5eeb9ebe62dce613",
+          "startSeconds": 1.39,
+          "endSeconds": 2.35
+        },
+        {
+          "call": "tiao-3",
+          "text": "三条",
+          "sha256": "01ca82be76f43cd48f4bc18b278c44d3c153218839d4f87c82655a6d93b44926",
+          "startSeconds": 2.7,
+          "endSeconds": 4.14
+        },
+        {
+          "call": "tiao-4",
+          "text": "四条",
+          "sha256": "7b43a73986c47c45d758e672c426364214cc817ddf71a05849b5c86c022f476d",
+          "startSeconds": 4.49,
+          "endSeconds": 5.69
+        },
+        {
+          "call": "tiao-5",
+          "text": "五条",
+          "sha256": "97cc776cc21375a0fbe5a0ca6a03f12cbf206fae170d29c771ce029d91bf0720",
+          "startSeconds": 6.04,
+          "endSeconds": 7.48
+        },
+        {
+          "call": "tiao-6",
+          "text": "六条",
+          "sha256": "4ca53e45dda451911b2d1f2f8f86a8718d6c6ad473939cbcc9e8979ba35a157e",
+          "startSeconds": 7.83,
+          "endSeconds": 9.35
+        },
+        {
+          "call": "tiao-7",
+          "text": "七条",
+          "sha256": "b0abe20ad554a0cd313eb1401cec8a1ca320bbd09d9594802688f62193cc360c",
+          "startSeconds": 9.7,
+          "endSeconds": 11.06
+        },
+        {
+          "call": "tiao-8",
+          "text": "八条",
+          "sha256": "feca61871b16979dd4d2be8a79a4d7046768d260b085924bd418e960d6cfb00c",
+          "startSeconds": 11.41,
+          "endSeconds": 12.37
+        },
+        {
+          "call": "tiao-9",
+          "text": "九条",
+          "sha256": "9c44cda15a70d3ffd005ed1a874e2c6603ab8664f1b482bf7007f39fb54e00d9",
+          "startSeconds": 12.72,
+          "endSeconds": 13.92
+        },
+        {
+          "call": "tong-1",
+          "text": "一筒",
+          "sha256": "a0ba1e597c5ce01832faf0a80ee8227f269b061ae0713d079916350bf81aa8f9",
+          "startSeconds": 14.27,
+          "endSeconds": 15.39
+        },
+        {
+          "call": "tong-2",
+          "text": "二筒",
+          "sha256": "4eb1c40d83dfb57c5ac9f541cbea4b21cd533f2e7ed28fe10bd35d404db4dc6c",
+          "startSeconds": 15.74,
+          "endSeconds": 16.7
+        },
+        {
+          "call": "tong-3",
+          "text": "三筒",
+          "sha256": "de691333fb05010f2a94efd532f36c6e66c5eb406b62457be8426d1461321c52",
+          "startSeconds": 17.05,
+          "endSeconds": 17.93
+        },
+        {
+          "call": "tong-4",
+          "text": "四筒",
+          "sha256": "4e5d5e6b8baf4fa16ea5bb175b1af35a402420cc9acf30f0a009ab2d707f7b05",
+          "startSeconds": 18.28,
+          "endSeconds": 19.32
+        },
+        {
+          "call": "tong-5",
+          "text": "五筒",
+          "sha256": "75a6a154944a6ade1f5f3f64a27b84f3c32686ad132173aefa71a38a53d5336d",
+          "startSeconds": 19.67,
+          "endSeconds": 20.79
+        },
+        {
+          "call": "tong-6",
+          "text": "六筒",
+          "sha256": "61637286d7556ea997ec0ca1a20dec3e4998f5d46d3892f4ee7cc67e2ba61488",
+          "startSeconds": 21.14,
+          "endSeconds": 22.42
+        },
+        {
+          "call": "tong-7",
+          "text": "七筒",
+          "sha256": "9b2afc2d14f4237f79abdab7257ac4f9a5e52523279fb6a95eb6a780cfffd15f",
+          "startSeconds": 22.77,
+          "endSeconds": 23.57
+        },
+        {
+          "call": "tong-8",
+          "text": "八筒",
+          "sha256": "fb4c8746d134c14709037f52396e112126a2dc86ca0b735a05d7987449f110f6",
+          "startSeconds": 23.92,
+          "endSeconds": 25.04
+        },
+        {
+          "call": "tong-9",
+          "text": "九筒",
+          "sha256": "41e0186ccd0de5ebc53a4e76dc30789d75de73dcc193373f116eb02357216c59",
+          "startSeconds": 25.39,
+          "endSeconds": 26.75
+        },
+        {
+          "call": "peng",
+          "text": "碰",
+          "sha256": "daa79b58e4c35f41b88b165f0685bcbf63f81e0175c25f983627ecfcf0478c46",
+          "startSeconds": 27.1,
+          "endSeconds": 27.74
+        },
+        {
+          "call": "gang",
+          "text": "杠",
+          "sha256": "c2aeb06f64a7fe13fa23dbf40ac1d193e7584705624381068b8279526aee1b40",
+          "startSeconds": 28.09,
+          "endSeconds": 28.73
+        },
+        {
+          "call": "zimo",
+          "text": "自摸",
+          "sha256": "0388f2eeccf92fcf7f61b22435b07e2facc9e1aa5f07bf884d0cfbd200cd4d6e",
+          "startSeconds": 29.08,
+          "endSeconds": 29.8
+        },
+        {
+          "call": "fangpao",
+          "text": "放炮",
+          "sha256": "d35f54cc6a1b0cb2a6e5569741486fcfd3cc7936f5c6a42b6f6888556380dc8c",
+          "startSeconds": 30.15,
+          "endSeconds": 30.95
+        },
+        {
+          "call": "qianggang",
+          "text": "抢杠",
+          "sha256": "67c9c0c96746e73d9c3230b1423ba6d0664a75c1cd382197b1a4253a21db7330",
+          "startSeconds": 31.3,
+          "endSeconds": 32.18
+        }
+      ],
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 29.8,
+          "text": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒，七筒，八筒，九筒，碰、杠、自摸，",
+          "avgLogProbability": -0.07391974722084246
+        },
+        {
+          "start": 30.0,
+          "end": 32.0,
+          "text": "放炮 搶槓",
+          "avgLogProbability": -0.7544450868259777
+        }
+      ],
+      "transcript": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒，七筒，八筒，九筒，碰、杠、自摸，放炮 搶槓"
+    },
+    "wealthy": {
+      "calls": [
+        {
+          "call": "tiao-1",
+          "text": "一条",
+          "sha256": "7f6e617325fa505ca1c3a99976f6a7032530ca901f0fe30b5572705a7e94afa9",
+          "startSeconds": 0.0,
+          "endSeconds": 1.76
+        },
+        {
+          "call": "tiao-2",
+          "text": "二条",
+          "sha256": "d9a8ce2bb7594e89c72b87e69c7f6bcfec5e90571f415de8abbd0353fc2aaaf8",
+          "startSeconds": 2.11,
+          "endSeconds": 3.55
+        },
+        {
+          "call": "tiao-3",
+          "text": "三条",
+          "sha256": "85500149f80162afef14a45092a97cac0f804f20b852b7dc3cb3f1a4e7b488c7",
+          "startSeconds": 3.9,
+          "endSeconds": 5.02
+        },
+        {
+          "call": "tiao-4",
+          "text": "四条",
+          "sha256": "173a04847e9354d98eea98c492121fc00b2597245ca15ecd5ac231d68fd6bd40",
+          "startSeconds": 5.37,
+          "endSeconds": 7.77
+        },
+        {
+          "call": "tiao-5",
+          "text": "五条",
+          "sha256": "b010edeb5bec84c72a60c23d3171eb50ba6ea863c1ed504a13aae65669db6767",
+          "startSeconds": 8.12,
+          "endSeconds": 10.44
+        },
+        {
+          "call": "tiao-6",
+          "text": "六条",
+          "sha256": "4d55eb6636ef974a77f4b48318c7f09cb5c46edecb32e98a8cc1ab2d36aa691a",
+          "startSeconds": 10.79,
+          "endSeconds": 11.51
+        },
+        {
+          "call": "tiao-7",
+          "text": "七条",
+          "sha256": "a90a789353ec9c1c85fe5dac688262d6ece459e28d23f2c563d594c11605f1cc",
+          "startSeconds": 11.86,
+          "endSeconds": 13.94
+        },
+        {
+          "call": "tiao-8",
+          "text": "八条",
+          "sha256": "ddb00b27af59048a8c2251acbe671d3cfd8ea7f27935f0bbfe458f191dbe4f0e",
+          "startSeconds": 14.29,
+          "endSeconds": 15.73
+        },
+        {
+          "call": "tiao-9",
+          "text": "九条",
+          "sha256": "fc2b1e3f073d7e71cf3e1c73052192237ad5654ddecc4789cc98d8c4f0293cd7",
+          "startSeconds": 16.08,
+          "endSeconds": 17.84
+        },
+        {
+          "call": "tong-1",
+          "text": "一筒",
+          "sha256": "27d3c41b1a94af36bfd8d86e2941c953bf91798f5a68b3c3fb1f5fd6c59ae2f9",
+          "startSeconds": 18.19,
+          "endSeconds": 19.15
+        },
+        {
+          "call": "tong-2",
+          "text": "二筒",
+          "sha256": "66190b4af2e655d9f23c75159e5e80e12f6f908ada48647685e627e76f306cd0",
+          "startSeconds": 19.5,
+          "endSeconds": 21.02
+        },
+        {
+          "call": "tong-3",
+          "text": "三筒",
+          "sha256": "7201aaed390838df63742474843f1986b8e01d3e841585791a91834e476c1020",
+          "startSeconds": 21.37,
+          "endSeconds": 22.41
+        },
+        {
+          "call": "tong-4",
+          "text": "四筒",
+          "sha256": "ee15f0950b5ad33fe480dacd0f99faa1fc2fcef1664f1da6b62fc733a066ba50",
+          "startSeconds": 22.76,
+          "endSeconds": 24.6
+        },
+        {
+          "call": "tong-5",
+          "text": "五筒",
+          "sha256": "0c3db02c333872cb1e8dcf8cdc5d8d63d1bb81b4bb9f82e49d5fcdf52af83417",
+          "startSeconds": 24.95,
+          "endSeconds": 26.15
+        },
+        {
+          "call": "tong-6",
+          "text": "六筒",
+          "sha256": "ee363d432cc3db4249578a176de698abf621c35ec82c157ed4f38229a395800b",
+          "startSeconds": 26.5,
+          "endSeconds": 28.18
+        },
+        {
+          "call": "tong-7",
+          "text": "七筒",
+          "sha256": "7d1576ca9c67c406e8b9431dde948747185c35848e7085f6f5738d76317969db",
+          "startSeconds": 28.53,
+          "endSeconds": 31.25
+        },
+        {
+          "call": "tong-8",
+          "text": "八筒",
+          "sha256": "272217110aafaf0251543bfc8bb73de4c30c5d0386e6d11dd92fbee01896da8c",
+          "startSeconds": 31.6,
+          "endSeconds": 33.04
+        },
+        {
+          "call": "tong-9",
+          "text": "九筒",
+          "sha256": "9291ab16236f1a9b75a47b50238633303da0d4bdf45813375d059635d7a87403",
+          "startSeconds": 33.39,
+          "endSeconds": 35.79
+        },
+        {
+          "call": "peng",
+          "text": "碰",
+          "sha256": "f3c116fc88af04928508d4b23a2cbad7f9356c3a3492f3105364005aeb9160fc",
+          "startSeconds": 36.14,
+          "endSeconds": 36.86
+        },
+        {
+          "call": "gang",
+          "text": "杠",
+          "sha256": "80a643d1ed32346efc25bd39d8176af2b7d0731ba303a918282d3de29e348b40",
+          "startSeconds": 37.21,
+          "endSeconds": 38.49
+        },
+        {
+          "call": "zimo",
+          "text": "自摸",
+          "sha256": "90dae948d9f798c312dd4d2e646e55cdb84bf3d027a03709bcb507876a328c27",
+          "startSeconds": 38.84,
+          "endSeconds": 41.4
+        },
+        {
+          "call": "fangpao",
+          "text": "放炮",
+          "sha256": "7a12c7956e36e7730cf10ae745f87ebdf42fe06627f02d68496abff96c9ee82b",
+          "startSeconds": 41.75,
+          "endSeconds": 43.35
+        },
+        {
+          "call": "qianggang",
+          "text": "抢杠",
+          "sha256": "f2853ba45567594492c40e67de2fbb19acb09af0f436d465d9ad5fff81e54a91",
+          "startSeconds": 43.7,
+          "endSeconds": 45.22
+        }
+      ],
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 29.0,
+          "text": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒。",
+          "avgLogProbability": -0.04921538517417678
+        },
+        {
+          "start": 29.0,
+          "end": 31.0,
+          "text": "七筒",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 31.0,
+          "end": 33.0,
+          "text": "八筒",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 33.0,
+          "end": 35.0,
+          "text": "九筒",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 35.0,
+          "end": 37.0,
+          "text": "碰",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 37.0,
+          "end": 39.0,
+          "text": "杠",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 39.0,
+          "end": 41.0,
+          "text": "字摸",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 41.0,
+          "end": 43.0,
+          "text": "放炮",
+          "avgLogProbability": -0.32662297412753105
+        },
+        {
+          "start": 43.0,
+          "end": 45.0,
+          "text": "抢杠",
+          "avgLogProbability": -0.32662297412753105
+        }
+      ],
+      "transcript": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒，五筒，六筒。七筒八筒九筒碰杠字摸放炮抢杠"
+    },
+    "star": {
+      "calls": [
+        {
+          "call": "tiao-1",
+          "text": "一条",
+          "sha256": "8abd2f840f8c801dd0f842bed120ef43ba119a7f720a4e7e137441fc1b5bdda6",
+          "startSeconds": 0.0,
+          "endSeconds": 1.04
+        },
+        {
+          "call": "tiao-2",
+          "text": "二条",
+          "sha256": "deecfbc36dbf7c287f3a14cf46bca88cabf8baa7729b8047fda5b1803997e58f",
+          "startSeconds": 1.39,
+          "endSeconds": 2.59
+        },
+        {
+          "call": "tiao-3",
+          "text": "三条",
+          "sha256": "cadbbbf3f8b9e09286d759562c42e74c321c1adf5fd3b209af92812130ae34df",
+          "startSeconds": 2.94,
+          "endSeconds": 4.7
+        },
+        {
+          "call": "tiao-4",
+          "text": "四条",
+          "sha256": "4db6119a86cae43e0a7316b29a66b464c419b2bf0156adc6be936b01a85d921d",
+          "startSeconds": 5.05,
+          "endSeconds": 6.97
+        },
+        {
+          "call": "tiao-5",
+          "text": "五条",
+          "sha256": "d1e4d7d2612e4b082fcfa28380c61ada4eba4d5c9b18c33df26d84f3a4f7d057",
+          "startSeconds": 7.32,
+          "endSeconds": 9.0
+        },
+        {
+          "call": "tiao-6",
+          "text": "六条",
+          "sha256": "f1b154aca154771d8f1c6b708793542c271a0e2c62aa04a5488cce0c74c9e09c",
+          "startSeconds": 9.35,
+          "endSeconds": 10.87
+        },
+        {
+          "call": "tiao-7",
+          "text": "七条",
+          "sha256": "ce4e42f4bb88f5664595144646f6791e1667e87b7ab0880e758e80e49ea86391",
+          "startSeconds": 11.22,
+          "endSeconds": 12.5
+        },
+        {
+          "call": "tiao-8",
+          "text": "八条",
+          "sha256": "f470fa5803db9e0436616a18952bd537cc8d3f28af8da6570eafcf0cfc7ae643",
+          "startSeconds": 12.85,
+          "endSeconds": 14.05
+        },
+        {
+          "call": "tiao-9",
+          "text": "九条",
+          "sha256": "0ae7c8d6d7f6d63352c5bcdb55ad6757e9bc4ba33ef2af49d150f736bae227a0",
+          "startSeconds": 14.4,
+          "endSeconds": 15.6
+        },
+        {
+          "call": "tong-1",
+          "text": "一筒",
+          "sha256": "e8044dd7ad58ff1feaba22f94b286a09ce2cac943ec97845915ae4be88c88a01",
+          "startSeconds": 15.95,
+          "endSeconds": 17.39
+        },
+        {
+          "call": "tong-2",
+          "text": "二筒",
+          "sha256": "e98436de02151e76e50e7ccacb88442c73506910743677d1fcee75bd807402a6",
+          "startSeconds": 17.74,
+          "endSeconds": 19.18
+        },
+        {
+          "call": "tong-3",
+          "text": "三筒",
+          "sha256": "5bcb73bc50f00af50be7d4fb82ef64de4f56c3bc76b81827cf30f8e330b4b554",
+          "startSeconds": 19.53,
+          "endSeconds": 20.73
+        },
+        {
+          "call": "tong-4",
+          "text": "四筒",
+          "sha256": "57a3f6f6398947b8fcb63368592d3dda2293b9c119706e1b9f3f72c143bdaf53",
+          "startSeconds": 21.08,
+          "endSeconds": 24.04
+        },
+        {
+          "call": "tong-5",
+          "text": "五筒",
+          "sha256": "57f5dccc497243c565fc64c0285ca01a0aa5f7d52e1557ee004513896431a560",
+          "startSeconds": 24.39,
+          "endSeconds": 25.59
+        },
+        {
+          "call": "tong-6",
+          "text": "六筒",
+          "sha256": "1b11fab575f38d7aa3e4a06782338859fd58870a9229a7547133735682b0fc21",
+          "startSeconds": 25.94,
+          "endSeconds": 27.54
+        },
+        {
+          "call": "tong-7",
+          "text": "七筒",
+          "sha256": "472ac542303bda2cea37fe3f4635213d053d4591b1e77f96a6fe7d95b02c5a26",
+          "startSeconds": 27.89,
+          "endSeconds": 29.49
+        },
+        {
+          "call": "tong-8",
+          "text": "八筒",
+          "sha256": "646b0b86e7ddd423fd536724cd960669398b9d5b5c54878ee0332590e28c00ee",
+          "startSeconds": 29.84,
+          "endSeconds": 30.8
+        },
+        {
+          "call": "tong-9",
+          "text": "九筒",
+          "sha256": "d22b58fce9787adc6492f4d37f0c8a376ec636a5e50de21b43e0b0ad28dc77ae",
+          "startSeconds": 31.15,
+          "endSeconds": 32.67
+        },
+        {
+          "call": "peng",
+          "text": "碰",
+          "sha256": "d14be6bb80c2453cb35378e174f219319c272073db46b7240aa72d4e063851d1",
+          "startSeconds": 33.02,
+          "endSeconds": 33.74
+        },
+        {
+          "call": "gang",
+          "text": "杠",
+          "sha256": "91059190cc2456d1065081ff8eca096b925f0c5a34f73cbab073e87bcfa35db2",
+          "startSeconds": 34.09,
+          "endSeconds": 34.65
+        },
+        {
+          "call": "zimo",
+          "text": "自摸",
+          "sha256": "1188d0616c4e526612d4134942be09387f565e683b86a51f765f17e8d549ab3c",
+          "startSeconds": 35.0,
+          "endSeconds": 36.76
+        },
+        {
+          "call": "fangpao",
+          "text": "放炮",
+          "sha256": "9c25253454dab12207c7e4d74bc89993e8af868ab37ddbb10b7dade6ea87bdad",
+          "startSeconds": 37.11,
+          "endSeconds": 39.51
+        },
+        {
+          "call": "qianggang",
+          "text": "抢杠",
+          "sha256": "c204d0374adf9e07e7c3f34dc83854543be63d990e5c2b6bd58b4a44b77e84df",
+          "startSeconds": 39.86,
+          "endSeconds": 40.98
+        }
+      ],
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 24.0,
+          "text": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒。",
+          "avgLogProbability": -0.09012406665674398
+        },
+        {
+          "start": 24.0,
+          "end": 41.0,
+          "text": "五桶、六桶、七桶、八桶、九桶、碰、杠、字摸、放炮、抢杠。",
+          "avgLogProbability": -0.2697870745545342
+        }
+      ],
+      "transcript": "一条，二条，三条，四条，五条，六条，七条，八条，九条，一筒，二筒，三筒，四筒。五桶、六桶、七桶、八桶、九桶、碰、杠、字摸、放炮、抢杠。"
+    }
+  }
+}

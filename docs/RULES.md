@@ -4,6 +4,11 @@
 
 新开局使用 schemaVersion 3。已开始的 schema 2 局继续按 [v2 规则](V2-RULES.md) 和冻结引擎运行；更早的 schema 1 局继续按 [原规则](LEGACY-RULES.md)。更新不重新洗旧局、不改旧账、不回填未验证的旧记录。
 
+## 可变牌桌新局补充 / New variable-table snapshots
+
+新建桌可选3或4人、1至5副（每半副）、神龙起算1至20张，默认3人/2副/6张；半副18种牌各2张。普通同牌4张起每张一番，9张加6番；神龙门槛处10分，之后逐张翻倍；一组杠上限为该局同牌总数。以下早期文字中的“三家/两家/144张/八张上限”仅描述原默认桌或旧局；新局以本段及[完整说明](VARIABLE-TABLES.md)为准。四人全部其他玩家付款的分支改为三家各付，来源单独付款和七对固定档位不变。旧进行中局不升级计分。
+New tables select three/four seats, one–five decks in half steps and a dragon threshold of one–twenty, default 3/2/6. Ordinary copy fan continues linearly above eight; dragons double from ten at threshold; kong limits follow actual copy budgets. Earlier fixed-three/eight-copy wording is historical/default context, superseded for new tables by [the full specification](VARIABLE-TABLES.md). Preserve source-only payers and fixed seven-pairs tiers; do not upgrade active saved games.
+
 ## 牌与流程
 
 - 三人，只用一至九条、一至九筒，每种八张，共 144 张实体牌。各 13 张，庄家先多发一张。

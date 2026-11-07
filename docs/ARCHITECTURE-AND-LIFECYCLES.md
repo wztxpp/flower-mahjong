@@ -110,3 +110,17 @@ local 同一前台会话的网络缺口无论多久都不自动清除已收队�
 A foreground local session retains received queues/cursors across any transport-gap duration. Eight local pending segments including the active one plus onPendingPrefix-reported nonterminal voiced events outside the batch expose explicit skip; clicking ends page media and shows latest received state without sending a move. Backgrounding, departure, game/history resets still revoke old media/tickets and establish silent baselines. Receipt-time mute/lock eligibility for established-page new suffixes is frozen and refused events never revive. A new page’s initial locked baseline does not permanently deny existing history, but its ticket stays silent; only a subsequent unlocked live event may recover a sibling’s shared prefix. Legacy five-second silent reconnect rules remain separate.
 
 新局自摸展示隐私同时覆盖房间视图与个人历史，终局解除遮蔽；它不改实体牌区或权威计分。详细边界见 [展示隐私](TILE-VISIBILITY.md)。 / New-game self-draw privacy covers room views and profile records, lifting at finish without changing physical zones or scoring. See the visibility guide.
+
+### 角色池扩展不改变座位生命周期 / Roster expansion does not change seat lifecycles
+
+七个角色供本桌三或四位玩家开局选择；角色偏好属于座位占用者，已确定角色属于单局快照。扩展池不会重分配已保存局、不迁移旧规则、不改变身份/隐私。旧局缺失映射仅视图回退原三角色。合同、资源与测试见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
+Seven characters serve three or four players at start. Preferences belong to occupants; assigned characters belong to a game snapshot. Roster expansion neither rerolls saved games, migrates rules nor changes identity/privacy. Missing old maps receive a view-only original-three fallback. See [contract, assets and tests](SEVEN-CHARACTERS.md).
+
+## 可变牌桌维护入口 / Variable-table maintenance
+
+[可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
+[Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+## 观战扩展 / Spectating extension
+
+观众通过独立只读凭证进入，不占座、不参与个人成绩或播放屏障。前端保留观战/玩家两类缓存，公开动态按各局快照显示名字，所有隐私和生命周期边界见 [观战与名字动态](SPECTATING-AND-NAMED-LOGS.md)。 / Spectators use independent read-only credentials without seats, profile records or presentation gates. Separate browser caches preserve player identities, and event names follow each game's snapshot. See the dedicated guide for privacy/lifecycle boundaries.

@@ -146,3 +146,22 @@ Ordered-audio tests use real CharacterAudio with substituted browser/network dep
 - `tests/action-choice.test.js`：首胡前自摸胡与三种自身杠并列、接炮胡/碰/明杠/过并列、已胡必胡、碰后禁止暗杠及出牌后恢复、旧局缺字段/false 保持时机；所有夹具守恒且验证非法动作不改输入。 / Pre-win draw/claim choices, mandatory post-win hu, post-peng concealed-kong restriction and release, missing/false saved-flag compatibility, conserved fixtures and immutable rejection.
 
 - `tests/tile-visibility.test.js`：新局暗杠公开；本人/两家对手的自摸胡牌、实体引用、事件与计分隐私；HTTP、个人历史、重连、终局、旧快照及计分不变。真实 Vue 展示回归在 `tests/ui.test.js`。 / New-game public kongs; owner/opponent win, retired-tile, event and score privacy; HTTP/profile/reconnect/finish/legacy and unchanged scoring. Real Vue display regression lives in ui.test.js.
+
+### 七角色回归 / Seven-character regressions
+
+原角色分配测试现穷举512种偏好组合；七人池与三座位分离、三版本旧局读取、全角色音频路径及三视角Vue渲染都有专项断言。资产测试要求7张独立PNG、161条当前语音和3条旧胡，不会因制作未完成而跳过。`tests/fixtures/original-voice-hashes.json` 锁定原72条静态音频；真实语音审计另有来源和ASR限制，参见 [七角色说明](SEVEN-CHARACTERS.md)。
+The assignment suite enumerates 512 preference combinations, with dedicated fixed-seat/roster, three-engine legacy, all-character audio and three-viewer Vue checks. Asset tests require seven distinct PNGs, 161 active calls and three legacy hu clips and do not skip unfinished production. The original-voice fixture locks the 72 public baseline files; actual voice audits retain provenance and ASR limitations. See [the character guide](SEVEN-CHARACTERS.md).
+
+## 可变牌桌维护入口 / Variable-table maintenance
+
+[可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
+[Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+## 观战与名字 / Spectating and names
+
+`tests/spectators.test.js` 验证观战入场/签名/越权/持久化、各版本隐私、四席投影及旧局名字归属；`tests/ui.test.js` 追加真实 Vue 的只读操作、缓存分离、重复/迟到入场和历史导航。浏览器实测范围见 [观战文档](SPECTATING-AND-NAMED-LOGS.md)。 / The spectator suite verifies admission, signatures, authorization, persistence, versioned privacy, four-seat projection and historical names; UI tests cover actual Vue controls/caches/concurrency/navigation. See the spectating guide for browser scope.
+
+## 角色、变人数与观战联合验收 / Combined feature verification
+
+[联合验收报告](FEATURE-INTEGRATION-VALIDATION.md) 记录三/四人玩家和观众的集成边界、真实浏览器与全量检查结果。新增联合场景位于现有 `tests/spectators.test.js`、`tests/ui.test.js`，未弱化媒体资产门槛。
+The integration report records player/viewer boundaries, real-browser coverage and aggregate checks. Combined cases extend the existing spectator/UI suites without relaxing media contracts.

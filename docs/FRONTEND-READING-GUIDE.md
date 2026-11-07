@@ -203,3 +203,22 @@ local 前台长短网络缺口均保留队列和游标；`pendingPresentationCou
 Local foreground gaps of any length preserve queues/cursors. pendingPresentationCount combines active/queued local segments with onPendingPrefix’s nonterminal voiced recovery outside the current batch, avoiding current-batch double counting. At eight, explicit skip invokes skipLocalPlayback to cancel page media and mark known history skipped. There is no automatic five-second queue drop. Hide, leave and game changes still cancel/baseline; legacy barriers retain separate reconnect semantics. See the pacing protocol and separate final validation record.
 
 新局对手自摸胡牌用 `tile: null, hidden: true` 表示。App 胡牌区、字幕、悬停和读屏保持隐藏，同时仍播放自摸声音与高亮；终局重新拿到牌面。见 [展示隐私](TILE-VISIBILITY.md)。 / Opponent self-draw wins use tile null/hidden true. App hides faces/captions/tooltips/accessibility text while retaining audio and highlights; finish reveals the tiles.
+
+## 七角色显示 / Seven-character display
+
+角色选择器从七人列表生成，桌面人数来自本桌三/四人快照。音频与立绘都用服务端绝对座位映射，不用角色列表下标推断玩家数。完整路径、旧局兜底和验证见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
+The selector renders seven characters while table size follows its three/four-player snapshot. Both voices and portraits use absolute server-seat assignments, never roster indexes as player counts. See [paths, legacy fallbacks and verification](SEVEN-CHARACTERS.md).
+
+## 可变牌桌维护入口 / Variable-table maintenance
+
+[可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
+[Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+## 观战扩展 / Spectating extension
+
+观众通过独立只读凭证进入，不占座、不参与个人成绩或播放屏障。前端保留观战/玩家两类缓存，公开动态按各局快照显示名字，所有隐私和生命周期边界见 [观战与名字动态](SPECTATING-AND-NAMED-LOGS.md)。 / Spectators use independent read-only credentials without seats, profile records or presentation gates. Separate browser caches preserve player identities, and event names follow each game's snapshot. See the dedicated guide for privacy/lifecycle boundaries.
+
+### 按快照显示首胡前选择 / Snapshot-aware pre-win rule text
+
+`preHuActionChoice` 与 `concealedKongAfterPungDiscard` 两个computed只读取当前v3局的显式true，分别选择首胡前完整动作与碰后延迟暗杠说明；false/缺字段仍显示旧策略。大厅讲新局默认，schema1/2继续各自独立说明。它们不计算合法动作、不改规则。九种开关组合及冻结版本回归在 `tests/ui.test.js`。
+The two computed values read explicit current-schema true flags independently. False/missing preserves old explanations; the lobby describes new defaults and frozen engines retain separate sections. No legal actions or rules are changed. The UI suite covers all nine combinations and old versions.

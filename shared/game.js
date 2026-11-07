@@ -8,13 +8,24 @@
  */
 /** Pure schema-v3 engine. Scores are virtual; provisional overlaps are explicit rules. */
 import { hidesPrivateWinDetails, visibleHistoryEvent, visibleScoreSummary } from './tile-visibility.js';
-import { DEFAULT_BIG_SINGLE_READY_POINTS, isBigSingleReadyPoints } from './start-options.js';
-/* 牌种有 18 种；每种八张，一共 144 张实体牌。
- * There are 18 identities, eight copies each, for 144 physical tiles. */
+import {
+  DEFAULT_BIG_SINGLE_READY_POINTS, isBigSingleReadyPoints,
+  DEFAULT_PLAYER_COUNT, DEFAULT_DECK_COUNT, DEFAULT_DRAGON_START_COUNT,
+  isPlayerCount, isDeckCount, isDragonStartCount, copiesPerTile,
+} from './start-options.js';
+/* 十八种条筒牌；每种张数由开局副数决定，缺字段旧局仍为八张。
+ * Eighteen bamboo/dot identities; saved deck count sets copies, with eight for older games. */
 export const TILE_COUNT = 18;
 /* 新局默认值；保存局使用自己的 rules，不受以后默认值改动影响。
  * New-game defaults; saved games keep their own rules when defaults change. */
 export const DEFAULT_RULES = Object.freeze({
+  // 仅新局保存这些维度与计分开关；读取旧局绝不补写新默认。
+  // Only new games save dimensions/scoring flags; reads never inject defaults into old saves.
+  playerCount: DEFAULT_PLAYER_COUNT,
+  deckCount: DEFAULT_DECK_COUNT,
+  dragonStartCount: DEFAULT_DRAGON_START_COUNT,
+  exponentialDragon: true,
+  extendedCopyFan: true,
   // 是否允许七对结构。
   // Enable the seven-pairs shape.
   sevenPairs: true,
@@ -135,10 +146,14 @@ const countTiles = (tiles) => {
 /* 展开玩家所有碰杠组的牌，供计番与守恒检查使用。
  * Flatten a player’s meld tiles for scoring and conservation checks. */
 const tilesInMelds = (player) => player.melds.flatMap((meld) => meld.tiles);
-/* 仅允许已经成立的四至七张杠继续加一张；三张碰不是可加杠。
- * Only an established four-to-seven-tile kong can grow; a three-tile peng cannot. */
-const canExtendKong = (meld) =>
-  meld.type !== 'peng' && meld.tiles.length >= 4 && meld.tiles.length < 8;
+/* 已成立的杠可加到本局同牌总数；碰仍必须先通过独立补杠流程。
+ * An established kong may grow to the deck's copy limit; a peng uses its separate upgrade path. */
+const canExtendKong = (game, meld) =>
+  meld.type !== 'peng' && meld.tiles.length >= 4 && meld.tiles.length < copiesPerTile(game.rules);
+// 所有付款、轮转及授权共用真实参与座位，绝不根据角色池大小推断人数。
+// Payments, rotation and authorization use actual participating seats, never the character roster size.
+const allSeats = (game) => game.players.map((player) => player.seat);
+const validSeat = (game, seat) => Number.isInteger(seat) && seat >= 0 && seat < game.players.length;
 /* 比较已排序且已规范化的听牌列表；这里比较元素与顺序，不是通用集合算法。
  * Compare normalized sorted wait lists by element and order; this is not a general set algorithm. */
 const sameTileList = (a, b) => a.length === b.length && a.every((tile, i) => tile === b[i]);
@@ -175,7 +190,12 @@ function normalizeNewGameRules(input = {}) {
     },
   };
   if (!isBigSingleReadyPoints(rules.bigSingleReadyPoints)) throw new Error('大单吊喜钱分值无效');
+  if (!isPlayerCount(rules.playerCount)) throw new Error('人数必须为3或4人');
+  if (!isDeckCount(rules.deckCount)) throw new Error('副数必须为1至5副，每次增加半副');
+  if (!isDragonStartCount(rules.dragonStartCount)) throw new Error('神龙起算张数必须为1至20的整数');
   for (const key of [
+    'exponentialDragon',
+    'extendedCopyFan',
     'sevenPairs',
     'publicConcealedKongs',
     'hideSelfDrawWins',
@@ -249,34 +269,35 @@ function secureRandom() {
   return bytes[0] / 4294967296;
 }
 
-/** Screen seats stay fixed: +1 is upper-left, +2 upper-right from each player's view.
- * Missing direction is the legacy clockwise order; never retrofit a saved game. */
-/* 按本局保存的方向列出另外两个座位；缺少方向字段时保留旧局顺时针行为。
- * List the other seats using the saved direction; missing direction preserves legacy clockwise play. */
+/* 按真实人数与本局方向排列其他座位；四人逆时针为右、对、左。缺方向仍走旧顺时针。
+ * Order other seats by player count and saved direction: right/opposite/left for four-seat counterclockwise play. */
 export function turnOrderAfter(game, seat) {
-  const offsets = game.rules?.turnDirection === 'counterclockwise' ? [2, 1] : [1, 2];
-  return offsets.map((offset) => (seat + offset) % 3);
+  const count = game.players.length;
+  const offsets = Array.from({ length: count - 1 }, (_, index) => index + 1);
+  if (game.rules?.turnDirection === 'counterclockwise') offsets.reverse();
+  return offsets.map((offset) => (seat + offset) % count);
 }
 /* 找上一局历史中第一个合法胡牌事件作为下一局庄家；没有记录则回到 0 号位。
  * Use the first valid hu event in the previous game as the next dealer, otherwise seat 0. */
 export function dealerForNextGame(previousGame) {
-  const valid = (seat) => Number.isInteger(seat) && seat >= 0 && seat <= 2;
+  const valid = (seat) => Number.isInteger(seat) && seat >= 0 &&
+    seat < (previousGame?.players?.length ?? DEFAULT_PLAYER_COUNT);
   const firstHu = Array.isArray(previousGame?.history)
     ? previousGame.history.find((event) => event?.type === 'hu' && valid(event.seat))
     : null;
   return firstHu ? firstHu.seat : 0;
 }
-/* 创建全新的独立牌局：校验规则、洗 144 张牌、发牌、建立初始状态并检查守恒。
- * Create a new independent game: validate rules, shuffle 144 tiles, deal, initialize state, and check invariants. */
+/* 新局按人数与副数洗发牌；各十三张、庄家十四张的结构规则不变。
+ * Deal a new game using its dimensions; preserve thirteen tiles per player and fourteen for the dealer. */
 export function createGame({ seed, rules: inputRules, dealerSeat = 0 } = {}) {
-  if (!Number.isInteger(dealerSeat) || dealerSeat < 0 || dealerSeat > 2)
-    throw new Error('庄家座位无效');
   const rules = normalizeNewGameRules(inputRules);
+  if (!Number.isInteger(dealerSeat) || dealerSeat < 0 || dealerSeat >= rules.playerCount)
+    throw new Error('庄家座位无效');
   /* 牌墙是有顺序的实体牌列表；头部摸牌，尾部翻萝卜。
    * The wall is an ordered physical tile list: draw at the head and reveal radishes from the tail. */
   const wall = Array.from(
     {
-      length: 144,
+      length: TILE_COUNT * copiesPerTile(rules),
     },
     (_, i) => i % TILE_COUNT,
   );
@@ -289,7 +310,7 @@ export function createGame({ seed, rules: inputRules, dealerSeat = 0 } = {}) {
   }
   const players = Array.from(
     {
-      length: 3,
+      length: rules.playerCount,
     },
     (_, seat) => ({
       seat,
@@ -346,7 +367,7 @@ export function createGame({ seed, rules: inputRules, dealerSeat = 0 } = {}) {
   appendHistoryEvent(game, {
     type: 'start',
     seat: dealerSeat,
-    message: `三位牌友已就位，${dealerSeat + 1}号位坐庄，庄家先出牌。`,
+    message: `${rules.playerCount}位牌友已就位，${dealerSeat + 1}号位坐庄，庄家先出牌。`,
   });
   assertGameInvariants(game);
   return game;
@@ -368,7 +389,7 @@ export function isWinningHand(hand, meldCount = 0, rules = DEFAULT_RULES) {
    * Each meld removes three required concealed tiles; reject a mismatched size before recursion. */
   if (hand.length !== (4 - meldCount) * 3 + 2) return false;
   const counts = countTiles(hand);
-  if (counts.some((count) => count > 8)) return false;
+  if (counts.some((count) => count > copiesPerTile(rules))) return false;
   if (rules.sevenPairs && meldCount === 0 && counts.every((count) => count % 2 === 0)) return true;
   /* 缓存同一剩余牌频次的拆组结果，避免递归重复搜索。
    * Memoize decomposition results for the same remaining tile frequencies. */
@@ -429,7 +450,7 @@ export function getWaitTiles(hand, melds = [], rules = DEFAULT_RULES) {
       length: TILE_COUNT,
     },
     (_, i) => i,
-  ).filter((tile) => owned[tile] < 8 && isWinningHand([...hand, tile], melds.length, rules));
+  ).filter((tile) => owned[tile] < copiesPerTile(rules) && isWinningHand([...hand, tile], melds.length, rules));
 }
 
 /** Pattern metadata is captured from a complete first winning shape, never from accumulated wins. */
@@ -479,8 +500,8 @@ function classifyHuPattern(hand, melds, rules) {
 }
 
 /** Expanded post-win waits use only this player's saved shape and own/public tile zones. */
-/* 普通牌型重新算听口；已胡过的特殊牌型使用保存的听口，再排除本人已占满八张的牌种。
- * Recompute ordinary waits; reuse saved special-pattern waits after hu, excluding identities already owned eight times. */
+/* 普通牌型重新算听口；特殊牌型复用保存听口，排除已达到本局实体上限的同牌。
+ * Recompute ordinary waits; special patterns reuse saved waits and exclude identities at this game’s copy limit. */
 function contextualWaitTiles(game, player, hand, melds = player.melds) {
   /* 牌型快照用于固定特殊胡牌档位；不要用后来累积的胡牌区反推首次牌型。
    * The pattern snapshot preserves a special winning tier; later win-pile growth cannot reconstruct the first shape. */
@@ -494,7 +515,7 @@ function contextualWaitTiles(game, player, hand, melds = player.melds) {
     ...melds.flatMap((meld) => meld.tiles),
     ...player.winPile.map((win) => win.tile),
   ]);
-  return pattern.waitTiles.filter((tile) => owned[tile] < 8);
+  return pattern.waitTiles.filter((tile) => owned[tile] < copiesPerTile(game.rules));
 }
 /* 取候选胡牌前的待牌手牌，再按本版本规则验证能否胡；不能胡返回 null，能胡返回听口。
  * Build the waiting hand before the candidate win and validate this version’s hu rules; return null or its wait list. */
@@ -538,7 +559,7 @@ function canDeclareKong(game, seat, type, tile) {
     removeTilesFromHand(hand, tile);
     const meld = melds.find(
       (item) =>
-        item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(item)),
+        item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(game, item)),
     );
     if (!meld) return false;
     meld.tiles.push(tile);
@@ -634,7 +655,7 @@ export function getLegalActions(game, seat) {
   // 展示结束前所有座位都必须等待，不能用旧按钮绕过续行边界。
   // Every seat waits for presentation; stale buttons cannot bypass the continuation boundary.
   if (
-    game.presentation || !Number.isInteger(seat) || seat < 0 || seat > 2 ||
+    game.presentation || !validSeat(game, seat) ||
     game.phase === 'finished'
   ) return [];
   if (game.phase === 'claim') {
@@ -703,7 +724,7 @@ export function getLegalActions(game, seat) {
         });
       if (
         counts[tile] &&
-        player.melds.some((meld) => meld.tile === tile && canExtendKong(meld)) &&
+        player.melds.some((meld) => meld.tile === tile && canExtendKong(game, meld)) &&
         canDeclareKong(game, seat, 'addGang', tile)
       )
         actions.push({
@@ -736,7 +757,7 @@ export function getLegalActions(game, seat) {
 /* 只用本人和公开信息解释当前不能胡的原因；返回机器码、中文提示和可公开的补充信息。
  * Explain hu availability using only this player’s and public information; return a code, message, and permitted details. */
 export function getHuDiagnostic(game, seat) {
-  if (!Number.isInteger(seat) || seat < 0 || seat > 2) throw new Error('座位无效');
+  if (!validSeat(game, seat)) throw new Error('座位无效');
   const reply = (code, message, extra = {}) => ({
     canHu: code === 'AVAILABLE',
     code,
@@ -748,14 +769,14 @@ export function getHuDiagnostic(game, seat) {
   if (game.phase === 'finished')
     return reply(
       'FINISHED',
-      game.finishReason === 'allPlayersHu' ? '三家都已胡牌，本局结束。' : '牌墙已用完，本局结束。',
+      game.finishReason === 'allPlayersHu' ? '所有玩家都已胡牌，本局结束。' : '牌墙已用完，本局结束。',
     );
   const player = game.players[seat];
   let tile;
   let fromHand;
   if (game.phase === 'claim') {
     if (game.claim.discardSeat === seat)
-      return reply('WRONG_TURN', '这是你打出的牌，请等待另外两家回应。');
+      return reply('WRONG_TURN', '这是你打出的牌，请等待其他玩家回应。');
     if (game.claim.responses[seat])
       return reply('ALREADY_RESPONDED', '你已回应，正在等其他有资格的玩家操作。');
     tile = game.claim.tile;
@@ -831,7 +852,7 @@ function finishGame(game, reason = 'wallExhausted') {
     reason,
     message:
       reason === 'allPlayersHu'
-        ? '三家都已胡牌，本局结束，积分已结算。'
+        ? '所有玩家都已胡牌，本局结束，积分已结算。'
         : '牌墙已摸完，本局结束，积分已结算。',
   });
 }
@@ -847,14 +868,14 @@ function beginDrawStep(game, seat, kind = 'normal') {
 }
 /* 仅接受座位与付款来源都合法的杠事件，避免把无关历史当作本次补摸的来源。
  * Accept only a kong event with a valid seat and payer source, never unrelated historical provenance. */
-function kongSourceFromEvent(event, seat) {
+function kongSourceFromEvent(game, event, seat) {
   if (event?.seat !== seat || !['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type))
     return null;
   if (
     event.type === 'mingGang'
       ? !Number.isInteger(event.fromSeat) ||
         event.fromSeat < 0 ||
-        event.fromSeat > 2 ||
+        event.fromSeat >= game.players.length ||
         event.fromSeat === seat
       : event.fromSeat !== null
   )
@@ -871,6 +892,7 @@ function replacementKongSource(game, seat) {
   if (draw?.seat !== seat || draw.source !== 'replacement') return null;
   if (Object.hasOwn(draw, 'kongSource'))
     return kongSourceFromEvent(
+      game,
       {
         ...draw.kongSource,
         seat,
@@ -890,7 +912,7 @@ function replacementKongSource(game, seat) {
     kong?.revision !== drawn.revision
   )
     return null;
-  return kongSourceFromEvent(kong, seat);
+  return kongSourceFromEvent(game, kong, seat);
 }
 /* 从牌墙头取一张牌并进入出牌步骤；只记录公开的摸牌事件，不公开摸到的牌种。
  * Take a tile from the wall head and enter the discard step; the public draw event does not reveal its identity. */
@@ -909,7 +931,7 @@ function drawTile(game) {
   const latest = game.history.at(-1);
   const kongSource =
     source === 'replacement' && latest?.revision === game.revision
-      ? kongSourceFromEvent(latest, seat)
+      ? kongSourceFromEvent(game, latest, seat)
       : null;
   game.lastDraw = {
     seat,
@@ -947,8 +969,8 @@ function calculateHuScore(game, seat, bigSingle, pattern, kongEventType = null) 
    * Combine the hand and logical win pile for applicable scoring without recounting the discard river. */
   const handAndWins = [...player.hand, ...player.winPile.map((item) => item.tile)];
   const owned = [...handAndWins, ...tilesInMelds(player)];
-  /* 同种牌四/五/六/七/八张按各档加番；超过八张的逻辑重复保留配置兜底。
-   * Apply copy-count fan tiers for four through eight; retain the configured fallback for logical counts above eight. */
+  /* 新局同牌四张起每张一番；旧局保留原档位和超过八张的兜底，七对仍使用首次固定档位。
+   * New games add count minus three from four copies; old saves retain their tiers/fallback and seven pairs stays fixed. */
   const rawCopyFanBonus = countTiles(owned).reduce(
     (sum, count) =>
       sum +
@@ -963,7 +985,9 @@ function calculateHuScore(game, seat, bigSingle, pattern, kongEventType = null) 
               : count === 8
                 ? 5
                 : count > 8
-                  ? game.rules.sevenPlusCopyFan
+                  ? game.rules.extendedCopyFan === true
+                    ? count - 3
+                    : game.rules.sevenPlusCopyFan
                   : 0),
     0,
   );
@@ -1107,7 +1131,7 @@ function awardBigSingleReady(game, seat) {
       : transferPoints(
           game,
           seat,
-          [0, 1, 2].filter((other) => other !== seat),
+          allSeats(game).filter((other) => other !== seat),
           points,
         );
   appendHistoryEvent(game, {
@@ -1115,7 +1139,7 @@ function awardBigSingleReady(game, seat) {
     seat,
     points,
     payments,
-    message: `${seat + 1}号位大单吊听牌，${points === 0 ? '本局喜钱设为0分，不收取' : `另外两家各付${points}分喜钱`}，本局仅结算一次，后续胡牌分另算。`,
+    message: `${seat + 1}号位大单吊听牌，${points === 0 ? '本局喜钱设为0分，不收取' : `另外${game.players.length - 1}家各付${points}分喜钱`}，本局仅结算一次，后续胡牌分另算。`,
   });
 }
 
@@ -1135,13 +1159,19 @@ function settleDragons(game) {
         ...(game.rules.dragonCountsWinPile ? player.winPile.map((win) => win.tile) : []),
         ...(game.rules.dragonCountsSharedRadishes ? sharedRadishes : []),
       ];
+      // 新局从保存门槛起10分，每多一张翻倍；缺标记旧局沿用原6/7/8封顶分表。
+      // New snapshots double ten points from their saved threshold; absent flags preserve the old capped table.
+      const exponential = game.rules.exponentialDragon === true;
+      const threshold = exponential ? game.rules.dragonStartCount : 6;
       const dragons = countTiles(owned).flatMap((count, tile) =>
-        count >= 6
+        count >= threshold
           ? [
               {
                 tile,
                 count,
-                points: game.rules.dragonPoints[Math.min(8, count)],
+                points: exponential
+                  ? 10 * 2 ** (count - threshold)
+                  : game.rules.dragonPoints[Math.min(8, count)],
               },
             ]
           : [],
@@ -1161,7 +1191,7 @@ function settleDragons(game) {
     const payments = transferPoints(
       game,
       entry.seat,
-      [0, 1, 2].filter((seat) => seat !== entry.seat),
+      allSeats(game).filter((seat) => seat !== entry.seat),
       entry.points,
     );
     const settled = {
@@ -1172,7 +1202,7 @@ function settleDragons(game) {
     appendHistoryEvent(game, {
       type: 'dragonSettlement',
       ...cloneSerializable(settled),
-      message: `${entry.seat + 1}号位终局神龙结算：${entry.dragons.map((dragon) => `${tileLabel(dragon.tile)}${dragon.count}张`).join('、')}，另外两家各付${entry.points}分。`,
+      message: `${entry.seat + 1}号位终局神龙结算：${entry.dragons.map((dragon) => `${tileLabel(dragon.tile)}${dragon.count}张`).join('、')}，另外${game.players.length - 1}家各付${entry.points}分。`,
     });
   }
 }
@@ -1283,8 +1313,8 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
     }
     const score = calculateHuScore(game, seat, bigSingle, pattern, kongEventType);
     const repeatSelfDrawWithOneUnhu =
-      selfDraw && !bigSingle && priorHuSeats.length === 2 && priorHuSeats.includes(seat);
-    /* 本批次之前尚未胡、而现在三家均已胡，才符合末家首次胡的付款例外。
+      selfDraw && !bigSingle && priorHuSeats.length === game.players.length - 1 && priorHuSeats.includes(seat);
+    /* 本批次之前尚未胡、而现在全员均已胡，才符合末家首次胡的付款例外。
      * The final-first-hu payment exception requires a previously unwon seat and all seats now having won. */
     const finalFirstHu =
       game.rules.finalHuPaymentExceptions === true &&
@@ -1297,18 +1327,18 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
         : replacementKong
           ? replacementKong.type === 'mingGang'
             ? [replacementKong.fromSeat]
-            : [0, 1, 2].filter((other) => other !== seat)
+            : allSeats(game).filter((other) => other !== seat)
           : finalFirstHu && selfDraw
-            ? [0, 1, 2].filter((other) => other !== seat)
+            ? allSeats(game).filter((other) => other !== seat)
             : selfDraw &&
                 game.lastDraw?.source !== 'replacement' &&
                 game.rules.selfDrawOnlyUnwon === true
-              ? [0, 1, 2].filter((other) => other !== seat && !priorHuSeats.includes(other))
+              ? allSeats(game).filter((other) => other !== seat && !priorHuSeats.includes(other))
               : repeatSelfDrawWithOneUnhu
-                ? [0, 1, 2].filter((other) => !priorHuSeats.includes(other))
+                ? allSeats(game).filter((other) => !priorHuSeats.includes(other))
                 : source === 'discard' && !bigSingle
                   ? [fromSeat]
-                  : [0, 1, 2].filter((other) => other !== seat);
+                  : allSeats(game).filter((other) => other !== seat);
     const payments = transferPoints(game, seat, payerSeats, score.total);
     game.players[seat].lastScoreBreakdown = cloneSerializable(score);
     const payerLabel =
@@ -1316,7 +1346,7 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
         ? '无未胡付款方，本次不收取胡牌分'
         : payerSeats.length === 1
           ? `${payerSeats[0] + 1}号位付${score.total}分`
-          : `另外两家各付${score.total}分`;
+          : `另外${payerSeats.length}家各付${score.total}分`;
     const sourceLabel =
       source === 'robKong'
         ? `${bigSingle ? '大单钓·' : ''}抢杠胡（仅补杠者付款）`
@@ -1375,7 +1405,7 @@ function declareKong(game, seat, type, tile, fromSeat = null, presentationOption
     removeTilesFromHand(player.hand, tile);
     const meld = player.melds.find(
       (item) =>
-        item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(item)),
+        item.tile === tile && (type === 'buGang' ? item.type === 'peng' : canExtendKong(game, item)),
     );
     concealed = meld.type === 'anGang';
     if (type === 'buGang') meld.type = 'buGang';
@@ -1398,7 +1428,7 @@ function declareKong(game, seat, type, tile, fromSeat = null, presentationOption
   // Keep the kong event immediately before its replacement draw for provenance.
   awardBigSingleReady(game, seat);
   const amount = type === 'anGang' || type === 'mingGang' ? 2 : 1;
-  const payerSeats = type === 'mingGang' ? [fromSeat] : [0, 1, 2].filter((other) => other !== seat);
+  const payerSeats = type === 'mingGang' ? [fromSeat] : allSeats(game).filter((other) => other !== seat);
   const payments = transferPoints(game, seat, payerSeats, amount);
   /* 全桌首胡前只累计应翻数量；首次胡时才真正从牌墙尾部移出。
    * Before the table’s first hu, accumulate radish debt; remove actual wall-tail tiles at first hu. */
@@ -1439,7 +1469,7 @@ function declareKong(game, seat, type, tile, fromSeat = null, presentationOption
         mingGang: '明杠',
         addGang: `加杠至${kongSize}张`,
       }[type]
-    }，${payerSeats.length === 1 ? '出牌方' : '另外两家各'}付${amount}分，${radishDeferred ? `累计待翻萝卜${game.pendingKongRadishes}张，首胡时一起翻` : `翻出萝卜${tileLabel(radish)}`}。`,
+    }，${payerSeats.length === 1 ? '出牌方' : `另外${payerSeats.length}家各`}付${amount}分，${radishDeferred ? `累计待翻萝卜${game.pendingKongRadishes}张，首胡时一起翻` : `翻出萝卜${tileLabel(radish)}`}。`,
   });
   beginDrawStep(game, seat, 'replacement');
   if (presentationOptions?.pausePresentation) game.presentation = { stage: 'kong', seat };
@@ -1639,8 +1669,10 @@ function openDiscardClaimWindow(game, discardIndex) {
 /* 自动执行无需用户选择的摸牌/胡后摸打，遇到真实决策点立即停止；上限用于发现死循环。
  * Advance automatic draws and post-hu discards until a real decision is needed; the bound detects loops. */
 function advanceAutomaticSteps(game, presentationOptions) {
-  // Each two automatic transitions consume at least one of the 144 physical tiles.
-  for (let transitions = 0; transitions < 300; transitions++) {
+  // 每两次自动转移至少消耗一张牌，按副数扩展防死循环界限，五副牌也不能提前截停。
+  // Every two transitions consume a tile; scale the loop guard so five-deck games cannot stop early.
+  const transitionLimit = 2 * TILE_COUNT * copiesPerTile(game.rules) + 12;
+  for (let transitions = 0; transitions < transitionLimit; transitions++) {
     /* 接牌阶段或终局需要等待/停止，自动轮转不能跨过这些边界。
      * Claims and finished games stop automatic advancement at their phase boundaries. */
     if (game.presentation || game.phase !== 'turn') return;
@@ -1745,7 +1777,7 @@ function applyGameAction(game, seat, action, presentationOptions) {
 /* 按座位与本局快照投影：公开暗杠，隐藏对手手牌、自摸胡牌及待决选择；旧局保持原策略。
  * Project by seat and saved rules: publish kongs, conceal opponents’ hands/self-drawn wins/pending choices, and retain legacy policy. */
 export function getPlayerView(game, seat) {
-  if (!Number.isInteger(seat) || seat < 0 || seat > 2) throw new Error('座位无效');
+  if (!validSeat(game, seat)) throw new Error('座位无效');
   const me = game.players[seat];
   return {
     schemaVersion: 3,
@@ -1840,9 +1872,18 @@ export function getPlayerView(game, seat) {
 }
 
 /** Logical win piles reference existing physical tiles, and are never extra physical copies. */
-/* 验证实体牌总数、每种八张、积分零和和阶段手牌数量；逻辑胡牌引用不能当成新实体牌。
- * Check physical tile counts, eight copies per identity, zero-sum scores, and phase-dependent hand sizes; logical wins are references. */
+/* 按本局副数验证实体总数/单牌总数、零和及手牌结构；胡牌逻辑引用不增加实体牌。
+ * Validate saved total/copy budgets, zero-sum balances and hand shape; logical wins do not add physical copies. */
 export function assertGameInvariants(game) {
+  // 只校验已保存字段，不填补缺失字段；损坏的维度不能变成任意人数/牌数。
+  // Validate saved fields without backfilling them; corrupted dimensions cannot expand seats or tile budgets.
+  for (const [key, validate] of [
+    ['playerCount', isPlayerCount], ['deckCount', isDeckCount], ['dragonStartCount', isDragonStartCount],
+  ]) {
+    if (Object.hasOwn(game.rules, key) && !validate(game.rules[key])) throw new Error('牌桌配置无效');
+  }
+  if (game.rules.exponentialDragon === true && !isDragonStartCount(game.rules.dragonStartCount))
+    throw new Error('神龙起算张数无效');
   // 标记只包含恢复所需的公开索引/座位，且必须与暂停阶段一致。
   // Markers contain only public resume indices/seats and must agree with the paused phase.
   if (game.presentation) {
@@ -1859,7 +1900,7 @@ export function assertGameInvariants(game) {
         ? !Number.isInteger(discardIndex) || discardIndex !== game.discards.length - 1 ||
           game.discards[discardIndex]?.seat !== game.currentSeat ||
           game.discards[discardIndex]?.claimable || game.discards[discardIndex]?.claimedBy !== undefined
-        : !Number.isInteger(seat) || seat < 0 || seat > 2 || seat !== game.currentSeat)
+        : !validSeat(game, seat) || seat !== game.currentSeat)
     ) throw new Error('展示续行状态无效');
   }
   if (
@@ -1869,7 +1910,7 @@ export function assertGameInvariants(game) {
     throw new Error('大单吊喜钱分值无效');
   if (
     game.dealerSeat !== undefined &&
-    (!Number.isInteger(game.dealerSeat) || game.dealerSeat < 0 || game.dealerSeat > 2)
+    (!Number.isInteger(game.dealerSeat) || game.dealerSeat < 0 || game.dealerSeat >= game.players.length)
   )
     throw new Error('庄家座位无效');
   if (
@@ -1892,6 +1933,7 @@ export function assertGameInvariants(game) {
     Object.hasOwn(game.lastDraw, 'kongSource') &&
     (game.lastDraw.source !== 'replacement' ||
       !kongSourceFromEvent(
+        game,
         {
           ...game.lastDraw.kongSource,
           seat: game.lastDraw.seat,
@@ -1916,12 +1958,12 @@ export function assertGameInvariants(game) {
       !player?.melds.some(
         (meld) =>
           meld.tile === claim.tile &&
-          (claim.kongType === 'buGang' ? meld.type === 'peng' : canExtendKong(meld)),
+          (claim.kongType === 'buGang' ? meld.type === 'peng' : canExtendKong(game, meld)),
       ) ||
       !claim.eligibleSeats.length ||
       claim.eligibleSeats.some(
         (seat) =>
-          ![0, 1, 2].includes(seat) ||
+          !validSeat(game, seat) ||
           seat === claim.discardSeat ||
           claim.options[seat]?.length !== 1 ||
           claim.options[seat][0].type !== 'hu',
@@ -1944,13 +1986,14 @@ export function assertGameInvariants(game) {
     ]),
   ];
   if (
-    tiles.length !== 144 ||
+    tiles.length !== TILE_COUNT * copiesPerTile(game.rules) ||
     !tiles.every(isTile) ||
-    countTiles(tiles).some((count) => count !== 8)
+    countTiles(tiles).some((count) => count !== copiesPerTile(game.rules))
   )
     throw new Error('牌张守恒检查失败');
   if (
-    game.players.length !== 3 ||
+    game.players.length !== (game.rules.playerCount ?? DEFAULT_PLAYER_COUNT) ||
+    game.players.some((player, index) => player.seat !== index) ||
     game.players.reduce((sum, player) => sum + player.score, 0) !== 0
   )
     throw new Error('积分守恒检查失败');
@@ -1996,7 +2039,7 @@ export function assertGameInvariants(game) {
         !meld.tiles.every((tile) => tile === meld.tile) ||
         (meld.type === 'peng'
           ? meld.tiles.length !== 3
-          : meld.tiles.length < 4 || meld.tiles.length > 8)
+          : meld.tiles.length < 4 || meld.tiles.length > copiesPerTile(game.rules))
       )
         throw new Error('副露状态无效');
     }

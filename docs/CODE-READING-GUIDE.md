@@ -112,3 +112,23 @@ App adds received/displayed separation and a local FIFO; audio reports per-event
 Kong-event maintenance entry: new-game snapshots and per-win scoring in shared/game.js, source labels in App.vue. Existing game tests cover true/false/absent flags, real concealed-kong replacement/continuation and multiple discard winners; rob-kong tests protect original fan/restoration; special-pattern tests protect fixed seven-pairs tiers; API tests preserve the old eight-point report and verify new replacement fan. UI tests verify Chinese labels for current/legacy breakdowns without duplicate event fan. No new test files were added.
 
 - `shared/tile-visibility.js`、`tests/tile-visibility.test.js` 与 [展示隐私](TILE-VISIBILITY.md)：新局暗杠公开、自摸胡牌按座位遮蔽，以及房间/个人历史共用过滤。 / New-game public kongs and seat-private self-draw wins, shared across room/profile projections.
+
+## 七角色扩展维护入口 / Seven-character maintenance entry
+
+[七角色与三/四座位](SEVEN-CHARACTERS.md) 解释角色池、固定座位与旧局映射。第八个语音制作脚本为 `scripts/voices/extend_characters.py`：生成四套原创成年声线，隔离审计后合并清单，不覆盖旧72条声音。新增夹具 `tests/fixtures/original-voice-hashes.json` 固定记录基线公开音频指纹。
+[Seven characters, three/four seats](SEVEN-CHARACTERS.md) separates the roster, fixed seats and legacy mapping. The eighth authoring script, `scripts/voices/extend_characters.py`, generates four original adult voices and merges isolated audits without replacing the original 72 files. The added fixture stores public baseline-audio fingerprints.
+
+## 可变牌桌维护入口 / Variable-table maintenance
+
+[可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
+[Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+- `server/spectators.js`、`shared/event-names.js`、`tests/spectators.test.js` 与 [观战和名字动态](SPECTATING-AND-NAMED-LOGS.md)：独立只读观战权限、公开投影与按局参与者名字。 / Independent spectator capabilities, public projections and per-game participant names.
+
+## 角色、变人数与观战联合验收 / Combined feature verification
+
+[联合验收报告](FEATURE-INTEGRATION-VALIDATION.md) 记录三/四人玩家和观众的集成边界、真实浏览器与全量检查结果。新增联合场景位于现有 `tests/spectators.test.js`、`tests/ui.test.js`，未弱化媒体资产门槛。
+The integration report records player/viewer boundaries, real-browser coverage and aggregate checks. Combined cases extend the existing spectator/UI suites without relaxing media contracts.
+
+本轮角色分支验收记录为 [SEVEN-CHARACTERS-QA.md](SEVEN-CHARACTERS-QA.md)，分别列出自动检查通过项、语音试听边界和当时真实浏览器未完成项；最新联合结果以上方整合报告为准。
+The character-branch verification record retains its automated passes, listening limits and then-uncompleted browser checks; the integration report above holds the latest combined result.

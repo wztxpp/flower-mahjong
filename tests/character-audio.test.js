@@ -1479,3 +1479,69 @@ test("playback watchdog stops audible source before completing", async (t) => {
     engine.dispose();
   }
 });
+
+// 场景：七个角色在任意真实座位都对应自身23条路径；角色列表下标不能变成座位。
+// Scenario: every character resolves 23 own clips at any actual seat; roster indexes never become seats.
+test("all seven characters use their own clips at each of three seats", () => {
+  assert.equal(CHARACTERS.length, 7);
+  for (const character of CHARACTERS) {
+    for (let seat = 0; seat < 3; seat++) {
+      const mapping = ["sweet", "elegant", "sunny"];
+      mapping[seat] = character.id;
+      const events = [
+        ...Array.from({ length: 18 }, (_, tile) => ({ type: "discard", tile, seat })),
+        { type: "peng", seat }, { type: "anGang", seat },
+        ...["selfDraw", "discard", "robKong"].map((source) => ({ type: "hu", source, seat })),
+      ];
+      const paths = new Set(events.map((event) => clipForEvent(event, mapping)));
+      assert.equal(paths.size, 23);
+      assert.ok([...paths].every((path) => path.startsWith(`/voices/${character.id}/`)));
+    }
+  }
+  for (const seat of [-1, 3, 4, 5, 6, "1", 0.5, null]) {
+    assert.equal(clipForEvent({ type: "peng", seat }, CHARACTERS.map((character) => character.id)), null);
+  }
+});
+
+// 场景：预热只下载本局三位角色的九条胡牌音频，不下载整个七人池。
+// Scenario: warming fetches nine win calls for the assigned three, never the whole seven-person roster.
+test("new-character warming fetches only assigned voices", async () => {
+  const { engine, played } = audioFixture();
+  const urls = [];
+  engine.fetchAudio = async (url) => {
+    urls.push(url);
+    return { ok: true, headers: { get: () => "audio/mpeg" }, arrayBuffer: async () => url };
+  };
+  await engine.unlock();
+  await engine.warmWins(["landlord", "wealthy", "star"]);
+  assert.equal(urls.length, 9);
+  assert.ok(urls.every((url) => /^\/voices\/(landlord|wealthy|star)\//.test(url)));
+  assert.deepEqual(played, ["silent"]);
+  engine.dispose();
+});
+
+// 场景：仅四项公开角色映射允许第四座位报牌，预热仍限制三个并行请求。
+// Scenario: only a four-entry public map permits seat four, while preloads keep the three-request limit.
+test("explicit four-character mapping includes fourth-seat voices and bounded warmup", async () => {
+  const mapping = ["landlord", "honest", "wealthy", "star"];
+  assert.equal(clipForEvent({ type: "peng", seat: 3 }, mapping), "/voices/star/peng.mp3");
+  assert.equal(clipForEvent({ type: "peng", seat: 3 }), null);
+  assert.equal(clipForEvent({ type: "peng", seat: 4 }, mapping), null);
+  const { engine } = audioFixture();
+  const urls = [];
+  let active = 0;
+  let maximum = 0;
+  engine.fetchAudio = async (url) => {
+    urls.push(url);
+    maximum = Math.max(maximum, ++active);
+    await tick();
+    active--;
+    return { ok: true, headers: { get: () => "audio/mpeg" }, arrayBuffer: async () => url };
+  };
+  await engine.unlock();
+  await engine.warmWins(mapping);
+  assert.equal(urls.length, 12);
+  assert.ok(maximum <= 3);
+  assert.ok(urls.includes("/voices/star/qianggang.mp3"));
+  engine.dispose();
+});

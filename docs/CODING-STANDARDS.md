@@ -20,7 +20,7 @@ These standards cover maintained source, tests, domain configuration, and asset-
 
 ## 3. 命名与术语 / Naming and vocabulary
 
-以 [术语字典](TERMINOLOGY.md) 为准。标识符使用清楚的英文 `camelCase`，常量使用 `UPPER_SNAKE_CASE`，类使用 `PascalCase`，组件使用 `PascalCase.vue`。`seat` 一直是 0/1/2 的整数；显示时才加一。`room` 不等于 `game`，`player` 不等于个人 `profile`，`revision` 不等于浏览器请求代次。
+以 [术语字典](TERMINOLOGY.md) 为准。标识符使用清楚的英文 `camelCase`，常量使用 `UPPER_SNAKE_CASE`，类使用 `PascalCase`，组件使用 `PascalCase.vue`。`seat` 是0起、严格小于本桌playerCount的整数；显示时才加一。`room` 不等于 `game`，`player` 不等于个人 `profile`，`revision` 不等于浏览器请求代次。
 Follow the terminology dictionary. Use descriptive English camelCase identifiers, UPPER_SNAKE_CASE constants, PascalCase classes, and PascalCase.vue components. A seat is always a zero-based integer; add one only for display. A room is not a game, a player is not a profile, and a revision is not a browser request epoch.
 
 布尔量优先 `is` / `has` / `can` / `should`；数组使用复数；索引用 `…Index`；数量用 `…Count`；存储摘要用 `…Hash`，明文凭证用 `…Token`。避免同一作用域的 `x/p/s/g/tmp`。简单数学比较器 `(a, b)` 可接受，但业务回调用 `player`、`meld`、`tile`。命名变更必须通过词法作用域工具或逐处核对，不用全局文本替换。
@@ -54,8 +54,8 @@ Saved schemaVersion selects the engine, and saved rules govern existing games. N
 
 ## 7. 测试与交付 / Testing and delivery
 
-测试写清准备条件、动作、期望和防止的回归。固定种子用于重放，不用于生产洗牌。测试夹具仍必须满足 144 张、每种 8 张和积分零和；不要为了凑场景制造非法状态。源码结构断言要验证真实契约，不锁住无意义空白。
-Describe setup, action, expectation, and regression protected. Fixed seeds support replay, not production shuffling. Fixtures must still conserve 144 physical tiles, eight of each kind, and zero-sum scores. Source assertions should protect contracts rather than incidental whitespace.
+测试写清准备条件、动作、期望和防止的回归。固定种子用于重放，不用于生产洗牌。测试夹具必须满足本局副数×72张、每种副数×4张和积分零和；缺配置旧局仍为144/8；不要为了凑场景制造非法状态。源码结构断言要验证真实契约，不锁住无意义空白。
+Describe setup, action, expectation, and regression protected. Fixed seeds support replay, not production shuffling. Fixtures conserve the saved deck budget (72 total and four per identity per deck), with legacy 144/eight defaults and zero-sum scores. Source assertions should protect contracts rather than incidental whitespace.
 
 完成报告分别列出：实际改动、未触碰范围、测试数量/命令、旧版本验证、未运行项、分支/提交、是否发布。可读性任务不等于获得部署或数据库操作授权。
 Report changes, untouched boundaries, exact checks, legacy validation, unrun checks, branch/commit, and publication status separately. A readability task does not authorize deployment or database operations.

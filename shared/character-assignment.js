@@ -1,8 +1,24 @@
 // 大厅与服务端共享的角色约定：稳定 ID，不把显示名当身份。
 // Character contract shared by lobby/server: stable IDs, not display names as identity.
-// 冻结可选 ID 列表；角色映射数组的下标始终是服务端绝对座位号。
-// Freeze the allowed IDs; mapping-array indexes are always absolute server seats.
-export const CHARACTER_IDS = Object.freeze(['sweet', 'elegant', 'sunny']);
+// 默认座位数与角色池分开：扩充角色不增加玩家；旧局兜底顺序不可随角色池改变。
+// Separate the default seat count from the roster: more characters never add players or change legacy order.
+export const SEAT_COUNT = 3;
+export const LEGACY_CHARACTER_IDS = Object.freeze(['sweet', 'elegant', 'sunny']);
+// 稳定 ID 同时用于偏好、已保存映射和资产路径；下标不是角色的座位。
+// Stable IDs identify preferences, saved mappings and assets; roster indexes are not seats.
+export const CHARACTER_IDS = Object.freeze([
+  ...LEGACY_CHARACTER_IDS,
+  'landlord',
+  'honest',
+  'wealthy',
+  'star',
+]);
+// 四人桌必须由调用方显式指定；旧调用缺参数仍只有三人，不根据角色数猜测。
+// Four-seat tables require an explicit caller setting; omitted arguments keep three, never infer from roster size.
+function validateSeatCount(seatCount) {
+  if (seatCount !== 3 && seatCount !== 4) throw new TypeError('Expected three or four seats');
+  return seatCount;
+}
 // 类型和白名单同时检查，拒绝未知角色 ID。
 // Check both type and allowlist to reject unknown character IDs.
 export function isCharacterId(value) {
@@ -28,14 +44,17 @@ function randomIndex(size) {
   } while (sample[0] >= limit);
   return sample[0] % size;
 }
-// 仅开局时一起处理三人的偏好，返回三个不重复角色；可注入随机选择供测试。
-// Resolve three preferences together only at start, with unique roles and injectable selection for tests.
-export function assignCharacters(preferences, chooseIndex = randomIndex) {
-  if (!Array.isArray(preferences) || preferences.length !== CHARACTER_IDS.length) {
-    throw new TypeError('Exactly three character preferences are required');
+// 仅开局时一起处理本桌偏好，返回不重复角色；第二参数仍保留旧测试的随机选择注入。
+// Resolve table preferences at start with unique roles; the second parameter preserves existing RNG injection.
+export function assignCharacters(preferences, chooseIndex = randomIndex, seatCount = SEAT_COUNT) {
+  validateSeatCount(seatCount);
+  if (!Array.isArray(preferences) || preferences.length !== seatCount) {
+    throw new TypeError(`Exactly ${seatCount} character preferences are required`);
   }
-  const requested = preferences.map(preferredCharacter);
-  const assigned = Array(CHARACTER_IDS.length).fill(null);
+  // Array.from 把稀疏输入的缺项视为未选择，避免跳过某个真实座位。
+  // Array.from treats sparse entries as no preference instead of skipping a real seat.
+  const requested = Array.from(preferences, preferredCharacter);
+  const assigned = Array(seatCount).fill(null);
   // 随机结果必须为范围内整数；只有一项时直接选中，避免不必要的随机调用。
   // Require an in-range integer; a single candidate needs no random call.
   const choose = (size) => {
@@ -62,13 +81,17 @@ export function assignCharacters(preferences, chooseIndex = randomIndex) {
 }
 // 已有合法映射只复制不修改；旧局没有映射时返回稳定兼容顺序。
 // Copy valid saved mappings without mutation; legacy games use a stable compatibility order.
-export function gameCharacters(mapping) {
+export function gameCharacters(mapping, seatCount = SEAT_COUNT) {
+  validateSeatCount(seatCount);
   // 必须数量正确、每项合法且无重复，才可信任整个映射。
   // Trust the mapping only with the correct length, valid IDs, and no duplicates.
   const valid =
     Array.isArray(mapping) &&
-    mapping.length === CHARACTER_IDS.length &&
-    mapping.every(isCharacterId) &&
-    new Set(mapping).size === CHARACTER_IDS.length;
-  return valid ? [...mapping] : [...CHARACTER_IDS];
+    mapping.length === seatCount &&
+    Array.from(mapping).every(isCharacterId) &&
+    new Set(mapping).size === seatCount;
+  // 第四个兜底只服务显式四人桌；前三项不变，绝不把旧三人局补成四人。
+  // The fourth fallback serves only explicit four-seat tables; the original three never gain a seat implicitly.
+  const fallback = [...LEGACY_CHARACTER_IDS, 'landlord'].slice(0, seatCount);
+  return valid ? [...mapping] : fallback;
 }

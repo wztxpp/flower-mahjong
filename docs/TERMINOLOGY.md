@@ -113,3 +113,18 @@ The engines use consistent private helpers for serialization, sorting, labels, c
 - `kongDiscardBonus` / `kongReplacementBonus`：本次计分中的事件番，不是额外付款、累计番或首胡固定档位。 / Per-win event fan, not an extra payment, accumulated bonus or frozen first-win tier.
 
 - `publicConcealedKongs` / `hideSelfDrawWins`：新局视图快照，分别公开暗杠、在进行中隐藏他家自摸胡牌；`hidden` 是响应标记，不是权威牌种。缺字段旧局不启用。见 [展示隐私](TILE-VISIBILITY.md)。 / New-game view snapshots publishing concealed kongs and masking opponent self-draw wins while live; hidden is a response marker, not a tile identity. Missing flags retain old policy.
+
+## 七角色池 / Seven-character roster
+
+`SEAT_COUNT` 默认固定为3，`CHARACTER_IDS` 是7个可选角色ID，不是座位列表。`LEGACY_CHARACTER_IDS` 固定为旧三角色的绝对座位回退；`gameMeta.characters` 是本桌三或四项已分配快照。详见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
+`SEAT_COUNT` defaults to three; `CHARACTER_IDS` contains seven selectable IDs, not seats. `LEGACY_CHARACTER_IDS` preserves the original absolute-seat fallback; `gameMeta.characters` is a three/four-entry assigned snapshot. See [seven characters, three/four seats](SEVEN-CHARACTERS.md).
+
+## 可变牌桌 / Variable tables
+
+- `playerCount`：房间/新局固定的3或4名玩家，与七角色池大小无关。 / Fixed three/four seats, independent of the seven-role roster.
+- `deckCount`：1–5、0.5步进；`copiesPerTile` 为4倍副数，总牌数为72倍副数。 / Half-step deck count; four copies per full deck and 72 total tiles per deck.
+- `dragonStartCount`：1–20整数的神龙起算门槛；`exponentialDragon` 显式启用10分起每张翻倍。 / Saved threshold; explicit flag enables doubling ten points per extra copy.
+- `extendedCopyFan`：新局9张以上继续每张一番；旧局缺字段保留原兜底。 / Explicitly extends ordinary copy fan above eight without changing saved defaults.
+- `settings` 是跨局桌参数，`rules` 是本局快照，`config` 是历史元数据副本；三者都不是可在局中修改的前端草稿。 / Room settings, round rules and history config are distinct saved lifetimes, never mutable in-game form drafts.
+
+- **观战身份 `viewerRole: spectator`**：无座位的只读访问能力；`you`/`mySeat` 为 null，不是第 0 席。`spectatorKey` 是仅服务端使用的房间签名秘密，不是公开房间号。 / A read-only non-seat capability with null you/mySeat; spectatorKey is a private room signing secret, never the public room code. See [观战与名字动态](SPECTATING-AND-NAMED-LOGS.md).

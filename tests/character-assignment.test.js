@@ -9,6 +9,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CHARACTER_IDS,
+  LEGACY_CHARACTER_IDS,
+  SEAT_COUNT,
   assignCharacters,
   gameCharacters,
   preferredCharacter,
@@ -17,11 +19,31 @@ import { createApi } from "../server/api.js";
 import { MemoryStore } from "../server/store.js";
 import { FileStore } from "../server/node.js";
 import { createGame as createLegacyGame } from "../shared/legacy-game.js";
+import { createGame as createV2Game } from "../shared/v2-game.js";
+import { createGame as createCurrentGame } from "../shared/game.js";
 // 验证三个座位的角色分配没有重复；偏好冲突不能让两位玩家共享同一角色。
 // Verify distinct assignments across three seats; conflicting preferences must not duplicate a character.
 function assertDistinct(characters) {
-  assert.deepEqual([...characters].sort(), [...CHARACTER_IDS].sort());
+  assert.equal(characters.length, SEAT_COUNT);
+  assert.equal(new Set(characters).size, SEAT_COUNT);
+  assert.ok(characters.every((id) => CHARACTER_IDS.includes(id)));
 }
+
+// 场景：角色池七人不改变三人座位，保存映射只接受三个唯一合法 ID。
+// Scenario: a seven-character roster does not expand seats; saved maps require three unique valid IDs.
+test("seven-character roster stays separate from three-seat legacy mapping", () => {
+  assert.equal(SEAT_COUNT, 3);
+  assert.equal(CHARACTER_IDS.length, 7);
+  assert.deepEqual(LEGACY_CHARACTER_IDS, ["sweet", "elegant", "sunny"]);
+  assert.throws(() => assignCharacters(Array(7).fill(null)), TypeError);
+  assert.throws(() => assignCharacters(Array(4).fill(null)), TypeError);
+  assertDistinct(assignCharacters(Array(3), () => 0));
+  assert.deepEqual(gameCharacters(["landlord", "honest", "wealthy"]), ["landlord", "honest", "wealthy"]);
+  assert.deepEqual(gameCharacters(["star", "sunny", "sweet"]), ["star", "sunny", "sweet"]);
+  for (const malformed of [CHARACTER_IDS, ["landlord", "landlord", "star"], ["star", "sweet"], ["star", , "sweet"]]) {
+    assert.deepEqual(gameCharacters(malformed), LEGACY_CHARACTER_IDS);
+  }
+});
 
 // Enumerate every RNG branch rather than using a flaky statistical test.
 // 递归枚举随机选择的每条分支，按分支数分配概率权重；比重复抽样更准确且不会偶发失败。
@@ -196,13 +218,13 @@ test("character preference validation accepts only stable IDs or no selection", 
   assert.throws(() => assignCharacters([]), TypeError);
   assert.throws(() => assignCharacters(["sweet", null, "unknown"]), TypeError);
   assert.throws(
-    () => assignCharacters([null, null, null], () => 3),
+    () => assignCharacters([null, null, null], () => 7),
     RangeError,
   );
 });
-// 场景：全部 64 种角色偏好组合均分配不重复角色，并满足无竞争的指定偏好
-// Scenario: all 64 preference combinations stay unique and honor uncontested requests
-test("all 64 preference combinations stay unique and honor uncontested requests", () => {
+// 场景：全部 512 种角色偏好组合均分配不重复角色，并满足无竞争的指定偏好
+// Scenario: all 512 preference combinations stay unique and honor uncontested requests
+test("all 512 preference combinations stay unique and honor uncontested requests", () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const options = [null, ...CHARACTER_IDS];
@@ -247,9 +269,9 @@ test("all 64 preference combinations stay unique and honor uncontested requests"
         }
       }
 });
-// 场景：随机选择与三人冲突均产生等概率的六种角色分配
-// Scenario: random players and three-way conflicts yield all six equally likely assignments
-test("random players and three-way conflicts yield all six equally likely assignments", () => {
+// 场景：随机三人从七位角色等概率抽取；三人同好先公平选出一名赢家。
+// Scenario: random seats draw uniformly from seven; three-way preference ties choose one fair winner.
+test("random players and three-way conflicts yield equally likely assignments", () => {
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   // 逐项覆盖 [[null,null,null],...CHARACTER_IDS.map(id=>[id,id,id])]；同一组检查用于每个样本，顺序以代码列出的集合为准。
@@ -259,11 +281,12 @@ test("random players and three-way conflicts yield all six equally likely assign
     ...CHARACTER_IDS.map((id) => [id, id, id]),
   ]) {
     const possibilities = outcomes(preferences);
-    assert.equal(possibilities.size, 6);
+    const expectedCount = preferences[0] === null ? 7 * 6 * 5 : 3 * 6 * 5;
+    assert.equal(possibilities.size, expectedCount);
     // 逐项覆盖 possibilities.values()；同一组检查用于每个样本，顺序以代码列出的集合为准。
     // Exercise each entry in possibilities.values() with the same checks, preserving the listed order.
     for (const probability of possibilities.values())
-      assert.ok(Math.abs(probability - 1 / 6) < 1e-12);
+      assert.ok(Math.abs(probability - 1 / expectedCount) < 1e-12);
   }
 });
 // 场景：两人角色冲突时每位请求者概率相同，且不占用第三人指定的角色
@@ -279,11 +302,11 @@ test("two-way conflicts give each requester equal odds without taking another re
     ["elegant", "sweet", "sweet"],
   ]) {
     const possibilities = outcomes(preferences);
-    assert.equal(possibilities.size, 2);
+    assert.equal(possibilities.size, 10);
     // 逐项覆盖 possibilities；同一组检查用于每个样本，顺序以代码列出的集合为准。
     // Exercise each entry in possibilities with the same checks, preserving the listed order.
     for (const [key, probability] of possibilities) {
-      assert.equal(probability, 0.5);
+      assert.equal(probability, 0.1);
       assert.equal(key.split(",")[preferences.indexOf("elegant")], "elegant");
     }
   }
@@ -292,11 +315,11 @@ test("two-way conflicts give each requester equal odds without taking another re
   const possibilities = outcomes(["sunny", "sunny", null]);
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(possibilities.size, 4);
+  assert.equal(possibilities.size, 60);
   // 逐项覆盖 possibilities.values()；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in possibilities.values() with the same checks, preserving the listed order.
   for (const probability of possibilities.values())
-    assert.equal(probability, 0.25);
+    assert.ok(Math.abs(probability - 1 / 60) < 1e-12);
 });
 // 场景：安全的牌局映射拒绝格式错误数据，且不暴露可修改的源数组
 // Scenario: safe game mapping rejects malformed data and never exposes a mutable source array
@@ -319,7 +342,7 @@ test("safe game mapping rejects malformed data and never exposes a mutable sourc
       },
     ],
   ]) {
-    assert.deepEqual(gameCharacters(invalid), CHARACTER_IDS);
+    assert.deepEqual(gameCharacters(invalid), LEGACY_CHARACTER_IDS);
   }
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
@@ -692,10 +715,10 @@ test("legacy live games receive only a view fallback without changing stored rul
       token: clients[seat].token,
     });
     assert.equal(view.status, 200);
-    assert.deepEqual(view.state.game.characters, CHARACTER_IDS);
+    assert.deepEqual(view.state.game.characters, LEGACY_CHARACTER_IDS);
     assert.deepEqual(
       view.state.seats.map((person) => person.characterId),
-      CHARACTER_IDS,
+      LEGACY_CHARACTER_IDS,
     );
     assert.deepEqual(
       view.state.seats.map((person) => person.preferredCharacter),
@@ -808,5 +831,84 @@ test("preferences and character mapping survive a real file-store restart", asyn
       ["sunny", "sweet", "elegant"],
     );
     assert.equal(view.state.game.id, started.state.game.id);
+  }
+});
+
+// 场景：新增角色经过真实创建、加入、开局和读取接口，三人满桌仍拒绝第四人。
+// Scenario: new IDs survive real create/join/start/read routes while a full table rejects a fourth player.
+test("all four new preferences persist and never create a fourth seat", async () => {
+  for (const preferences of [["landlord", "honest", "wealthy"], ["star", "elegant", "sweet"]]) {
+    const api = apiHarness();
+    const { path, host, clients, state } = await table(api, preferences);
+    assert.equal(state.seats.length, 3);
+    const fourth = await api.request(`${path}/join`, {
+      method: "POST",
+      body: { name: "第四位", preferredCharacter: "star" },
+    });
+    assert.equal(fourth.status, 409);
+    const started = await api.request(`${path}/start`, {
+      method: "POST", token: host.token, body: { revision: state.revision },
+    });
+    assert.equal(started.status, 200);
+    assert.deepEqual(started.state.game.characters, preferences);
+    for (let seat = 0; seat < SEAT_COUNT; seat++) {
+      const result = await api.request(path, { token: clients[seat].token });
+      assert.deepEqual(result.state.game.characters, preferences);
+      assert.equal(result.state.game.players.length, 3);
+      assertPrivate(result.state, await api.store.get(host.roomId), seat, clients);
+    }
+  }
+});
+
+// 场景：三个规则版本的旧数据在缺失/已有角色映射时只投影，不补写规则或历史。
+// Scenario: all three saved engine versions project absent/existing maps without backfilling rules or history.
+test("all engine versions preserve old character maps and saved bytes", async () => {
+  for (const createGame of [createLegacyGame, createV2Game, createCurrentGame]) {
+    for (const characters of [undefined, ["sunny", "sweet", "elegant"]]) {
+      const api = apiHarness();
+      const { path, host, state } = await table(api, ["landlord", "honest", "star"]);
+      await api.request(`${path}/start`, {
+        method: "POST", token: host.token, body: { revision: state.revision },
+      });
+      const room = await api.store.get(host.roomId);
+      room.game = createGame({ seed: 42 });
+      if (characters) room.gameMeta.characters = characters;
+      else delete room.gameMeta.characters;
+      await api.store.compareAndSwap(room, room.revision);
+      const before = await api.store.get(host.roomId);
+      const result = await api.request(path, { token: host.token });
+      assert.equal(result.status, 200);
+      assert.deepEqual(result.state.game.characters, characters || LEGACY_CHARACTER_IDS);
+      assert.deepEqual(await api.store.get(host.roomId), before);
+    }
+  }
+});
+
+// 场景：显式四人参数只改变新调用，旧签名仍为三人；角色偏好与无重复继续成立。
+// Scenario: an explicit fourth seat affects new calls only; the old signature stays three with unique preferences.
+test("explicit four-seat assignment preserves three-seat defaults", () => {
+  const mapping = ["landlord", "honest", "wealthy", "star"];
+  assert.deepEqual(assignCharacters(mapping, () => 0, 4), mapping);
+  assert.deepEqual(gameCharacters(mapping, 4), mapping);
+  assert.deepEqual(gameCharacters(undefined, 4), ["sweet", "elegant", "sunny", "landlord"]);
+  assert.deepEqual(gameCharacters(mapping), LEGACY_CHARACTER_IDS);
+  assert.throws(() => assignCharacters(mapping), TypeError);
+  for (const invalidCount of [0, 2, 5, 7, "4", null]) {
+    assert.throws(() => assignCharacters(mapping, () => 0, invalidCount), TypeError);
+    assert.throws(() => gameCharacters(mapping, invalidCount), TypeError);
+  }
+  // 穷举四座位的4096种偏好；固定选首候选，验证所有无竞争偏好与不重复约束。
+  // Enumerate 4096 four-seat preferences with deterministic first-choice draws to check requests and uniqueness.
+  const choices = [null, ...CHARACTER_IDS];
+  for (const a of choices) for (const b of choices) for (const c of choices) for (const d of choices) {
+    const preferences = [a, b, c, d];
+    const assigned = assignCharacters(preferences, () => 0, 4);
+    assert.equal(assigned.length, 4);
+    assert.equal(new Set(assigned).size, 4);
+    assert.ok(assigned.every((id) => CHARACTER_IDS.includes(id)));
+    for (const id of CHARACTER_IDS) {
+      const seat = preferences.indexOf(id);
+      if (seat !== -1) assert.equal(assigned[seat], id);
+    }
   }
 });

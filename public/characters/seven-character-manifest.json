@@ -1,0 +1,175 @@
+{
+  "version": "v1",
+  "generation": "Built-in image_gen; genuine alpha preserved; no external image editing.",
+  "published": false,
+  "files": [
+    {
+      "id": "sweet",
+      "file": "sweet.png",
+      "path": "/characters/sweet.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 2098662,
+      "sha256": "738ffff52f7dbc501c20f7c7c8707a52f255c1307687e56a5b752d418a8669eb",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.3178,
+      "opaque_subject_bbox": [
+        7,
+        8,
+        1021,
+        1536
+      ]
+    },
+    {
+      "id": "honest",
+      "file": "honest.png",
+      "path": "/characters/honest.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1548434,
+      "sha256": "8f8849688090823a3cf141e94ca5e44bf03cfd17079943057a2e3ec7701fb49b",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.4373,
+      "opaque_subject_bbox": [
+        39,
+        4,
+        965,
+        1536
+      ]
+    },
+    {
+      "id": "landlord",
+      "file": "landlord.png",
+      "path": "/characters/landlord.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1643142,
+      "sha256": "c536af1a278c023eb18e070b6448ef5c144057e887a130845b1934e43783914b",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.3878,
+      "opaque_subject_bbox": [
+        30,
+        7,
+        991,
+        1536
+      ]
+    },
+    {
+      "id": "elegant",
+      "file": "elegant.png",
+      "path": "/characters/elegant.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1945215,
+      "sha256": "94c80ee8f7da552044fe5781ccbc8ed06940ed970a41d0697115f352bad2824d",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.3297,
+      "opaque_subject_bbox": [
+        16,
+        6,
+        1003,
+        1536
+      ]
+    },
+    {
+      "id": "sunny",
+      "file": "sunny.png",
+      "path": "/characters/sunny.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1898754,
+      "sha256": "ec81657d0cf408ce859d69c7c425b418a5a6be873902e9de977d788b6fdeb121",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.3869,
+      "opaque_subject_bbox": [
+        52,
+        4,
+        956,
+        1536
+      ]
+    },
+    {
+      "id": "star",
+      "file": "star.png",
+      "path": "/characters/star.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1846691,
+      "sha256": "8ce3ff636767133b9861c028682263ec6a9a5e704343d0479a3e3144a7df24a9",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.5083,
+      "opaque_subject_bbox": [
+        89,
+        2,
+        867,
+        1536
+      ]
+    },
+    {
+      "id": "wealthy",
+      "file": "wealthy.png",
+      "path": "/characters/wealthy.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGBA",
+      "bytes": 1649739,
+      "sha256": "1832628b42b63bf35be0b5f3a174d70a65f047483013bad5132cb72ffd9c11eb",
+      "alpha_range": [
+        0,
+        254
+      ],
+      "fully_transparent_fraction": 0.4545,
+      "opaque_subject_bbox": [
+        20,
+        6,
+        990,
+        1536
+      ]
+    }
+  ],
+  "notes": [
+    "Seven separate RGBA PNG portraits, all 1024 by 1536.",
+    "The three legacy characters retain identifying hair, costume, colors and accessories.",
+    "All newly designed characters are adults; sweet is nonsexual and fully clothed.",
+    "AI-generated art, inspected for identity, costume and valid transparency.",
+    "The raw RGB of transparent pixels may look like a halo in viewers that ignore alpha; compositing must honor the PNG alpha channel."
+  ]
+}

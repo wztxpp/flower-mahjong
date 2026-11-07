@@ -168,3 +168,12 @@ After an action CAS failure, `differsOnlyInPresence` compares the full saved mod
 `recordPresence` stores presentation leases only while room.game exists and remains unfinished. Lobby/finished polling no longer bumps room revisions for telemetry, so it cannot block `/start`'s strict revision checks. Normal heartbeats, occupancy/departure and concurrent-start protections remain unchanged. Registration resumes after game creation. See [presentation pacing](PRESENTATION-PACING.md).
 
 新局公开暗杠、自摸胡牌隐私通过 `shared/tile-visibility.js` 统一过滤；`publicEvents` 接收本人历史座位，避免从个人记录旁路读取对手牌面或计分牌数。缺快照旧局与 schema1/2 保持原样，详见 [展示隐私](TILE-VISIBILITY.md)。 / New-game kong/win visibility shares one filter; publicEvents receives the profile participant seat so records cannot bypass tile/count privacy. Older snapshots and schemas remain unchanged.
+
+## 可变牌桌维护入口 / Variable-table maintenance
+
+[可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。
+[Variable tables](VARIABLE-TABLES.md) documents snapshot-driven dimensions and scoring, superseding earlier fixed-three/144/eight-copy defaults here. The listed new maintained tests join existing UI coverage; old games and frozen engines remain unchanged.
+
+## 观战扩展 / Spectating extension
+
+观众通过独立只读凭证进入，不占座、不参与个人成绩或播放屏障。前端保留观战/玩家两类缓存，公开动态按各局快照显示名字，所有隐私和生命周期边界见 [观战与名字动态](SPECTATING-AND-NAMED-LOGS.md)。 / Spectators use independent read-only credentials without seats, profile records or presentation gates. Separate browser caches preserve player identities, and event names follow each game's snapshot. See the dedicated guide for privacy/lifecycle boundaries.

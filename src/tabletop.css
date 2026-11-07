@@ -656,6 +656,24 @@ input:focus, #preferred-character:focus {
   background: radial-gradient(ellipse at 50% 100%, #dfc56450, #163f3410 75%);
 }
 
+/* 新角色仅改变肖像底色，不增加座位或覆盖后面的窄屏尺寸。
+   New characters change portrait tint only, without adding seats or overriding later narrow layouts. */
+.character-landlord {
+  background: radial-gradient(ellipse at 50% 100%, #bc774e66, #163f3410 75%);
+}
+
+.character-honest {
+  background: radial-gradient(ellipse at 50% 100%, #91b29b60, #163f3410 75%);
+}
+
+.character-wealthy {
+  background: radial-gradient(ellipse at 50% 100%, #c9ac6760, #163f3410 75%);
+}
+
+.character-star {
+  background: radial-gradient(ellipse at 50% 100%, #bb91b860, #163f3410 75%);
+}
+
 /* 设置盒子尺寸、留白或局部位置；百分比与视口单位会随容器或屏幕变化。
    Set box dimensions, spacing or local position; percentages and viewport units adapt to the container or screen. */
 .character-portrait > img {
@@ -2755,3 +2773,51 @@ input:focus, #preferred-character:focus {
 .table-total-line > strong.negative-score {
   color: #95634b;
 }
+
+/* 变人数新增样式最后覆盖：三人不受影响，四人有独立对家，宽牌组可局部滚动。
+   Variable-table overrides come last: keep three-seat layout, add the opposite seat and scroll long melds locally. */
+.table-settings-fields {
+  border: 1px solid #ddd9cd;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 14px 0;
+}
+.table-settings-fields legend { padding: 0 5px; font-size: 13px; font-weight: 600; }
+.table-settings-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+.table-settings-grid label { min-width: 0; font-size: 12px; }
+.table-settings-grid label:last-child { grid-column: 1 / -1; }
+.table-settings-grid select, .table-settings-grid input { margin-top: 5px; width: 100%; }
+.table-settings-fields small { display: block; margin-top: 8px; color: #626b5d; line-height: 1.6; }
+.table-settings-fields .settings-warning { color: #98611f; }
+.four-player-table .opponent-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.four-player-table .opponent-seat { min-width: 0; padding: 10px; }
+.relative-seat-label { display: block; color: #e7d49b; font-size: 11px; margin-bottom: 7px; }
+.four-player-table .opponent-hand { max-width: 100%; overflow-x: auto; }
+.four-player-table .discard-area { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.meld { min-width: 0; max-width: 100%; }
+.meld-tiles { max-width: 100%; overflow-x: auto; }
+.meld-tiles > * { flex-shrink: 0; }
+/* 手机对家位于上方，左右两家在第二行；不压缩成三个无法读牌的窄列。
+   On phones put the opposite seat above the left/right pair rather than three unreadably narrow columns. */
+@media (max-width: 640px) {
+  .four-player-table .opponent-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .four-player-table .opponent-seat { grid-row: 2; }
+  .four-player-table .opponent-seat.opposite-seat { grid-row: 1; grid-column: 1 / -1; width: 65%; justify-self: center; }
+  .four-player-table .opponent-seat:not(.opposite-seat):last-child { grid-column: 2; }
+}
+
+/* 观战独立标识与全席公开面板；只改变观战布局，不影响玩家两侧座位。
+   Spectator identity and all-seat public panels; player-side layouts remain unchanged. */
+.spectator-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  border: 1px solid #d4b578;
+  border-radius: 14px;
+  background: #fff8e8;
+  color: #715329;
+}
+.spectator-entry-note { line-height: 1.7; color: #6d7268; margin: 0 0 18px; }
+.is-spectator .opponent-row { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }

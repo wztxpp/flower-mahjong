@@ -513,7 +513,7 @@ test("all-player hu ends distinctly and compact new rules contain confirmed fan 
   const html = await render(scope);
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
-  assert.match(html, /三家都胡了，本局结束/);
+  assert.match(html, /所有玩家都胡了，本局结束/);
   assert.match(html, /5 番 10 分 · 6 番 12 分 · 7 番 14 分/);
   assert.match(html, /暂不叠加番分、萝卜和神龙/);
 });
@@ -2130,7 +2130,7 @@ test("schema 3 renders one central shared pool and never repeats flip provenance
   assert.match(pool, /牌友3杠牌 \+1/);
   assert.equal((pool.match(/aria-label="\d+[条筒]"/g) || []).length, 8);
   assert.doesNotMatch(html, /class="radish-row"|我的萝卜/);
-  assert.match(html, /三家共用这一池，后续胡牌不再加六张/);
+  assert.match(html, /全桌共用这一池，后续胡牌不再加六张/);
 });
 // 场景：schema 3 明确呈现空池及全桌首次胡牌，不使用个人首胡标签
 // Scenario: schema 3 empty pool and first table hu are explicit, with no personal first-hu labels
@@ -2549,7 +2549,7 @@ test("current lobby rules explain six-copy fan, shared radishes, consecutive hu 
   assert.match(html, /六张加 3 番/);
   assert.match(html, /六张同牌加到 4 番/);
   assert.match(html, /七张加 4 番，八张加 5 番/);
-  assert.match(html, /逐张加杠至八张/);
+  assert.match(html, /逐张加杠至本局同牌上限/);
   assert.match(html, /首胡翻 6 张，加上首胡前每次成功杠累计的 1 张/);
   assert.match(html, /本人的手牌区、碰杠区、胡牌区，加上全桌共享萝卜/);
   assert.match(html, /普通加番只计算自己的三个牌区，不含萝卜/);
@@ -3173,7 +3173,7 @@ test("latest rules distinguish exposed-kong replacement hu from own-kong replace
   assert.match(html, /本次补摸胡只由该明杠的出牌者付款/);
   assert.match(
     html.replace(/<[^>]*>/g, ""),
-    /自己摸来的暗杠、补杠、加杠后补摸胡才由另外两家付款/,
+    /自己摸来的暗杠、补杠、加杠后补摸胡才由其他玩家付款/,
   );
   assert.match(html, /杠后打出的牌被胡，仍只由该张牌的出牌者付款/);
 });
@@ -3936,7 +3936,7 @@ test("new-rule board explains delayed rather than permanently forbidden pung upg
   // Assert exact outcomes, including one-time charges, pending-discard restrictions and preserved saved rules.
   assert.match(html, /碰后先打出一张，之后轮到自己时可以补杠/);
   assert.match(html, /不要求刚摸到同牌/);
-  assert.match(html, /已成立的杠仍可逐张加至第五至八张/);
+  assert.match(html, /已成立的杠仍可逐张加至本局每种牌的上限/);
   assert.doesNotMatch(html, /碰成的三张始终算碰|碰后不能补杠/);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
@@ -4596,7 +4596,7 @@ test("all players see saved ready amount, zero and pre-feature status without ed
         html,
         points === 0
           ? /0 分，不收取/
-          : new RegExp(`另外两家各付 ${points ?? 50} 分`),
+          : new RegExp(`另外2家各付 ${points ?? 50} 分`),
       );
       delete scope.state.value.game.rules.bigSingleReadyPayment;
       assert.match(await render(scope), /未启用，不补收/);
@@ -5739,4 +5739,351 @@ test('hidden self-draw renders a back and win cue, then reveals on finish withou
   assert.match(finalHtml, /9筒 · 自摸/);
   assert.doesNotMatch(finalHtml, /自摸 · 牌面隐藏，终局公开/);
   assert.equal(scope.state.value.game.players[1].hand, undefined);
+});
+
+// 场景：大厅显示七个可选角色；每个新角色的预览、请求与绝对座位展示一致。
+// Scenario: the lobby lists seven options, and each new preview/request agrees with absolute-seat portraits.
+test("seven-character lobby and assigned portraits cover every viewer", async () => {
+  browser();
+  const entry = lobby();
+  const html = await render(entry);
+  assert.match(html, /七位角色，支持三人或四人同桌/);
+  for (const character of CharacterAudioModule.CHARACTERS) {
+    assert.ok(html.includes(`value="${character.id}"`));
+    entry.preferredCharacter.value = character.id;
+    const preview = await render(entry);
+    assert.ok(preview.includes(character.portrait));
+    for (let viewer = 0; viewer < 3; viewer++) {
+      const value = fixture();
+      value.you = viewer;
+      value.game.mySeat = viewer;
+      value.game.characters = [character.id, "honest", "star"];
+      const scope = setup(value);
+      assert.equal(scope.characterForPlayer(0).id, character.id);
+      assert.equal(scope.characterForPlayer(1).id, "honest");
+      assert.equal(scope.characterForPlayer(2).id, "star");
+      const tableHtml = await render(scope);
+      assert.ok(tableHtml.includes(character.portrait));
+      assert.equal((tableHtml.match(/class="[^"]*\bopponent-seat\b/g) || []).length, 2);
+    }
+  }
+});
+
+// 建房配置与四人投影用真实组件执行，不让前端草稿覆盖既有桌或错误暴露第四座暗手牌。
+// Execute the actual component for configuration/four-seat projections, without overwriting existing rooms or exposing opponents.
+test('new table fields default to three/two/six, validate half decks and keep join requests unconfigured', async () => {
+  browser();
+  const scope = lobby();
+  assert.equal(scope.playerCountDraft.value, 3);
+  assert.equal(scope.deckCountDraft.value, 2);
+  assert.equal(scope.dragonStartCountDraft.value, 6);
+  assert.equal(scope.validTableSettings.value, true);
+  scope.playerCountDraft.value = 4;
+  scope.deckCountDraft.value = 1.5;
+  scope.dragonStartCountDraft.value = 7;
+  let html = await render(scope);
+  assert.match(html, /起算张数超过每种牌数量，本局不会触发神龙/);
+  assert.match(html, /id="table-player-count"/);
+  assert.match(html, /1.5 副 · 108 张/);
+  scope.deckCountDraft.value = 1.25;
+  assert.equal(scope.validTableSettings.value, false);
+  scope.name.value = '配置测试';
+  let calls = 0;
+  globalThis.fetch = async () => { calls++; throw new Error('Must not request with invalid settings'); };
+  await scope.enterRoom();
+  assert.equal(calls, 0);
+  scope.entryMode.value = 'join';
+  html = await render(scope);
+  assert.doesNotMatch(html, /id="table-player-count"/);
+});
+
+test('four-seat real view renders three opponents including opposite, four rivers and immutable settings', async () => {
+  const { createGame } = await import('../shared/game.js');
+  const raw = createGame({ seed: 'four-ui', rules: { playerCount: 4, deckCount: 2.5, dragonStartCount: 8 } });
+  const state = fixture({ schemaVersion: 3 });
+  state.settings = { playerCount: 4, deckCount: 2.5, dragonStartCount: 8 };
+  state.seats = raw.players.map(player => ({ seat: player.seat, name: `四人测试${player.seat}`, connected: true }));
+  state.you = 3;
+  state.game = getPlayerView(raw, 3);
+  const scope = setup(state);
+  scope.showRules.value = true;
+  const html = await render(scope);
+  assert.equal(scope.opponents.value.length, 3);
+  assert.equal(scope.riverPlayers.value.length, 4);
+  assert.deepEqual(scope.opponents.value.map(player => player.seat), [0, 1, 2]);
+  assert.match(html, /four-player-table/);
+  assert.match(html, /opposite-seat/);
+  assert.match(html, /对家/);
+  assert.match(html, /4人 · 2.5副 · 180张/);
+  assert.match(html.replace(/<[^>]*>/g, ''), /8张起10分，每多一张翻倍/);
+  assert.match(html, /九张加六番/);
+  assert.match(html, /自己 → 右手边 → 对家 → 左手边/);
+  assert.doesNotMatch(html, /id="table-player-count"|id="table-deck-count"|id="dragon-start-count"/);
+  assert.equal((html.match(/class="discard-group/g) ?? []).length, 4);
+  assert.equal((html.match(/class="[^"]*\bopponent-seat\b/g) ?? []).length, 3);
+  assert.equal(scope.characterForPlayer(3).id, 'landlord');
+});
+
+// 大牌组的按钮标签也使用已保存副数，不因旧8张显示边界退回泛称。
+// Extension labels use the saved deck budget rather than the former eight-copy presentation boundary.
+test('four-player extension label includes ninth and twentieth copies', () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.game.rules = { playerCount: 3, deckCount: 5 };
+  state.game.players[0].melds = [{ type: 'anGang', tile: 0, tiles: Array(8).fill(0) }];
+  const scope = setup(state);
+  assert.match(scope.actionLabel({ type: 'addGang', tile: 0 }), /9/);
+  state.game.players[0].melds[0].tiles = Array(19).fill(0);
+  assert.match(scope.actionLabel({ type: 'addGang', tile: 0 }), /20/);
+});
+
+// 观战的身份、界面和请求边界使用真实 Vue 组件；DOM 断言不是浏览器布局验收。
+// Spectator identity, UI and request boundaries use the real Vue component; DOM checks are not browser layout acceptance.
+test('spectator UI shows every public seat without self panels, host controls or player actions', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.you = null;
+  state.viewerRole = 'spectator';
+  state.game.mySeat = null;
+  state.game.participantNames = ['东家', '南家', '西家'];
+  // 即使误传了合法动作，前端也必须拒绝；真正权限由独立 API 测试覆盖。
+  // Even an erroneous actions payload must be ignored in the UI; separate API tests enforce actual authorization.
+  const scope = setup(state);
+  assert.equal(scope.mySeat.value, null);
+  assert.equal(scope.isHost.value, false);
+  assert.equal(scope.isMyTurn.value, false);
+  assert.equal(scope.opponents.value.length, 3);
+  assert.equal(scope.riverPlayers.value.length, 3);
+  assert.deepEqual(scope.legalActions.value, []);
+  let requests = 0;
+  globalThis.fetch = async () => { requests++; throw new Error('Spectators must not mutate'); };
+  await scope.mutate({ type: 'discard', tile: 0 });
+  await scope.mutate(null, true);
+  assert.equal(requests, 0);
+  const html = await render(scope);
+  assert.match(html, /观战中/);
+  assert.doesNotMatch(html, /aria-label="我的手牌与操作"|class="own-seat-summary"|同桌再来一局/);
+  assert.equal((html.match(/class="[^"']*opponent-seat/g) || []).length, 3);
+});
+
+test('spectator entry needs only room code and preserves the same-room player credential', async () => {
+  const seated = credential();
+  browser({ rooms: { [seated.roomId]: seated } });
+  const scope = lobby();
+  scope.loadSavedSessions();
+  scope.entryMode.value = 'spectate';
+  scope.roomCode.value = seated.roomId;
+  scope.name.value = '';
+  const watched = { roomId: seated.roomId, token: `watch.${'c'.repeat(64)}.${'d'.repeat(64)}`, viewerRole: 'spectator' };
+  const state = { ...fixture({ schemaVersion: 3 }), id: seated.roomId, you: null, viewerRole: 'spectator' };
+  const requests = [];
+  globalThis.fetch = async (path, options) => {
+    requests.push({ path, options });
+    return new Response(JSON.stringify({ ...watched, state }));
+  };
+  await scope.enterRoom();
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].path, `/api/rooms/${seated.roomId}/spectate`);
+  assert.equal(scope.session.value.viewerRole, 'spectator');
+  assert.equal(scope.savedRooms.get(seated.roomId).token, seated.token);
+  assert.equal(scope.savedRooms.get(`watch:${seated.roomId}`).token, watched.token);
+  assert.match(window.location.search, /view=spectator/);
+  assert.ok(!window.location.href.includes(watched.token));
+  const html = await render(scope);
+  assert.match(html, /观战中/);
+  const before = requests.length;
+  await scope.queueLeave(scope.session.value);
+  assert.equal(requests.length, before);
+});
+
+test('spectator browser reload and Back use the watch credential rather than the cached player seat', async () => {
+  const seated = credential();
+  const watched = { roomId: seated.roomId, token: `watch.${'c'.repeat(64)}.${'d'.repeat(64)}`, viewerRole: 'spectator' };
+  const env = browser({ search: `?room=${seated.roomId}&view=spectator`, active: watched,
+    rooms: { [seated.roomId]: seated, [`watch:${seated.roomId}`]: watched } });
+  const scope = lobby();
+  const initial = scope.loadSavedSessions();
+  const requests = [];
+  globalThis.fetch = async (path, options) => {
+    requests.push({ path, options });
+    return new Response(JSON.stringify({ state: { ...fixture({ schemaVersion: 3 }), id: seated.roomId, you: null, viewerRole: 'spectator' } }));
+  };
+  await scope.routeFromLocation(initial);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].options.headers.Authorization, `Bearer ${watched.token}`);
+  assert.equal(scope.mySeat.value, null);
+  env.setLocation('https://example.test/');
+  await scope.routeFromLocation();
+  assert.equal(scope.session.value, null);
+  assert.equal(scope.savedRooms.get(seated.roomId).token, seated.token);
+});
+
+test('spectator entry remains single-flight and ignores late results after navigation', async () => {
+  browser();
+  const scope = lobby();
+  scope.entryMode.value = 'spectate';
+  scope.roomCode.value = 'ABCDEFGH';
+  let resolveRequest;
+  let count = 0;
+  globalThis.fetch = async () => {
+    count++;
+    return new Promise((resolve) => { resolveRequest = resolve; });
+  };
+  const pending = scope.enterRoom();
+  await settle();
+  await scope.enterRoom();
+  assert.equal(count, 1);
+  scope.resetRoomContext();
+  resolveRequest(new Response(JSON.stringify({ roomId: 'ABCDEFGH', token: `watch.${'c'.repeat(64)}.${'d'.repeat(64)}`,
+    state: { ...fixture(), id: 'ABCDEFGH', you: null, viewerRole: 'spectator' } })));
+  await pending;
+  assert.equal(scope.state.value, null);
+  assert.equal(scope.session.value, null);
+  assert.equal(count, 1);
+});
+
+// 展示层使用四席合成快照验证动态集合；四人规则由对应引擎分支负责。
+// A four-seat display-only snapshot verifies dynamic collections; the separate engine branch owns four-player rules.
+test('spectator panels and rivers include all four seats without treating a viewer as a player', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.viewerRole = 'spectator';
+  state.you = null;
+  state.seats.push({ ...state.seats[2], seat: 3, name: '北家' });
+  state.game.players.push({ ...state.game.players[2], seat: 3 });
+  state.game.participantNames = ['东家', '南家', '西家', '北家'];
+  const scope = setup(state);
+  assert.equal(scope.opponents.value.length, 4);
+  assert.equal(scope.riverPlayers.value.length, 4);
+  assert.equal(scope.discardsBySeat.value.length, 4);
+  const html = await render(scope);
+  assert.match(html, /北家的手牌，共/);
+  assert.match(html, /北家的牌河/);
+  assert.doesNotMatch(html, /aria-label="我的手牌与操作"/);
+});
+
+// 终局原参赛者仍应保留名字和公开牌区，但离开的历史玩家不能占用下一局的空位计数。
+// Finished participants retain names/public zones, while departed historical players do not count as occupied next-round seats.
+test('finished spectator panels preserve participants while occupancy tracks actual seats', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.viewerRole = 'spectator';
+  state.you = null;
+  state.phase = 'finished';
+  state.game.phase = 'finished';
+  state.game.participantNames = ['原东家', '原南家', '原西家'];
+  state.seats[0] = null;
+  state.seats[1].name = '后来的人';
+  state.seats[1].isCurrentParticipant = false;
+  const scope = setup(state);
+  assert.equal(scope.filledSeats.value, 2);
+  assert.equal(scope.opponents.value[0].name, '原东家');
+  assert.equal(scope.opponents.value[1].name, '原南家');
+  assert.equal(scope.opponents.value[1].detached, true);
+  const html = await render(scope);
+  assert.match(html, /2\/3 位落座/);
+  assert.doesNotMatch(html, /class="own-seat-summary"/);
+});
+
+// 无效观战轮询只能删除观战缓存，不能顺手删除同桌仍有效的玩家凭证。
+// Invalid spectator polls may remove only the viewer cache, never a valid same-room player credential.
+test('expired spectator polling preserves the same-room player cache', async () => {
+  const seated = credential();
+  const watched = { roomId: seated.roomId, token: `watch.${'c'.repeat(64)}.${'d'.repeat(64)}`, viewerRole: 'spectator' };
+  browser({ rooms: { [seated.roomId]: seated } });
+  const scope = lobby();
+  scope.loadSavedSessions();
+  scope.saveSession(watched);
+  scope.state.value = { ...fixture(), id: seated.roomId, you: null, viewerRole: 'spectator' };
+  globalThis.fetch = async (path) => new Response(JSON.stringify(
+    path.startsWith('/api/profile') ? emptyHistory() : { error: '观战凭证失效', code: 'UNAUTHORIZED' },
+  ), { status: path.startsWith('/api/profile') ? 200 : 401 });
+  await scope.refresh();
+  await settle();
+  assert.equal(scope.session.value, null);
+  assert.equal(scope.savedRooms.get(seated.roomId).token, seated.token);
+  assert.equal(scope.savedRooms.has(`watch:${seated.roomId}`), false);
+  assert.match(scope.error.value, /观战会话已失效/);
+});
+
+// 联合界面回归穷举三/四人每个玩家视角与观众，角色来自真实引擎投影而非角色池下标。
+// Combined UI coverage visits every three/four-player viewpoint plus observers using genuine engine projections.
+for (const playerCount of [3, 4]) {
+  test(`${playerCount}-seat integrated layout isolates relative player positions from all-seat spectating`, async () => {
+    const { createGame } = await import('../shared/game.js');
+    const { spectatorGameView } = await import('../server/spectators.js');
+    const raw = createGame({ seed: `integrated-ui-${playerCount}`, rules: { playerCount, deckCount: 2.5, dragonStartCount: 9 } });
+    const characters = ['wealthy', 'landlord', 'honest', 'star'].slice(0, playerCount);
+    for (const viewer of [...Array(playerCount).keys(), null]) {
+      const value = fixture({ schemaVersion: 3 });
+      value.viewerRole = viewer === null ? 'spectator' : 'player';
+      value.you = viewer;
+      value.settings = { playerCount, deckCount: 2.5, dragonStartCount: 9 };
+      value.seats = raw.players.map((player) => ({ seat: player.seat, name: `整合玩家${player.seat}`, connected: true }));
+      value.game = viewer === null ? spectatorGameView(raw) : getPlayerView(raw, viewer);
+      value.game.characters = characters;
+      value.game.participantNames = value.seats.map((seat) => seat.name);
+      const scope = setup(value);
+      const html = await render(scope);
+      const spectator = viewer === null;
+      assert.equal(scope.opponents.value.length, spectator ? playerCount : playerCount - 1);
+      assert.equal(scope.riverPlayers.value.length, playerCount);
+      assert.equal((html.match(/class="discard-group/g) || []).length, playerCount);
+      for (let seat = 0; seat < playerCount; seat++) {
+        assert.equal(scope.characterForPlayer(seat).id, characters[seat]);
+        assert.ok(html.includes(scope.characterForPlayer(seat).portrait));
+      }
+      if (spectator) {
+        assert.doesNotMatch(html, /four-player-table|opposite-seat|relative-seat-label|aria-label="我的手牌与操作"/);
+        assert.deepEqual(scope.legalActions.value, []);
+        assert.equal(scope.isHost.value, false);
+        assert.deepEqual(scope.opponents.value.map((player) => player.seat), [...Array(playerCount).keys()]);
+      } else {
+        assert.equal(html.includes('four-player-table'), playerCount === 4);
+        assert.equal(scope.opponentPosition((viewer + 1) % playerCount), '左手边');
+        assert.equal(scope.opponentPosition((viewer + playerCount - 1) % playerCount), '右手边');
+        if (playerCount === 4) {
+          assert.equal(scope.opponentPosition((viewer + 2) % playerCount), '对家');
+          assert.equal((html.match(/class="[^"']*\bopposite-seat\b/g) || []).length, 1);
+        }
+      }
+    }
+  });
+}
+
+// 规则弹窗必须与新/旧局快照一致，两个开关独立判定；仅显示文字不会迁移已存规则。
+// Rule dialogs follow saved snapshots and evaluate the two flags independently without migrating stored rules.
+test('rules dialog preserves old choices and describes explicit pre-hu and post-peng snapshots', async () => {
+  for (const choice of [true, false, undefined]) {
+    for (const discardFirst of [true, false, undefined]) {
+      const value = fixture({ schemaVersion: 3 });
+      value.game.rules = {};
+      if (choice !== undefined) value.game.rules.preHuActionChoice = choice;
+      if (discardFirst !== undefined) value.game.rules.concealedKongAfterPungDiscard = discardFirst;
+      const before = structuredClone(value.game.rules);
+      const scope = setup(value);
+      scope.showRules.value = true;
+      const html = (await render(scope)).replace(/<[^>]*>/g, '');
+      assert.equal(html.includes('可自行选择胡或合法杠，也可出牌'), choice === true);
+      assert.equal(html.includes('胡、碰、明杠及过均按实际合法动作保留'), choice === true);
+      assert.equal(html.includes('自己摸牌同时可胡又可杠时，不提供杠'), choice !== true);
+      assert.equal(html.includes('可胡又可明杠时，只提供胡或过'), choice !== true);
+      assert.equal(html.includes('碰后当前回合不能立即暗杠'), discardFirst === true);
+      assert.match(html, /你已胡过且本张可胡时，只提供胡/);
+      assert.match(html, /胡优先于明杠，明杠优先于碰/);
+      assert.deepEqual(scope.state.value.game.rules, before);
+    }
+  }
+  // 大厅讲下一局的新默认；schema1/2 即使出现同名字段也不套用新版解释。
+  // The lobby describes new defaults; schemas one/two never adopt current wording even with matching field names.
+  const entry = lobby();
+  entry.showRules.value = true;
+  const lobbyHtml = await render(entry);
+  assert.match(lobbyHtml, /可自行选择胡或合法杠，也可出牌/);
+  assert.match(lobbyHtml, /碰后当前回合不能立即暗杠/);
+  for (const version of [1, 2]) {
+    const value = fixture({ schemaVersion: version });
+    value.game.rules = { preHuActionChoice: true, concealedKongAfterPungDiscard: true };
+    const scope = setup(value);
+    scope.showRules.value = true;
+    const html = await render(scope);
+    assert.doesNotMatch(html, /可自行选择胡或合法杠，也可出牌|碰后当前回合不能立即暗杠/);
+    assert.match(html, /本桌旧规则/);
+  }
 });

@@ -1,6 +1,7 @@
 // 声音层入口：App 用游标挑出新事件，再交给队列播放；音频绝不修改游戏状态。
 // Audio entry: App selects new events with the cursor, then queues playback; audio never changes game state.
 // 详见 docs/FRONTEND-READING-GUIDE.md 的音频章节。 / See the audio section in docs/FRONTEND-READING-GUIDE.md.
+import { gameCharacters, SEAT_COUNT } from '../shared/character-assignment.js';
 /* 固定绝对座位，不随观察者变化：所有客户端听到相同角色。 / Fixed absolute seats, never viewer-relative: all clients hear the same character. */
 // 角色 ID 与资源路径是客户端与服务端共享契约。座位是绝对座位，不随观察者旋转。
 // Character IDs and asset paths are shared client/server contracts. Seats are absolute, not viewer-relative.
@@ -8,18 +9,34 @@ export const CHARACTERS = Object.freeze([
   { id: 'sweet', name: '小桃', style: '萝莉音', portrait: '/characters/sweet.png' },
   { id: 'elegant', name: '清岚', style: '御姐音', portrait: '/characters/elegant.png' },
   { id: 'sunny', name: '晴禾', style: '阳光少女音', portrait: '/characters/sunny.png' },
+  { id: 'landlord', name: '地主', style: '豪爽男声', portrait: '/characters/landlord.png' },
+  { id: 'honest', name: '老实人', style: '温厚男声', portrait: '/characters/honest.png' },
+  { id: 'wealthy', name: '富婆', style: '雍容女声', portrait: '/characters/wealthy.png' },
+  { id: 'star', name: '女明星', style: '明亮女声', portrait: '/characters/star.png' },
 ]);
 // 旧局没有角色分配时按绝对座位兜底；非法下标使用第一个角色。
 // For older games without assignments, fall back by absolute seat; invalid indices use the first character.
-export function characterForSeat(seat) {
-  return CHARACTERS[seat] || CHARACTERS[0];
+export function characterForSeat(seat, seatCount = SEAT_COUNT) {
+  // 默认只接受三个真实座位；显式四人局才允许第四位的兼容角色。
+  // Three seats remain the default; only explicit four-seat games allow a fourth fallback character.
+  const fallback = gameCharacters(undefined, seatCount);
+  const id = Number.isInteger(seat) && seat >= 0 && seat < seatCount
+    ? fallback[seat]
+    : fallback[0];
+  return CHARACTERS.find((character) => character.id === id);
+}
+// 声音只接受服务端公开的三/四项映射；七人角色池绝不被误当作七座位。
+// Audio accepts only server-projected three/four-entry maps; the seven-character roster never implies seven seats.
+function audioSeatCount(characters) {
+  return Array.isArray(characters) && characters.length === 4 ? 4 : SEAT_COUNT;
 }
 // 仅把合法公开动作映射为音频路径；摸牌、隐藏手牌和未确认申请不发声。
 // Map valid public actions to audio paths; draws, hidden hands and unconfirmed requests remain silent.
 export function clipForEvent(event, characters) {
+  const seatCount = audioSeatCount(characters);
   // 先拒绝无效座位，避免构造错误资源路径或播报未知玩家。
   // Reject invalid seats before building asset paths or announcing unknown players.
-  if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat > 2) return null;
+  if (!Number.isInteger(event?.seat) || event.seat < 0 || event.seat >= seatCount) return null;
   let clip;
   // 牌种 0–8 为条、9–17 为筒；取余加一得到语音文件中的点数。
   // Tile IDs 0–8 are bamboo and 9–17 dots; modulo plus one yields the spoken rank.
@@ -46,7 +63,7 @@ export function clipForEvent(event, characters) {
   // 优先使用服务端本局角色 ID，缺失或未知 ID 才用兼容映射。
   // Prefer the server game’s character ID; fall back only for missing or unknown IDs.
   return clip
-    ? `/voices/${(CHARACTERS.find((character) => character.id === characters?.[event.seat]) || characterForSeat(event.seat)).id}/${clip}.mp3`
+    ? `/voices/${(CHARACTERS.find((character) => character.id === characters?.[event.seat]) || characterForSeat(event.seat, seatCount)).id}/${clip}.mp3`
     : null;
 }
 
@@ -336,7 +353,7 @@ export class CharacterAudio {
     const generation = this.generation;
     const urls = [
       ...new Set(
-        [0, 1, 2].flatMap((seat) =>
+        Array.from({ length: audioSeatCount(characters) }, (_, seat) => seat).flatMap((seat) =>
           ['selfDraw', 'discard', 'robKong'].flatMap((source) =>
             clipsForEvent({ type: 'hu', seat, source }, characters),
           ),
