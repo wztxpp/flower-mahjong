@@ -1,5 +1,21 @@
 # 条筒牌面设计说明
 
+## 当前牌面：用户提供的 PNG / Current user-supplied PNG
+
+更新日期：2026-11-07。当前使用用户提供的十八种牌面图集，包含一至九条和一至九筒。原图位于 `public/assets/tiles/mahjong-faces-20261107.png`，1774 × 887，原字节 SHA-256 为 `9a87bb7164b286fe3fb1600b3348c5153c7380cb63a0b592dd601015b91c3333`。没有重画、重压缩或外部热链。
+Updated 2026-11-07. The active eighteen-face atlas is the user's original PNG: bamboo 1–9 and dots 1–9, at the path, dimensions and SHA-256 above. The file is not redrawn, recompressed or hotlinked.
+
+`src/mahjong-photo-faces.js` 保存原图矩形，按协议的先条后筒顺序映射。每个视窗为 3:4，等比缩放到 60 × 80；第二排牌身较矮，采用更紧的矩形。视窗去掉牌外汉字标签，但保留图案、颜色和一条鸟形。`MahjongTile.vue` 绑定真实原图尺寸，仍优先绘制背面，保留读屏牌名、选中和禁用状态。
+The crop module maps source rectangles into protocol order, bamboo before dots. Every viewport is 3:4 and scales uniformly to 60 × 80; shorter middle-row tiles use tighter crops. Surrounding text labels are excluded while artwork, colors and the bird are retained. MahjongTile binds the actual source dimensions, prioritizes concealed backs and preserves accessible names, selection and disabled states.
+
+所有手牌、牌河、副露、萝卜、胡牌区和动画沿用同一个组件。此次只换展示素材，不改玩法、API、存档、数据库或权限。`tests/mahjong-photo-faces.test.js` 验证原文件、尺寸、十八种映射、等比与边界，UI 测试验证一条、八筒及背面。
+Hands, rivers, melds, radishes, winning areas and animations reuse the same component. This change affects presentation only, not rules, APIs, saves, databases or access. Atlas tests check exact bytes, dimensions, all eighteen mappings, proportional scaling and bounds; UI tests cover one bamboo, eight dots and backs.
+
+以下为早期设计的历史说明，不再描述当前图片来源。旧 JPEG 留在仓库中作历史资源，当前组件不再引用。
+The sections below document the earlier design, not the active image source. The old JPEG remains as a historical asset but is no longer referenced by the active component.
+
+## 历史设计 / Historical design
+
 更新日期：2026-11-03。文件：`src/MahjongTile.vue`、`src/style.css`。
 
 ## 采用的方向

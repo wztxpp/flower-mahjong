@@ -136,9 +136,9 @@ Clicking a win button is a request, not proof that a win committed. `ActionVoice
 
 In the ordinary rules used here, check `!important`, selector specificity, then source order for equal specificity. `.in-game .hand-panel` is more specific than `.hand-panel`. Several `max-width` queries may match simultaneously; later narrow-screen rules are not a separate page. Vue adds scope markers for `<style scoped>`; this does not isolate all global CSS.
 
-`MahjongTile` 根据 `interactive` 选择原生 button 或 span；牌面来自原照片，`photoFaceTransform` 用仿射矩阵把正确牌种裁进 60 × 80 的 SVG 视窗。中心坐标、缩放和底色都是显示数据，不是麻将规则。SVG 图标的 path 也属于绘图数据，不能像业务变量一样随意“优化”。
+`MahjongTile` 根据 `interactive` 选择原生 button 或 span；牌面来自用户 2026-11-07 提供的原始 PNG。`PHOTO_FACE_CROPS` 记录十八种牌的原图矩形，`photoFaceTransform` 等比缩放并平移到 60 × 80 的 SVG 视窗，排除图外文字标签。矩形、中心、尺寸与底色都是显示数据，不是麻将规则；牌种编号和隐藏牌分支不变。见 [牌面设计](TILE-DESIGN.md)。
 
-`MahjongTile` chooses a native button or span from `interactive`. Faces come from the original photograph; `photoFaceTransform` uses an affine matrix to crop the correct tile into a 60 × 80 SVG viewport. Centers, scales and underlay colors are display data, not rules. SVG path strings are also drawing data, not business variables to casually optimize.
+`MahjongTile` chooses a native button or span from `interactive`. Faces use the user's original 2026-11-07 PNG. `PHOTO_FACE_CROPS` stores eighteen source rectangles; `photoFaceTransform` scales uniformly and translates each into a 60 × 80 SVG viewport without surrounding text labels. Rectangles, centers, dimensions and underlay colors are presentation data; tile IDs and concealed rendering remain unchanged. See [tile design](TILE-DESIGN.md).
 
 ## 10. 安全修改与自测 / Safe edits and checks
 

@@ -1,83 +1,86 @@
-// 牌面图集、隐藏牌和本地原图资产的映射契约。
-// Tile-face atlas mapping, concealed tiles and bundled reference-image contracts.
-// 阅读说明见 docs/TESTING-READING-GUIDE.md；固定种子与凭证仅为测试，不应移入真实用户数据。
-// See docs/TESTING-READING-GUIDE.md; seeded data and test credentials must stay separate from real user data.
-import test from "node:test";
-import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
+// 用户图集的牌种映射、完整原图字节、等比裁切与隐藏牌契约。
+// User-atlas tile mapping, exact original bytes, proportional cropping and concealed-tile contracts.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import {
   MAHJONG_PHOTO_URL,
+  MAHJONG_PHOTO_WIDTH,
+  MAHJONG_PHOTO_HEIGHT,
+  PHOTO_FACE_CROPS,
   PHOTO_FACE_CENTERS,
   photoFaceTransform,
-} from "../src/mahjong-photo-faces.js";
-// 场景：照片牌面图集覆盖全部 18 种不同的条子和筒子
-// Scenario: photo face atlas covers all 18 distinct bamboo and dots tiles
-test("photo face atlas covers all 18 distinct bamboo and dots tiles", () => {
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(PHOTO_FACE_CENTERS.length, 18);
-  assert.equal(new Set(PHOTO_FACE_CENTERS.map(String)).size, 18);
+} from '../src/mahjong-photo-faces.js';
+
+// 每种牌必须裁出独立区域，保持圆形且完整落在原图内，矩形边界映射到视窗边界。
+// Each face gets a unique in-bounds rectangle with round circles and exact viewport-edge mapping.
+test('all eighteen source rectangles map proportionally into the viewport', () => {
+  assert.equal(PHOTO_FACE_CROPS.length, 18);
+  assert.equal(new Set(PHOTO_FACE_CROPS.map(String)).size, 18);
   for (let tile = 0; tile < 18; tile++) {
-    const [u, v] = PHOTO_FACE_CENTERS[tile];
-    const matrix = photoFaceTransform(tile).slice(7, -1).split(" ").map(Number);
+    const [left, top, width, height] = PHOTO_FACE_CROPS[tile];
+    assert.ok(left >= 0 && top >= 0);
+    assert.ok(left + width <= MAHJONG_PHOTO_WIDTH);
+    assert.ok(top + height <= MAHJONG_PHOTO_HEIGHT);
+    const matrix = photoFaceTransform(tile).slice(7, -1).split(' ').map(Number);
     assert.equal(matrix.length, 6);
     assert.ok(matrix.every(Number.isFinite));
     const [a, b, c, d, e, f] = matrix;
-    const x = u + 0.59 * v;
-    const y = -0.45 * u + v;
-    assert.ok(Math.abs(a * x + c * y + e - 30) < 1e-8);
-    assert.ok(Math.abs(b * x + d * y + f - 40) < 1e-8);
+    assert.equal(a, d, 'artwork must not stretch');
+    assert.equal(b, 0);
+    assert.equal(c, 0);
+    assert.ok(Math.abs(a * left + e) < 1e-8);
+    assert.ok(Math.abs(d * top + f) < 1e-8);
+    assert.ok(Math.abs(a * (left + width) + e - 60) < 1e-8);
+    assert.ok(Math.abs(d * (top + height) + f - 80) < 1e-8);
+    const [centerX, centerY] = PHOTO_FACE_CENTERS[tile];
+    assert.ok(Math.abs(a * centerX + e - 30) < 1e-8);
+    assert.ok(Math.abs(d * centerY + f - 40) < 1e-8);
   }
 });
-// 场景：非法或隐藏牌值不会查到照片牌面
-// Scenario: invalid and hidden tile values have no photo face lookup
-test("invalid and hidden tile values have no photo face lookup", () => {
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  // 逐项覆盖 [null,undefined,-1,18,.5,'0',NaN,Infinity]；同一组检查用于每个样本，顺序以代码列出的集合为准。
-  // Exercise each entry in [null,undefined,-1,18,.5,'0',NaN,Infinity] with the same checks, preserving the listed order.
-  for (const tile of [null, undefined, -1, 18, 0.5, "0", NaN, Infinity]) {
+
+// 图片左半是筒、右半是条，但协议顺序相反；行内一至三、四至六、七至九不能混排。
+// Image columns put dots before bamboo, opposite protocol suit order; preserve each rank's row/column.
+test('source-sheet arrangement maps to bamboo first and dots second protocol IDs', () => {
+  for (let tile = 0; tile < 18; tile++) {
+    const [x, y] = PHOTO_FACE_CENTERS[tile];
+    const rankIndex = tile % 9;
+    assert.equal(x > MAHJONG_PHOTO_WIDTH / 2, tile < 9);
+    assert.equal(y < 310 ? 0 : y < 590 ? 1 : 2, Math.floor(rankIndex / 3));
+    if (rankIndex % 3 !== 0) assert.ok(x > PHOTO_FACE_CENTERS[tile - 1][0]);
+  }
+});
+
+// 空白、隐藏牌及非法编号不能意外显示一条。
+// Blank, hidden and invalid IDs must never accidentally reveal one bamboo.
+test('invalid and hidden tile values have no photo face lookup', () => {
+  for (const tile of [null, undefined, -1, 18, 0.5, '0', NaN, Infinity]) {
     assert.equal(photoFaceTransform(tile), null);
   }
 });
-// 场景：原始参考照片原样打包，不使用外部热链
-// Scenario: original reference photograph is bundled unchanged, not hotlinked
-test("original reference photograph is bundled unchanged, not hotlinked", () => {
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(MAHJONG_PHOTO_URL, "/assets/tiles/reference-mahjong.jpg");
-  // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
-  // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  const photo = readFileSync(
-    new URL("../public/assets/tiles/reference-mahjong.jpg", import.meta.url),
-  );
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.equal(photo[0], 0xff);
-  assert.equal(photo[1], 0xd8);
-  assert.equal(
-    createHash("sha256").update(photo).digest("hex"),
-    "260bda485e82697b25547d1d60255398c084445cbbd19b3b3da6e1c200ae897b",
-  );
+
+// SHA-256 与 PNG 尺寸共同防止错误文件、重绘、重压缩或热链悄悄替代用户原图。
+// The digest and PNG dimensions prevent a wrong file, redraw, recompression or hotlink replacing the user's original.
+test('the exact user-supplied PNG is bundled locally', () => {
+  assert.equal(MAHJONG_PHOTO_URL, '/assets/tiles/mahjong-faces-20261107.png');
+  const photo = readFileSync(new URL(`../public${MAHJONG_PHOTO_URL}`, import.meta.url));
+  assert.equal(photo.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(photo.readUInt32BE(16), MAHJONG_PHOTO_WIDTH);
+  assert.equal(photo.readUInt32BE(20), MAHJONG_PHOTO_HEIGHT);
+  assert.equal(createHash('sha256').update(photo).digest('hex'),
+    '9a87bb7164b286fe3fb1600b3348c5153c7380cb63a0b592dd601015b91c3333');
 });
-// 场景：牌背绝不渲染照片牌面，同时保留无障碍牌名
-// Scenario: back tiles never render the photo face and accessible tile names remain
-test("back tiles never render the photo face and accessible tile names remain", () => {
-  // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
-  // Arrange: prepare this step’s input or reference data within the synthetic scenario.
-  const component = readFileSync(
-    new URL("../src/MahjongTile.vue", import.meta.url),
-    "utf8",
-  );
-  // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
-  // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
+
+// 背面分支优先且保留原生按钮与读屏语义；更换图集不能泄露对手手牌。
+// Back rendering takes precedence and native button/accessibility semantics remain; atlas changes cannot expose hands.
+test('back tiles never render a face and accessible tile names remain', () => {
+  const component = readFileSync(new URL('../src/MahjongTile.vue', import.meta.url), 'utf8');
   assert.match(component, /v-if="back"/);
   assert.match(component, /v-else-if="faceTransform"/);
   assert.match(component, /:aria-label="label"/);
-  assert.match(
-    component,
-    /:aria-pressed="interactive \? selected : undefined"/,
-  );
+  assert.match(component, /:aria-pressed="interactive \? selected : undefined"/);
+  assert.match(component, /:width="MAHJONG_PHOTO_WIDTH"/);
+  assert.match(component, /:height="MAHJONG_PHOTO_HEIGHT"/);
   assert.doesNotMatch(component, /circlePositions|bambooPositions/);
 });

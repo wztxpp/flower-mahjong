@@ -51,7 +51,7 @@ A room revision is not a timestamp. At most one competing write with the same ol
 - `tests/ui.test.js`：编译真实 SFC，SSR HTML 和模拟浏览器中的请求/导航/状态。 / Real SFC compilation, SSR HTML and simulated browser request/navigation/state handling.
 - `tests/invitation-copy.test.js`：内存 Vue renderer 执行真实复制按钮，覆盖 Clipboard API、旧复制方式和手动复制反馈。 / An in-memory Vue renderer exercises actual copy controls and clipboard/manual fallback feedback.
 - `tests/character-audio.test.js`：不真正播放音频，验证播报身份、队列、中断、超时、去重与静音。 / Silent substitutes verify event identity, queues, interruption, expiry, deduplication and mute.
-- `tests/mahjong-photo-faces.test.js`：牌面图集映射、原图字节以及组件源码约定。 / Tile atlas mapping, original image bytes and component source contracts.
+- `tests/mahjong-photo-faces.test.js`：十八种牌的行列/花色映射、等比裁切边界、用户 PNG 原字节及尺寸、隐藏牌约定。 / Eighteen-face row/suit mapping, proportional crop bounds, exact user PNG bytes/dimensions and concealed-tile contracts.
 - `tests/voice-assets.test.js`：本地音频/头像存在、文件格式和清单路径，不生成或下载素材。 / Local voice/portrait presence, formats and manifest paths, without generating/downloading assets.
 
 浏览器替身仅实现当前用例需要的接口。真实组件编译/SSR 通过不等于真实浏览器布局、触屏手势、权限弹窗和音频设备通过。测试中 `onMounted` 等生命周期有意被替换，以隔离网络和定时器；不能据此推断生产生命周期没有作用。

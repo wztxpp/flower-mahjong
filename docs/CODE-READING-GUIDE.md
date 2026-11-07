@@ -27,7 +27,7 @@ Every change starts with AGENTS.md; it links the required guides so future work 
 | `src/Icon.vue` | 小图标 SVG，不包含游戏规则。 / SVG icons, not rules. |
 | `src/character-audio.js` | 角色、权威事件游标、逐事件结果音频串行队列。 / Characters, event cursor and serial audio with per-event outcomes. |
 | `src/shared-playback.js` | 完整公开前缀、同座声音协调、成功记录、失败接力与降级。 / Complete public prefixes, sibling audio coordination, success records, bounded recovery and fallback. |
-| `src/mahjong-photo-faces.js` | 参考照片裁切与牌面定位。 / Photo crop geometry and face positioning. |
+| `src/mahjong-photo-faces.js` | 用户 PNG 图集矩形裁切、原图尺寸与牌种定位。 / User PNG atlas rectangles, source dimensions and tile mapping. |
 | `src/style.css` | 基础布局、组件外观、响应式样式。 / Base layouts, components, responsive rules. |
 | `src/tabletop.css` | 后加载的牌桌视觉覆盖；顺序与优先级必须保留。 / Later table overrides; preserve order and specificity. |
 

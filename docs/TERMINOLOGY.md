@@ -47,6 +47,7 @@ This dictionary defines each concept in code. Prefer the Chinese terms below and
 
 ## 牌与动作 / Tiles and actions
 
+- `PHOTO_FACE_CROPS`：用户 PNG 中的十八个原图矩形，顺序与 tile 协议一致；只裁切显示，不是新牌种或规则。 / Eighteen source rectangles in the user PNG, in protocol tile order; presentation crops, not new tile types or rules.
 - `tile`：牌种编号，不是每张实体牌的唯一 ID。0–8 对应一至九条，9–17 对应一至九筒；每种八张。 / A tile identity, not a unique physical-copy ID; eight copies of each identity.
 - `wall`：剩余实体牌墙；`wallCount` 是只读公开数量。 / Physical remaining wall; wallCount exposes only its size.
 - `hand` / `handCount`：本人真实手牌 / 对外公开张数。`handIndex` 是当前排序后的数组位置，不是牌种。 / Concealed tile list / public count; a hand index is a sorted-array position, not an identity.

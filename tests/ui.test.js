@@ -529,7 +529,7 @@ test("eight circles and the bamboo bird use the correct original photo faces", a
   );
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.match(circles, /href="\/assets\/tiles\/reference-mahjong\.jpg"/);
+  assert.match(circles, /href="\/assets\/tiles\/mahjong-faces-20261107\.png"/);
   assert.ok(circles.includes(MahjongPhotoModule.photoFaceTransform(16)));
   assert.match(circles, /aria-label="8筒"/);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
@@ -553,7 +553,7 @@ test("eight circles and the bamboo bird use the correct original photo faces", a
   );
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
-  assert.doesNotMatch(back, /reference-mahjong|<image/);
+  assert.doesNotMatch(back, /mahjong-faces-20261107|<image/);
   assert.match(back, /aria-label="背面牌"/);
 });
 // 场景：未变化轮询保留手牌快照，仅应用连接状态标记
@@ -4391,7 +4391,7 @@ test("integrated rob-kong cue uses photo tiles and an accurate generic source la
   assert.match(html, /牌友1杠牌/);
   assert.match(html, /抢杠胡 · 6条/);
   assert.match(html, /tile-photo-face/);
-  assert.match(html, /\/assets\/tiles\/reference-mahjong\.jpg/);
+  assert.match(html, /\/assets\/tiles\/mahjong-faces-20261107\.png/);
   assert.equal(scope.tableScoreRows.value[0].totalScore, 10);
   assert.equal(scope.pungUpgradeAfterDiscard.value, true);
   assert.equal(

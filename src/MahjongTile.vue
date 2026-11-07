@@ -3,7 +3,12 @@
 // Single-tile presentation component: receive parent props, show a photographed face or back, and preserve native button semantics.
 // 阅读路线：docs/FRONTEND-READING-GUIDE.md。 / Reading map: docs/FRONTEND-READING-GUIDE.md.
 import { computed } from 'vue';
-import { MAHJONG_PHOTO_URL, photoFaceTransform } from './mahjong-photo-faces.js';
+import {
+  MAHJONG_PHOTO_URL,
+  MAHJONG_PHOTO_WIDTH,
+  MAHJONG_PHOTO_HEIGHT,
+  photoFaceTransform,
+} from './mahjong-photo-faces.js';
 
 // 这些 props 是父子组件接口；组件只画牌，不判牌，不修改传入数据。
 // These props form the parent/child contract; this component draws tiles without judging rules or mutating inputs.
@@ -33,12 +38,9 @@ const label = computed(() =>
       ? `${rank.value}${isBamboo.value ? '条' : '筒'}`
       : '空白牌',
 );
-// 一筒靠近照片左边缘，匹配的象牙底色只补空白角；花形图案本身完整保留。
-// The first dots tile reaches the photo's left edge. A matching ivory underlay
-// fills only its missing blank corner; all of the rosette artwork is present.
-// 一筒靠近原照片边缘，用匹配底色补空白角，不重画点阵图案。
-// One dot sits near the photo edge; matching ivory fills its blank corner without redrawing the artwork.
-const faceBackground = computed(() => (props.tile === 9 ? '#feeed7' : '#fff7e6'));
+// 象牙底色仅衔接现有牌壳，牌面图案全部来自原图，不再需要旧一筒的缺角补色。
+// Ivory joins the existing tile shell; all artwork comes from the atlas, without the old one-dot corner repair.
+const faceBackground = '#fff5df';
 </script>
 
 <!-- interactive 决定使用原生 button 或展示用 span；:class 绑定外观，aria-pressed 描述选牌状态。 / interactive selects a native button or display span; :class binds appearance and aria-pressed describes selection. -->
@@ -75,7 +77,12 @@ const faceBackground = computed(() => (props.tile === 9 ? '#feeed7' : '#fff7e6')
     >
       <!-- 底色、变换后的原图、细边框按绘制顺序叠放；viewBox 统一局部坐标。 / Underlay, transformed photo and thin border paint in order; viewBox defines common local coordinates. -->
       <rect width="60" height="80" :fill="faceBackground" />
-      <image :href="MAHJONG_PHOTO_URL" width="800" height="800" :transform="faceTransform" />
+      <image
+        :href="MAHJONG_PHOTO_URL"
+        :width="MAHJONG_PHOTO_WIDTH"
+        :height="MAHJONG_PHOTO_HEIGHT"
+        :transform="faceTransform"
+      />
       <rect
         x="0"
         y="0"
