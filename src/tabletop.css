@@ -2984,8 +2984,8 @@ p.table-setting-wide { margin-top: -6px; }
   .own-character-display { width: calc(100% - 20px); margin: 12px auto; }
 }
 
-/* 真模型负责局部动作，不再把整张原图平移当作 Live2D；标签、牌与按钮始终静止。
-   Real models own local movement; whole-image transforms are not Live2D. Labels, tiles and controls remain still. */
+/* 局部 Canvas2D 只处理眼睑和头发；原图、标签、牌与按钮始终静止。
+   Local Canvas2D handles eyelids and hair only; original art, labels, tiles and controls remain still. */
 .character-portrait > .character-artwork { position: static; }
 .own-character-art > .character-artwork { position: static; }
 

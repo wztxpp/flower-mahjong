@@ -1,0 +1,40 @@
+{
+  "scope": "Four actual Canvas2D instances in this cloud browser, not mobile/GPU performance",
+  "id": "sweet",
+  "elapsedMs": 8000.0999999996275,
+  "errors": [],
+  "instances": [
+    {
+      "renderCalls": 161,
+      "closedFrames": 2,
+      "effectiveCallsPerSecond": 20.12474844064543,
+      "averageDrawMs": 0.6136645962200735,
+      "p95DrawMs": 0.7999999988824129,
+      "maxDrawMs": 1.099999999627471
+    },
+    {
+      "renderCalls": 161,
+      "closedFrames": 2,
+      "effectiveCallsPerSecond": 20.12474844064543,
+      "averageDrawMs": 0.47080745340920754,
+      "p95DrawMs": 0.6999999992549419,
+      "maxDrawMs": 2.099999999627471
+    },
+    {
+      "renderCalls": 161,
+      "closedFrames": 5,
+      "effectiveCallsPerSecond": 20.12474844064543,
+      "averageDrawMs": 0.4801242235608353,
+      "p95DrawMs": 0.599999999627471,
+      "maxDrawMs": 5.599999999627471
+    },
+    {
+      "renderCalls": 161,
+      "closedFrames": 5,
+      "effectiveCallsPerSecond": 20.12474844064543,
+      "averageDrawMs": 0.4981366458539822,
+      "p95DrawMs": 0.7999999988824129,
+      "maxDrawMs": 2.599999999627471
+    }
+  ]
+}

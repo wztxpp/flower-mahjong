@@ -8,10 +8,10 @@ import * as Vue from 'vue';
 import * as Renderer from 'vue/server-renderer';
 import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc';
 import * as TilePresentation from '../src/mahjong-tile-presentation.js';
-import * as Live2DCatalog from '../src/live2d/catalog.js';
-import * as Live2DLoader from '../src/live2d/loader.js';
-import * as Live2DConsent from '../src/live2d/consent.js';
-import * as Live2DController from '../src/live2d/portrait-controller.js';
+import * as MotionCatalog from '../src/portrait-motion/catalog.js';
+import * as MotionLoader from '../src/portrait-motion/loader.js';
+import * as MotionSettings from '../src/portrait-motion/settings.js';
+import * as MotionController from '../src/portrait-motion/controller.js';
 
 // 测试装载器只改编译产物的 import；被测 setup/template 均来自交付的 SFC。
 // Substitute imports in compiled output only; tested setup/template come from the shipped SFC.
@@ -30,10 +30,10 @@ function compile(filename, dependencies = {}) {
 }
 const Tile = compile('MahjongTile.vue', { './mahjong-tile-presentation.js': TilePresentation });
 const CharacterArtwork = compile('CharacterArtwork.vue', {
-  './live2d/consent.js': Live2DConsent,
-  './live2d/catalog.js': Live2DCatalog,
-  './live2d/loader.js': Live2DLoader,
-  './live2d/portrait-controller.js': Live2DController,
+  './portrait-motion/settings.js': MotionSettings,
+  './portrait-motion/catalog.js': MotionCatalog,
+  './portrait-motion/loader.js': MotionLoader,
+  './portrait-motion/controller.js': MotionController,
 });
 const Table = compile('ChengduTable.vue', { './CharacterArtwork.vue': CharacterArtwork, './chengdu-event-text.js': ChengduEventTextModule, './MahjongTile.vue': Tile, './mahjong-tile-presentation.js': TilePresentation });
 

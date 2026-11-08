@@ -1,0 +1,62 @@
+{
+  "scope": "Actual browser Canvas2D pixel audit",
+  "reports": [
+    {
+      "id": "sweet",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/sweet-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 8344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 8344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 6766,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7246,
+          "maximumChannelDifference": 169,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 7002,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7263,
+          "maximumChannelDifference": 177,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 15346,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15642,
+          "maximumChannelDifference": 220,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

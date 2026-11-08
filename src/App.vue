@@ -8,7 +8,7 @@ import Icon from './Icon.vue';
 import ChengduTable from './ChengduTable.vue';
 import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
 import CharacterArtwork from './CharacterArtwork.vue';
-import Live2DSettings from './Live2DSettings.vue';
+import PortraitMotionSettings from './PortraitMotionSettings.vue';
 import { chengduEventText } from './chengdu-event-text.js';
 import { isChengduRoomSettings, CHENGDU_FAN_CAPS } from '../shared/chengdu-room-settings.js';
 import { SharedPlaybackCoordinator } from './shared-playback.js';
@@ -2201,7 +2201,7 @@ onUnmounted(() => {
       </div>
     </header>
     <!-- 全局可选设置同时覆盖两玩法；不阻挡建房、开局或静态角色。 / Optional global settings cover both modes without blocking rooms, play or static art. -->
-    <Live2DSettings />
+    <PortraitMotionSettings />
 
     <!-- 短暂飞牌覆盖层不持有真实牌；稳定 eventKey 区分每次已提交事件。 / Transient flight overlays do not own real tiles; stable eventKey values identify committed events. -->
     <div

@@ -1,5 +1,8 @@
 # Live2D 官方许可引用与选择 / Official license references and opt-in
 
+**历史实现 / Historical implementation:** 当前生产入口已改为 [原图局部Canvas2D](PORTRAIT-MOTION.md)，不执行/公开分发这里的SDK/模型，不显示新的Live2D许可要求。下文保留当时证据，不能作为当前画面验收。
+The current production path uses original-preserving Canvas2D, without executing/distributing the SDK/models or asking for new Live2D assent. Evidence below is historical, not acceptance of the current visuals.
+
 核查日期 / Checked: 2026-11-08。本文记录工程实现与官方来源，不是法律意见、Live2D 官方模板或充分合规保证。
 This records implementation and official sources, not legal advice, an official template or a guarantee of legal sufficiency.
 

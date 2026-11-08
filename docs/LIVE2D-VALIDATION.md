@@ -1,5 +1,8 @@
 # Live2D 重建验收 / Live2D rebuild validation
 
+**历史实现 / Historical implementation:** 当前生产入口已改为 [原图局部Canvas2D](PORTRAIT-MOTION.md)，不执行/公开分发这里的SDK/模型，不显示新的Live2D许可要求。下文保留当时证据，不能作为当前画面验收。
+The current production path uses original-preserving Canvas2D, without executing/distributing the SDK/models or asking for new Live2D assent. Evidence below is historical, not acceptance of the current visuals.
+
 日期 / Date: 2026-11-08。基线 / Baseline: `9431753a01064cec14d9e405d9281838d6cdb039`。未推送或发布。
 This is an unpublished local rebuild, not a claim that the production site has Live2D.
 

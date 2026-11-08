@@ -13,10 +13,10 @@ import { readFileSync } from "node:fs";
 import * as Vue from "vue";
 import * as CharacterAudioModule from "../src/character-audio.js";
 import * as CharacterPortraitModule from "../src/character-portraits.js";
-import * as Live2DCatalog from '../src/live2d/catalog.js';
-import * as Live2DLoader from '../src/live2d/loader.js';
-import * as Live2DConsent from '../src/live2d/consent.js';
-import * as Live2DController from '../src/live2d/portrait-controller.js';
+import * as MotionCatalog from '../src/portrait-motion/catalog.js';
+import * as MotionLoader from '../src/portrait-motion/loader.js';
+import * as MotionSettings from '../src/portrait-motion/settings.js';
+import * as MotionController from '../src/portrait-motion/controller.js';
 import * as SharedPlaybackModule from "../src/shared-playback.js";
 import * as MahjongPhotoModule from "../src/mahjong-photo-faces.js";
 import * as MahjongPresentationModule from "../src/mahjong-tile-presentation.js";
@@ -90,10 +90,10 @@ const Tile = compileComponent("MahjongTile.vue", {
 });
 const Icon = compileComponent("Icon.vue");
 const CharacterArtwork = compileComponent('CharacterArtwork.vue', {
-  './live2d/consent.js': Live2DConsent,
-  './live2d/catalog.js': Live2DCatalog,
-  './live2d/loader.js': Live2DLoader,
-  './live2d/portrait-controller.js': Live2DController,
+  './portrait-motion/settings.js': MotionSettings,
+  './portrait-motion/catalog.js': MotionCatalog,
+  './portrait-motion/loader.js': MotionLoader,
+  './portrait-motion/controller.js': MotionController,
 });
 const ChengduTable = compileComponent("ChengduTable.vue", {
   './CharacterArtwork.vue': CharacterArtwork,
@@ -101,9 +101,9 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
-const Live2DSettings = compileComponent('Live2DSettings.vue', { './live2d/consent.js': Live2DConsent });
+const PortraitMotionSettings = compileComponent('PortraitMotionSettings.vue', { './portrait-motion/settings.js': MotionSettings });
 const App = compileComponent("App.vue", {
-  "./Live2DSettings.vue": Live2DSettings,
+  "./PortraitMotionSettings.vue": PortraitMotionSettings,
   './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
@@ -6522,7 +6522,7 @@ test('App routes Chengdu schema two to its own table without Flower compatibilit
   const scope = setup(state);
   assert.equal(scope.isOlderGame.value, false); assert.equal(scope.isLegacy.value, false); assert.equal(scope.isLatest.value, false);
   const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
-  assert.match(html, /class="live2d-settings"/);
+  assert.match(html, /class="portrait-motion-settings"/);
   assert.doesNotMatch(html, /<canvas|character-artwork-background/);
   assert.match(html, /aria-label="成都麻将牌桌"/); assert.match(html, /定缺万/); assert.match(html, /你的手牌/);
   assert.doesNotMatch(html, /本桌保留 v0|胡后自动打出|萝卜|神龙|大单吊/);
@@ -6763,9 +6763,9 @@ test('own scene lifecycle keeps the lobby undecorated and clears on room exit', 
   assert.doesNotMatch(await render(scope), /own-character-scene/);
 });
 
-// 局部模型动画替代整图 CSS 摆动；系统偏好由真实组件监听，原图/牌/标签保持静止。
-// Local model animation replaces whole-image CSS motion; the real component observes preferences while art/tiles/labels remain still.
-test('scene motion is model-only and observes live reduced-motion changes', () => {
+// 局部Canvas2D替代整图 CSS 摆动；系统偏好由真实组件监听，原图/牌/标签保持静止。
+// Local Canvas2D replaces whole-image CSS motion; the real component observes preferences while art/tiles/labels remain still.
+test('scene motion is local-only and observes live reduced-motion changes', () => {
   const css = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
   const artwork = readFileSync(new URL('../src/CharacterArtwork.vue', import.meta.url), 'utf8');
   assert.doesNotMatch(css, /@keyframes character-scene-breathe|animation: character-scene-breathe/);
@@ -6805,9 +6805,9 @@ test('seated character identity survives lobby to start and preserves replacemen
 });
 
 
-// 设置入口独立于模式和牌局；只引用官方许可，默认静态，不把自拟七条或义务转移给玩家。
-// Settings are independent of mode/game, reference only official licenses, default static and never impose the superseded draft.
-test('both actual App modes expose optional official-license settings without preloading dynamic assets', async () => {
+// 设置入口独立于模式和牌局；普通本地开关默认静态，不再加载旧SDK或要求旧许可。
+// Settings are independent of mode/game, default static and no longer load the retired SDK or ask for its terms.
+test('both actual App modes expose ordinary local settings without preloading dynamic assets', async () => {
   for (const gameMode of ['flower', 'chengdu']) {
     const state = startFixture();
     state.gameMode = gameMode;
@@ -6816,12 +6816,12 @@ test('both actual App modes expose optional official-license settings without pr
       state.settings = { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
     }
     const html = await render(setup(state));
-    assert.match(html, /<details class="live2d-settings">/);
+    assert.match(html, /<details class="portrait-motion-settings">/);
     assert.match(html, /动态角色：未启用/);
-    assert.match(html, /同意并启用动态角色/);
+    assert.match(html, /启用局部动态/);
     assert.match(html, /不启用，使用静态角色/);
-    assert.match(html, /适用于本游戏所含 Live2D 组件使用及保护的条款/);
-    for (const url of Object.values(Live2DConsent.LIVE2D_LICENSE_URLS)) assert.ok(html.includes(`href="${url}"`));
+    assert.match(html, /只在眼睑处眨眼/);
+    assert.doesNotMatch(html, /Live2D|官方许可|live2d\.com/);
     assert.doesNotMatch(html, /(?:src|href)="(?:\/vendor\/live2d|\/live2d\/|[^" ]*renderer[^" ]*\.js)/);
     assert.doesNotMatch(html, /<canvas|Live2D 组件使用条款|赔偿承诺|收入申报/);
   }

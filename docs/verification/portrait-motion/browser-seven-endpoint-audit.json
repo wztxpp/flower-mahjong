@@ -1,0 +1,404 @@
+{
+  "scope": "Actual browser Canvas2D pixel audit",
+  "reports": [
+    {
+      "id": "sweet",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/sweet-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 8344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 8344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 6436,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7264,
+          "maximumChannelDifference": 132,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 6831,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7266,
+          "maximumChannelDifference": 124,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 15175,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15645,
+          "maximumChannelDifference": 220,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "elegant",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/elegant-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 5938,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 230,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 5938,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 230,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 6992,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7845,
+          "maximumChannelDifference": 165,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 7440,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7857,
+          "maximumChannelDifference": 168,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 13378,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 13830,
+          "maximumChannelDifference": 230,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/star-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 6387,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 6387,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 1154,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1297,
+          "maximumChannelDifference": 50,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 1191,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1293,
+          "maximumChannelDifference": 55,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 7578,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7717,
+          "maximumChannelDifference": 226,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "wealthy",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/wealthy-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 5433,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 229,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 5433,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 229,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 1389,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1647,
+          "maximumChannelDifference": 32,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 1487,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1644,
+          "maximumChannelDifference": 33,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 6920,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 7123,
+          "maximumChannelDifference": 229,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "honest",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/honest-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 3940,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 3940,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 1498,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1779,
+          "maximumChannelDifference": 31,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 1589,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 1779,
+          "maximumChannelDifference": 37,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 5529,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5743,
+          "maximumChannelDifference": 233,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "landlord",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/landlord-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 3310,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 236,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 3310,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 236,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 246,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 300,
+          "maximumChannelDifference": 9,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 265,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 300,
+          "maximumChannelDifference": 12,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 3575,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3613,
+          "maximumChannelDifference": 236,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "sunny",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/sunny-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "closed",
+          "changedPixels": 15256,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "blink-threshold",
+          "changedPixels": 15256,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-negative",
+          "changedPixels": 9905,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11561,
+          "maximumChannelDifference": 92,
+          "passed": true
+        },
+        {
+          "name": "hair-positive",
+          "changedPixels": 10737,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11601,
+          "maximumChannelDifference": 99,
+          "passed": true
+        },
+        {
+          "name": "combined",
+          "changedPixels": 25993,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 26968,
+          "maximumChannelDifference": 220,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

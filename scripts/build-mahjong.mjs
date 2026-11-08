@@ -7,6 +7,7 @@
 import { build as viteBuild } from 'vite';
 import { build as esbuild } from 'esbuild';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { verifyPortraitMotionBuild } from './verify-portrait-motion-build.mjs';
 
 // 删除的仅是可重新生成的构建目录，不是 .data 或任何生产数据库。
 // Remove only reproducible build output, never .data or a production database.
@@ -15,6 +16,12 @@ await rm('dist', { recursive: true, force: true });
 // Vite 使用根目录 vite.config.ts，将 Vue 页面及资源写入 dist/client。
 // Vite reads vite.config.ts and writes the Vue application and assets to dist/client.
 await viteBuild();
+
+// 历史模型与SDK只供仓库离线回归，不能随新的Canvas2D版本继续公开分发。
+// Historical models/SDK stay in the repository for offline regression, never in the new Canvas2D distribution.
+await rm('dist/client/live2d', { recursive: true, force: true });
+await rm('dist/client/vendor/live2d', { recursive: true, force: true });
+await verifyPortraitMotionBuild('dist/client');
 
 // 前端构建完成后单独建立服务端输出目录，避免与静态文件混放。
 // Create a separate server output directory after the frontend build.
@@ -55,3 +62,7 @@ await writeFile(
     ],
   }),
 );
+
+// 服务端和配置输出完成后再验证完整dist，防止模型被挪到非client位置漏过边界。
+// Recheck the complete dist after server/config emission so models cannot escape by moving outside client output.
+await verifyPortraitMotionBuild('dist');

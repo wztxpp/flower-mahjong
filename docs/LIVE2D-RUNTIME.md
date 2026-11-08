@@ -1,5 +1,8 @@
 # Live2D 展示层 / Live2D presentation
 
+**历史实现 / Historical implementation:** 当前生产入口已改为 [原图局部Canvas2D](PORTRAIT-MOTION.md)，不执行/公开分发这里的SDK/模型，不显示新的Live2D许可要求。下文保留当时证据，不能作为当前画面验收。
+The current production path uses original-preserving Canvas2D, without executing/distributing the SDK/models or asking for new Live2D assent. Evidence below is historical, not acceptance of the current visuals.
+
 ## 当前状态 / Current status
 
 这是从 `9431753a01064cec14d9e405d9281838d6cdb039` 重建的集成分支，不是已发布版本。当前七个独立角色 `sweet`、`sunny`、`elegant`、`star`、`wealthy`、`honest`、`landlord` 已恢复真实模型、官方 Core 绑定检查及八秒192帧离线视觉证据，目录允许进入浏览器验收。不能用一套皮肤代替七个角色。官方 SDK 已恢复，当前官方许可选择和用户自行承担 GPU 验收的决定见 [许可审查](LIVE2D-LICENSE-REVIEW.md)。

@@ -1,5 +1,8 @@
 # 测试阅读指南 / Test reading guide
 
+当前原图动效测试为 `tests/portrait-motion-{settings,controller,component,renderer,build}.test.js`，浏览器诊断入口为 `tests/browser/portrait-motion-preview.{html,js}`、`portrait-motion-preview-server.mjs`、`tests/helpers/portrait-motion-browser-audit.js`。前者验证真实逻辑/组件/构建合同，后者才验证Canvas2D像素和实际屏幕。旧 `live2d-*` 剩余套件保留离线历史，不代表生产使用SDK。完整范围见 [原图局部动效](PORTRAIT-MOTION.md)。
+Current portrait-motion suites verify real logic/components/build contracts; the browser preview/audit helpers verify actual Canvas2D pixels and screens. Remaining old Live2D suites are offline history, not evidence of SDK use in production.
+
 ## 先理解测试在做什么 / What a test does
 
 测试不是第二套业务代码。它准备输入，调用真实入口，然后用断言比较实际值与约定值。`test('英文标题', callback)` 注册一个场景；标题保持不变，便于比较历史运行记录，紧邻的中文注释解释同一个场景。循环注册的模板标题会产生多个独立用例，所以源码中的标题数不等于运行报告的测试数。
@@ -231,15 +234,15 @@ The portrait-layout suite inspects the real Vue template AST for both modes' sha
 - [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md) 记录联合验证；角色矩阵覆盖花麻将3/4席和成都4席，直接调用真实 API、真实文件存储与合法引擎动作，不访问生产牌局。 / The joint validation records Flower three/four-seat and Chengdu four-seat role coverage using real APIs, file storage and legal engine actions, never production games.
 
 
-## Live2D 分层验收 / Layered Live2D checks
+## 历史Live2D离线回归 / Historical offline Live2D regression
 
-- `tests/live2d-consent.test.js`：严格版本、默认静态、明确选择、读写失败、副页撤销，以及直接 SDK 入口与启动中撤销门禁。组件/UI 专项执行真实设置按钮和两玩法入口；这些不是 GPU 验收。 / Strict versions, default static, explicit choice, failed storage, sibling withdrawal and direct/mid-startup loader gates; component/UI suites cover real controls and both modes, not GPU rendering.
+- `tests/live2d-consent.test.js`：严格版本、默认静态、明确选择、读写失败、副页撤销，以及直接 SDK 入口与启动中撤销门禁。这些是历史模块单测，不是当前组件或GPU验收。 / Strict versions, default static, explicit choice, failed storage, sibling withdrawal and direct/mid-startup loader gates remain historical module tests, not current components or GPU rendering.
 
 - `tests/live2d-controller.test.js`：公开展示状态、代次、暂停/恢复、失败回退和销毁。 / Public presentation state, generations, pause/resume, fallback and disposal.
-- `tests/live2d-component.test.js`：真实Vue组件调度、keyed canvas、A→B→A背景及过期异步结果。 / Actual Vue scheduling, keyed canvases, background identity and stale async results.
+- 原 `tests/live2d-component.test.js` 已迁移为 `tests/portrait-motion-component.test.js`，检验当前真实Vue组件而非已退役模型组件。 / The old component suite migrated to the portrait-motion component suite, exercising the current Vue component rather than retired model UI.
 - `tests/live2d-renderer.test.js`：明确的DOM/Framework/GL替身验证URL、相位、真实首帧门槛的分支和资源所有权；不是GPU证据。 / Explicit doubles cover URLs, phase, first-frame gate branches and ownership, not GPU evidence.
 - `tests/live2d-core.test.js` 与 `tests/helpers/live2d-core-audit.js`：原字节官方Core6.0.1、各角色真实moc3、逐参数几何/透明度绑定、完整192帧及资产/离线报告哈希一致性。 / Actual official Core/moc3, geometry/opacity bindings, complete idle and matching asset/offline-evidence hashes.
 - `tests/live2d-sdk.test.js`：内存转译原字节官方R5注册算法，确认三个保留尾空位和可达程序失败分支；GL编译句柄仍是替身。 / Transpiled unchanged R5 registration, reserved trailing slots and reachable-program failures; compilation handles remain mocked.
 
-运行 `node --test tests/live2d-core.test.js tests/live2d-sdk.test.js` 单独验证真实Core和固定SDK兼容，再运行 `npm test`、`npm run lint`、`npm run build`。只有available角色参与真实模型测试，当前七人各有独立moc3及当前驱动的完整离线放行。真实浏览器首帧/连续动态/多画框与移动端性能仍须另验，离线视觉报告不能替代GPU结果。源码与证据路径见 [Live2D指南](LIVE2D-RUNTIME.md)。
-Run the focused Core/SDK command and then the standard aggregate checks. Only available roles participate in real-model tests; all seven currently have distinct moc3s and complete current-driver offline approval. Browser first frames, continued motion, simultaneous frames and mobile performance need separate acceptance. Offline visual reports cannot replace GPU evidence.
+运行 `node --test tests/live2d-core.test.js tests/live2d-sdk.test.js` 单独验证真实Core和固定SDK兼容，再运行 `npm test`、`npm run lint`、`npm run build`。只有available角色参与真实模型测试，当前七人各有独立moc3及当前驱动的完整离线放行。这些历史结果不能代替当前Canvas2D真实像素/多画框/移动端验收，也不会新增GPU批准门槛。源码与证据路径见 [Live2D指南](LIVE2D-RUNTIME.md)。
+Run the focused Core/SDK command and then the standard aggregate checks. Only available roles participate in real-model tests; all seven currently have distinct moc3s and complete current-driver offline approval. These historical results do not replace current Canvas2D pixel/multi-frame/mobile acceptance or introduce a new GPU approval gate.

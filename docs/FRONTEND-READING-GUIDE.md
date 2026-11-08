@@ -1,8 +1,10 @@
 # 前端阅读指南 / Frontend reading guide
 
-全局 `Live2DSettings` 提供官方许可选择，`live2d/consent.js` 保存本地版本；`CharacterArtwork` 自身门禁覆盖两玩法及独立挂载，默认静态、不阻挡操作。 / Global settings and versioned local consent gate every frame, including standalone mounts; static play is the default.
+全局 `PortraitMotionSettings` 提供普通本地显示开关，`portrait-motion/settings.js` 默认静态且不迁移旧SDK许可。`CharacterArtwork` 在两玩法/独立挂载始终显示原img，仅用透明Canvas2D叠眼睑和原纹理发区。见 [原图局部动效](PORTRAIT-MOTION.md)。
+Global ordinary settings default static without migrating old SDK assent. Both modes/standalone frames always retain the original img, overlaying only eyelids and original-texture hair through Canvas2D.
 
-新增大立绘阅读路径见 [Live2D 展示层](LIVE2D-RUNTIME.md)。原 `CharacterPortraitReactions` 仍管理公开胡/放炮三秒原图，模型不得替换成未验情绪。 / See the Live2D guide; the original public three-second reaction scheduler remains unchanged and unverified model expressions do not replace it.
+原 `CharacterPortraitReactions` 仍管理公开胡/放炮约三秒原图，期间暂停并清除局部覆盖；不改变身份、声音或游戏动作。
+The existing public win/discard-loss scheduler keeps original three-second reactions and clears overlays without changing identities, sounds or actions.
 
 这份指南面向刚接触前端的读者。先理解数据从哪里来、谁有权修改，再看模板与 CSS。代码中的注释采用中文在前、英文在后的顺序；公开字段、存储键、资源路径和规则保持兼容。
 
