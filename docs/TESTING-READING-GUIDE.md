@@ -221,3 +221,9 @@ Production tests cover draft/mixed/incomplete-save rejection, fixed direction/ex
 
 `tests/character-portraits.test.js`验证公开事件映射、三/四座、三响、隐藏牌零读取、独立定时器/过期回调、素材兜底、预热与用户PNG哈希。`tests/ui.test.js`实际编译App验证local队列时机、重复/旧快照、重连/后台/换局/换桌清理、成都玩家/观众、自摸隐私、三响及明确略过。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 The new unit suite covers public mapping, seat bounds, triple wins, no concealed-tile reads, independent/stale timers, fallbacks, preloads and supplied PNG hashes. Compiled-App tests cover FIFO timing, deduplication, restore/cancellation, Chengdu players/spectators, self-draw privacy, triple wins and skip.
+
+`tests/browser/portrait-preview-server.mjs` 使用共享MemoryStore提供三个隔离本机端口5380–5382；`portrait-preview-narrow.html` 将真实App置于390px iframe。运行与本次结果见 [场景立绘验收](CHARACTER-SCENE-VALIDATION.md)。测试结束须停止自建进程；不用于生产桌或真人记录。
+The portrait preview server supplies three local origins backed only by MemoryStore; its narrow page hosts the actual App in a 390px iframe. See the scene validation guide and stop these test processes afterward; never use production rooms/records.
+
+`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、主角装饰下层与私有守卫；不复制界面、不运行生产请求。
+The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, decorative image ordering and private guards, without duplicating UI or making production requests.

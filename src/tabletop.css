@@ -2904,3 +2904,130 @@ p.table-setting-wide { margin-top: -6px; }
 }
 .spectator-entry-note { line-height: 1.7; color: #6d7268; margin: 0 0 18px; }
 .is-spectator .opponent-row { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+
+/* 用户标注的场景框：在所有历史断点后覆盖 contain/固定图高，让原图等比铺满框。
+   User-marked scene frames: override earlier contain/fixed-image heights at every breakpoint with proportional cover. */
+.character-portrait > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% var(--portrait-focus-y, 24%);
+  filter: none;
+}
+/* 焦点只改变裁切位置，不拉伸人物；晴禾的脸在原图中比其他角色更低。
+   Focal points change only cropping, never proportions; Sunny's face sits lower in the supplied scene. */
+.character-sunny { --portrait-focus-y: 33%; }
+.character-elegant { --portrait-focus-y: 20%; }
+/* clip只裁切而不生成可程序滚动容器；否则聚焦手牌可能滚动装饰溢出并把遮罩底边抬起。
+   Clip without creating a programmatic scroll container, so focusing cards cannot scroll decoration overflow and lift the shade edge. */
+.own-player-area {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  margin-top: 18px;
+  overflow: clip;
+  border: 1px solid #c29c65;
+  border-radius: 16px 16px 22px 22px;
+  background: #173c31;
+  box-shadow: 0 8px 16px #0004;
+}
+/* 永久预留四周裁切余量，防止窄屏轻晃/旋转把图片底边带进可见框内。
+   Keep permanent overscan so narrow-screen drift/rotation cannot pull an image edge into the visible frame. */
+.own-character-scene {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  max-width: none;
+  z-index: 0;
+  object-fit: cover;
+  object-position: 50% var(--portrait-focus-y, 24%);
+  pointer-events: none;
+}
+/* 两端渐暗保留昵称/操作文字对比，中间透出人物；装饰层不能挡住麻将牌和按钮。
+   Darken the text-bearing edges while showing the character centrally; decoration never blocks tiles or buttons. */
+.own-player-area.has-character-scene::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  background: linear-gradient(180deg, #09291fdb 0%, #09291f66 35%, #09291f80 55%, #09291ff2 100%);
+  pointer-events: none;
+}
+.own-player-area > :not(.own-character-scene) {
+  position: relative;
+  z-index: 2;
+}
+.own-player-area > .own-character-label { margin: 0; padding: 10px 18px 0; }
+.own-player-area > .own-seat-summary { margin: 0; padding: 12px 18px; border-bottom: 1px solid #d5dfb842; }
+.own-player-area > .hand-panel {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.own-player-area.has-character-scene > .hand-panel { min-height: 250px; }
+/* 窄屏仍满铺，保留原手牌横向滚动与点击尺寸；不让大背景扩大页面宽度。
+   Narrow screens keep edge-to-edge art, existing hand scrolling and touch sizes without widening the page. */
+@media (max-width: 640px) {
+  .own-player-area { margin-top: 12px; border-radius: 12px; }
+  .own-player-area > .own-character-label { padding: 10px 12px 0; }
+  .own-player-area > .own-seat-summary { padding: 10px 12px; }
+  .own-player-area.has-character-scene > .hand-panel { min-height: 230px; }
+}
+
+/* 场景本身可能很亮，给信息文字独立深底，不能依赖人物背景碰巧提供对比。
+   Scenes may be bright; give information text its own dark backing instead of relying on incidental image contrast. */
+.own-player-area.has-character-scene .hand-info-row {
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: #09291fc9;
+}
+.own-player-area.has-character-scene .own-public-cards .public-zone-label,
+.own-player-area.has-character-scene .own-public-cards .public-zone-empty,
+.own-player-area.has-character-scene .own-public-cards .meld small {
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: #09291fc9;
+}
+
+/* 只让装饰图片呼吸/轻晃，标签、牌和按钮的位置完全不动；略放大保证运动时不露边。
+   Animate only decorative art; labels, tiles and buttons remain stationary. Slight overscan prevents edge gaps while moving. */
+@keyframes character-scene-breathe {
+  0%, 100% { transform: translate3d(-.25%, 0, 0) scale(1.035) rotate(-.12deg); }
+  50% { transform: translate3d(.25%, -.35%, 0) scale(1.045) rotate(.12deg); }
+}
+/* 仅在系统允许动态时启用低幅长周期动画；不使用JS计时器，也不改变表情切换的三秒生命周期。
+   Opt in only when the system permits motion, with slow low-amplitude cycles and no JS timers or reaction-lifetime changes. */
+@media (prefers-reduced-motion: no-preference) {
+  .character-portrait > img {
+    animation: character-scene-breathe 10s ease-in-out infinite;
+    transform-origin: 50% 35%;
+  }
+  .opponent-seat:nth-child(even) .character-portrait > img { animation-delay: -4s; }
+  .own-character-scene {
+    animation: character-scene-breathe 12s ease-in-out -6s infinite;
+    transform-origin: 50% 35%;
+  }
+}
+/* 系统切到减少动态后立即恢复静止满框图；胡牌/放炮仍换为对应静态表情。
+   A live reduced-motion preference immediately restores still full-frame art; win/loss reactions continue as static images. */
+@media (prefers-reduced-motion: reduce) {
+  .character-portrait > img,
+  .own-character-scene {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* 两种玩法共享一层清晰桌毡承托真手牌，位于主角色之上；不缩放或移动触控目标。
+   Both modes share a clear felt surface above the main character for real cards, without scaling or moving hit targets. */
+.own-player-area .character-hand-table {
+  background: linear-gradient(135deg, #1c5748ed, #0c332bed);
+  border: 1px solid #c0bb7d99;
+  border-top: 3px solid #b18a58;
+  border-radius: 10px;
+  box-shadow: inset 0 1px #dfdcb24d, 0 3px 8px #051b1740;
+}

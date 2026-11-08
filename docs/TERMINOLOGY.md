@@ -192,3 +192,5 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 - `stage`：正式成都preparation/play阶段，区别于原型developmentStage；不是房间生命周期。 / Production preparation/play stage, distinct from draft developmentStage and room lifecycle.
 
 - `portraitReaction`：公开胡牌事件产生的临时立绘状态，`win`为胡者、`discardLoss`仅为弃牌炮家；不是服务端规则状态或未决回应。`CharacterPortraitReactions` 每个绝对座位独立计时。 / Transient public-win portrait state, never game authority or pending claims; independently timed per absolute seat.
+
+- `own-player-area` / 本人场景区域：花麻将本人身份摘要和手牌的共同展示容器，不是新座位、权威牌区或存储字段；`own-character-scene` 为忽略指针的装饰背景。 / A presentation container for own identity and hand, not a new seat, authoritative card zone or stored field; its scene is pointer-transparent decoration.

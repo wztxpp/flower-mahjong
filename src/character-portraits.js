@@ -4,43 +4,43 @@
 // Absolute seats expire independently without changing games, shared audio, action pacing or server protocols.
 export const PORTRAIT_REACTION_MS = 3000;
 
-// 用户提供的原始 PNG 原样保留；新路径避免浏览器继续缓存旧基础图。未提供三态者使用原图。
-// Preserve user PNG bytes; new paths avoid stale base-image caches. Characters without a supplied set keep existing art.
+// 用户提供的原始 PNG 原样保留；场景图使用独立新路径，避免三种表情继续命中上一版竖图缓存。
+// Preserve user PNG bytes; scene-specific paths avoid stale portrait caches for all three reactions.
 export const CHARACTER_PORTRAITS = Object.freeze({
   sweet: Object.freeze({
-    base: '/characters/sweet-base.png',
-    win: '/characters/sweet-win.png',
-    discardLoss: '/characters/sweet-discard-loss.png',
+    base: '/characters/sweet-scene-base.png',
+    win: '/characters/sweet-scene-win.png',
+    discardLoss: '/characters/sweet-scene-discard-loss.png',
   }),
   sunny: Object.freeze({
-    base: '/characters/sunny-base.png',
-    win: '/characters/sunny-win.png',
-    discardLoss: '/characters/sunny-discard-loss.png',
+    base: '/characters/sunny-scene-base.png',
+    win: '/characters/sunny-scene-win.png',
+    discardLoss: '/characters/sunny-scene-discard-loss.png',
   }),
   landlord: Object.freeze({
-    base: '/characters/landlord-base.png',
-    win: '/characters/landlord-win.png',
-    discardLoss: '/characters/landlord-discard-loss.png',
+    base: '/characters/landlord-scene-base.png',
+    win: '/characters/landlord-scene-win.png',
+    discardLoss: '/characters/landlord-scene-discard-loss.png',
   }),
   honest: Object.freeze({
-    base: '/characters/honest-base.png',
-    win: '/characters/honest-win.png',
-    discardLoss: '/characters/honest-discard-loss.png',
+    base: '/characters/honest-scene-base.png',
+    win: '/characters/honest-scene-win.png',
+    discardLoss: '/characters/honest-scene-discard-loss.png',
   }),
   wealthy: Object.freeze({
-    base: '/characters/wealthy-base.png',
-    win: '/characters/wealthy-win.png',
-    discardLoss: '/characters/wealthy-discard-loss.png',
+    base: '/characters/wealthy-scene-base.png',
+    win: '/characters/wealthy-scene-win.png',
+    discardLoss: '/characters/wealthy-scene-discard-loss.png',
   }),
   star: Object.freeze({
-    base: '/characters/star-base.png',
-    win: '/characters/star-win.png',
-    discardLoss: '/characters/star-discard-loss.png',
+    base: '/characters/star-scene-base.png',
+    win: '/characters/star-scene-win.png',
+    discardLoss: '/characters/star-scene-discard-loss.png',
   }),
   elegant: Object.freeze({
-    base: '/characters/elegant-base.png',
-    win: '/characters/elegant-win.png',
-    discardLoss: '/characters/elegant-discard-loss.png',
+    base: '/characters/elegant-scene-base.png',
+    win: '/characters/elegant-scene-win.png',
+    discardLoss: '/characters/elegant-scene-discard-loss.png',
   }),
 });
 

@@ -3043,8 +3043,14 @@ onUnmounted(() => {
               <div v-else class="table-watermark">花间 <span>自贡花麻将</span></div>
             </div>
 
+          <!-- 本人身份和手牌共享同一张场景图；图片只作装饰，不捕获点击或复制私有牌数据。
+               Own identity and hand share one scene; the decorative image intercepts no input and carries no private tiles. -->
+          <div v-if="!isSpectator" class="own-player-area"
+            :class="[{ 'has-character-scene': !!game }, `character-${characterForPlayer(mySeat).id}`]">
+            <img v-if="game" class="own-character-scene"
+              :src="characterForPlayer(mySeat).portrait" alt="" aria-hidden="true" />
             <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
-            <template v-if="!isSpectator">
+
             <div class="own-character-label"
               >{{ phase === 'lobby' ? '偏好预览：' : ''
               }}{{
@@ -3079,8 +3085,6 @@ onUnmounted(() => {
                 >{{ scoreLabel(me.score) }}<small>分</small></span
               ></div
             >
-            </template>
-          </div>
 
           <!-- 只有本局参与者才显示私有手牌和动作，新落座的下一局玩家不能操作旧局。 / Only current-game participants see the private hand/actions; newly seated next-round players cannot act in the old round. -->
           <section
@@ -3151,7 +3155,7 @@ onUnmounted(() => {
                     small /></div></div
             ></div>
             <!-- key 同时包含下标和牌种；点击仅选牌，disabled 同时检查胡后锁定、网络状态和服务端可出牌列表。 / Keys combine index and tile type; clicks only select, while disabled checks post-win locking, connectivity and server discard options. -->
-            <div class="hand-scroll"
+            <div class="hand-scroll character-hand-table"
               ><div class="my-hand"
                 ><MahjongTile
                   v-for="(tile, tileIndex) in hand"
@@ -3251,6 +3255,8 @@ onUnmounted(() => {
               ></div
             >
           </section>
+          </div>
+          </div>
           <p class="table-footnote"
             ><Icon name="shield" :size="13" />只与朋友切磋牌技，所有得分均为虚拟积分。<button
               @click="showRules = true"

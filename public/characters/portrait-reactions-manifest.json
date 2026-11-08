@@ -4,170 +4,254 @@
     {
       "characterId": "sweet",
       "reaction": "base",
-      "path": "/characters/sweet-base.png",
-      "sourceFilename": "01-pink-neighbor-a.png",
-      "bytes": 1605675,
-      "sha256": "7e044d969e9b23b6595755c342727effd366ae61752b630762791ea8976c8d03"
+      "path": "/characters/sweet-scene-base.png",
+      "sourceFilename": "01-pink-neighbor-normal.png",
+      "bytes": 2069212,
+      "sha256": "dd2bace8bebcf28269ff0e542f27ba6179a1b985826e4d2ae815f30056e7e161",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "sweet",
       "reaction": "win",
-      "path": "/characters/sweet-win.png",
-      "sourceFilename": "01-pink-neighbor-celebrate.png",
-      "bytes": 1571276,
-      "sha256": "8306337da2327d4f42a058e5cce1359fcbe99544475e6b8c0e4bf330e2d31676"
+      "path": "/characters/sweet-scene-win.png",
+      "sourceFilename": "01-pink-neighbor-celebrate(1).png",
+      "bytes": 2145715,
+      "sha256": "cfda064223cbc489b43d04a1735c9d87067803eed47b6eb3c009fc1485c027b0",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "sweet",
       "reaction": "discardLoss",
-      "path": "/characters/sweet-discard-loss.png",
-      "sourceFilename": "01-pink-neighbor-sad.png",
-      "bytes": 1895608,
-      "sha256": "cf9e8fc34c98710373688617e0c717dd54df267b2153f23d8a3370f7bf7f2c41"
+      "path": "/characters/sweet-scene-discard-loss.png",
+      "sourceFilename": "01-pink-neighbor-sad(1).png",
+      "bytes": 2095407,
+      "sha256": "5635471d64d40a6b9a196f583813771f3ed67febaaa7a32d0563e12187e8fb9f",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "sunny",
       "reaction": "base",
-      "path": "/characters/sunny-base.png",
-      "sourceFilename": "02-yellow-girl-a.png",
-      "bytes": 1606460,
-      "sha256": "118b696308d2bbc2f71322048dfe562c4e0ab60ca61fda6059d823d96441a38b"
+      "path": "/characters/sunny-scene-base.png",
+      "sourceFilename": "02-yellow-girl-normal.png",
+      "bytes": 2046571,
+      "sha256": "5488b63d16b9833575921c5a85085ea9b4877282f2bd10c4eba41df418e79d46",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "sunny",
       "reaction": "win",
-      "path": "/characters/sunny-win.png",
-      "sourceFilename": "02-yellow-girl-celebrate.png",
-      "bytes": 2047676,
-      "sha256": "86e063b26181cb06bd7a22b30820834b74228ad991526dd23b18a503547dc063"
+      "path": "/characters/sunny-scene-win.png",
+      "sourceFilename": "02-yellow-girl-celebrate(1).png",
+      "bytes": 2119616,
+      "sha256": "260bfe50c5b94270aaccb7da1740e976a97046aec4c53c651221885bb8fc89ee",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "sunny",
       "reaction": "discardLoss",
-      "path": "/characters/sunny-discard-loss.png",
-      "sourceFilename": "02-yellow-girl-sad.png",
-      "bytes": 2087367,
-      "sha256": "60578a4372248a5c2fd601e6c855fe1079bfe150089b992780a8848628b72b30"
+      "path": "/characters/sunny-scene-discard-loss.png",
+      "sourceFilename": "02-yellow-girl-sad(1).png",
+      "bytes": 2090817,
+      "sha256": "78626ec8b54e802b33750569b3371d506c70d1670e2985dcc369e502408aeb23",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "elegant",
       "reaction": "base",
-      "path": "/characters/elegant-base.png",
-      "sourceFilename": "03-purple-woman-b.png",
-      "bytes": 1377571,
-      "sha256": "ba47e71d101cced484b851589aff212954605e3dbc6cc4be093a1884ae53c55c"
+      "path": "/characters/elegant-scene-base.png",
+      "sourceFilename": "03-purple-woman-normal.png",
+      "bytes": 1997050,
+      "sha256": "76f7fb16cdfc1943f3f4abc25cc606767c816798360b7e2052d7e4c5d570619d",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "elegant",
       "reaction": "win",
-      "path": "/characters/elegant-win.png",
-      "sourceFilename": "03-purple-woman-celebrate.png",
-      "bytes": 1438827,
-      "sha256": "ed3420365e184885af0957f9548cc4897b95876194e22e30bb3342714b702fd3"
+      "path": "/characters/elegant-scene-win.png",
+      "sourceFilename": "03-purple-woman-celebrate(1).png",
+      "bytes": 2028758,
+      "sha256": "7e325c7e8cca56e36a46366cbfc46d30f100abb33c2da3241c2e8f80bcf24d69",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "elegant",
       "reaction": "discardLoss",
-      "path": "/characters/elegant-discard-loss.png",
-      "sourceFilename": "03-purple-woman-sad.png",
-      "bytes": 1927122,
-      "sha256": "63c04961123e4ea20f6b21acbb3b6d0e565a8a80da76a920a2a723ffa6e108a3"
+      "path": "/characters/elegant-scene-discard-loss.png",
+      "sourceFilename": "03-purple-woman-sad(1).png",
+      "bytes": 2014363,
+      "sha256": "d8f595eb22ca38d7b1c9de7c9c66be577cc318a6eb834109c3c9313474257f28",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "star",
       "reaction": "base",
-      "path": "/characters/star-base.png",
-      "sourceFilename": "04-blue-celebrity-a.png",
-      "bytes": 1703846,
-      "sha256": "aac1f8d1b514d9624128832820d4782892c6aa9af6d3d948c523bdabc9cdd82b"
+      "path": "/characters/star-scene-base.png",
+      "sourceFilename": "04-blue-celebrity-normal.png",
+      "bytes": 2041020,
+      "sha256": "957ef044bf1bd77ff8694c6b92dc67fc74d7566cd12e5b16f40840c4f8056ef7",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "star",
       "reaction": "win",
-      "path": "/characters/star-win.png",
-      "sourceFilename": "04-blue-celebrity-celebrate.png",
-      "bytes": 1714909,
-      "sha256": "edc2a174113921cde95054ca882fe271eec0726ec3766784952bc6e6d8ac9d23"
+      "path": "/characters/star-scene-win.png",
+      "sourceFilename": "04-blue-celebrity-celebrate(1).png",
+      "bytes": 2071167,
+      "sha256": "c45bd6e660dd7e1818642f7b64003b2a6aa3003ed0e26cc38fd7883474cef411",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "star",
       "reaction": "discardLoss",
-      "path": "/characters/star-discard-loss.png",
-      "sourceFilename": "04-blue-celebrity-sad.png",
-      "bytes": 2136070,
-      "sha256": "70baabed300b96a4344427dc36202497b27b34b49965615e63c4d13c6af2051b"
+      "path": "/characters/star-scene-discard-loss.png",
+      "sourceFilename": "04-blue-celebrity-sad(1).png",
+      "bytes": 2063698,
+      "sha256": "1389093bf9450891046c9f86082ab5e14fe4047523a91c1ca88fe2b4213946b9",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "wealthy",
       "reaction": "base",
-      "path": "/characters/wealthy-base.png",
-      "sourceFilename": "05-green-wealthy-b.png",
-      "bytes": 1754134,
-      "sha256": "1f1e635a4693397c384032f57f3f63a684d50a2fb34da2e6f0cdac1274240ce6"
+      "path": "/characters/wealthy-scene-base.png",
+      "sourceFilename": "05-green-wealthy-normal.png",
+      "bytes": 2037123,
+      "sha256": "7522116a00170189abefaaf4871d0044bcd9f1b33a32bd8a8b8cd45c108acfad",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "wealthy",
       "reaction": "win",
-      "path": "/characters/wealthy-win.png",
-      "sourceFilename": "05-green-wealthy-celebrate.png",
-      "bytes": 2135280,
-      "sha256": "f6804daa649ac3cafd4a3f113cf4662235d30583a497bb3babebeae374ac3865"
+      "path": "/characters/wealthy-scene-win.png",
+      "sourceFilename": "05-green-wealthy-celebrate(1).png",
+      "bytes": 2110464,
+      "sha256": "f172db0214f498154d5f6e869d0ba7184ff49d888d586140c6094e4cf4213adb",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "wealthy",
       "reaction": "discardLoss",
-      "path": "/characters/wealthy-discard-loss.png",
-      "sourceFilename": "05-green-wealthy-sad.png",
-      "bytes": 1684509,
-      "sha256": "3a73ee6bf00a993ac1b7c3a252a552293ea663508f982fdf34b85168619f5bdb"
+      "path": "/characters/wealthy-scene-discard-loss.png",
+      "sourceFilename": "05-green-wealthy-sad(1).png",
+      "bytes": 2098765,
+      "sha256": "b2382933c844ab01b7b770c0d917a143a963612823c7e4d39012f391d62757f8",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "honest",
       "reaction": "discardLoss",
-      "path": "/characters/honest-discard-loss.png",
-      "sourceFilename": "06-ordinary-man-sad.png",
-      "bytes": 2060015,
-      "sha256": "66e849f81783f096fabc95a5748f3504ee2aec579466a18df9ac14058bb60b2f"
+      "path": "/characters/honest-scene-discard-loss.png",
+      "sourceFilename": "06-ordinary-man-sad(1).png",
+      "bytes": 1960375,
+      "sha256": "38f1892e1d529935bb4b34607dca48985652c424819f06dac733216e4b31ca79",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "honest",
       "reaction": "base",
-      "path": "/characters/honest-base.png",
-      "sourceFilename": "06-ordinary-man-a.png",
-      "bytes": 1540405,
-      "sha256": "f9ca364ab2cfc98652321fdf39e96eeae5a3b8edd845a3edad9f6c0e0eb36f05"
+      "path": "/characters/honest-scene-base.png",
+      "sourceFilename": "06-ordinary-man-normal.png",
+      "bytes": 1954775,
+      "sha256": "0bd2e05148ee014e4936468a9b836c130a24da88a117168a9ede22635d24ac21",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "honest",
       "reaction": "win",
-      "path": "/characters/honest-win.png",
-      "sourceFilename": "06-ordinary-man-celebrate.png",
-      "bytes": 2023446,
-      "sha256": "72af7621177b5d9d7a20428834861b6b066512759c08178042e03ed3a01805a3"
+      "path": "/characters/honest-scene-win.png",
+      "sourceFilename": "06-ordinary-man-celebrate(1).png",
+      "bytes": 2070869,
+      "sha256": "2214ca46eaec9fd338cdae613583a0fa8cb6ecf27cd650fbc7ee4a0ee069db0a",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "landlord",
       "reaction": "discardLoss",
-      "path": "/characters/landlord-discard-loss.png",
-      "sourceFilename": "07-landlord-man-sad.png",
-      "bytes": 2221708,
-      "sha256": "2cc053f8dc102bbb10679d3645382f90f944bc9f744bd75ee493828672d3f8de"
+      "path": "/characters/landlord-scene-discard-loss.png",
+      "sourceFilename": "07-landlord-man-sad(1).png",
+      "bytes": 2160706,
+      "sha256": "a5ada36762ec08d8c3f22cce1ab1e000eff1a37472c2c0cfedd3411ce80ca042",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "landlord",
       "reaction": "base",
-      "path": "/characters/landlord-base.png",
-      "sourceFilename": "07-landlord-man-a.png",
-      "bytes": 1783609,
-      "sha256": "5b98c2f3c9b37c6d14a97bf5918628b5de3d63f3739540f97f58d292f94d61e1"
+      "path": "/characters/landlord-scene-base.png",
+      "sourceFilename": "07-landlord-man-normal.png",
+      "bytes": 2135752,
+      "sha256": "2814c3f381473f333507a0aa85e6d46a85aa7ce1327af4a7b0ea6dd28f907867",
+      "dimensions": [
+        1254,
+        1050
+      ]
     },
     {
       "characterId": "landlord",
       "reaction": "win",
-      "path": "/characters/landlord-win.png",
-      "sourceFilename": "07-landlord-man-celebrate.png",
-      "bytes": 2294868,
-      "sha256": "eea51756dd596ace19b0e08183c5ab1c528d18945418b0621b1ea666d9509102"
+      "path": "/characters/landlord-scene-win.png",
+      "sourceFilename": "07-landlord-man-celebrate(1).png",
+      "bytes": 2252525,
+      "sha256": "4b8ce3dfaed9081917583c7429d2b22f8bcfae569187be6c968cbe3bc14b04b8",
+      "dimensions": [
+        1254,
+        1050
+      ]
     }
   ]
 }

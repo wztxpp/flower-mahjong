@@ -254,3 +254,8 @@ The preparation section above is historical. Production starts require server ru
 
 `presentWins → CharacterPortraitReactions → characterForPlayer`仅把已显示的公开胡事件转成每座约3秒的基础/胡牌/放炮图。local接收不提前换脸，成都共用角色呈现但不复用花麻将飞牌。资产、三响、隐私及清理边界见 [用户立绘表情](CHARACTER-PORTRAIT-REACTIONS.md)。
 The portrait path maps displayed public wins to per-seat three-second reactions. Local receipts never reveal future queue events; Chengdu shares character rendering without Flower flights. See the dedicated guide for assets, triple wins, privacy and cleanup.
+
+## 满框角色场景 / Full-frame character scenes
+
+花麻将对手图在原 `character-portrait` 框中等比cover，本人的 `own-player-area` 合并身份与手牌背景但保留原操作元素。裁切焦点、装饰层和观战边界见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md#满框场景布局--edge-to-edge-scene-layout)。花麻将与成都的本人区域都收在各自桌面内，手牌使用共用桌毡上层；两模式合法动作与隐私守卫不改。
+Flower opponent frames use proportional cover, while own-player-area shares a background behind existing identity/hand controls. See the portrait guide for cropping, decorative layers and spectator boundaries. Both modes keep the own area inside their actual board and use the shared felt hand layer; legal actions and privacy guards remain unchanged.

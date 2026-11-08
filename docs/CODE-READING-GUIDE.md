@@ -193,3 +193,9 @@ New maintained production-entry, snapshot-contract and production-test files sep
 
 新增自维护 `src/character-portraits.js`、`tests/character-portraits.test.js` 与用户原图来源 `public/characters/portrait-reactions-manifest.json`；沿 `App.presentWins → CharacterPortraitReactions → characterForPlayer` 阅读。双模式、隐私、三响、取消及资产说明见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 New maintained files cover the portrait catalog/controller, focused tests and supplied-image provenance. Follow the App presentation path and the dedicated guide for mode/privacy/triple-win/cancellation contracts.
+
+满框场景的维护说明与验收见 [场景立绘验收](CHARACTER-SCENE-VALIDATION.md)。新增 `tests/browser/portrait-preview-server.mjs` 和 `portrait-preview-narrow.html` 仅用于隔离内存牌桌/390px实看，不部署、不访问生产资料。
+See the scene validation guide. The two portrait-preview browser files serve isolated in-memory and 390px QA only, never production data or deployment.
+
+`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、主角装饰下层与私有守卫；不复制界面、不运行生产请求。
+The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, decorative image ordering and private guards, without duplicating UI or making production requests.

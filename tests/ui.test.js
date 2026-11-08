@@ -2817,9 +2817,9 @@ test("character portraits use server assignment independent of viewer position",
   const html = await render(scope);
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
-  assert.match(html, /characters\/sunny-base.png/);
-  assert.match(html, /characters\/sweet-base.png/);
-  assert.match(html, /characters\/elegant-base.png/);
+  assert.match(html, /characters\/sunny-scene-base.png/);
+  assert.match(html, /characters\/sweet-scene-base.png/);
+  assert.match(html, /characters\/elegant-scene-base.png/);
 });
 // 场景：隐藏期间轮询后回到前台时，建立完整且静音的音频基线
 // Scenario: foreground resume establishes a full silent baseline after hidden polling
@@ -6592,16 +6592,16 @@ test('portrait reactions follow local FIFO instead of future received wins', asy
   for (const timer of scheduled.filter((entry) => entry.delay === 350 && !entry.cancelled)) timer.callback();
   await settlePlayback();
   assert.deepEqual(scope.portraitReactionsBySeat.value, { 0: 'discardLoss', 1: 'win' });
-  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-discard-loss.png');
-  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-win.png');
+  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-scene-discard-loss.png');
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-scene-win.png');
   const reactionTimers = scheduled.filter((entry) => entry.delay === CharacterPortraitModule.PORTRAIT_REACTION_MS);
   scope.applyState(next);
   scope.applyState({ ...next, revision: next.revision - 1 });
   assert.equal(scheduled.filter((entry) => entry.delay === CharacterPortraitModule.PORTRAIT_REACTION_MS).length, reactionTimers.length);
   scope.clearPresentation();
-  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-win.png', 'tile-flight cleanup is independent');
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-scene-win.png', 'tile-flight cleanup is independent');
   for (const timer of reactionTimers) timer.callback();
-  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-base.png');
+  assert.equal(scope.characterForPlayer(1).portrait, '/characters/sunny-scene-base.png');
   scope.resetRoomContext();
 });
 
@@ -6619,7 +6619,7 @@ test('portrait reactions do not replay restored history and clear on visibility,
   next.revision++;
   next.game.history.push({ type: 'hu', seat: 0, tile: null, hidden: true, source: 'selfDraw' });
   scope.applyState(next);
-  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-win.png');
+  assert.equal(scope.characterForPlayer(0).portrait, '/characters/sweet-scene-win.png');
   document.hidden = true;
   scope.visibilityChanged();
   assert.deepEqual(scope.portraitReactionsBySeat.value, {});
@@ -6668,13 +6668,13 @@ test('Chengdu portraits react for players and spectators without leaking hidden 
     assert.equal(scope.winningEvents.value.length, 0);
     assert.equal(scope.localPresentationBusy.value, false, 'a portrait adds no action barrier');
     const html = await render(scope);
-    assert.match(html, /characters\/star-win.png/);
+    assert.match(html, /characters\/star-scene-win.png/);
     assert.match(html, /牌面未公开/);
     const later = structuredClone(next);
     later.revision++;
     later.game.history.push({ type: 'discard', seat: 1, tile: 20 });
     scope.applyState(later);
-    assert.equal(scope.characterForPlayer(3).portrait, '/characters/star-win.png', 'other actions cannot clear a seat reaction');
+    assert.equal(scope.characterForPlayer(3).portrait, '/characters/star-scene-win.png', 'other actions cannot clear a seat reaction');
     scope.resetRoomContext();
   }
 });
@@ -6697,4 +6697,63 @@ test('local four-seat triple wins change all three winners and the discarder tog
   scope.applyState(next);
   assert.deepEqual(scope.portraitReactionsBySeat.value, {});
   scope.resetRoomContext();
+});
+
+// 本人原有身份与私有牌区必须共享同一场景容器，不能只把头像换大；观众仍没有本人牌区。
+// Own identity and private cards share one scene container, rather than enlarging only the avatar; spectators retain no private area.
+test('portrait scenes fill opponent frames and wrap the own identity with its existing hand controls', async () => {
+  for (const schemaVersion of [1, 2, 3]) {
+    const state = fixture({ legacy: schemaVersion === 1, schemaVersion });
+    state.game.characters = ['sweet', 'sunny', 'elegant'];
+    const scope = setup(state);
+    const html = await render(scope);
+    assert.equal((html.match(/class="[^"]*\bcharacter-portrait\b/g) || []).length, 2);
+    assert.equal((html.match(/class="own-character-scene"/g) || []).length, 1);
+    const ownArea = html.slice(html.indexOf('own-player-area'));
+    assert.match(ownArea, /own-character-scene[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt=""[^>]+aria-hidden="true"/);
+    assert.match(ownArea, /own-seat-summary[\s\S]+class="hand-panel"[\s\S]+我的手牌与操作/);
+    assert.match(ownArea, /class="my-hand"/);
+    scope.resetRoomContext();
+  }
+  const spectator = fixture({ schemaVersion: 3 });
+  spectator.viewerRole = 'spectator';
+  spectator.you = null;
+  const scope = setup(spectator);
+  const html = await render(scope);
+  assert.doesNotMatch(html, /own-player-area|own-character-scene|我的手牌与操作/);
+  assert.equal((html.match(/class="[^"]*\bcharacter-portrait\b/g) || []).length, 3);
+  scope.resetRoomContext();
+});
+
+// 大厅没有正在进行的私有牌场景；终局仍保留同一角色背景并交还既有诊断/下一局流程。
+// Lobbies have no active private-card scene; finished rounds retain the same character background and existing diagnostics/next-round flow.
+test('own scene lifecycle keeps the lobby undecorated and clears on room exit', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.phase = 'finished';
+  state.game.phase = 'finished';
+  state.game.legalActions = [];
+  const scope = setup(state);
+  assert.match(await render(scope), /own-character-scene/);
+  scope.state.value = { ...state, phase: 'lobby', game: null };
+  const lobbyHtml = await render(scope);
+  assert.match(lobbyHtml, /own-seat-summary/);
+  assert.doesNotMatch(lobbyHtml, /own-character-scene|我的手牌与操作/);
+  scope.resetRoomContext();
+  assert.doesNotMatch(await render(scope), /own-character-scene/);
+});
+
+// 动画只属于图片：系统偏好可立即关闭，牌/标签/按钮不进入动画目标，也不引入脚本计时。
+// Motion belongs only to images: the system preference disables it, with no moving tiles/labels/buttons or script timers.
+test('scene motion is image-only, edge-safe and disabled for reduced-motion preferences', () => {
+  const css = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  assert.match(css, /@keyframes character-scene-breathe\s*\{[\s\S]*?scale\(1\.035\)[\s\S]*?scale\(1\.045\)/);
+  assert.match(css, /\.own-player-area\s*\{[^}]*overflow: clip;/);
+  assert.match(css, /\.own-character-scene\s*\{[^}]*inset: -3%;[^}]*width: 106%;[^}]*height: 106%;[^}]*z-index: 0;/);
+  assert.match(css, /\.own-player-area\.has-character-scene::after\s*\{[^}]*inset: -1px;[^}]*z-index: 1;/);
+  assert.match(css, /\.own-player-area > :not\(\.own-character-scene\)\s*\{[^}]*z-index: 2;/);
+  const enabled = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: no-preference)'), css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
+  assert.match(enabled, /\.character-portrait > img\s*\{\s*animation: character-scene-breathe 10s/);
+  assert.match(enabled, /\.own-character-scene\s*\{\s*animation: character-scene-breathe 12s/);
+  assert.doesNotMatch(enabled, /\.mahjong-tile|\.button|\.hand-panel|\.player-name/);
+  assert.match(css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)')), /\.character-portrait > img,\s*\.own-character-scene\s*\{\s*animation: none;\s*transform: none;/);
 });

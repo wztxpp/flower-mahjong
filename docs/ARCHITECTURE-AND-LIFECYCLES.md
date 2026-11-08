@@ -164,3 +164,6 @@ Production schema two starts from a complete secure shuffle, never promotes sche
 
 立绘从实际显示的公开事件派生，独立每座约3秒，既不修改权威状态也不增加动作屏障。普通轮询/飞牌结束不清；后台、换局、历史缩短、换桌、明确略过及卸载清除并使旧计时器失效。完整边界见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 Portraits derive from displayed public events and expire independently per seat without authority or action barriers. Lifecycle resets invalidate timers; normal polls/flights do not. See the dedicated guide.
+
+满框场景只重排花麻将展示容器：本人背景沿现有角色表情更新，大厅/观战不创建该图，离桌由原条件卸载。它不新增订阅、计时器、请求、存储或遮蔽牌面逻辑，旧胡牌/语音生命周期保持不变。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+Full-frame scenes only rearrange Flower presentation containers. Own art follows existing reactions, is absent in lobby/spectator views and unmounts on leave. No subscriptions, timers, requests, storage or tile-privacy logic are added; existing portrait/audio lifecycles remain unchanged.

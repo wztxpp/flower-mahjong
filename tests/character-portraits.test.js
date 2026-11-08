@@ -117,8 +117,10 @@ test('all current user-supplied portrait files exactly match their provenance ha
     assert.equal(bytes.subarray(1, 4).toString(), 'PNG');
     assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
     assert.equal(bytes.length, file.bytes);
-    assert.equal(bytes.readUInt32BE(16), 1024);
-    assert.equal(bytes.readUInt32BE(20), 1536);
+    assert.equal(bytes.readUInt32BE(16), 1254);
+    assert.equal(bytes.readUInt32BE(20), 1050);
+    assert.deepEqual(file.dimensions, [1254, 1050]);
+    assert.match(file.path, /-scene-(base|win|discard-loss)\.png$/);
     assert.equal(CHARACTER_PORTRAITS[file.characterId][file.reaction], file.path);
     paths.add(file.path);
   }

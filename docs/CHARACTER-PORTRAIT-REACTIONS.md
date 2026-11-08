@@ -5,8 +5,8 @@
 用户连续提供每人的基础、胡牌庆祝和放炮失落三张PNG。映射使用原稳定角色ID，角色名称、声音、服务端开局分配及已保存局的映射不变。七组三态共21张已接入：小桃（粉色邻家）、晴禾（黄色少女）、清岚（紫色女性）、女明星（蓝色礼服）、富婆（绿色套装）、老实人（灰衬衫）、地主（中式长袍）。
 The supplied base, win and discard-loss PNGs retain stable character IDs, names, voices, server assignment and saved mappings. All 21 images across seven sets are connected: sweet/pink neighbor, sunny/yellow girl, elegant/purple woman, star/blue celebrity, wealthy/green suit, honest/gray shirt and landlord/traditional robe.
 
-`src/character-portraits.js` 的 `CHARACTER_PORTRAITS` 指向 `/characters/<id>-base.png`、`-win.png` 和 `-discard-loss.png`。采用新基础路径避免命中旧PNG缓存。原 `<id>.png` 与历史生成清单保留可追溯性，不再作为有新素材角色的运行时基础图。`portrait-reactions-manifest.json` 记录来源文件名、字节数和SHA-256，PNG原样复制，没有重画、抠图或改变原背景。原七人生成清单只证明那批历史文件，不冒充新素材来源。
-The catalog uses new base/win/discard-loss URLs to avoid stale caches. Earlier PNGs and their generation manifest remain historical artifacts. The new manifest records source names, sizes and SHA-256; original PNG bytes/backgrounds are preserved without regeneration or cutouts. The previous generated-image manifest is not provenance for these user images.
+`src/character-portraits.js` 的 `CHARACTER_PORTRAITS` 指向 `/characters/<id>-scene-base.png`、`-scene-win.png` 和 `-scene-discard-loss.png`。2026-11-08新一版七组21张均为1254×1050场景图，三态都采用新路径避免命中旧PNG缓存。原 `<id>.png`、前一版三态PNG与历史生成清单保留可追溯性，不再作为有新素材角色的运行时基础图。`portrait-reactions-manifest.json` 记录来源文件名、原始尺寸、字节数和SHA-256，PNG原样复制，没有重画、抠图或改变原背景。原七人生成清单只证明那批历史文件，不冒充新素材来源。
+The catalog now uses scene-base/scene-win/scene-discard-loss URLs for the 2026-11-08 replacement set: all 21 scenes are 1254 by 1050. Every reaction has a fresh URL to avoid stale caches. Earlier PNGs and their generation manifest remain historical artifacts. The current manifest records source names, dimensions, sizes and SHA-256; original PNG bytes/backgrounds are preserved without regeneration or cutouts. The previous generated-image manifest is not provenance for these user images.
 
 ## 公开事件与隐私 / Public events and privacy
 
@@ -53,3 +53,32 @@ The seven-set/21-image version based on Chengdu integration commit `45bac16` was
   All 21 original PNGs were visually identified and byte-hash verified; all existing voice hash regressions passed.
 - 未在本实现任务中做真实浏览器布局/人工试听、全仓TypeScript检查或部署。源码提交由发布任务合并后继续发布验收。
   This implementation did not perform real-browser layout/manual listening, repository-wide TypeScript checking or deployment. The release task integrates the source commit and owns publication verification.
+
+## 满框场景布局 / Edge-to-edge scene layout
+
+用户标记的花麻将对手顶部框使用 `object-fit: cover`、宽高100%，图片等比铺满，不拉伸或留白。`tabletop.css` 最后的规则覆盖早先桌面/手机的固定图片高度和 contain。默认焦点为上方24%，晴禾33%、清岚20%，仅调整可见裁切；原图保持不变。
+The marked Flower opponent frames use cover at full width/height, preserving proportions without gaps. The final tabletop rules override earlier desktop/mobile fixed heights and contain. Upper focal points change only visible cropping, never source pixels.
+
+本人身份摘要和原手牌区包在 `own-player-area`，共享一张装饰背景。两端渐暗维持文字可读性，图片及遮罩不接收指针，原牌、选牌、出牌、胡碰杠和诊断控件留在上层。大厅不显示背景，观战不创建本人区域；结束局仍可查看自己的原手牌。只移动展示容器，不改变服务端快照、角色映射、表情计时、动作条件或飞牌目标。
+The own identity summary and existing hand share one decorative scene. Edge shading supports text; image/overlay layers ignore pointers while original tiles, actions and diagnostics remain above them. Lobbies omit the image, spectators omit the own area, and finished rounds retain the authorized hand. Only containers move, not authority, mapping, reactions, action conditions or flight targets.
+
+本轮UI结构与生命周期回归增加到 `tests/ui.test.js`，覆盖三个花麻将schema、观战、终局、大厅和离桌。静态/SSR测试不能代替真实浏览器裁切与交互验收；后者另行记录。
+The UI suite adds structure/lifecycle coverage for all three Flower schemas, spectators, finish, lobby and leave. SSR/static checks do not replace separately recorded browser crop and interaction checks.
+
+## 轻量场景动态 / Lightweight scene motion
+
+用户另授权网页动画：仅对手场景图片与本人装饰背景使用10/12秒缓慢呼吸、极小平移和旋转。文字、牌、按钮、焦点与点击区域不动；1.035–1.045倍预留覆盖防止轻晃时露边。它是静态PNG的CSS运动，不是骨骼、表情驱动或新增角色模型。
+The user also authorized lightweight web animation. Only the opponent art and own decorative image breathe/drift slowly over 10/12-second cycles. Text, tiles, controls, focus and hit areas stay still; small overscan prevents edge gaps. This is CSS motion applied to static PNGs, not rigged or newly generated character models.
+
+`prefers-reduced-motion: no-preference`才启用，`reduce`立即关闭动画并恢复原裁切。胡/放炮仍使用原公开事件和三秒静态图切换；没有新增JS计时器、服务端回执或等待。专项静态断言与真实浏览器范围见 [验收记录](CHARACTER-SCENE-VALIDATION.md)。
+Motion is opt-in via the system preference and immediately stops for reduced motion. Existing public-event win/loss image swaps and three-second timing remain unchanged, with no new JS timer, acknowledgement or game wait. See the validation record for automated and real-browser scope.
+
+
+## 手牌位于桌面上 / Hand above the character on the table
+
+按用户追加要求，花麻将本人区域位于原table-surface内，成都本人区域位于chengdu-board内。`character-hand-table`为两模式共享的绿色桌毡，真实牌及操作层始终盖在主角图上；所有原输入、选择/确认、网络禁止和私有手牌守卫保持。三层显式z-index和永久图像裁切余量防止动画后窄屏底边露亮。
+As additionally requested, each mode places its own area within the existing board. A shared green felt surface supports actual cards above the character while preserving input/confirmation, network restrictions and private-hand guards. Explicit stacking and permanent art overscan prevent an exposed lower edge during narrow-screen animation.
+
+
+本人容器使用 `overflow: clip`，不是 `hidden`：后者会因装饰图的动画溢出成为可程序滚动的容器，聚焦手牌可能把遮罩滚上去露出亮带。clip保持圆角裁切且本人容器scrollTop固定0；真实手牌内层继续独立overflow-x:auto。两模式实看与动作回归已验证。
+The own container uses overflow:clip rather than hidden. Hidden creates a programmatic scroll container from animated art overflow, so focusing a card can scroll the shade upward and reveal a bright strip. Clip preserves rounded clipping without this scroll; the actual hand retains its independent horizontal scrolling. Both modes were verified visually and interactively.

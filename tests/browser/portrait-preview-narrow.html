@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>390px portrait QA</title>
+  </head>
+  <body style="margin:0;background:#ccc">
+    <iframe title="390px actual App" src="/" style="width:390px;height:1200px;border:0"></iframe>
+    <script>
+      // 只转发显式合成房号，不硬编码上一次测试身份或牌桌。
+      // Forward an explicit synthetic room code, never hard-code a previous test identity or room.
+      const room = new URLSearchParams(window.location.search).get('room');
+      if (/^[A-Z2-9]{8}$/.test(room || '')) {
+        document.querySelector('iframe').src = `/?room=${room}`;
+      }
+    </script>
+  </body>
+</html>
