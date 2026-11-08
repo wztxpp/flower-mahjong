@@ -2998,3 +2998,160 @@ p.table-setting-wide { margin-top: -6px; }
   border-radius: 10px;
   box-shadow: inset 0 1px #dfdcb24d, 0 3px 8px #051b1740;
 }
+
+/* 稳定牌桌视窗：旧样式只有 min/max-height，牌数增长、条件提示和按钮换行仍会推高整页。
+   Stable table viewports: earlier min/max heights still let extra rows, conditional notices and wrapped actions grow the document.
+   这些后置覆盖只约束展示空间，不删记录、不改数据/规则，也不移动整页滚动位置。
+   These final overrides constrain presentation only: no records/rules change and no document scroll position is rewritten. */
+html { scrollbar-gutter: stable; }
+.stable-scroll, [data-stable-scroll] {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  overflow-wrap: anywhere;
+}
+.stable-scroll:focus-visible, [data-stable-scroll]:focus-visible {
+  outline: 2px solid #f4d589;
+  outline-offset: -2px;
+}
+/* 身份行与暗手数量也会变化；固定行高并允许局部滚动，避免离线徽章或摸打压动公开牌区。
+   Identity badges and concealed counts change too; stable rows with local overflow stop them moving the public zones. */
+.table-surface:not(.lobby-table) .player-topline {
+  height: 68px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: start;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.table-surface:not(.lobby-table) .opponent-hand {
+  height: 46px;
+  min-height: 46px;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+.table-surface:not(.lobby-table) .opponent-hand > * { flex-shrink: 0; }
+.opponent-public-cards {
+  height: 92px;
+  margin-top: 8px;
+  padding: 4px;
+}
+.opponent-public-cards > :first-child { margin-top: 0; }
+/* 牌河从空牌到长局始终同高，滚动条预留宽度避免出现后重新换行；全部记录仍留在 DOM。
+   Rivers keep the same empty-to-long-game height and reserved scrollbar width, while every record remains in the DOM. */
+.table-surface .discard-group { min-height: 0; }
+.table-surface .discard-label { height: 34px; min-height: 34px; }
+.table-surface .discard-tiles {
+  height: 156px;
+  min-height: 156px;
+  max-height: 156px;
+  padding: 4px 4px 8px;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+.table-surface .discard-tile { flex-shrink: 0; }
+.table-surface .game-status { height: 52px; min-height: 52px; }
+.table-surface .game-status > div:first-child { min-width: 0; max-height: 100%; overflow: auto; align-items: safe center; }
+.claim-slot { height: 60px; margin-bottom: 8px; }
+.claim-slot .claim-strip { min-height: 56px; margin: 0; }
+.table-surface .shared-radish-pool { height: 104px; }
+/* 本人区始终保留公开牌、状态、操作与说明的位置；内容多时在其自身视窗滚动。
+   Own public cards, status, actions and feedback retain their slots; larger content scrolls within its own viewport. */
+.own-player-area .hand-info-row {
+  height: 44px;
+  min-height: 44px;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: safe center;
+}
+.own-player-area .hand-info-row > div:first-child { flex-shrink: 1; flex-wrap: wrap; }
+.own-player-area .hand-hint { min-width: 0; }
+.own-player-area .own-public-cards {
+  height: 80px;
+  align-content: flex-start;
+  align-items: flex-start;
+  padding: 5px 4px 9px;
+}
+.own-player-area .hand-scroll { height: 132px; }
+.own-player-area .hand-bottom-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 8px;
+  align-items: start;
+}
+.own-player-area .waits-info {
+  height: 68px;
+  min-width: 0;
+  align-content: start;
+  flex-shrink: 0;
+}
+.own-player-area .action-row {
+  height: 68px;
+  width: 100%;
+  margin-left: 0;
+  padding: 3px 4px 6px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+.own-player-area .action-row > * { flex-shrink: 0; }
+.hand-feedback { height: 72px; margin-top: 6px; padding: 0 4px 6px; }
+/* 最新优先的动态也要固定高度，否则窄屏侧栏增长会改变整页滚动条长度。
+   Newest-first history also needs a fixed height, or the narrow stacked sidebar changes document scrollbar length. */
+.room-sidebar .history-list { height: 280px; max-height: 280px; }
+.player-score, .score-line strong, .table-total-line strong { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .table-surface:not(.lobby-table) .player-topline { height: 90px; }
+  .table-surface:not(.lobby-table) .opponent-hand { height: 38px; min-height: 38px; }
+  .opponent-public-cards { height: 98px; }
+  .table-surface .discard-label { height: 44px; min-height: 44px; }
+  .table-surface .discard-tiles { height: 144px; min-height: 144px; max-height: 144px; }
+  .table-surface .shared-radish-pool { height: 120px; }
+  .own-player-area .hand-info-row { height: 52px; min-height: 52px; }
+  .own-player-area .own-public-cards { height: 80px; }
+  .own-player-area .hand-bottom-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .own-player-area .waits-info { height: 28px; }
+  .own-player-area .hand-scroll { height: 112px; }
+  .room-sidebar .history-list { height: 220px; max-height: 220px; }
+}
+/* 网络提示、待播略过按钮和本人身份也要有稳定容器；不改变原有提示优先级或动作权限。
+   Network notices, queued-playback tools and own identity also need stable containers, without changing notice priority or permissions. */
+.in-game .room-notices { height: 56px; margin-bottom: 12px; }
+.in-game .room-notices > :is(.connection-banner, .room-error) { margin: 0 0 8px; }
+.in-game .site-header { flex-wrap: nowrap; }
+.in-game .header-actions {
+  height: 62px;
+  flex: 1 1 0;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  padding: 8px 4px 12px;
+}
+.in-game .header-actions > * { flex-shrink: 0; white-space: nowrap; }
+.in-game .own-seat-summary { height: 72px; overflow: auto; align-items: safe center; }
+@media (max-width: 900px) {
+  .in-game .site-header { flex-wrap: wrap; }
+  .in-game .header-actions { flex-basis: 100%; width: 100%; justify-content: flex-start; }
+}
+@media (max-width: 640px) {
+  .in-game .room-notices { height: 72px; }
+}
+
+/* 总账保留离桌参与者，人数可增长；固定列表只限制可视高度，所有行仍可滚动读取。
+   Cumulative ledgers retain departed participants and can grow; fixed lists limit only viewport height, not accessible rows. */
+.room-sidebar .table-ledger, .room-sidebar .round-ledger { height: 168px; }
+
+/* 单行横向视窗不预留竖向沟槽：Chromium会把空沟槽计入clientWidth差值，却允许末牌进入该沟槽。
+   Single-row horizontal viewports do not reserve a vertical gutter: Chromium includes the empty gutter in clientWidth differences while letting the last tile enter it.
+   这里只恢复这些区域的自动沟槽；固定高度、overflow、Tab与完整内容不变，纵向牌河继续stable防换行。
+   Only these regions restore automatic gutters; fixed heights, overflow, Tab access and full contents remain, while vertical rivers retain stable gutters against rewrapping. */
+.hand-scroll.stable-scroll,
+.chengdu-hand.stable-scroll,
+.meld-tiles.stable-scroll,
+.opponent-hand.stable-scroll,
+.header-actions.stable-scroll,
+.action-row[data-stable-scroll],
+.chengdu-action-bar.stable-scroll {
+  scrollbar-gutter: auto;
+}

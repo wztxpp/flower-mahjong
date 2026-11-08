@@ -184,3 +184,8 @@ Portrait-motion settings are independent of rooms/games and default static; only
 
 旧Live2D源码/许可记录仍是历史，不删除或修改玩家既有记录；生产不再请求旧SDK，打包排除旧公开资源。已有浏览器中的历史缓存不能被本次更正追溯撤回，也不声称已从浏览器删除。
 Retired Live2D source/license records remain historical without modifying users' previous records. Production no longer requests the SDK and build output excludes retired public resources. This correction cannot retroactively recall historical browser caches and makes no claim of deleting them.
+
+## 布局槽位生命周期 / Layout-slot lifetime
+
+进行中的牌桌视窗按玩法/人数/屏宽确定尺寸，内容随已显示快照更新，槽位不随回合或牌河行数增删。可滚动状态留在原DOM中，不写入服务器、浏览器存储或音画队列；开局/终局/换桌仍可明确切换布局。详见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
+Active-table slots are sized by mode/count/width and survive turn/river-row changes. Native scroll state stays in the DOM, not authority, browser storage or presentation queues. Explicit game/navigation lifecycle transitions may still change layout; see [the layout contract](STABLE-TABLE-LAYOUT.md).

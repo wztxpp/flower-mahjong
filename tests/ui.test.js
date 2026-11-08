@@ -2377,7 +2377,12 @@ for (const kind of ["discard", "kongDiscard", "robKong"]) {
     assert.equal(scope.mustHu.value, true);
     assert.match(html, /已经胡过，这张必须胡/);
     assert.match(html, /能胡就必须胡/);
-    const actionRow = html.match(/<div class="action-row">([\s\S]*?)<\/div>/)?.[1];
+    // 滚动区域新增可及性属性不能令结构定位失效；仍逐个核对实际胡按钮与服务端白名单。
+    // Accessibility attributes must not break container lookup; keep exact hu-button and server-allowlist assertions.
+    const actionContainer = html.match(/<div class="action-row"([^>]*)>([\s\S]*?)<\/div>/);
+    assert.match(actionContainer?.[1] || '', /tabindex="0"/);
+    assert.match(actionContainer?.[1] || '', /aria-label="合法动作，可横向滚动"/);
+    const actionRow = actionContainer?.[2];
     assert.ok(actionRow);
     const buttons = (actionRow.match(/<button\b[^>]*>[\s\S]*?<\/button>/g) || []).map(
       (button) => button.replace(/<[^>]*>/g, "").trim(),
@@ -6790,7 +6795,11 @@ test('seated character identity survives lobby to start and preserves replacemen
   state.phase = 'lobby';
   const scope = setup(state);
   assert.equal(scope.characterForPlayer(0).id, 'landlord');
-  assert.match(await render(scope), /落座角色，开局保持/);
+  // 身份以已分配角色头像和名称验证，不依赖已删除的冗余角色说明。
+  // Verify identity through the assigned portrait/name rather than the removed redundant description.
+  const seatedHtml = await render(scope);
+  assert.match(seatedHtml, /src="\/characters\/landlord-scene-base\.png" alt="地主"/);
+  assert.doesNotMatch(seatedHtml, /own-character-label|own-role-note/);
   assert.doesNotMatch(await render(scope), /开局时最终分配|偏好预览/);
   scope.state.value = { ...state, game, phase: 'playing' };
   assert.equal(scope.characterForPlayer(0).id, 'landlord');

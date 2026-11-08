@@ -204,3 +204,6 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 - `portraitReaction`：公开胡牌事件产生的临时立绘状态，`win`为胡者、`discardLoss`仅为弃牌炮家；不是服务端规则状态或未决回应。`CharacterPortraitReactions` 每个绝对座位独立计时。 / Transient public-win portrait state, never game authority or pending claims; independently timed per absolute seat.
 
 - `own-player-area` / 本人场景区域：花麻将本人身份摘要和手牌的共同展示容器，不是新座位、权威牌区或存储字段；`own-character-scene` 为忽略指针的装饰背景。 / A presentation container for own identity and hand, not a new seat, authoritative card zone or stored field; its scene is pointer-transparent decoration.
+
+- `stable-scroll` / `data-stable-scroll`：可命名、可聚焦的局部滚动视窗；只固定可视高度，不截断记录、不改变全页滚动，也不是新牌区或协议字段。 / Named, focusable local scroll viewports with fixed visible height, not truncated records, document-scroll control, new game zones or protocol fields.
+- `claim-slot` / `hand-feedback`：局内常驻的接牌提示/私有诊断和结算展示容器；其内容仍由原服务端裁剪视图决定。 / Game-long claim/private-feedback presentation slots whose contents still come from the original filtered server view.

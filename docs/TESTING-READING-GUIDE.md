@@ -246,3 +246,23 @@ The portrait-layout suite inspects the real Vue template AST for both modes' sha
 
 运行 `node --test tests/live2d-core.test.js tests/live2d-sdk.test.js` 单独验证真实Core和固定SDK兼容，再运行 `npm test`、`npm run lint`、`npm run build`。只有available角色参与真实模型测试，当前七人各有独立moc3及当前驱动的完整离线放行。这些历史结果不能代替当前Canvas2D真实像素/多画框/移动端验收，也不会新增GPU批准门槛。源码与证据路径见 [Live2D指南](LIVE2D-RUNTIME.md)。
 Run the focused Core/SDK command and then the standard aggregate checks. Only available roles participate in real-model tests; all seven currently have distinct moc3s and complete current-driver offline approval. These historical results do not replace current Canvas2D pixel/multi-frame/mobile acceptance or introduce a new GPU approval gate.
+
+## 稳定牌桌结构检查 / Stable-table structural checks
+
+`tests/stable-table-layout.test.js`：真实Vue模板/CSS编译、稳定空槽、Tab入口、滚动区名称、完整牌河遍历、原隐藏牌绑定与无全页滚动补偿。它不运行规则、不联系服务器，也不把源码断言称为浏览器像素实测。现有 `tests/ui.test.js` 的已胡必胡容器匹配接受新可及性属性，并继续严格验证唯一胡按钮；落座身份验证头像路径/角色名而非已删除说明。浏览器验收清单见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
+The new suite covers actual compilation, persistent slots, keyboard/naming contracts, complete rivers, masked tiles and no document-scroll compensation. It runs no rules/server traffic and makes no pixel claims. Existing mandatory-win and seated-identity assertions remain behavioral, accommodating accessible attributes/removal of redundant prose. See the linked guide for browser checks.
+
+### 稳定牌桌浏览器夹具清单 / Stable-table browser fixture inventory
+
+- `tests/browser/stable-table-preview-server.mjs`：仅本机独立Vite；禁用主配置与所有API请求。 / Loopback-only standalone Vite without the main configuration or API traffic.
+- `tests/browser/stable-table-preview.html`、`tests/browser/stable-table-preview.js`：可见控件、真实iframe宽度、六组/八组矩阵及结果入口。 / Visible controls, actual frame widths, six/eight-case matrices and results.
+- `tests/browser/stable-table-frame.html`、`tests/browser/stable-table-frame.js`：挂载真实组件/样式，拦截真实动作，仅开放显示快照与滚动诊断。 / Real components/styles with game actions blocked and view/scroll diagnostics enabled.
+- `tests/helpers/stable-table-fixtures.js`：合成已过滤快照，不含凭证或对手暗手。 / Synthetic filtered views without credentials or concealed opponent hands.
+- `tests/helpers/stable-table-transform.js`：保留真实模板/CSS，只替换预览中的生命周期/网络。 / Preserve templates/CSS while replacing preview lifecycle/transport.
+- `tests/helpers/stable-table-server-boundary.js`：拒绝所有方法的API路径。 / Reject API paths for every method.
+- `tests/helpers/stable-table-browser-audit.js`：几何差值、中段/底部回看保留、实际overflow及末端内容可达；源码不调用整页scrollTo。 / Geometry, retained browsing and real-overflow endpoint reachability without document-scroll compensation.
+- `tests/helpers/stable-table-report.js`：可见摘要上限24KiB，原始JSON完整保存在非渲染DOM节点。 / A24KiB visible-summary cap with complete raw JSON in a non-rendered DOM node.
+- `tests/stable-table-fixture.test.js`：验证隔离边界、完整合成矩阵、差值检测、末端几何判据和报告数据不变。 / Verify isolation, complete synthetic cases, delta/endpoint detection and unchanged report data.
+
+运行方法、四份浏览器JSON和98幅SSR辅助报告见 [稳定牌桌验收](STABLE-TABLE-VALIDATION.md)。浏览器矩阵/非零scrollY/原生按键是独立验证层，不把SSR或Tab属性检查说成实体手机、其他浏览器或读屏语音验收。
+See [stable table validation](STABLE-TABLE-VALIDATION.md) for commands, four browser JSON reports and98 supplemental SSR frames. Matrices, nonzero scrollY and native keys are separate evidence; neither SSR nor tabindex checks prove physical phones, other browsers or spoken screen-reader behavior.

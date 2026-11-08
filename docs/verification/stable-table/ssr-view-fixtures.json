@@ -1,0 +1,63 @@
+{
+  "scope": "Offline SSR of the actual App.vue, ChengduTable.vue and child SFCs using isolated view-only snapshots. Not a browser layout, keyboard, networking, or compatibility pass.",
+  "date": "2026-11-08",
+  "cases": 7,
+  "frames": 98,
+  "completed": true,
+  "results": [
+    {
+      "caseId": "flower-3",
+      "stages": 14,
+      "maxMs": 27.18,
+      "totalMs": 163.09,
+      "maxBytes": 276167
+    },
+    {
+      "caseId": "flower-4",
+      "stages": 14,
+      "maxMs": 44.3,
+      "totalMs": 166.07,
+      "maxBytes": 345280
+    },
+    {
+      "caseId": "chengdu-4",
+      "stages": 14,
+      "maxMs": 16.42,
+      "totalMs": 61.87,
+      "maxBytes": 107448
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "stages": 14,
+      "maxMs": 22.73,
+      "totalMs": 96.43,
+      "maxBytes": 212409
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "stages": 14,
+      "maxMs": 27.54,
+      "totalMs": 115.61,
+      "maxBytes": 236187
+    },
+    {
+      "caseId": "flower-spectator",
+      "stages": 14,
+      "maxMs": 28.14,
+      "totalMs": 139.2,
+      "maxBytes": 332556
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "stages": 14,
+      "maxMs": 15.98,
+      "totalMs": 46.81,
+      "maxBytes": 94538
+    }
+  ],
+  "limitations": [
+    "No browser execution stack was available for the timed-out diagnostic page.",
+    "Finite SSR completion excludes an observed synchronous SSR render loop, not every browser-specific update/layout issue.",
+    "Timing is diagnostic only and is not a device performance guarantee."
+  ]
+}

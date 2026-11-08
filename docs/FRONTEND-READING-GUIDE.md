@@ -268,3 +268,8 @@ Both modes use tall opponent frames (240–340px desktop, 180–240px phone) wit
 
 `characterForPlayer(seat, forOccupant)` 区分牌局快照与当前占座人：默认读取本局game.characters，保持成都/观战的原参赛者身份；占座身份面板传true，结束后的替补不继承旧人的角色。大厅先读服务端seats[].characterId，偏好只作旧响应兜底。落座分配和续局合同见 [七角色](SEVEN-CHARACTERS.md)，本次验证见 [角色落座与画框验收](CHARACTER-SEATING-VALIDATION.md)。
 The character helper distinguishes game snapshots from present occupants. Game/Chengdu/spectator panels retain original participants; occupant panels explicitly opt into replacement identity after finish. Lobbies prefer the server's saved characterId and use preferences only for legacy responses. See the assignment contract and validation report.
+
+## 局内稳定视窗 / Stable in-game viewports
+
+参见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)：`App.vue` 和 `ChengduTable.vue` 把条件内容放在游戏期间常驻槽位中；`tabletop.css` 最后覆盖固定可视高度及滚动条占位。维护时不要把 `v-if` 移到空槽父级、只留下 max-height，或添加整页滚动补偿。长内容必须保留可命名、可聚焦的原生滚动入口。
+See [stable table layout](STABLE-TABLE-LAYOUT.md): conditional content lives inside game-long slots, with final CSS fixing visible heights/gutters. Do not move conditionals onto empty parents, restore max-height-only growth or add document-scroll compensation. Long content requires named, focusable native scrolling.

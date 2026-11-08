@@ -2167,7 +2167,7 @@ onUnmounted(() => {
         </svg>
         <div class="brand-name">花间 <span>{{ isChengduContext ? '成都麻将' : '自贡花麻将' }}</span></div>
       </div>
-      <div class="header-actions">
+      <div class="header-actions" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="group" aria-label="声音与牌桌工具">
         <button
           class="text-button voice-toggle"
           :aria-pressed="voiceStatus === 'ready' && !voiceMuted"
@@ -2625,6 +2625,9 @@ onUnmounted(() => {
         ><button class="text-button" @click="newTable"
           >离开旧桌，返回大厅换新桌<Icon name="arrow" :size="13" /></button
       ></div>
+      <!-- 连接与请求提示在局内预留空间；重连/关闭错误不拉动下方牌桌，所有提示可键盘滚动读取。
+           Reserve in-game space for connection/request notices so reconnecting or dismissing errors never moves the board below. -->
+      <div class="room-notices" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" aria-label="连接与操作提示">
       <!-- 离席和离线是不同状态：离席仍保留进行中牌局的手牌及账目。 / Detached and offline are distinct: departure still preserves hands and accounting in an active game. -->
       <div
         v-if="phase === 'playing' && seats.some((player) => player.detached)"
@@ -2643,6 +2646,8 @@ onUnmounted(() => {
         ><button class="icon-button" aria-label="关闭提示" @click="error = ''"
           ><Icon name="close" :size="16" /></button
       ></div>
+
+      </div>
 
       <!-- 只有缺少建房快照字段的旧桌保留开局草稿；新桌在这里仅展示已保存规则。 / Only legacy rooms missing creation fields retain editable start drafts; new rooms show saved choices. -->
       <section v-if="canConfigureStart" class="start-options" aria-labelledby="start-options-title">
@@ -2769,9 +2774,9 @@ onUnmounted(() => {
                   :class="`character-${characterForPlayer(player.seat, !isSpectator).id}`"
                   ><CharacterArtwork :character="characterForPlayer(player.seat, !isSpectator)" /><span
                     >{{ characterForPlayer(player.seat, !isSpectator).name
-                    }}<small>{{ characterForPlayer(player.seat, !isSpectator).style }}</small></span
+                    }}</span
                   ></div
-                ><div class="player-topline"
+                ><div class="player-topline" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" :aria-label="`${player.name || '空座'}的身份与积分`"
                   ><div class="avatar" :class="`avatar-${player.seat}`"
                     ><img
                       v-if="player.name"
@@ -2810,7 +2815,7 @@ onUnmounted(() => {
                 <!-- 对手只有手牌数量，最多画二十张背面占位；这里没有隐藏在 DOM 中的对手牌面。 / Opponents expose only hand counts, capped at twenty rendered backs; no opponent faces are hidden in the DOM. -->
                 <div
                   v-if="game"
-                  class="opponent-hand"
+                  class="opponent-hand stable-scroll" tabindex="0" role="region"
                   :aria-label="`${player.name}的手牌，共${player.handCount}张，仅显示背面`"
                   ><MahjongTile
                     v-for="hiddenTileNumber in Math.min(player.handCount, 20)"
@@ -2822,10 +2827,14 @@ onUnmounted(() => {
                   ><span v-if="player.name">已经准备好，把好牌留给你。</span
                   ><span v-else>发一个邀请，留一份热闹。</span></div
                 >
+                <!-- 整局预留公开牌视窗；碰杠、胡牌和旧局萝卜只在内部增长，Tab 后可用方向键查看。
+                     Reserve a public viewport for the whole game; melds, wins and legacy radishes grow inside it and remain keyboard-scrollable. -->
+                <div v-if="game" class="opponent-public-cards stable-scroll" tabindex="0" role="region"
+                  :aria-label="`${player.name}的碰杠、胡牌与萝卜，可滚动查看`">
                 <!-- 公开副露按服务端顺序展示；暗杠中的 null 用背面，不能由前端推算补全。 / Show public melds in server order; null concealed-kong tiles remain backs, never inferred by the client. -->
                 <div v-if="game && player.melds.length" class="meld-list opponent-melds"
                   ><div v-for="(meld, meldIndex) in player.melds" :key="meldIndex" class="meld"
-                    ><div class="meld-tiles"
+                    ><div class="meld-tiles stable-scroll" tabindex="0" role="region" aria-label="碰杠牌组，可横向滚动"
                       ><MahjongTile
                         v-for="(tile, tileIndex) in meld.tiles"
                         :key="tileIndex"
@@ -2882,6 +2891,7 @@ onUnmounted(() => {
                       :tile="tile"
                       small /></div
                 ></div>
+                </div>
               </div>
             </div>
 
@@ -2936,7 +2946,7 @@ onUnmounted(() => {
                 </div>
               </div>
               <div class="game-status" aria-live="polite"
-                ><div
+                ><div class="stable-scroll" tabindex="0" role="region" aria-label="当前回合状态"
                   ><span
                     class="turn-indicator"
                     :class="{ 'your-turn': isMyTurn || legalActions.length }"
@@ -2948,6 +2958,7 @@ onUnmounted(() => {
                 ></div
               >
               <!-- 接牌阶段展示等待回应的牌；抢杠仍是待确认动作，不能显示成已成立副露。 / During claims, show the tile awaiting responses; a rob-kong proposal is not yet a completed meld. -->
+              <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
               <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
                 ><MahjongTile :tile="game.claim.tile" small /><span
                   ><b>{{ seatLabel(game.claim.discardSeat) }}</b>
@@ -2955,10 +2966,11 @@ onUnmounted(() => {
                   {{ tileLabel(game.claim.tile) }}</span
                 ></div
               >
+              </div>
               <!-- 新版只有一个全桌共享池；旧局的个人萝卜使用各自兼容区块。 / Newer games have one shared pool; older personal radishes remain in compatibility sections. -->
               <section
                 v-if="isLatest"
-                class="shared-radish-pool"
+                class="shared-radish-pool" data-stable-scroll tabindex="0"
                 aria-labelledby="shared-radish-title"
               >
                 <div class="shared-radish-heading"
@@ -2996,7 +3008,8 @@ onUnmounted(() => {
                         : `${seatLabel(player.seat)}的牌河`
                     }}</span
                     ><small>{{ discardsFor(player.seat).length }} 条记录</small></div
-                  ><div class="discard-tiles"
+                  ><div class="discard-tiles stable-scroll" tabindex="0" role="region"
+                    :aria-label="`${seatLabel(player.seat)}的牌河，可滚动查看全部记录`"
                     ><template v-if="discardsFor(player.seat).length"
                       ><span
                         v-for="discard in discardsFor(player.seat)"
@@ -3045,7 +3058,6 @@ onUnmounted(() => {
                 ><span v-else>等待房主再开一局</span
                 ><button class="button" @click="newTable">返回大厅换桌</button></div
               >
-              <div v-else class="table-watermark">花间 <span>自贡花麻将</span></div>
             </div>
 
           <!-- 手牌留在桌面，主角在操作区下方独立占位；不把人物铺到牌或按钮背后。
@@ -3054,10 +3066,7 @@ onUnmounted(() => {
             :class="`character-${characterForPlayer(mySeat, true).id}`">
             <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
 
-            <div class="own-character-label"
-              >{{ characterForPlayer(mySeat, true).name }} · {{ characterForPlayer(mySeat, true).style
-              }}<span>{{ phase === 'lobby' || me.isCurrentParticipant === false ? '落座角色，开局保持' : '本局角色，全桌一致' }}</span></div
-            ><div class="own-seat-summary"
+            <div class="own-seat-summary" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" aria-label="我的身份与积分"
               ><div class="avatar" :class="`avatar-${mySeat}`"
                 ><img
                   :src="characterForPlayer(mySeat, true).portrait"
@@ -3091,14 +3100,14 @@ onUnmounted(() => {
             class="hand-panel"
             aria-label="我的手牌与操作"
           >
-            <div class="hand-info-row"
+            <div class="hand-info-row stable-scroll" tabindex="0" role="region" aria-label="手牌状态与提示"
               ><div
                 ><span class="section-kicker">手牌区</span
                 ><span v-if="postHu" class="frozen-hand-pill">胡后固定</span
                 ><span v-if="isMyTurn" class="my-turn-pill">轮到你了</span></div
               ><span class="hand-hint">{{ statusDetail }}</span></div
             >
-            <div v-if="!isLegacy || me.melds.length || me.radishes.length" class="own-public-cards">
+            <div class="own-public-cards stable-scroll" tabindex="0" role="region" aria-label="我的胡牌、碰杠与萝卜，可滚动查看">
               <div v-if="!isLegacy" class="own-win-pile win-pile" aria-label="我的胡牌区"
                 ><span class="public-zone-label"
                   >胡牌区 <b>{{ me.winPile.length }} 次</b></span
@@ -3130,7 +3139,7 @@ onUnmounted(() => {
                 ><span v-if="!isLegacy && !me.melds.length" class="public-zone-empty">还未碰杠</span
                 ><div v-if="me.melds.length" class="meld-list"
                   ><div v-for="(meld, meldIndex) in me.melds" :key="meldIndex" class="meld"
-                    ><div class="meld-tiles"
+                    ><div class="meld-tiles stable-scroll" tabindex="0" role="region" aria-label="碰杠牌组，可横向滚动"
                       ><MahjongTile
                         v-for="(tile, tileIndex) in meld.tiles"
                         :key="tileIndex"
@@ -3154,7 +3163,7 @@ onUnmounted(() => {
                     small /></div></div
             ></div>
             <!-- key 同时包含下标和牌种；点击仅选牌，disabled 同时检查胡后锁定、网络状态和服务端可出牌列表。 / Keys combine index and tile type; clicks only select, while disabled checks post-win locking, connectivity and server discard options. -->
-            <div class="hand-scroll character-hand-table"
+            <div class="hand-scroll character-hand-table stable-scroll" tabindex="0" role="region" aria-label="我的手牌，可横向滚动"
               ><div class="my-hand"
                 ><MahjongTile
                   v-for="(tile, tileIndex) in hand"
@@ -3174,7 +3183,7 @@ onUnmounted(() => {
             ></div>
             <!-- 听牌信息来自私有快照；动作按钮提交完整服务端动作，出牌按钮才构造选中的 discard。 / Wait tiles come from the private snapshot; action buttons submit server actions, while discard constructs the selected discard request. -->
             <div class="hand-bottom-row"
-              ><div class="waits-info"
+              ><div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
                 ><template v-if="game.waitTiles?.length"
                   ><span class="wait-label">听牌</span
                   ><span>{{ game.waitTiles.map(tileLabel).join('、') }}</span></template
@@ -3185,7 +3194,7 @@ onUnmounted(() => {
                   :title="`原听口：${(game.lockedWaits || []).map(tileLabel).join('、')}`"
                   >本轮再胡需换尽原听口</span
                 ></div
-              ><div class="action-row"
+              ><div class="action-row" data-stable-scroll tabindex="0" role="region" aria-label="合法动作，可横向滚动"
                 ><button
                   v-for="(action, actionIndex) in gangActions"
                   :key="`gang-${actionIndex}`"
@@ -3224,6 +3233,9 @@ onUnmounted(() => {
                 ></div
               ></div
             >
+            <!-- 私有诊断和上次结算共享固定视窗；保留原生 details，展开也不会推动手牌或立绘。
+                 Private diagnostics and last settlement share a fixed viewport; native details can expand without moving cards or portraits. -->
+            <div class="hand-feedback stable-scroll" tabindex="0" role="region" aria-label="我的胡牌判断与结算，可滚动查看">
             <p v-if="game.specialHuPattern?.kind === 'sevenPairs'" class="special-hand-note"
               >{{ game.specialHuPattern.pureSuit ? '清七对' : '七对' }}特殊听牌 · 固定
               {{ game.specialHuPattern.fixedFan }}
@@ -3253,6 +3265,7 @@ onUnmounted(() => {
                 >其中三牌区同牌加 {{ lastOwnScore.copyFanBonus }} 番</small
               ></div
             >
+            </div>
           </section>
           <!-- 独立普通流画框自然排在手牌后；保留原图比例及表情，图像不承载交互或私有数据。
                This normal-flow frame follows the hand, preserving source proportions/reactions without carrying input or private data. -->
@@ -3292,7 +3305,7 @@ onUnmounted(() => {
                 phase === 'finished' ? '上一局结算' : '本局积分'
               }}</h2
               ><span class="subtle-label">虚拟分</span></div
-            ><div class="score-list"
+            ><div class="score-list round-ledger stable-scroll" tabindex="0" role="region" aria-label="本局积分，可滚动查看"
               ><div
                 v-for="player in scoreSeats"
                 :key="player.seat"
@@ -3347,7 +3360,7 @@ onUnmounted(() => {
               ><Icon name="trophy" :size="18" /><h2 id="table-total-title">本桌总积分</h2
               ><span class="subtle-label">含本局</span></div
             >
-            <div class="score-list"
+            <div class="score-list table-ledger stable-scroll" tabindex="0" role="region" aria-label="本桌累计积分，可滚动查看"
               ><div
                 v-for="player in tableScoreRows"
                 :key="player.id"
@@ -3384,7 +3397,7 @@ onUnmounted(() => {
           <section v-if="game" class="sidebar-card history-card"
             ><div class="sidebar-title"
               ><Icon name="clock" :size="18" /><h2>牌局动态</h2><span class="live-dot"></span></div
-            ><ol class="history-list" aria-label="牌局操作记录"
+            ><ol class="history-list stable-scroll" tabindex="0" aria-label="牌局操作记录" aria-description="可滚动查看全部记录"
               ><li
                 v-for="(entry, historyIndex) in history"
                 :key="`${game.id || 'legacy'}-${history.length - historyIndex - 1}`"

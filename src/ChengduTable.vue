@@ -100,7 +100,7 @@ function eventText(event) {
 
 <template>
   <section class="chengdu-play" aria-label="成都麻将牌桌">
-    <div class="chengdu-play-heading">
+    <div class="chengdu-play-heading stable-scroll" tabindex="0" role="region" aria-label="成都本局玩法、余牌与庄家">
       <div><span class="eyebrow">成都麻将 · {{ game.rules.endCondition === 'firstWin' ? '首胡结束' : '血战到底' }}</span><h2>{{ isFinished ? '本局成绩' : '万条筒，四方坐定' }}</h2></div>
       <span>余牌 {{ game.wallCount }} 张 · 庄家 {{ nameFor(game.dealerSeat) }}</span>
     </div>
@@ -116,41 +116,53 @@ function eventText(event) {
           :class="`character-${characterForPlayer(player.seat).id}`">
           <CharacterArtwork :character="characterForPlayer(player.seat)" />
         </div>
-        <div class="chengdu-player-heading"><img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
+        <div class="chengdu-player-heading stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的身份与积分`"><img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
           <div><strong>{{ nameFor(player.seat) }}</strong><small>{{ mySeat === player.seat ? '你' : `座位 ${player.seat + 1}` }} · {{ characterForPlayer(player.seat).name }}</small></div>
           <b>{{ player.score > 0 ? '+' : '' }}{{ player.score }}</b></div>
-        <div class="chengdu-seat-meta"><span v-if="player.seat === game.dealerSeat">庄家</span><span>手牌 {{ player.handCount }} 张</span>
+        <div class="chengdu-seat-meta stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的公开状态`"><span v-if="player.seat === game.dealerSeat">庄家</span><span>手牌 {{ player.handCount }} 张</span>
           <span v-if="player.dingqueSuit">缺{{ suitLabels[player.dingqueSuit] }}</span><span v-else-if="player.dingqueSubmitted">已定缺</span>
           <span v-if="game.preparation?.exchangeSubmittedSeats?.includes(player.seat)">换牌已选</span><strong v-if="player.won">已胡 · 本局退出</strong></div>
+        <!-- 空牌到碰杠/胡牌共用同高公开视窗；投影里的隐藏牌仍只显示背面。
+             Empty, melded and won states share a stable viewport; projected hidden tiles still render only backs. -->
+        <div class="chengdu-public-cards stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的碰杠与胡牌，可滚动查看`">
         <div v-if="player.melds.length" class="chengdu-melds" aria-label="碰杠区"><div v-for="(meld, index) in player.melds" :key="index"><small>{{ actionLabels[meld.type] }}</small><MahjongTile v-for="(tile, tileIndex) in meld.tiles" :key="tileIndex" :tile="tile" :back="tile == null" small /></div></div>
         <div v-if="player.won" class="chengdu-win"><span>{{ player.won.source === 'selfDraw' ? '自摸' : player.won.source === 'robKong' ? '抢杠胡' : '胡牌' }} · {{ player.won.points }}分/付款方</span><MahjongTile v-if="player.won.tile != null" :tile="player.won.tile" small /><span v-else>牌面未公开</span></div>
-        <div class="chengdu-river" aria-label="弃牌区"><MahjongTile v-for="(discard, index) in (game.discards || []).filter((entry) => entry.seat === player.seat && !entry.claimed)" :key="index" :tile="discard.tile" small :class="{ 'chengdu-winning-discard': discard.winning }" /></div>
+        </div>
+        <div class="chengdu-river stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的弃牌区，可滚动查看全部记录`"><MahjongTile v-for="(discard, index) in (game.discards || []).filter((entry) => entry.seat === player.seat && !entry.claimed)" :key="index" :tile="discard.tile" small :class="{ 'chengdu-winning-discard': discard.winning }" /></div>
       </article>
       <div class="chengdu-table-center"><strong>{{ game.phase === 'exchange' ? '换三张' : game.phase === 'dingque' ? '定缺' : isFinished ? '终局' : '成都' }}</strong><span v-if="game.preparation?.exchangeDirection">本局换牌：{{ directionLabels[game.preparation.exchangeDirection] }}</span><span>{{ game.rules.fanCap }}番封顶 · 自摸{{ game.rules.selfDraw === 'addBase' ? '加底' : '加番' }}</span></div>
-    <div class="chengdu-status" role="status" aria-live="polite">{{ mySeat == null && !isFinished ? '仅看公开牌面 · ' : '' }}{{ status }}</div>
+    <div class="chengdu-status stable-scroll" tabindex="0" role="status" aria-live="polite">{{ mySeat == null && !isFinished ? '仅看公开牌面 · ' : '' }}{{ status }}</div>
+    <div class="chengdu-claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
     <div v-if="game.claim" class="chengdu-claim"><span>{{ nameFor(game.claim.fromSeat) }}{{ game.claim.source === 'robKong' ? '尝试补杠' : '打出' }}</span><MahjongTile :tile="game.claim.tile" small /><span>等待所有有资格的牌友回应</span></div>
+    </div>
     <!-- 本人手牌留在桌面；下方独立立绘与操作区不重叠，私有内容仍受me.hand守卫。
          Keep own cards on the table; the separate art below never overlaps controls, and me.hand still guards private content. -->
     <div v-if="me?.hand" class="own-player-area chengdu-own-area"
       :class="`character-${characterForPlayer(mySeat).id}`">
     <section class="chengdu-hand-panel" aria-labelledby="chengdu-hand-title">
       <h3 id="chengdu-hand-title">你的手牌<span v-if="me.dingqueSuit"> · 缺{{ suitLabels[me.dingqueSuit] }}</span></h3>
+      <!-- 各阶段说明只替换内容，不增删槽位；手机长文可聚焦后滚动。
+           Phase instructions replace content, not slots; long phone text remains focusable and scrollable. -->
+      <div class="chengdu-hand-note stable-scroll" tabindex="0" role="region" aria-label="手牌操作说明">
       <p v-if="isExchange">先选同一花色三张，再确认。已选 {{ selectedIndices.length }}/3 张；提交后不能修改。</p>
       <p v-else-if="game.phase === 'dingque'">定缺提交后不能修改。四家都选好后公开花色并开始行牌。</p>
       <p v-else-if="!isFinished && !me.won">须先打完缺门牌。只有服务端允许的手牌和动作可用。</p>
-      <div class="chengdu-hand character-hand-table" aria-label="本人私有手牌">
+      </div>
+      <div class="chengdu-hand character-hand-table stable-scroll" tabindex="0" role="region" aria-label="本人私有手牌" aria-description="可横向滚动查看全部手牌">
         <MahjongTile v-for="(tile, index) in hand" :key="index" :tile="tile" interactive
           :selected="selectedIndices.includes(index)" :disabled="blocked || (!isExchange && !legalActions.some((action) => action.type === 'discard' && action.tile === tile)) || (isExchange && !legalActions.some((action) => action.type === 'exchangeThree'))"
           @click="chooseTile(index)" />
       </div>
+      <div v-if="game.rules.exchangeThree" class="chengdu-receipt-slot stable-scroll" tabindex="0" role="region" aria-label="我的换牌结果">
       <div v-if="game.preparation?.receivedExchange" class="chengdu-exchange-receipt"><span>收到的三张：</span><MahjongTile v-for="(tile, index) in game.preparation.receivedExchange.tiles" :key="index" :tile="tile" small /></div>
-      <div class="chengdu-action-bar" aria-label="成都合法动作">
+      </div>
+      <div class="chengdu-action-bar stable-scroll" tabindex="0" role="region" aria-label="成都合法动作" aria-description="可横向滚动查看全部动作">
         <button v-if="isExchange && legalActions.some((action) => action.type === 'exchangeThree')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认换三张</button>
         <button v-if="legalActions.some((action) => action.type === 'discard')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认出牌{{ selectedAction ? ` · ${labelFor(selectedAction.tile)}` : '' }}</button>
         <button v-for="action in dingqueActions" :key="action.suit" class="button" :disabled="blocked" @click="submit(action)">定缺{{ suitLabels[action.suit] }}</button>
         <button v-for="action in responseActions" :key="`${action.type}:${action.tile ?? ''}`" class="button" :class="{ gold: action.type === 'hu' }" :disabled="blocked" @click="submit(action)">{{ actionLabel(action) }}</button>
       </div>
-      <p v-if="game.waitTiles?.length && !me.won" class="chengdu-waits">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p>
+      <div class="chengdu-waits stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"><p v-if="game.waitTiles?.length && !me.won">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p></div>
     </section>
     <figure class="own-character-display" aria-label="你的角色立绘">
       <div class="own-character-art"><CharacterArtwork class="own-character-scene"
@@ -165,8 +177,8 @@ function eventText(event) {
       <button v-if="canStart" class="button gold" :disabled="blocked || state.seats.filter(Boolean).length < 4" @click="emit('start')">开始下一局</button><p v-else>等待房主开始下一局。</p>
     </section>
     <div class="chengdu-details">
-      <section aria-labelledby="chengdu-ledger-title"><h3 id="chengdu-ledger-title">本桌累计 · 虚拟积分</h3><ul><li v-for="(row, index) in state.tableScores || []" :key="row.id || index"><span>{{ row.name }}</span><strong>{{ row.totalScore > 0 ? '+' : '' }}{{ row.totalScore }}</strong></li></ul></section>
-      <section aria-labelledby="chengdu-events-title"><h3 id="chengdu-events-title">本局动态</h3><ol><li v-for="(event, index) in recentEvents" :key="index">{{ eventText(event) }}</li></ol><p v-if="!recentEvents.length">等待四家完成准备。</p></section>
+      <section aria-labelledby="chengdu-ledger-title"><h3 id="chengdu-ledger-title">本桌累计 · 虚拟积分</h3><ul class="chengdu-ledger stable-scroll" tabindex="0" aria-label="本桌累计积分，可滚动查看"><li v-for="(row, index) in state.tableScores || []" :key="row.id || index"><span>{{ row.name }}</span><strong>{{ row.totalScore > 0 ? '+' : '' }}{{ row.totalScore }}</strong></li></ul></section>
+      <section aria-labelledby="chengdu-events-title"><h3 id="chengdu-events-title">本局动态</h3><ol class="chengdu-history stable-scroll" tabindex="0" aria-label="本局动态，可滚动查看"><li v-for="(event, index) in recentEvents" :key="index">{{ eventText(event) }}</li><li v-if="!recentEvents.length">等待四家完成准备。</li></ol></section>
     </div>
   </section>
 </template>
@@ -176,7 +188,7 @@ function eventText(event) {
 /* Scope Chengdu styles away from Flower; narrow screens use linear seats instead of shrinking touch targets. */
 .chengdu-play { margin-top: 24px; }
 .chengdu-play-heading, .chengdu-player-heading, .chengdu-seat-meta, .chengdu-action-bar, .chengdu-claim, .chengdu-win, .chengdu-exchange-receipt { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
-.chengdu-play-heading { justify-content: space-between; margin-bottom: 8px; }
+.chengdu-play-heading { justify-content: space-between; margin-bottom: 8px; height: 88px; align-content: flex-start; align-items: flex-start; }
 .chengdu-play-heading h2 { margin: 6px 0; }
 .chengdu-turn-note, .chengdu-hand-panel p, .chengdu-finish p { color: #b7c9c3; font-size: 13px; line-height: 1.7; }
 .chengdu-board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 1.1fr) minmax(0, 1fr); gap: 12px; padding: 18px; border: 1px solid #42665a; border-radius: 24px; background: radial-gradient(ellipse at center, #244f42, #112d27); }
@@ -203,6 +215,30 @@ function eventText(event) {
    Missing-suit and regular actions use green table buttons rather than global light buttons with inherited light text. */
 .chengdu-own-area .chengdu-action-bar .button:not(.gold) { color: #fff0d1; background: linear-gradient(#275d4c, #153f32); border-color: #b7a06d; }
 .chengdu-own-area .chengdu-action-bar .button.gold { color: #352a18; background: linear-gradient(#f0d491, #c8a25e); border-color: #edcf88; }
+
+/* 固定槽位而非截断内容：每次摸打、碰杠、退出或准备阶段变化都只更新局部内容。
+   Fixed slots, not truncated content: draw/discard, meld, retirement and preparation changes only update local contents. */
+.chengdu-player-heading { height: 76px; overflow: auto; align-content: flex-start; }
+.chengdu-player-heading b { font-variant-numeric: tabular-nums; }
+.chengdu-seat-meta { height: 48px; overflow: auto; align-content: flex-start; }
+.chengdu-public-cards { height: 96px; padding: 4px; }
+.chengdu-public-cards > :first-child { margin-top: 0; }
+.chengdu-river { height: 150px; align-content: flex-start; padding: 4px 4px 10px; }
+.chengdu-river :deep(.mahjong-tile) { flex-shrink: 0; }
+.chengdu-status { height: 66px; margin: 0; overflow: auto; }
+.chengdu-claim-slot { grid-column: 1 / -1; height: 64px; }
+.chengdu-claim { min-height: 64px; margin: 0; }
+.chengdu-hand-note { height: 48px; }
+.chengdu-hand-note p { margin: 0; }
+.chengdu-hand { height: 128px; }
+.chengdu-receipt-slot { height: 62px; }
+.chengdu-receipt-slot .chengdu-exchange-receipt { margin: 4px 0 0; }
+.chengdu-action-bar { height: 68px; flex-wrap: nowrap; padding: 3px 4px 6px; }
+.chengdu-action-bar > button { flex-shrink: 0; white-space: nowrap; }
+.chengdu-waits { height: 44px; }
+.chengdu-waits p { margin: 6px 0 0; }
+.chengdu-details .chengdu-history { height: 280px; max-height: 280px; }
+.chengdu-details .chengdu-ledger { height: 160px; }
 
 @media (max-width: 900px) { .chengdu-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }.chengdu-seat-self, .chengdu-seat-left, .chengdu-seat-opposite, .chengdu-seat-right { grid-area: auto; }.chengdu-table-center { grid-area: auto; grid-column: 1 / -1; order: -1; } }
 @media (max-width: 560px) { .chengdu-board, .chengdu-audience, .chengdu-details { grid-template-columns: minmax(0, 1fr); }.chengdu-board { padding: 10px; }.chengdu-hand-panel, .chengdu-finish, .chengdu-details section { padding: 14px; }.chengdu-hand { gap: 3px; }.chengdu-turn-note { font-size: 12px; } }

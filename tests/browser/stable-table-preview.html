@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>牌桌稳定布局 · 纯视图验收</title>
+<style>
+body{margin:0;background:#e9eee9;color:#17291f;font:15px/1.5 system-ui,sans-serif}main{padding:16px}h1{font-size:22px;margin:0 0 8px}p{margin:5px 0}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button,select{font:inherit;min-height:38px;padding:5px 12px;border:1px solid #506a59;border-radius:6px;background:white;color:#17291f}button:disabled{opacity:.55}button:focus-visible,select:focus-visible{outline:3px solid #b26905}#fixture-status{min-height:30px;font-weight:700}#viewport-wrap{overflow:auto;width:100%;border:2px solid #708879;background:white}iframe{height:760px;display:block;border:0}#fixture-json{height:440px;overflow:auto;white-space:pre-wrap;background:#132b20;color:#e5f5e9;padding:12px;font:12px/1.4 monospace}summary{cursor:pointer}
+</style></head><body><main>
+<h1>牌桌稳定布局 · 纯视图fixture</h1><p>所有昵称/牌面/积分都是合成展示数据，没有真实房间、登录或玩家动作。牌桌内操作按钮不提交；诊断按钮只切本页快照。服务端拒绝全部 /api 请求。</p>
+<p>真实 App.vue + ChengduTable.vue + 原样式。只比较当前尺寸同模式的游戏中布局，不包含切模式、开局/终局、用户主动展开详情。先在牌桌中滚动到手牌，再按审计，不会自动重设页面滚动。</p>
+<div class="controls"><label>玩法 <select id="fixture-case"><option value="flower-3">三人花麻将</option><option value="flower-4">四人花麻将</option><option value="chengdu-4">四人成都麻将</option></select></label><label>真实视口 <select id="fixture-width"><option value="1280">1280px 桌面</option><option value="390">390px 窄屏</option></select></label><label>画面 <select id="fixture-stage"></select></label><button id="fixture-apply">切换合成画面</button><button id="fixture-measure">记录当前DOM</button></div>
+<div class="controls"><button id="fixture-audit">审计当前玩法/尺寸</button><button id="fixture-audit-all">审计全部六组</button><button id="fixture-audit-compat">审计兼容八组（旧版/观战）</button><button id="fixture-middle">牌河回看中间</button><button id="fixture-bottom">牌河滚到底部</button><button id="fixture-accessibility">检查滚动内容可达性</button></div>
+<p id="fixture-status" role="status" aria-live="polite">正在加载真实组件…</p><div id="viewport-wrap"><iframe id="fixture-frame" title="纯视图合成牌桌" width="1280" src="/tests/browser/stable-table-frame.html?case=flower-3"></iframe></div>
+<p>键盘人工复核：Tab进入有标签的牌河/公开区/历史，使用方向键、PageDown、End检查内容可达。自动结果仅检查可聚焦入口与实际滚动末端，不能代替真实按键。</p>
+<details open><summary>真实DOM测量摘要 JSON（完整数据保留在页面DOM）</summary><pre id="fixture-json" tabindex="0" aria-label="布局诊断结果">尚未运行</pre></details>
+<script id="fixture-raw-json" type="application/json">{"status":"not-run"}</script>
+</main><script type="module" src="/tests/browser/stable-table-preview.js"></script></body></html>

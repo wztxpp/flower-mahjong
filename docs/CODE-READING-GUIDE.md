@@ -212,3 +212,21 @@ The portrait-layout suite inspects the real Vue template AST for both modes' sha
 - [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md)：独立本人立绘、加高对手展示，以及落座/开局/续局角色稳定的联合回归。 / Separate self art, taller opponent portraits and stable roles across seating/start/next rounds.
 
 [多帧原图动画验收](PORTRAIT-MULTIFRAME-VALIDATION.md)记录当前五眼态、连续局部发丝、实际浏览器证据和短发限制。 / Current five-shape eyes, continuous original-texture hair, real-browser evidence and short-hair limits.
+
+## 稳定牌桌维护入口 / Stable table maintenance
+
+[稳定牌桌布局](STABLE-TABLE-LAYOUT.md) 连接 `src/App.vue`、`src/tabletop.css`、`src/ChengduTable.vue` 的固定视窗与键盘滚动，新增维护测试 `tests/stable-table-layout.test.js`。该层只约束展示空间，不改服务端状态、记录顺序、媒体时序或隐私。
+[Stable table layout](STABLE-TABLE-LAYOUT.md) connects fixed viewports/keyboard scrolling in the three frontend files and the new maintained suite. It constrains presentation without changing authority, record order, media timing or privacy.
+
+[稳定牌桌验收](STABLE-TABLE-VALIDATION.md) 记录真实浏览器矩阵、非零页面滚动、原生按键与验证限制。新增以下自维护诊断文件；它们只用于隔离合成视图，不进入生产入口、不访问真实牌局。
+[Stable table validation](STABLE-TABLE-VALIDATION.md) records real-browser matrices, nonzero document scrolling, native keys and limitations. These new maintained diagnostics serve isolated synthetic views only, outside production entry and real games.
+
+- `tests/browser/stable-table-preview-server.mjs`：独立本机Vite与API拒绝边界。 / Standalone loopback Vite and API rejection.
+- `tests/browser/stable-table-preview.html`、`tests/browser/stable-table-preview.js`：外层可见场景/宽度/审计控件与矩阵编排。 / Visible case/width/audit controls and matrix orchestration.
+- `tests/browser/stable-table-frame.html`、`tests/browser/stable-table-frame.js`：真实App挂载、原CSS、纯视图替换与动作阻断。 / Actual App/CSS mounting, view changes and action blocking.
+- `tests/helpers/stable-table-fixtures.js`：7类已过滤合成视图及14阶段。 / Seven filtered synthetic cases and fourteen stages.
+- `tests/helpers/stable-table-transform.js`：只在预览中替换初始化/API，保留真实模板。 / Preview-only initialization/API transform preserving the real template.
+- `tests/helpers/stable-table-server-boundary.js`：所有API方法拒绝，不创建房间或存储。 / Reject every API method without rooms/stores.
+- `tests/helpers/stable-table-browser-audit.js`：真实DOM尺寸、滚动保留与末端可达检查。 / Real-DOM geometry, scroll-retention and endpoint checks.
+- `tests/helpers/stable-table-report.js`：≤24KiB可见摘要及完整非渲染JSON证据。 / Bounded visible summaries and complete non-rendered JSON evidence.
+- `tests/stable-table-fixture.test.js`：上述隔离、比较、末端几何和报告完整性回归。 / Isolation, comparisons, endpoint geometry and report-integrity regressions.
