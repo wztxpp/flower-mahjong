@@ -1,7 +1,10 @@
 # 从这里开始读代码 / Start reading here
 
-当前原图局部动效入口：[Canvas2D展示层](PORTRAIT-MOTION.md)。维护文件为 `src/CharacterArtwork.vue`、`src/PortraitMotionSettings.vue`、`src/portrait-motion/{settings,catalog,loader,controller,renderer}.js`、`scripts/verify-portrait-motion-build.mjs` 与 `tests/portrait-motion-{settings,controller,component,renderer,build}.test.js`。素材目录为 `public/portrait-motion/`，原始 `public/characters/` 字节保持不动。
+当前原图局部动效入口：[Canvas2D展示层](PORTRAIT-MOTION.md)。维护文件为 `src/CharacterArtwork.vue`、`src/PortraitMotionSettings.vue`、`src/portrait-motion/{settings,catalog,loader,controller,renderer,timeline,images,geometry}.js`、`scripts/verify-portrait-motion-build.mjs` 与 `tests/portrait-motion-{settings,controller,component,renderer,timeline,geometry,build}.test.js`。素材目录为 `public/portrait-motion/`，原始 `public/characters/` 字节保持不动。
 The current original-preserving Canvas2D guide owns the listed maintained files/tests and new asset directory; original character bytes stay unchanged.
+
+无损素材图集维护入口为 `scripts/portraits/pack-motion-atlas.mjs`、`tests/portrait-motion-atlas.test.js` 与 [图集契约](PORTRAIT-MOTION-ATLAS.md)。它们只摘取已有RGBA，不生成或修饰图片；动态发区的连续原纹理分支在geometry.js，不能混称ImageGen头发帧。
+Lossless atlas maintenance lives in the listed packer/test and linked contract. It extracts existing RGBA without generating or retouching artwork. Continuous original-texture hair is implemented in geometry.js and must not be called ImageGen hair frames.
 
 旧 [Live2D展示层](LIVE2D-RUNTIME.md)、[许可](LIVE2D-LICENSE-REVIEW.md)、[验收](LIVE2D-VALIDATION.md) 是历史记录。`src/live2d/**`、`src/Live2DSettings.vue`、官方SDK、旧模型及其离线测试保留，不再由生产入口执行或打包公开分发；详见新指南的构建边界。
 The old Live2D guides, source, official SDK, models and offline tests remain historical, outside active execution and public distribution. See the new build boundary.
@@ -207,3 +210,5 @@ See the current seating/portrait validation; the older scene report is historica
 The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, a separate portrait after the hand and private guards, without duplicating UI or making production requests.
 
 - [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md)：独立本人立绘、加高对手展示，以及落座/开局/续局角色稳定的联合回归。 / Separate self art, taller opponent portraits and stable roles across seating/start/next rounds.
+
+[多帧原图动画验收](PORTRAIT-MULTIFRAME-VALIDATION.md)记录当前五眼态、连续局部发丝、实际浏览器证据和短发限制。 / Current five-shape eyes, continuous original-texture hair, real-browser evidence and short-hair limits.

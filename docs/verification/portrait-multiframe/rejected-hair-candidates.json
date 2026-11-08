@@ -1,0 +1,24 @@
+{
+  "scope": "Actual browser visual review of experimental sweet hair donors; not production acceptance",
+  "imagegenFivePoses": {
+    "atlasSha256": "5e39c9cf8ca2c32bf8edb4059ee84c0f59aedafc538bd6dc5a8f4231945d98f7",
+    "pixelProtectionPassed": true,
+    "visualPassed": false,
+    "observations": [
+      "The real generated extremes moved the outer hair silhouette visibly at 260 pixels.",
+      "Linear intermediate positions -0.75, -0.25 and 0.25 showed multiple translucent strand outlines in native crops.",
+      "Hair tips near original-image y438-445 mixed with static shoulder-adjacent tips and visibly ended at the mask edge.",
+      "Five distinct donor files did not establish a smooth or acceptable animation."
+    ],
+    "action": "Removed from release selection. Never enlarge the mask into clothing to hide the seam."
+  },
+  "originalGeometryNineFrames": {
+    "visualPassed": false,
+    "observations": [
+      "Original texture preserved hair topology and avoided the generated shoulder-tip mismatch.",
+      "Neighbour-frame alpha blending still produced shallow double outlines at native scale.",
+      "Linear boundary weighting caused a visible slope change at maximal displacement."
+    ],
+    "action": "Replaced the experimental approach with a smooth single-position geometric sampling candidate, which requires separate pixel, visual and performance validation."
+  }
+}

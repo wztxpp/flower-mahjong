@@ -1,6 +1,6 @@
 # 测试阅读指南 / Test reading guide
 
-当前原图动效测试为 `tests/portrait-motion-{settings,controller,component,renderer,build}.test.js`，浏览器诊断入口为 `tests/browser/portrait-motion-preview.{html,js}`、`portrait-motion-preview-server.mjs`、`tests/helpers/portrait-motion-browser-audit.js`。前者验证真实逻辑/组件/构建合同，后者才验证Canvas2D像素和实际屏幕。旧 `live2d-*` 剩余套件保留离线历史，不代表生产使用SDK。完整范围见 [原图局部动效](PORTRAIT-MOTION.md)。
+当前原图动效测试为 `tests/portrait-motion-{settings,controller,component,renderer,timeline,geometry,build}.test.js`，浏览器诊断入口为 `tests/browser/portrait-motion-preview.{html,js}`、`portrait-motion-preview-server.mjs`、`tests/helpers/portrait-motion-browser-audit.js`。前者验证真实逻辑/组件/构建合同，后者才验证Canvas2D像素和实际屏幕。旧 `live2d-*` 剩余套件保留离线历史，不代表生产使用SDK。完整范围见 [原图局部动效](PORTRAIT-MOTION.md)。
 Current portrait-motion suites verify real logic/components/build contracts; the browser preview/audit helpers verify actual Canvas2D pixels and screens. Remaining old Live2D suites are offline history, not evidence of SDK use in production.
 
 ## 先理解测试在做什么 / What a test does

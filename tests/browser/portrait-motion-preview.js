@@ -19,8 +19,15 @@ createApp({
     const report = ref('尚未运行原生 Canvas2D 像素验收。');
     const pictures = ref([]);
     const endpointsOnly = ref(true);
-    const visiblePictures = computed(() => pictures.value.filter((picture) => !endpointsOnly.value || ['original-open', 'closed'].includes(picture.name)));
+    const hairOnly = ref(false);
+    const hairExtremesOnly = ref(true);
+    const visiblePictures = computed(() => pictures.value.filter((picture) => picture.id === id.value).filter((picture) => {
+      if (hairOnly.value) return picture.name === 'original-open' || (picture.name.startsWith('hair') &&
+        (!hairExtremesOnly.value || ['hair-geometry:-1', 'hair-geometry:0.5', 'hair-geometry:1'].includes(picture.name)));
+      return !endpointsOnly.value || ['original-open', 'closed', 'eye:eye100'].includes(picture.name);
+    }));
     const benchHost = ref(null);
+    const mixedBenchmark = ref(true);
     const benchmark = ref('尚未测量。这里只测此浏览器，不代表手机性能。');
     const scaledReport = ref('尚未检查显示缩放归零。');
     async function checkScaled() {
@@ -56,7 +63,7 @@ createApp({
             eyePolygons: entry.eyes.map((eye) => eye.maskPolygon),
             hairPolygons: entry.hairRegions.map((region) => region.maskPolygon),
           });
-          pictures.value.push(...result.results.map((item) => ({ id: entry.id, name: item.name, src: item.preview, eyes: item.eyePreview })));
+          pictures.value.push(...result.results.map((item) => ({ id: entry.id, name: item.name, src: item.preview, eyes: item.eyePreview, hair: item.hairPreviews })));
           reports.push({ id: entry.id, ...result, results: result.results.map((item) => ({
             name: item.name,
             changedPixels: item.changedPixels,
@@ -68,7 +75,7 @@ createApp({
         }
         report.value = JSON.stringify({ scope: 'Actual browser Canvas2D pixel audit', reports }, null, 2);
       } catch (error) {
-        report.value = `检查失败：${error.message}`;
+        report.value = `检查失败：${error.stack || error.message}`;
       } finally {
         busy.value = false;
       }
@@ -86,7 +93,13 @@ createApp({
       benchHost.value.replaceChildren();
       try {
         const entry = descriptor.value;
+        // 混合压力覆盖四个动区最大的角色，不用同一小ROI的重复实例代替最坏可见桌面。
+        // Mixed stress covers the four largest animated areas, rather than repeating a small ROI as the worst visible table.
+        const area = (value) => [...value.eyes.map((eye) => eye.targetRect), ...value.hairRegions.map((region) => region.rect)]
+          .reduce((sum, rect) => sum + rect[2] * rect[3], 0);
+        const entries = mixedBenchmark.value ? Object.values(PORTRAIT_MOTION_CHARACTERS).sort((a, b) => area(b) - area(a)).slice(0, 4) : Array(4).fill(entry);
         for (let seat = 0; seat < 4; seat += 1) {
+          const entry = entries[seat];
           const frame = document.createElement('div');
           frame.style.cssText = `position:relative;width:200px;aspect-ratio:${entry.width}/${entry.height};flex:0 0 200px`;
           const original = document.createElement('img');
@@ -99,8 +112,9 @@ createApp({
           benchHost.value.append(frame);
           const renderer = new PortraitMotionRenderer(canvas, (error) => { errors.push(error.message); }, `${entry.id}:${seat}`);
           renderers.push(renderer);
+          const loadStarted = performance.now();
           await renderer.load(entry);
-          const measurement = { durations: [], closedFrames: 0 };
+          const measurement = { id: entry.id, loadMs: performance.now() - loadStarted, geometryMemory: renderer.geometryMemory, durations: [], closedFrames: 0, eyeFrameCounts: {}, transitions: [], previousEyeFrame: undefined, minHairPosition: 1, maxHairPosition: -1 };
           measurements.push(measurement);
           const renderFrame = renderer.renderFrame.bind(renderer);
           // 仅包裹真实调用计时，不伪造绘制、帧结束或浏览器时钟。
@@ -110,7 +124,17 @@ createApp({
             renderFrame(values);
             if (measuring) {
               measurement.durations.push(performance.now() - started);
-              if (values.blink >= 0.5) measurement.closedFrames += 1;
+              const hairPosition = renderer.lastControls?.hairPosition ?? renderer.lastControls?.hair ?? 0;
+              measurement.minHairPosition = Math.min(measurement.minHairPosition, hairPosition);
+              measurement.maxHairPosition = Math.max(measurement.maxHairPosition, hairPosition);
+              const frameId = renderer.lastControls?.blinkFrameId ?? (values.blink >= 0.5 ? 'legacy-closed' : null);
+              const key = frameId || 'original-open';
+              measurement.eyeFrameCounts[key] = (measurement.eyeFrameCounts[key] || 0) + 1;
+              if (frameId === 'eye100' || frameId === 'legacy-closed') measurement.closedFrames += 1;
+              if (frameId !== measurement.previousEyeFrame) {
+                measurement.transitions.push({ atMs: performance.now(), frameId });
+                measurement.previousEyeFrame = frameId;
+              }
             }
           };
         }
@@ -125,14 +149,21 @@ createApp({
         for (const renderer of renderers) renderer.stop();
         benchmark.value = JSON.stringify({
           scope: 'Four actual Canvas2D instances in this cloud browser, not mobile/GPU performance',
-          id: entry.id,
+          ids: entries.map((value) => value.id),
           elapsedMs,
           errors,
-          instances: measurements.map(({ durations, closedFrames }) => {
+          instances: measurements.map(({ id, loadMs, geometryMemory, durations, closedFrames, eyeFrameCounts, transitions, minHairPosition, maxHairPosition }) => {
             const sorted = [...durations].sort((a, b) => a - b);
             return {
+              id,
+              loadMs,
+              geometryMemory,
+              minHairPosition,
+              maxHairPosition,
               renderCalls: durations.length,
               closedFrames,
+              eyeFrameCounts,
+              transitions: transitions.map((entry) => ({ atMs: entry.atMs - started, frameId: entry.frameId })),
               effectiveCallsPerSecond: durations.length * 1000 / elapsedMs,
               averageDrawMs: durations.reduce((sum, value) => sum + value, 0) / durations.length,
               p95DrawMs: sorted[Math.floor((sorted.length - 1) * 0.95)],
@@ -148,12 +179,12 @@ createApp({
         busy.value = false;
       }
     }
-    return { id, reaction, shown, busy, report, visiblePictures, endpointsOnly, character, descriptor, characters: CHARACTERS, audit, benchHost, benchmark, measureFour, scaledReport, checkScaled };
+    return { id, reaction, shown, busy, report, visiblePictures, endpointsOnly, hairOnly, hairExtremesOnly, character, descriptor, characters: CHARACTERS, audit, benchHost, benchmark, mixedBenchmark, measureFour, scaledReport, checkScaled };
   },
   template: `
     <main style="max-width:1100px;margin:24px auto;padding:0 16px;font-family:system-ui;color:#222">
       <h1>原图局部动态验收</h1>
-      <p>不是 Live2D。原图始终保留，只使用生成闭眼的眼睑区域及原发丝的局部变化。</p>
+      <p>不是 Live2D。原图始终保留，ImageGen只提供眼睑中间形态；头发候选区分真实生成供体与原纹理几何动画。</p>
       <PortraitMotionSettings />
       <label>角色 <select v-model="id"><option v-for="entry in characters" :value="entry.id">{{entry.name}} ({{entry.id}})</option></select></label>
       <label>表情 <select v-model="reaction"><option value="base">基础</option><option value="win">胡牌</option><option value="discardLoss">放炮</option></select></label>
@@ -170,9 +201,13 @@ createApp({
         <button @click="measureFour" :disabled="busy || !descriptor">测量四实例 8 秒</button>
         <button @click="checkScaled" :disabled="busy">检查七人缩放归零</button>
       </div>
-      <p>下方固定帧来自同一个生产 renderer。使用睁眼/闭眼两端帧短眨眼，不伪造半闭眼；threshold只检查控制阈值。局部像素保护不等于美观保证。</p>
+      <p>下方固定帧来自同一个生产 renderer。眼区逐张显示ImageGen供体，不做透明混合；hair-geometry是原纹理连续采样，不能称ImageGen画稿。局部像素保护不等于自然度或可感知运动通过。</p>
       <label><input type="checkbox" v-model="endpointsOnly" />仅显示睁眼和闭眼端点</label>
-      <section style="display:flex;flex-wrap:wrap;gap:10px"><figure v-for="picture in visiblePictures" :key="picture.id+picture.name" style="margin:0;width:260px"><figcaption>{{picture.id}} / {{picture.name}}</figcaption><img :src="picture.src" :alt="picture.id+' '+picture.name" style="width:100%;display:block" /><img :src="picture.eyes" :alt="picture.id+' '+picture.name+' 眼部原生裁切'" style="width:100%;display:block;margin:6px 0 14px" /></figure></section>
+      <label><input type="checkbox" v-model="hairOnly" />只看头发原生裁切</label>
+      <label><input type="checkbox" v-model="hairExtremesOnly" />发区仅看原图、负极值、半摆、正极值</label>
+      <label><input type="checkbox" v-model="mixedBenchmark" />四实例使用四种最大动区角色</label>
+      <p>图像仅显示当前选择角色；下方JSON保留本次检查的全部角色。切换角色查看对应固定帧。</p>
+      <section style="display:flex;flex-wrap:wrap;gap:10px"><figure v-for="picture in visiblePictures" :key="picture.id+picture.name" style="margin:0;width:260px"><figcaption>{{picture.id}} / {{picture.name}}</figcaption><img :src="picture.src" :alt="picture.id+' '+picture.name" style="width:100%;display:block" /><div v-if="hairOnly" style="display:flex;gap:4px;flex-wrap:wrap"><img v-for="(crop,index) in picture.hair" :src="crop" :alt="picture.id+' '+picture.name+' 发区 '+index" style="max-width:100%;height:auto" /></div><img v-if="!hairOnly" :src="picture.eyes" :alt="picture.id+' '+picture.name+' 眼部原生裁切'" style="width:100%;display:block;margin:6px 0 14px" /></figure></section>
       <pre id="pixel-report" style="white-space:pre-wrap;overflow-wrap:anywhere">{{report}}</pre>
       <div ref="benchHost" style="display:flex;gap:12px;flex-wrap:wrap"></div>
       <pre id="benchmark-report" style="white-space:pre-wrap;overflow-wrap:anywhere">{{benchmark}}</pre>

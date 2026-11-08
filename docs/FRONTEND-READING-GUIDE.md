@@ -1,7 +1,7 @@
 # 前端阅读指南 / Frontend reading guide
 
-全局 `PortraitMotionSettings` 提供普通本地显示开关，`portrait-motion/settings.js` 默认静态且不迁移旧SDK许可。`CharacterArtwork` 在两玩法/独立挂载始终显示原img，仅用透明Canvas2D叠眼睑和原纹理发区。见 [原图局部动效](PORTRAIT-MOTION.md)。
-Global ordinary settings default static without migrating old SDK assent. Both modes/standalone frames always retain the original img, overlaying only eyelids and original-texture hair through Canvas2D.
+全局 `PortraitMotionSettings` 提供普通本地显示开关，`portrait-motion/settings.js` 默认静态且不迁移旧SDK许可。`CharacterArtwork` 在两玩法/独立挂载始终显示原img，仅用透明Canvas2D叠审查过的眼睑和发区。见 [原图局部动效](PORTRAIT-MOTION.md)。
+Global ordinary settings default static without migrating old SDK assent. Both modes/standalone frames always retain the original img, overlaying only reviewed eyelids and hair regions through Canvas2D.
 
 原 `CharacterPortraitReactions` 仍管理公开胡/放炮约三秒原图，期间暂停并清除局部覆盖；不改变身份、声音或游戏动作。
 The existing public win/discard-loss scheduler keeps original three-second reactions and clears overlays without changing identities, sounds or actions.

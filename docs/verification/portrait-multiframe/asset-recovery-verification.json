@@ -1,0 +1,159 @@
+{
+  "current_version_number": 5,
+  "bytes": 133690704,
+  "sha256": "c5d151e1a432789c8e6181e1c978ad20728fee020a135253d719fc559a0a1f67",
+  "verified_download": true,
+  "verified_members": 272,
+  "stage": "final-seven-character-assets-browser-reviewed-short-hair-limits-recorded",
+  "asset_review_passed": true,
+  "site_publication_performed": false,
+  "replay": [
+    {
+      "id": "sweet",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 850,
+          "height": 82,
+          "bytes": 143905,
+          "sha256": "6c5ba5e4d0084dca6a0b7edb7105bb15787b2a5343f4477d1277cacdf067392b",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sunny",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 1054,
+          "height": 114,
+          "bytes": 237784,
+          "sha256": "98ab64286a2c0b63d7ba41c795cbc1802aa2533350820aede664a5e0b7c44cdd",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elegant",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 890,
+          "height": 60,
+          "bytes": 135475,
+          "sha256": "9213fa3d3dca4f531a476e5651d9d7b757f44cd9719dd248ced80826da750d9b",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 850,
+          "height": 66,
+          "bytes": 132928,
+          "sha256": "4b00f5b89e001eee941e867cf4b5b3297197a1f57ee4fe2d866d41908d03f4d0",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wealthy",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 822,
+          "height": 61,
+          "bytes": 111039,
+          "sha256": "638c2c7db0e6c5b11734c706052ba83185a84925658d1d39fa6264b370302c74",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "honest",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 738,
+          "height": 55,
+          "bytes": 73290,
+          "sha256": "a9de08039ea31c6f72e43381fd5ec2c3ab91949289401d06051e15364cf3cdb7",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "landlord",
+      "rebuiltFromDownloadedSources": true,
+      "cropCount": 8,
+      "atlasHashesMatchCurrentIntegration": true,
+      "atlases": [
+        {
+          "name": "motion-atlas-00.png",
+          "width": 710,
+          "height": 50,
+          "bytes": 75600,
+          "sha256": "3e7f32ccfc0aef9bf3a04858982440be226774c3b7edbab738580ee14edc9773",
+          "frameIds": [
+            "eye100",
+            "eye20",
+            "eye50",
+            "eye80"
+          ]
+        }
+      ]
+    }
+  ]
+}

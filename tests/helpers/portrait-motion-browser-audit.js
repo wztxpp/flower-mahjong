@@ -53,6 +53,12 @@ export async function auditPortraitMotion({ Renderer, descriptor, sourceUrl, wid
   const cropWidth = Math.min(width - cropX, Math.ceil(Math.max(...eyePoints.map((point) => point[0]))) + 12 - cropX);
   const cropHeight = Math.min(height - cropY, Math.ceil(Math.max(...eyePoints.map((point) => point[1]))) + 12 - cropY);
   const eyeCrop = makeCanvas(cropWidth, cropHeight);
+  // 逐个发区保留原生像素裁切；整图缩小时可能掩盖外轮廓双线与接缝。
+  // Preserve each hair region at native pixels; small portraits can hide double contours and seams.
+  const hairCrops = descriptor.hairRegions.map((region) => {
+    const [x, y, cropWidth, cropHeight] = region.rect;
+    return { x, y, ...makeCanvas(cropWidth, cropHeight) };
+  });
   let rendererError;
   const renderer = new Renderer(overlay.canvas, (error) => { rendererError = error; }, 'browser-audit:0', {
     sourceResolution: true,
@@ -60,7 +66,7 @@ export async function auditPortraitMotion({ Renderer, descriptor, sourceUrl, wid
     maxPixels: width * height,
   });
   const results = [];
-  const samples = [
+  const legacySamples = [
     { name: 'original-open', blink: 0, hair: 0, mask: null },
     { name: 'closed', blink: 1, hair: 0, mask: eyeMask },
     { name: 'blink-threshold', blink: 0.5, hair: 0, mask: eyeMask },
@@ -68,11 +74,30 @@ export async function auditPortraitMotion({ Renderer, descriptor, sourceUrl, wid
     { name: 'hair-positive', blink: 0, hair: 1, mask: hairMask },
     { name: 'combined', blink: 1, hair: 1, mask: combinedMask },
   ];
+  // 多帧版逐个真实供体验收，不能用连续数值或图片数量替代实际中间形态。
+  // Version two audits every actual donor, rather than treating a number or file count as an intermediate shape.
+  const eyeIds = [...new Set(descriptor.eyes.flatMap((eye) => Object.keys(eye.sourceRects || {})))];
+  const hairIds = [...new Set(descriptor.hairRegions.flatMap((region) => Object.keys(region.sourceRects || {})))];
+  const geometryHair = descriptor.hairMode === 'geometry' && descriptor.hairRegions.length > 0;
+  // 检查每对邻帧的真正中点，9发态时不能把已有±0.25/±0.75端态误当作混合检查。
+  // Inspect actual adjacent-frame midpoints; nine hair states must not mistake existing ±0.25/±0.75 poses for blends.
+  const hairMidpoints = (descriptor.hairSequence || []).slice(1).map((step, index) => (step.position + descriptor.hairSequence[index].position) / 2);
+  const samples = descriptor.schemaVersion === 2 ? [
+    { name: 'original-open', controls: { blinkFrameId: null, hairFrameId: null }, mask: null },
+    ...eyeIds.map((frameId) => ({ name: `eye:${frameId}`, controls: { blinkFrameId: frameId, hairFrameId: null }, mask: eyeMask })),
+    ...hairIds.map((frameId) => ({ name: `hair:${frameId}`, controls: { blinkFrameId: null, hairFrameId: frameId }, mask: hairMask })),
+    ...(geometryHair ? [-1, -0.75, -0.5, -0.25, 0.25, 0.5, 0.75, 1].map((hairPosition) => ({
+      name: `hair-geometry:${hairPosition}`, controls: { blinkFrameId: null, hairPosition }, mask: hairMask,
+    })) : []),
+    ...(hairIds.length ? hairMidpoints.map((hairPosition) => ({ name: `hair-blend:${hairPosition}`, controls: { blinkFrameId: null, hairPosition }, mask: hairMask })) : []),
+    ...(eyeIds.length && hairIds.length ? [{ name: 'combined', controls: { blinkFrameId: eyeIds.at(-1), hairFrameId: hairIds.at(-1) }, mask: combinedMask }] : []),
+    ...(eyeIds.length && geometryHair ? [{ name: 'combined-geometry', controls: { blinkFrameId: eyeIds.at(-1), hairPosition: 1 }, mask: combinedMask }] : []),
+  ] : legacySamples;
   try {
     await renderer.load(descriptor);
     if (rendererError) throw rendererError;
     for (const sample of samples) {
-      renderer.renderFrame({ blink: sample.blink, hair: sample.hair });
+      renderer.renderFrame(sample.controls || { blink: sample.blink, hair: sample.hair });
       if (rendererError) throw rendererError;
       composite.context.clearRect(0, 0, width, height);
       composite.context.drawImage(source.canvas, 0, 0);
@@ -110,6 +135,11 @@ export async function auditPortraitMotion({ Renderer, descriptor, sourceUrl, wid
         // Show the same real renderer's fixed frame for visual review, not a separately rendered stand-in.
         preview: composite.canvas.toDataURL('image/png'),
         eyePreview: eyeCrop.canvas.toDataURL('image/png'),
+        hairPreviews: hairCrops.map(({ x, y, canvas, context }) => {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(composite.canvas, x, y, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL('image/png');
+        }),
       });
     }
   } finally {
@@ -122,6 +152,9 @@ export async function auditPortraitMotion({ Renderer, descriptor, sourceUrl, wid
 // Verify real display-scale alpha clears after blink/sway, not a mock Canvas call assertion.
 export async function auditScaledClear(Renderer, descriptor) {
   const reports = [];
+  const eyeId = Object.keys(descriptor.eyes[0]?.sourceRects || {}).at(-1);
+  const active = descriptor.schemaVersion === 2 ? { blinkFrameId: eyeId, hairPosition: 1 } : { blink: 1, hair: 1 };
+  const neutral = descriptor.schemaVersion === 2 ? { blinkFrameId: null, hairFrameId: null } : { blink: 0, hair: 0 };
   for (const [width, height, pixelRatio] of [[180, 240, 1], [160, 210, 1.5], [230, 320, 1], [300, 251, 1]]) {
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `width:${width}px;height:${height}px;position:fixed;left:0;top:0;visibility:hidden`;
@@ -137,15 +170,15 @@ export async function auditScaledClear(Renderer, descriptor) {
     };
     try {
       await renderer.load(descriptor);
-      renderer.renderFrame({ blink: 1, hair: 1 });
+      renderer.renderFrame(active);
       const activePixels = countAlpha();
-      renderer.renderFrame({ blink: 0, hair: 0 });
+      renderer.renderFrame(neutral);
       samples.push({ name: 'closed-to-neutral', remainingAlphaPixels: countAlpha() });
-      renderer.renderFrame({ blink: 0, hair: -1 });
-      renderer.renderFrame({ blink: 0, hair: 1 });
-      renderer.renderFrame({ blink: 0, hair: 0 });
+      renderer.renderFrame(descriptor.schemaVersion === 2 ? { blinkFrameId: null, hairPosition: -1 } : { blink: 0, hair: -1 });
+      renderer.renderFrame(descriptor.schemaVersion === 2 ? { blinkFrameId: null, hairPosition: 1 } : { blink: 0, hair: 1 });
+      renderer.renderFrame(neutral);
       samples.push({ name: 'sway-to-neutral', remainingAlphaPixels: countAlpha() });
-      renderer.renderFrame({ blink: 1, hair: 1 });
+      renderer.renderFrame(active);
       renderer.stop();
       samples.push({ name: 'stop-to-neutral', remainingAlphaPixels: countAlpha() });
       if (error) throw error;

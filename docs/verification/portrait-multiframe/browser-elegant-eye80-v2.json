@@ -1,0 +1,54 @@
+{
+  "scope": "Actual browser Canvas2D pixel audit",
+  "reports": [
+    {
+      "id": "elegant",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/elegant-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 5940,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 228,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 5954,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 232,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 5937,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 234,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 5938,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 230,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

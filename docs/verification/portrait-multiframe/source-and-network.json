@@ -1,0 +1,115 @@
+{
+  "baseline": "712f00e",
+  "originalPortraits": [
+    {
+      "file": "public/characters/elegant-scene-base.png",
+      "sha256": "76f7fb16cdfc1943f3f4abc25cc606767c816798360b7e2052d7e4c5d570619d",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/elegant-scene-discard-loss.png",
+      "sha256": "d8f595eb22ca38d7b1c9de7c9c66be577cc318a6eb834109c3c9313474257f28",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/elegant-scene-win.png",
+      "sha256": "7e325c7e8cca56e36a46366cbfc46d30f100abb33c2da3241c2e8f80bcf24d69",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/honest-scene-base.png",
+      "sha256": "0bd2e05148ee014e4936468a9b836c130a24da88a117168a9ede22635d24ac21",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/honest-scene-discard-loss.png",
+      "sha256": "38f1892e1d529935bb4b34607dca48985652c424819f06dac733216e4b31ca79",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/honest-scene-win.png",
+      "sha256": "2214ca46eaec9fd338cdae613583a0fa8cb6ecf27cd650fbc7ee4a0ee069db0a",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/landlord-scene-base.png",
+      "sha256": "2814c3f381473f333507a0aa85e6d46a85aa7ce1327af4a7b0ea6dd28f907867",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/landlord-scene-discard-loss.png",
+      "sha256": "a5ada36762ec08d8c3f22cce1ab1e000eff1a37472c2c0cfedd3411ce80ca042",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/landlord-scene-win.png",
+      "sha256": "4b8ce3dfaed9081917583c7429d2b22f8bcfae569187be6c968cbe3bc14b04b8",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/star-scene-base.png",
+      "sha256": "957ef044bf1bd77ff8694c6b92dc67fc74d7566cd12e5b16f40840c4f8056ef7",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/star-scene-discard-loss.png",
+      "sha256": "1389093bf9450891046c9f86082ab5e14fe4047523a91c1ca88fe2b4213946b9",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/star-scene-win.png",
+      "sha256": "c45bd6e660dd7e1818642f7b64003b2a6aa3003ed0e26cc38fd7883474cef411",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sunny-scene-base.png",
+      "sha256": "5488b63d16b9833575921c5a85085ea9b4877282f2bd10c4eba41df418e79d46",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sunny-scene-discard-loss.png",
+      "sha256": "78626ec8b54e802b33750569b3371d506c70d1670e2985dcc369e502408aeb23",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sunny-scene-win.png",
+      "sha256": "260bfe50c5b94270aaccb7da1740e976a97046aec4c53c651221885bb8fc89ee",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sweet-scene-base.png",
+      "sha256": "dd2bace8bebcf28269ff0e542f27ba6179a1b985826e4d2ae815f30056e7e161",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sweet-scene-discard-loss.png",
+      "sha256": "5635471d64d40a6b9a196f583813771f3ed67febaaa7a32d0563e12187e8fb9f",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/sweet-scene-win.png",
+      "sha256": "cfda064223cbc489b43d04a1735c9d87067803eed47b6eb3c009fc1485c027b0",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/wealthy-scene-base.png",
+      "sha256": "7522116a00170189abefaaf4871d0044bcd9f1b33a32bd8a8b8cd45c108acfad",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/wealthy-scene-discard-loss.png",
+      "sha256": "b2382933c844ab01b7b770c0d917a143a963612823c7e4d39012f391d62757f8",
+      "unchanged": true
+    },
+    {
+      "file": "public/characters/wealthy-scene-win.png",
+      "sha256": "f172db0214f498154d5f6e869d0ba7184ff49d888d586140c6094e4cf4213adb",
+      "unchanged": true
+    }
+  ],
+  "protectedCodeChanged": [],
+  "resourceRequests": 2513,
+  "resourceErrors": [],
+  "sdkRequests": [],
+  "catalogSha256": "7c9f1dca246084ea594c0587fcb03801a489d7e46fe0004f8049083f333e321d"
+}

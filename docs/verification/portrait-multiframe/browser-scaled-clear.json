@@ -1,0 +1,733 @@
+{
+  "scope": "Actual browser scaled overlay alpha clearing",
+  "reports": [
+    {
+      "id": "sweet",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 3420,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sweet",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 5894,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sweet",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 6073,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sweet",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 3737,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sunny",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 4340,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sunny",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 7503,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sunny",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 7738,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "sunny",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 4763,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "elegant",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 1770,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "elegant",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 3072,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "elegant",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 3166,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "elegant",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 1953,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "star",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 776,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "star",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 1345,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "star",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 1381,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "star",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 852,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "wealthy",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 913,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "wealthy",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 1586,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "wealthy",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 1631,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "wealthy",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 1002,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "honest",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 1164,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "honest",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 2012,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "honest",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 2081,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "honest",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 1273,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "landlord",
+      "width": 180,
+      "height": 240,
+      "pixelRatio": 1,
+      "buffer": [
+        286,
+        240
+      ],
+      "activePixels": 519,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "landlord",
+      "width": 160,
+      "height": 210,
+      "pixelRatio": 1.5,
+      "buffer": [
+        376,
+        315
+      ],
+      "activePixels": 895,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "landlord",
+      "width": 230,
+      "height": 320,
+      "pixelRatio": 1,
+      "buffer": [
+        382,
+        320
+      ],
+      "activePixels": 924,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "landlord",
+      "width": 300,
+      "height": 251,
+      "pixelRatio": 1,
+      "buffer": [
+        300,
+        251
+      ],
+      "activePixels": 572,
+      "samples": [
+        {
+          "name": "closed-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "sway-to-neutral",
+          "remainingAlphaPixels": 0
+        },
+        {
+          "name": "stop-to-neutral",
+          "remainingAlphaPixels": 0
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

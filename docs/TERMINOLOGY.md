@@ -2,7 +2,10 @@
 
 - `PORTRAIT_MOTION_VERSION`：普通本地Canvas2D显示选择版本，不是法律同意或规则版本。 / Local Canvas2D display preference version, not legal assent or game rules.
 - `canAnimate`：新本地开关与宿主开关同时启用；实际播放还需可见、前台、基础表情和非减少动态。 / Local/host enablement; playback additionally requires visibility, foreground, base reaction and allowed motion.
-- `maskPolygon` / `targetRect` / `sourceRect`：原图全局像素蒙版、原图目标矩形、生成闭眼图供体矩形；后者可为小数。 / Original-image mask/target coordinates and fractional closed-donor source coordinates.
+- `maskPolygon` / `targetRect` / `sourceRect`：原图全局像素蒙版、原图目标矩形、生成供体矩形；后者可为小数。v2的sourceRects按frameId映射供体/图集。 / Original-image mask/target coordinates and fractional donor crops; v2 sourceRects maps frame IDs to donor/atlas regions.
+- `blinkSequence` / `hairSequence`：局部动态素材的帧ID时间序列/位置序列，null表示原图，不是游戏动作或眼部alpha。 / Local-art frame-ID timing/position sequences; null means original art, not a game action or eye alpha.
+- `hairMode: geometry`：连续原图ROI反采样，不是生成头发姿态。`pinStart/pinEnd`是固定根/末端平面，`motionScale`是明确振幅系数，`geometryMemory`只统计局部缓冲。 / Continuous original-ROI inverse sampling, not generated hair poses; pin planes stay fixed, scale is explicit, and geometryMemory covers local buffers only.
+- `scheduledTimeMs`：已消耗的30fps时间格，保留RAF余量，不代表上次真实回调到达时刻。 / Last consumed 30fps slot retaining RAF remainder, not the last actual callback arrival.
 - `portraitPhaseKey`：角色与绝对座位组成的本地动画相位键，不是凭证或持久协议。 / Local role/absolute-seat phase, not a credential or persisted protocol.
 - `PortraitController`：装饰资源和异步代次拥有者，不拥有三秒原图反应调度、游戏或声音。 / Decorative-resource/generation owner, not reaction, game or audio authority.
 - 旧 `LIVE2D_CONSENT_VERSION`、`canUseLive2D`、`verifiedBindings` 仅用于归档Live2D实现和离线测试，不是新Canvas2D设置或能力。 / Retired Live2D terms belong to historical implementation/offline tests, not the new setting or capabilities.

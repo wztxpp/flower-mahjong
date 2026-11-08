@@ -1,0 +1,401 @@
+{
+  "scope": "Four actual Canvas2D instances in this cloud browser, not mobile/GPU performance",
+  "ids": [
+    "sunny",
+    "sweet",
+    "elegant",
+    "honest"
+  ],
+  "elapsedMs": 8000.199999999255,
+  "errors": [],
+  "instances": [
+    {
+      "id": "sunny",
+      "loadMs": 49.79999999888241,
+      "geometryMemory": {
+        "sourceBytes": 474816,
+        "fieldBytes": 16227,
+        "outputBytes": 12476,
+        "canvasBytes": 12476,
+        "outputPixels": 3119,
+        "regions": 2,
+        "totalBytes": 515995
+      },
+      "minHairPosition": -0.9999265183124857,
+      "maxHairPosition": 0.9999804773709128,
+      "renderCalls": 239,
+      "closedFrames": 3,
+      "eyeFrameCounts": {
+        "original-open": 221,
+        "eye20": 5,
+        "eye50": 4,
+        "eye80": 6,
+        "eye100": 3
+      },
+      "transitions": [
+        {
+          "atMs": 4.199999999254942,
+          "frameId": null
+        },
+        {
+          "atMs": 1417.3999999985099,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 1451,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 1484.699999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 1551.3999999985099,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 1584.199999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 1651.5,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 1685.2999999988824,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 1718.0999999996275,
+          "frameId": null
+        },
+        {
+          "atMs": 5950.5999999996275,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 5983.299999998882,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 6016.699999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 6049.89999999851,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 6116.699999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 6149.89999999851,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 6183.799999998882,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 6249.89999999851,
+          "frameId": null
+        }
+      ],
+      "effectiveCallsPerSecond": 29.874253143674192,
+      "averageDrawMs": 0.1870292887855399,
+      "p95DrawMs": 0.30000000074505806,
+      "maxDrawMs": 1.300000000745058
+    },
+    {
+      "id": "sweet",
+      "loadMs": 37.30000000074506,
+      "geometryMemory": {
+        "sourceBytes": 405480,
+        "fieldBytes": 14248,
+        "outputBytes": 10928,
+        "canvasBytes": 10928,
+        "outputPixels": 2732,
+        "regions": 2,
+        "totalBytes": 441584
+      },
+      "minHairPosition": -0.9999703939611777,
+      "maxHairPosition": 0.9999991808053941,
+      "renderCalls": 239,
+      "closedFrames": 3,
+      "eyeFrameCounts": {
+        "original-open": 221,
+        "eye20": 4,
+        "eye50": 5,
+        "eye80": 6,
+        "eye100": 3
+      },
+      "transitions": [
+        {
+          "atMs": 4.599999999627471,
+          "frameId": null
+        },
+        {
+          "atMs": 784.7999999988824,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 817.7999999988824,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 851.6999999992549,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 918.3999999985099,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 951.1999999992549,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 1018.6999999992549,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 1052.3999999985099,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 1084.3999999985099,
+          "frameId": null
+        },
+        {
+          "atMs": 4850.299999998882,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 4884,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 4951,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 4983.699999999255,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 5050.699999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 5083.89999999851,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 5117.0999999996275,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 5150.5999999996275,
+          "frameId": null
+        }
+      ],
+      "effectiveCallsPerSecond": 29.874253143674192,
+      "averageDrawMs": 0.11046025102420332,
+      "p95DrawMs": 0.2000000011175871,
+      "maxDrawMs": 0.40000000037252903
+    },
+    {
+      "id": "elegant",
+      "loadMs": 34.40000000037253,
+      "geometryMemory": {
+        "sourceBytes": 208532,
+        "fieldBytes": 7448,
+        "outputBytes": 5600,
+        "canvasBytes": 5600,
+        "outputPixels": 1400,
+        "regions": 2,
+        "totalBytes": 227180
+      },
+      "minHairPosition": -0.999875012226638,
+      "maxHairPosition": 0.9999971364391297,
+      "renderCalls": 239,
+      "closedFrames": 4,
+      "eyeFrameCounts": {
+        "original-open": 221,
+        "eye20": 5,
+        "eye50": 5,
+        "eye80": 4,
+        "eye100": 4
+      },
+      "transitions": [
+        {
+          "atMs": 4.599999999627471,
+          "frameId": null
+        },
+        {
+          "atMs": 2851.0999999996275,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 2884.7999999988824,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 2951.5,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 2984.0999999996275,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 3051.39999999851,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 3084.2999999988824,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 3117.39999999851,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 3151,
+          "frameId": null
+        },
+        {
+          "atMs": 6850,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 6916.799999998882,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 6950.299999998882,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 6983.89999999851,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 7049.699999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 7084.0999999996275,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 7117.199999999255,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 7150.699999999255,
+          "frameId": null
+        }
+      ],
+      "effectiveCallsPerSecond": 29.874253143674192,
+      "averageDrawMs": 0.07949790786406236,
+      "p95DrawMs": 0.19999999925494194,
+      "maxDrawMs": 0.5
+    },
+    {
+      "id": "honest",
+      "loadMs": 30.800000000745058,
+      "geometryMemory": {
+        "sourceBytes": 110460,
+        "fieldBytes": 4205,
+        "outputBytes": 3108,
+        "canvasBytes": 3108,
+        "outputPixels": 777,
+        "regions": 2,
+        "totalBytes": 120881
+      },
+      "minHairPosition": -0.9999154978242103,
+      "maxHairPosition": 0.9999965040649696,
+      "renderCalls": 239,
+      "closedFrames": 4,
+      "eyeFrameCounts": {
+        "original-open": 222,
+        "eye20": 4,
+        "eye50": 6,
+        "eye80": 3,
+        "eye100": 4
+      },
+      "transitions": [
+        {
+          "atMs": 4.799999998882413,
+          "frameId": null
+        },
+        {
+          "atMs": 285.59999999962747,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 319.69999999925494,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 351.7999999988824,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 389.09999999962747,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 512.3999999985099,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 557.5,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 585.3999999985099,
+          "frameId": null
+        },
+        {
+          "atMs": 4351.0999999996275,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 4384,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 4417.199999999255,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 4450.699999999255,
+          "frameId": "eye100"
+        },
+        {
+          "atMs": 4517.5,
+          "frameId": "eye80"
+        },
+        {
+          "atMs": 4551,
+          "frameId": "eye50"
+        },
+        {
+          "atMs": 4617,
+          "frameId": "eye20"
+        },
+        {
+          "atMs": 4650.699999999255,
+          "frameId": null
+        }
+      ],
+      "effectiveCallsPerSecond": 29.874253143674192,
+      "averageDrawMs": 0.07907949794068246,
+      "p95DrawMs": 0.19999999925494194,
+      "maxDrawMs": 3
+    }
+  ]
+}

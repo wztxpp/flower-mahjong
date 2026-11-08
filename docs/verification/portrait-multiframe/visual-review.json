@@ -1,0 +1,18 @@
+{
+  "scope": "Manual review of real browser Canvas2D output, not device-wide or mobile certification",
+  "date": "2026-11-08",
+  "sizes": [260, 300, 240, 200],
+  "eyes": {
+    "reviewed": ["sweet", "sunny", "elegant", "star", "wealthy", "honest", "landlord"],
+    "frames": ["original-open", "eye20", "eye50", "eye80", "eye100"],
+    "result": "Five distinct shapes inspected. No whole-face donor, alpha ghost iris, rectangular patch edge or retained open lash was observed in this scope. Pose names are not precise closure percentages. Elegant eye80 uses the selected v2 donor."
+  },
+  "hair": {
+    "reviewed": ["sweet", "sunny", "elegant", "star", "wealthy", "honest", "landlord"],
+    "poses": [0, -1, 0.5, 1],
+    "result": "Native hair crops and 260px portraits inspected: a single continuous original-texture shape, no crossfade double contour, no visible root or shoulder seam, no movement of the face, clothing or hat. Fixed-frame comparisons show stronger movement in long locks; short hair and small side locks remain subtle.",
+    "limitations": "Landlord's 200px playback is a very subtle gray-side-lock movement, not a conspicuous hairstyle swing. Field upper bound is about 1.2-1.3 output pixels at this size; maximum field displacement does not prove the same silhouette displacement. Do not describe every role as dramatically moving."
+  },
+  "technique": "ImageGen eye keyframes plus continuous original-texture local hair geometry. Hair is not ImageGen-generated motion and this is not Live2D.",
+  "rejected": "ImageGen hair-pose alpha transitions and baked geometry-pose alpha transitions showed double lines and were not adopted."
+}

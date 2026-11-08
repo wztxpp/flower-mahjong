@@ -1,0 +1,852 @@
+{
+  "scope": "Actual browser Canvas2D pixel audit",
+  "reports": [
+    {
+      "id": "sweet",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/sweet-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 8352,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 225,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 8334,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 8345,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 8344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8379,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 47431,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 204,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 46403,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 218,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 44765,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 210,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 41449,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 208,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 41332,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 222,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 44702,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 201,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 46395,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 216,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 47359,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 56840,
+          "maximumChannelDifference": 224,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 55703,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 65219,
+          "maximumChannelDifference": 224,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "sunny",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/sunny-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 15270,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 219,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 15266,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 205,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 15274,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 210,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 15256,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 15367,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 56011,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 187,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 54899,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 176,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 53262,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 178,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 49872,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 203,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 49868,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 203,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 53290,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 181,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 55030,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 180,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 56088,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 67616,
+          "maximumChannelDifference": 189,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 71344,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 82983,
+          "maximumChannelDifference": 220,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "elegant",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/elegant-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 5940,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 228,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 5954,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 232,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 5937,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 234,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 5938,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5973,
+          "maximumChannelDifference": 230,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 22641,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 218,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 22077,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 210,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 21273,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 229,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 19461,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 219,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 19515,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 236,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 21290,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 244,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 22111,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 22620,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 27889,
+          "maximumChannelDifference": 224,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 28558,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 33862,
+          "maximumChannelDifference": 230,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/star-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 6392,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 224,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 6396,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 227,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 6401,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 6387,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6424,
+          "maximumChannelDifference": 226,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 5949,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 174,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 5784,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 177,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 5487,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 163,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 4914,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 170,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 4930,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 163,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 5522,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 179,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 5800,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 179,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 5975,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 8272,
+          "maximumChannelDifference": 181,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 12362,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 14696,
+          "maximumChannelDifference": 226,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "wealthy",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/wealthy-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 5467,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 227,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 5463,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 227,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 5468,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 225,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 5433,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 5479,
+          "maximumChannelDifference": 229,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 8080,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 205,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 7796,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 205,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 7301,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 201,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 6406,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 191,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 6394,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 193,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 7291,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 203,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 7771,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 209,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 8092,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 11874,
+          "maximumChannelDifference": 196,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 13525,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 17353,
+          "maximumChannelDifference": 229,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "honest",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/honest-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 3939,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 230,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 3923,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 3937,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 3940,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3964,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 12899,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 225,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 12511,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 212,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 11836,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 218,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 10527,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 233,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 10571,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 229,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 11821,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 224,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 12463,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 220,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 12873,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 18228,
+          "maximumChannelDifference": 216,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 16813,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 22192,
+          "maximumChannelDifference": 233,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "landlord",
+      "width": 1254,
+      "height": 1050,
+      "sourceUrl": "/characters/landlord-scene-base.png",
+      "scope": "Actual Canvas2D pixels, not WebGL or device performance",
+      "results": [
+        {
+          "name": "original-open",
+          "changedPixels": 0,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 0,
+          "maximumChannelDifference": 0,
+          "passed": true
+        },
+        {
+          "name": "eye:eye20",
+          "changedPixels": 3295,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 243,
+          "passed": true
+        },
+        {
+          "name": "eye:eye50",
+          "changedPixels": 3300,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 241,
+          "passed": true
+        },
+        {
+          "name": "eye:eye80",
+          "changedPixels": 3294,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 240,
+          "passed": true
+        },
+        {
+          "name": "eye:eye100",
+          "changedPixels": 3310,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 3313,
+          "maximumChannelDifference": 236,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-1",
+          "changedPixels": 4279,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 207,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.75",
+          "changedPixels": 4092,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 201,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.5",
+          "changedPixels": 3850,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 207,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:-0.25",
+          "changedPixels": 3260,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 192,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.25",
+          "changedPixels": 3254,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 190,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.5",
+          "changedPixels": 3831,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 204,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:0.75",
+          "changedPixels": 4119,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 205,
+          "passed": true
+        },
+        {
+          "name": "hair-geometry:1",
+          "changedPixels": 4273,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 6468,
+          "maximumChannelDifference": 208,
+          "passed": true
+        },
+        {
+          "name": "combined-geometry",
+          "changedPixels": 7583,
+          "outsideAllowedPixels": 0,
+          "overlayPixels": 9781,
+          "maximumChannelDifference": 236,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,12 @@
 当前角色画框使用 [原图局部Canvas2D](PORTRAIT-MOTION.md)：原img永远可见，新普通开关默认静态。可见/前台/基础表情/非减少动态才加载和绘制；反应暂停复用，关开/换角/卸载失效旧代次。旧SDK许可不迁移，旧模型不执行或公开分发。装饰不拥有游戏、三秒表情计时或声音。
 Current frames use original-preserving local Canvas2D: original img always remains visible and a new ordinary setting defaults static. Visibility, foreground, base reaction and motion allowance govern load/draw. Reactions pause/reuse; toggling, role changes and unmount revoke generations. Old SDK assent is not migrated, old models are neither executed nor redistributed, and decoration owns no game/reaction/audio authority.
 
+v2多帧仅扩展装饰资产生命周期：原图和各供体逐张摘取小ROI，同物理图集URL只在一次加载中解码一次；全局只共享最多两张在途图，不永久缓存已解码完整图。停止保留小ROI，关闭/换角/卸载释放，旧代次不可接纳迟到供体。30fps保留RAF余量，暂停后不补播遗漏眨眼。
+V2 expands only decorative asset lifetime: originals/donors are cropped sequentially to small ROIs, with one decode per physical atlas URL in a load. At most two pending images are shared globally, never a permanent completed full-image cache. Pauses retain ROIs; disable/role change/unmount release them and reject stale donors. The 30fps clock retains RAF remainder without replaying missed blinks after pauses.
+
+可选geometry发区在准备时只读取一次局部RGBA，resize重建显示场不重读源图；原canvas已是目标尺寸也必须完成首次场初始化。停用和旧代次释放时同时清空typed arrays/小canvas；root/end/mask保护与Jacobian界限只属于展示数学，不拥有身体/场景、身份或游戏状态。
+Optional geometry reads local RGBA once during preparation and rebuilds display fields on resize without source rereads, including initial setup when canvas dimensions already match. Revocation releases arrays/local canvases together. Pin/mask protection and Jacobian bounds are presentation math, not authority over body/scene, identity or game state.
+
 ## 1. 一次点击经过哪些层 / The path of a click
 
 1. `src/App.vue` 从服务器视图的 `legalActions` 展示按钮，玩家点击提交动作意图。 / App renders server-supplied legal actions and submits intent.

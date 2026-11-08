@@ -1,6 +1,6 @@
 <script setup>
-// 两玩法共用的原图画框：img 始终完全可见，Canvas2D 只叠加小眼睑和原纹理头发区域。
-// Shared original-art frame: img stays fully visible; Canvas2D overlays only small eyelid and original-texture hair regions.
+// 两玩法共用的原图画框：img 始终完全可见，Canvas2D 只叠加审查过的小眼睑和头发区域。
+// Shared original-art frame: img stays fully visible; Canvas2D overlays only reviewed small eyelid and hair regions.
 // 不接收手牌/动作；公开三秒胡/放炮原图仍由已有调度器管理，装饰失败不阻断游戏。
 // No hands/actions enter here; the existing scheduler owns three-second reaction originals and decorative failure never blocks play.
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
