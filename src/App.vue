@@ -7,7 +7,7 @@ import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
 import ChengduTable from './ChengduTable.vue';
 import RoundSummary from './RoundSummary.vue';
-import { roundSummaryView } from './round-summary.js';
+import { roundSummaryView, roundSummaryHandsBySeat } from './round-summary.js';
 import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
 import CharacterArtwork from './CharacterArtwork.vue';
 import PortraitMotionSettings from './PortraitMotionSettings.vue';
@@ -153,6 +153,12 @@ const showNextRound = ref(false);
 // 摘要只从已显示的终局权威字段读取；不从隐藏手牌、历史或当前占座人重算。
 // Read only the displayed terminal authority, never reconstruct concealed hands, history or occupant totals.
 const finishedRoundSummary = computed(() => roundSummaryView(state.value));
+// 摊牌跟随当前显示快照自动撤销；没有本地缓存，也不改变原私有手牌或合法动作。
+// Reveals disappear with the displayed snapshot, without caching or changing private hands and legal actions.
+const finishedTableHands = computed(() => roundSummaryHandsBySeat(state.value));
+// 摘要名字属于本局原参与者；即使终局同名替补占座，也不能把旧手牌标到当前占座身份下。
+// Summary names belong to original participants; even same-name replacements must not inherit attribution of the old hand.
+const finishedTableNames = computed(() => new Map((finishedRoundSummary.value?.players || []).map((player) => [player.seat, player.name])));
 const activeModal = computed(() => showRules.value ? 'rules' : showInvite.value ? 'invite' : showNextRound.value ? 'next-round' : null);
 let pendingNextRoundKey = null;
 const promptedRoundKeys = new Set();
@@ -326,7 +332,7 @@ const validStartOptions = computed(() => isChengduRoom.value || hasFixedReadyPoi
 // Explain the existing start guards; the server still owns host, attached-occupancy and revision authorization.
 const nextRoundUnavailable = computed(() => {
   if (isSpectator.value) return '你正在观战，等待房主开始下一局。';
-  if (!isHost.value) return '等待房主开始下一局，你可以留在本桌或返回大厅。';
+  if (!isHost.value) return '等待房主开始下一局，你可以返回牌桌查看结算。';
   if (!canStart.value) return '当前暂不能开始下一局。';
   if (busy.value) return '正在开始下一局，请稍候。';
   if (offline.value) return '连接中断，恢复同步后才能开始下一局。';
@@ -2136,11 +2142,11 @@ function startNextRound() {
   if (phase.value !== 'finished' || nextRoundUnavailable.value) return;
   return mutate(null, true);
 }
-// 返回大厅明确走原离席路由；开局请求尚在途时暂不离开，防止丢失未知结果。
-// Return through the original departure route, waiting while a start request is in flight to retain its uncertain outcome.
-function leaveFinishedTable() {
-  if (phase.value !== 'finished' || busy.value) return;
-  return newTable();
+// 返回牌桌只关闭本局弹层，复用叉号/Escape的忙碌守卫与焦点恢复；不离席、不清凭证、不导航。
+// Return to the table only closes this dialog, sharing close/Escape busy guards and focus restoration without departure, credentials or navigation.
+function closeNextRoundDialog() {
+  if (phase.value !== 'finished' || activeModal.value !== 'next-round') return;
+  closeModal();
 }
 // Escape 关闭弹窗；Tab 与 Shift+Tab 把焦点留在弹窗可操作控件内。
 // Escape closes dialogs; Tab and Shift+Tab trap focus within their interactive controls.
@@ -2912,17 +2918,26 @@ onUnmounted(() => {
                   ><span v-else-if="player.name" class="ready-dot"
                     ><Icon name="check" :size="14" /></span
                 ></div>
-                <!-- 对手只有手牌数量，最多画二十张背面占位；这里没有隐藏在 DOM 中的对手牌面。 / Opponents expose only hand counts, capped at twenty rendered backs; no opponent faces are hidden in the DOM. -->
+                <!-- 只有通过双终局/玩法/座位守卫的摘要才摊真实手牌；进行中或缺记录继续沿用原牌背。
+                     Only a summary passing both finish gates, mode and seat guards reveals faces; live/missing records retain original backs. -->
+                <div v-if="finishedTableHands.has(player.seat)" class="finished-table-hand-label">本局：{{ finishedTableNames.get(player.seat) }} · 结束时手牌</div>
                 <div
                   v-if="game"
                   class="opponent-hand stable-scroll" tabindex="0" role="region"
-                  :aria-label="`${player.name}的手牌，共${player.handCount}张，仅显示背面`"
-                  ><MahjongTile
-                    v-for="hiddenTileNumber in Math.min(player.handCount, 20)"
-                    :key="hiddenTileNumber"
-                    back
-                    small
-                /></div>
+                  :class="{ 'finished-table-hand': finishedTableHands.has(player.seat) }"
+                  :data-table-hand-seat="player.seat"
+                  :aria-label="finishedTableHands.has(player.seat)
+                    ? `${finishedTableNames.get(player.seat)}的结束时手牌，共${finishedTableHands.get(player.seat).length}张`
+                    : `${player.name}的手牌，共${player.handCount}张，仅显示背面`"
+                  aria-description="可横向滚动查看全部手牌"
+                  ><template v-if="finishedTableHands.has(player.seat)">
+                    <MahjongTile v-for="(tile, tileIndex) in finishedTableHands.get(player.seat)"
+                      :key="`final:${tileIndex}`" :tile="tile" small />
+                    <span v-if="!finishedTableHands.get(player.seat).length" class="finished-table-hand-empty">无剩余手牌</span>
+                  </template><template v-else>
+                    <MahjongTile v-for="hiddenTileNumber in Math.min(player.handCount, 20)"
+                      :key="`hidden:${hiddenTileNumber}`" back small />
+                  </template></div>
                 <div v-else class="lobby-seat-decoration"
                   ><span v-if="player.name">已经准备好，把好牌留给你。</span
                   ><span v-else>发一个邀请，留一份热闹。</span></div
@@ -3605,8 +3620,8 @@ onUnmounted(() => {
           ><Icon name="close" :size="21"
         /></button>
         <!-- 规则说明按本局版本分支展示；此处是文字说明，真正计分与合法动作在服务端。 / Rules text follows the current game version; scoring and legal actions are implemented on the server. -->
-        <!-- 两个主选项只调用原开局/离桌流程；关闭即可继续查看桌面结算，不提供模式或参数编辑。
-             Both primary choices use existing start/departure flows; closing reveals settlement without mode/settings editors. -->
+        <!-- 再来一局沿用原开局流程；返回牌桌只关闭弹层，保留当前房间和终局牌面。
+             Another round uses existing start transport; returning only closes the dialog and preserves this room and final tiles. -->
         <template v-if="activeModal === 'next-round'">
           <header class="next-round-heading">
             <span class="eyebrow">本局已结束</span>
@@ -3620,7 +3635,7 @@ onUnmounted(() => {
           <p v-if="error" class="next-round-error" role="alert">{{ error }}</p>
           <div class="next-round-actions">
             <button v-if="isHost" class="button gold" :disabled="!!nextRoundUnavailable" @click="startNextRound">{{ busy ? '正在开局…' : '同桌再来一局' }}</button>
-            <button class="button" :disabled="busy" @click="leaveFinishedTable">返回大厅</button>
+            <button class="button" data-next-round-return :disabled="busy" @click="closeNextRoundDialog">返回牌桌</button>
           </div>
           </div>
         </template>

@@ -1,4 +1,5 @@
 import { engineFor, modeForRoom } from './game-engines.js';
+import { isCharacterId } from '../shared/character-assignment.js';
 
 // 记录层：把房间生命周期与局内规则隔离，保存可验证的参与身份和公开成绩。
 // History layer: separate room lifecycle from game rules and preserve verifiable participation and public scores.
@@ -262,6 +263,15 @@ export function roundSummaryForRoom(room) {
   if (room.game?.phase !== 'finished') return null;
   const summary = engineFor(room.game).roundSummary(room.game);
   const participants = room.gameMeta?.participants;
+  // 只认本局原始角色快照；公开 game.characters 会补旧默认，现占座者也可能已换人，二者不能作为历史证据。
+  // Only trust the original round mapping: public game.characters supplies legacy defaults, and current seats may belong to replacements.
+  // 整图数量、每项和唯一性都合法才复制角色ID；稀疏缺项也拒绝，不写回元数据或猜旧角色。
+  // Require a complete, correctly sized, unique allowlisted mapping, including no sparse holes; never backfill metadata or guess old roles.
+  const characters = room.gameMeta?.characters;
+  const playerCount = room.game.players.length;
+  const hasRecordedCharacters = [3, 4].includes(playerCount) && Array.isArray(characters)
+    && characters.length === playerCount && Array.from(characters).every(isCharacterId)
+    && new Set(characters).size === playerCount;
   // 复用既有 gameId/seat 去重账本，包含当前已结束局一次；开下一局前才归档，不额外加本局。
   // Reuse existing gameId/seat deduplication, including the current finished game once; it archives at next start, so never add it again.
   // 临时以本局参与者作为座位映射，可定位已离开的原玩家；不按昵称或现任座位继承累计。
@@ -279,6 +289,7 @@ export function roundSummaryForRoom(room) {
       return {
         ...player,
         name: participant?.name || `${player.seat + 1}号位`,
+        characterId: hasRecordedCharacters ? characters[player.seat] : null,
         tableScore: total?.totalScore ?? null,
       };
     }),

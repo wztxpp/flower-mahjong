@@ -18,6 +18,8 @@ The header contains mode, schema version, finish reason and players ordered by a
 
 - `seat`、`name`：原本局参与者身份展示；不以终局换入者覆盖原名字。缺快照时仅显示座位，不猜历史名字。
   Original round participant label, never replaced by the current occupant. Missing snapshots use a seat label without guessing names.
+- `characterId`：只读原始 `gameMeta.characters` 的本局角色快照，完整3/4项、数量匹配、已知且唯一才公开；缺失/损坏为 `null`。不使用会补默认角色的公开 `game.characters`，也不借现占座者角色。时间/身份估计标记不抹掉独立保存的真实角色映射。
+  Read only the original game-meta character snapshot when its complete three/four-entry map matches the player count and contains known unique IDs; otherwise null. Never use compatibility-default public game.characters or current occupants. Estimated timestamps/identity do not invalidate an independently retained actual role map.
 - `huCount`：花麻将读取保存的玩家计数；成都读取 `won`，已胡为1、未胡为0。缺字段为 `null`，不以日志条数补造统计。
   Flower uses persisted counts; Chengdu uses its zero/one retirement record. Missing fields are null, never fabricated from event counts.
 - `roundScore`：当前 `player.score` 的实际本局净变动，已包含该模式所有胡、杠、喜钱、神龙或流局实际转账；不会重新相加任何明细。
@@ -77,3 +79,32 @@ App adds only a derived displayed-summary value. The adapter requires both finis
 
 布局只有总览一个纵向滚动入口，牌组自然换行，底部原控制固定在内容滚动区外。长胡牌记录用原生详情保留所有牌且显式加入Tab焦点圈。320px给净分/累计更宽的列，净分不小于15px；小字对比最暗背景 `#eee2c5` 至少4.5:1。原下一局提示/权限/同步/错误/重连/焦点生命周期完全沿用。真实浏览器结果由独立验收记录报告，不以SSR或样式检查替代。
 One vertical viewport contains wrapped tile zones, with original footer actions outside it. Native details preserve all long win records and join the focus loop. At 320px score columns receive extra width, net scores stay at least15px, and small text meets4.5:1 against the darkest background. Existing modal permissions, synchronization, error, reconnect and focus lifecycles remain unchanged. Actual browser results belong to separate acceptance evidence.
+
+
+## 牌桌回看与按钮纠正 / Table review and return button
+
+本轮实际浏览器、几何、键盘与最终全测见[终局牌面验收](qa/FINISHED-TABLE-TILES-20261108.md)。
+See the [terminal display QA](qa/FINISHED-TABLE-TILES-20261108.md) for browser, geometry, keyboard and aggregate results.
+
+用户随后明确要求结算后立绘下方的其他玩家手牌也可见。两玩法牌桌只消费现有 finished-only 摘要，不扩大API暴露面。`roundSummaryHandsBySeat` 沿用双终局门并额外校验玩法、原座位唯一性及牌种范围；未知手牌不猜，已知空手独立显示。每条均标“本局：摘要原名”，同名或换名替补都不会被当成上局手牌主人。花麻将1/2/3、观众、终局重连共用此只读路径；成都已胡但整局未结束仍不摊牌。下一局与缺摘要更新立即撤下旧牌面，无新增缓存/监听/请求。
+The user additionally requested visible opponent hands beneath table portraits after settlement. Both tables consume only the existing finished-only summary, without enlarging API exposure. The helper enforces both phases plus mode, unique original seats and tile ranges; missing and empty hands remain distinct. Every strip visibly labels its original summary participant, including same-name replacements. All Flower versions, spectators and reconnects share the path; retired winners in live Chengdu remain concealed. New-game or missing-summary updates withdraw old faces without new caching, listeners or requests.
+
+结算弹框原“返回大厅”改为“返回牌桌”，只调用 `closeNextRoundDialog → closeModal`；原session、房间、当前局、网址和历史保留。与叉号/Escape复用busy和DOM提交后焦点恢复，开局结果未同步时不重试或清掉连接提示。页面其他真正离桌按钮仍保留。隔离预览只额外放行 `data-next-round-return` 的安全本地关闭，开局/离桌和API封锁仍在。
+The dialog's former lobby button now returns to the table through the existing close path, retaining session, room, game, URL and history. Busy/focus guards are shared with close/Escape; unresolved starts are neither retried nor cleared. Other genuine departure controls remain. The isolated preview permits only this safe local close in addition to existing modal controls, retaining start/departure/API blocks.
+
+总览牌压扁修复只将共享牌样式改为 `flex:none`，保留既有width/height：竖向胡牌引用不再把桌面26px/手机24px的basis用作高度，继续显示26×36 / 24×33px，与手牌/副露一致。真实浏览器尺寸与终局牌桌键盘回看由最终QA报告记录。
+The overview ratio fix uses shared flex:none while retaining existing dimensions: column win references no longer treat26px/24px width bases as heights, preserving26×36 and24×33px like hand/meld tiles. Final QA separately records browser geometry and keyboard table review.
+
+终局牌桌条固定76px，预算为40px牌高、上下16px内边距与最多20px非覆盖式横滚条；底部12px也容纳原5px牌影。保留overflow:auto，不能用隐藏纵向溢出来掩盖裁牌。最终真实浏览器QA另外记录clientHeight/scrollHeight、扣内边距后的内容高度、牌影可见性与无额外纵条情况。
+Terminal table strips reserve76px:40px tiles,16px vertical padding and up to20px classic horizontal scrollbar, with12px bottom padding retaining the5px shadow. Overflow stays automatic, never hiding clipped content. Final real-browser QA separately records actual client/scroll heights, content capacity, shadow visibility and absence of needless vertical scrolling.
+
+## 本局角色原画背景 / Original round-character backgrounds
+
+用户随后允许每位玩家的结算区域用对应人物立绘作背景。`round-summary.js` 只接收上述历史 `characterId`，`roundSummaryPortrait` 从固定 `CHARACTER_PORTRAITS[id].base` 取现有原图。未知/旧记录缺角色时保持中性底色，不按座位、昵称、当前人物或分数猜角色/表情；不用动画、生成图、响应中的URL或动态路径。
+The user subsequently permitted the matching character portrait behind each player's settlement area. The adapter accepts only the historical characterId and selects existing base art from the fixed catalog. Unknown/missing roles keep the neutral background without guessing by seat, name, current role or score; no animation, generated art, response URLs or dynamic paths are used.
+
+背景层绝对定位、不可交互且 `aria-hidden`，不增加结算区高度或改牌宽高/间距。暖白渐变桌面最低74%不透明度，手机最低82%；配套深色文字对最坏黑色图像素仍达4.5:1。图片失败只在当前弹层实例标记该固定URL并撤下装饰，轮询不重试、换角色不受旧失败影响；关闭再打开可重新加载。原单滚动区、Tab/详情/返回牌桌与所有分数/牌引用保持不动。
+The absolute, noninteractive, aria-hidden layer adds no content height or tile-size/spacing changes. Warm-white overlay opacity is at least74% on desktop and82% on phones, with dark text retaining4.5:1 even over black artwork pixels. Image failure removes only decoration and remembers that fixed URL for this dialog instance; polls do not retry, another character is unaffected, and reopening can retry. Scrolling, focus/details/return controls, scores and tile references remain unchanged.
+
+专项 `tests/round-summary-portraits.test.js` 覆盖三代花麻将/3与4座/成都、原映射/同名替补/JSON恢复/估计时间、非法/稀疏/缺记录、真实HTTP观战/重连/下一局、七角色×七视图实际Vue SSR、失败事件/换角/撤销与输入不变。CSS编译检查及对比度计算是结构/数值证据，不是浏览器像素、图片网络或实体手机验收。
+The dedicated suite covers versions/modes/table sizes, original maps/replacements/restoration/estimated times, malformed/sparse/missing data, real HTTP viewers/reconnects/next games, seven roles across seven actual Vue SSR views, error/switch/withdrawal events and input immutability. Compiled CSS and contrast checks are structural/numeric evidence, not browser pixels, image-network or physical-phone acceptance.

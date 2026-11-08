@@ -8,6 +8,7 @@ import MahjongTile from './MahjongTile.vue';
 import CharacterArtwork from './CharacterArtwork.vue';
 import { chengduEventText } from './chengdu-event-text.js';
 import { tilePresentation } from './mahjong-tile-presentation.js';
+import { roundSummaryView, roundSummaryHandsBySeat } from './round-summary.js';
 
 const props = defineProps({
   state: { type: Object, required: true },
@@ -27,6 +28,12 @@ const selectedIndices = ref([]);
 const selectedTiles = computed(() => selectedIndices.value.map((index) => hand.value[index]).sort((left, right) => left - right));
 const isExchange = computed(() => game.value.phase === 'exchange');
 const isFinished = computed(() => game.value.phase === 'finished');
+// 已胡退出不代表整局结束；仅双终局快照中的公开摘要允许摊牌，新局/重连始终重新派生。
+// Retired winners do not end a blood battle; reveal only public summaries in doubly-finished snapshots, derived anew on restart/reconnect.
+const finishedTableHands = computed(() => roundSummaryHandsBySeat(props.state));
+// 原参与者名字直接来自同一终局摘要；不能把替补当前昵称附到上局公开手牌。
+// Read original names from that same terminal summary, never attaching a replacement occupant's name to the previous hand.
+const finishedTableNames = computed(() => new Map((roundSummaryView(props.state)?.players || []).map((player) => [player.seat, player.name])));
 const suitLabels = { bamboo: '条', dots: '筒', characters: '万' };
 const directionLabels = { clockwise: '顺时针', opposite: '对家', counterclockwise: '逆时针' };
 const actionLabels = { hu: '胡牌', pass: '过', peng: '碰', mingGang: '明杠', anGang: '暗杠', buGang: '补杠' };
@@ -123,6 +130,18 @@ function eventText(event) {
         <div class="chengdu-seat-meta stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的公开状态`"><span v-if="player.seat === game.dealerSeat">庄家</span><span>手牌 {{ player.handCount }} 张</span>
           <span v-if="player.dingqueSuit">缺{{ suitLabels[player.dingqueSuit] }}</span><span v-else-if="player.dingqueSubmitted">已定缺</span>
           <span v-if="game.preparation?.exchangeSubmittedSeats?.includes(player.seat)">换牌已选</span><strong v-if="player.won">已胡 · 本局退出</strong></div>
+        <!-- 成都原牌桌仅显示暗手张数；只在整局结束后添加公开手牌，不改变进行中或已胡退出的布局。
+             Chengdu normally shows concealed counts only; add hands only after full finish, preserving live and retired-player layouts. -->
+        <div v-if="finishedTableHands.has(player.seat)" class="finished-table-hand-label">本局：{{ finishedTableNames.get(player.seat) }} · 结束时手牌</div>
+        <div v-if="state.phase === 'finished' && isFinished" class="finished-table-hand stable-scroll"
+          tabindex="0" role="region" :data-table-hand-seat="player.seat"
+          :aria-label="`${finishedTableNames.get(player.seat) || `${player.seat + 1}号位`}的结束时手牌`" aria-description="可横向滚动查看全部手牌">
+          <template v-if="finishedTableHands.has(player.seat)">
+            <MahjongTile v-for="(tile, tileIndex) in finishedTableHands.get(player.seat)" :key="tileIndex" :tile="tile" small />
+            <span v-if="!finishedTableHands.get(player.seat).length" class="finished-table-hand-empty">无剩余手牌</span>
+          </template>
+          <span v-else class="finished-table-hand-empty">结束时手牌未记录</span>
+        </div>
         <!-- 空牌到碰杠/胡牌共用同高公开视窗；投影里的隐藏牌仍只显示背面。
              Empty, melded and won states share a stable viewport; projected hidden tiles still render only backs. -->
         <div class="chengdu-public-cards stable-scroll" tabindex="0" role="region" :aria-label="`${nameFor(player.seat)}的碰杠与胡牌，可滚动查看`">
@@ -198,7 +217,7 @@ function eventText(event) {
         </div>
       </template>
       <section v-if="isFinished" class="chengdu-finish" aria-label="成都本局结算">
-        <h3>{{ game.finishReason === 'wallExhausted' ? '流局结算完成' : '本局结算完成' }}</h3><p>以上为本局虚拟积分；已发生的胡牌、杠牌与流局结算均已计入。暗手仍不公开。</p>
+        <h3>{{ game.finishReason === 'wallExhausted' ? '流局结算完成' : '本局结算完成' }}</h3><p>以上为本局虚拟积分；已发生的胡牌、杠牌与流局结算均已计入。结束时手牌见各家牌区。</p>
         <ul v-if="game.settlement?.payments?.length"><li v-for="(payment, index) in game.settlement.payments" :key="index">{{ nameFor(payment.from) }} → {{ nameFor(payment.to) }}：{{ payment.points }}分 · {{ paymentLabels[payment.reason] || '流局结算' }}</li></ul>
         <button v-if="canStart" class="button gold" :disabled="blocked || state.seats.filter(Boolean).length < 4" @click="emit('start')">开始下一局</button><p v-else>等待房主开始下一局。</p>
         <!-- 弹层归 App 管理；普通玩家/观众也可关闭看结算或返回大厅，不因此获得开局权限。

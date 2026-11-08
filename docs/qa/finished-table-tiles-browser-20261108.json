@@ -1,0 +1,4492 @@
+{
+  "date": "2026-11-08",
+  "scope": "Local Chromium; synthetic, API-disabled real Vue components; no production game actions",
+  "baseline": [
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "measurements": [
+        {
+          "flex": "0 0 26px",
+          "height": 36,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 26
+        },
+        {
+          "flex": "0 0 26px",
+          "height": 36,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 26
+        },
+        {
+          "flex": "0 0 26px",
+          "height": 26,
+          "selector": ".round-win .mahjong-tile",
+          "width": 26
+        }
+      ]
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "measurements": [
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 24,
+          "selector": ".round-win .mahjong-tile",
+          "width": 24
+        }
+      ]
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "measurements": [
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 24,
+          "selector": ".round-win .mahjong-tile",
+          "width": 24
+        }
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "measurements": [
+        {
+          "flex": "0 0 26px",
+          "height": 36,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 26
+        },
+        {
+          "flex": "0 0 26px",
+          "height": 36,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 26
+        },
+        {
+          "flex": "0 0 26px",
+          "height": 26,
+          "selector": ".round-win .mahjong-tile",
+          "width": 26
+        }
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "measurements": [
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 24,
+          "selector": ".round-win .mahjong-tile",
+          "width": 24
+        }
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "measurements": [
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-tile-line .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 33,
+          "selector": ".round-meld .mahjong-tile",
+          "width": 24
+        },
+        {
+          "flex": "0 0 24px",
+          "height": 24,
+          "selector": ".round-win .mahjong-tile",
+          "width": 24
+        }
+      ]
+    }
+  ],
+  "functionalCases": [
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 2
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 4
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 4
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 4
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        20,
+        20,
+        20
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        20,
+        20,
+        20
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        20,
+        20,
+        20
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 420,
+      "variant": "missing",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "missing",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 420,
+      "variant": "absent",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "live": {
+        "revealed": 0,
+        "rows": 3
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 420,
+      "variant": "missing",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "missing",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 420,
+      "variant": "absent",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "live": {
+        "revealed": 0,
+        "rows": 0
+      },
+      "reopened": 1,
+      "afterPoll": 0,
+      "next": {
+        "dialog": false,
+        "revealed": 0
+      },
+      "returnLabel": "返回牌桌",
+      "returnClosedDialog": true,
+      "tableRevealCounts": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "finalGeometryCases": [
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 136
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 189
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 136
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 101
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 144
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 101
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 373
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 336,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 336
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 373,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 373
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 336,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 336
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-1",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 376,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 376
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 142
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-legacy-2",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 107
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 232
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 232
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 232
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 232
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 309
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 309
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 309
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 309
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 239
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 239
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 239
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 239
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 543,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 543
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 543,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 543
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 543,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 543
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 543,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 543
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 701,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 13,
+          "faces": 13,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 430,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 10,
+          "faces": 10,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 331,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 712.59375,
+        "viewportHeight": 760,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 248
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 511,
+        "viewportHeight": 560,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 136
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 189
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 136
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 520.59375,
+        "viewportHeight": 560,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 101
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 144
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 20,
+          "faces": 20,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 661,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 101
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 420,
+      "variant": "missing",
+      "rows": [
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 136,
+          "seat": "1",
+          "sizes": [
+            "8.609375x26",
+            "8.625x26"
+          ],
+          "width": 136
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 189,
+          "seat": "2",
+          "sizes": [
+            "12.703125x26",
+            "12.71875x26"
+          ],
+          "width": 189
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 136,
+          "seat": "3",
+          "sizes": [
+            "8.609375x26",
+            "8.625x26"
+          ],
+          "width": 136
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "missing",
+      "rows": [
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 101,
+          "seat": "1",
+          "sizes": [
+            "5.921875x26",
+            "5.9375x26"
+          ],
+          "width": 101
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 144,
+          "seat": "2",
+          "sizes": [
+            "9.203125x26",
+            "9.21875x26"
+          ],
+          "width": 144
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 101,
+          "seat": "3",
+          "sizes": [
+            "5.921875x26",
+            "5.9375x26"
+          ],
+          "width": 101
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 390,
+      "height": 420,
+      "variant": "absent",
+      "rows": [
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 136,
+          "seat": "1",
+          "sizes": [
+            "8.609375x26",
+            "8.625x26"
+          ],
+          "width": 136
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 189,
+          "seat": "2",
+          "sizes": [
+            "12.703125x26",
+            "12.71875x26"
+          ],
+          "width": 189
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 136,
+          "seat": "3",
+          "sizes": [
+            "8.609375x26",
+            "8.625x26"
+          ],
+          "width": 136
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 321.9375,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "rows": [
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 101,
+          "seat": "1",
+          "sizes": [
+            "5.921875x26",
+            "5.9375x26"
+          ],
+          "width": 101
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 144,
+          "seat": "2",
+          "sizes": [
+            "9.203125x26",
+            "9.21875x26"
+          ],
+          "width": 144
+        },
+        {
+          "backs": 13,
+          "boxHeight": 38,
+          "count": 13,
+          "faces": 0,
+          "height": 38,
+          "scrollHeight": 38,
+          "scrollWidth": 101,
+          "seat": "3",
+          "sizes": [
+            "5.921875x26",
+            "5.9375x26"
+          ],
+          "width": 101
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 348.9375,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 373
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 336
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 373
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 336
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "hand",
+            26,
+            36
+          ],
+          [
+            "win",
+            26,
+            36
+          ],
+          [
+            "meld",
+            26,
+            36
+          ]
+        ],
+        "footerBottom": 511,
+        "viewportHeight": 560,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 303
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 520.59375,
+        "viewportHeight": 560,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "0",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "1",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "2",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 14,
+          "faces": 14,
+          "height": 66,
+          "scrollHeight": 66,
+          "scrollWidth": 463,
+          "seat": "3",
+          "sizes": [
+            "30x40"
+          ],
+          "width": 233
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [
+          [
+            "win",
+            24,
+            33
+          ],
+          [
+            "meld",
+            24,
+            33
+          ],
+          [
+            "hand",
+            24,
+            33
+          ]
+        ],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 420,
+      "variant": "missing",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "0",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "1",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "2",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "3",
+          "sizes": [],
+          "width": 303
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "missing",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "0",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "1",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "2",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "3",
+          "sizes": [],
+          "width": 233
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 386.1875,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "height": 420,
+      "variant": "absent",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "0",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "1",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "2",
+          "sizes": [],
+          "width": 303
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 303,
+          "seat": "3",
+          "sizes": [],
+          "width": 303
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 321.9375,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "rows": [
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "0",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "1",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "2",
+          "sizes": [],
+          "width": 233
+        },
+        {
+          "backs": 0,
+          "boxHeight": 76,
+          "count": 0,
+          "faces": 0,
+          "height": 76,
+          "scrollHeight": 76,
+          "scrollWidth": 233,
+          "seat": "3",
+          "sizes": [],
+          "width": 233
+        }
+      ],
+      "passed": true,
+      "dialog": {
+        "tiles": [],
+        "footerBottom": 348.9375,
+        "viewportHeight": 420,
+        "horizontalOverflow": 0
+      }
+    }
+  ],
+  "keyboard": [
+    {
+      "mode": "flower-4",
+      "before": {
+        "count": 20,
+        "left": 0,
+        "max": 570
+      },
+      "end": {
+        "focus": true,
+        "lastRight": 125,
+        "left": 570,
+        "max": 570,
+        "regionRight": 137
+      },
+      "start": {
+        "firstLeft": 38,
+        "left": 0,
+        "regionLeft": 36
+      },
+      "wrap": {
+        "class": "icon-button modal-close",
+        "inside": true
+      },
+      "reverse": {
+        "return": true,
+        "text": "返回牌桌"
+      },
+      "close": {
+        "dialog": false,
+        "focusRestored": true,
+        "revealed": 60
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "before": {
+        "count": 14,
+        "left": 0,
+        "max": 240
+      },
+      "end": {
+        "focus": true,
+        "lastRight": 257,
+        "left": 240,
+        "max": 240,
+        "regionRight": 269
+      },
+      "start": {
+        "firstLeft": 38,
+        "left": 0,
+        "regionLeft": 36
+      },
+      "wrap": {
+        "class": "icon-button modal-close",
+        "inside": true
+      },
+      "reverse": {
+        "return": true,
+        "text": "返回牌桌"
+      },
+      "close": {
+        "dialog": false,
+        "focusRestored": true,
+        "revealed": 56
+      }
+    }
+  ],
+  "ongoingLayout": [
+    {
+      "caseId": "flower-3",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-4",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-3",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-4",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-spectator",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "viewport": {
+        "width": 1280,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "flower-spectator",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "viewport": {
+        "width": 390,
+        "height": 760
+      },
+      "passed": true,
+      "resourcesReady": true,
+      "failureCounts": {
+        "stages": 0,
+        "retention": 0,
+        "reachability": 0
+      },
+      "failedStages": [],
+      "failedRetention": [],
+      "failedReachability": []
+    }
+  ],
+  "rowScrollbarCorrection": {
+    "before": {
+      "h": 54,
+      "overflowY": "auto",
+      "paddingBottom": "12px",
+      "paddingTop": "4px",
+      "rectHeight": 64,
+      "sh": 56,
+      "sw": 430,
+      "tileHeight": 40,
+      "w": 293
+    },
+    "after": {
+      "h": 66,
+      "overflowY": "auto",
+      "rectHeight": 76,
+      "sh": 66,
+      "tileHeight": 40
+    }
+  },
+  "limitations": [
+    "Desktop Chromium with real iframe viewport sizes; not physical phones or Safari.",
+    "View-only browser fixtures do not exercise production multiplayer requests. Existing API/engine privacy and restart tests were run separately.",
+    "The original 35-case functional matrix preceded terminal scrollbar-height and portrait additions; all 35 geometry cases and eight explicit final flows were repeated after those changes."
+  ],
+  "keyboardAfterScrollbarCorrection": [
+    {
+      "mode": "flower-4",
+      "end": {
+        "last": 135,
+        "left": 560,
+        "max": 560,
+        "right": 137,
+        "vertical": 0
+      },
+      "start": {
+        "first": 38,
+        "left": 0,
+        "x": 36
+      },
+      "wrap": "icon-button modal-close",
+      "reverse": true,
+      "closed": {
+        "closed": true,
+        "focus": true
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "end": {
+        "last": 267,
+        "left": 230,
+        "max": 230,
+        "right": 269,
+        "vertical": 0
+      },
+      "start": {
+        "first": 38,
+        "left": 0,
+        "x": 36
+      },
+      "wrap": "icon-button modal-close",
+      "reverse": true,
+      "closed": {
+        "closed": true,
+        "focus": true
+      }
+    }
+  ],
+  "portraitBackgroundVerification": {
+    "geometryCases": [
+      {
+        "mode": "flower-3",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-3",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-3",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-1",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-1",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-1",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-2",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-2",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-legacy-2",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-spectator",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-spectator",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-spectator",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-spectator",
+        "width": 1280,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-spectator",
+        "width": 390,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-spectator",
+        "width": 320,
+        "height": 760,
+        "variant": "normal",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 1280,
+        "height": 560,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 390,
+        "height": 560,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "height": 420,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 390,
+        "height": 420,
+        "variant": "missing",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "height": 420,
+        "variant": "missing",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 390,
+        "height": 420,
+        "variant": "absent",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "height": 420,
+        "variant": "absent",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 1280,
+        "height": 560,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "height": 560,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 320,
+        "height": 420,
+        "variant": "long",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "height": 420,
+        "variant": "missing",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 320,
+        "height": 420,
+        "variant": "missing",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "height": 420,
+        "variant": "absent",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 320,
+        "height": 420,
+        "variant": "absent",
+        "passed": true,
+        "maxVerticalRowOverflow": 0
+      }
+    ],
+    "assetChecks": [
+      {
+        "mode": "flower-4",
+        "character": "sweet",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "elegant",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "sunny",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "landlord",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "honest",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "wealthy",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "flower-4",
+        "character": "star",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "sweet",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "elegant",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "sunny",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "landlord",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "honest",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "wealthy",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      },
+      {
+        "mode": "chengdu-4",
+        "character": "star",
+        "portraitCount": 4,
+        "allLoadedDecorativeAndPointerTransparent": true
+      }
+    ],
+    "finalFlows": [
+      {
+        "mode": "flower-4",
+        "width": 390,
+        "variant": "normal",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/landlord-scene-base.png"
+            }
+          ],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [
+            "24x33"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 30,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "variant": "normal",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/landlord-scene-base.png"
+            }
+          ],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [
+            "24x33"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 43,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "flower-spectator",
+        "width": 320,
+        "variant": "normal",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/landlord-scene-base.png"
+            }
+          ],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [
+            "24x33"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 43,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "chengdu-spectator",
+        "width": 320,
+        "variant": "normal",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/landlord-scene-base.png"
+            }
+          ],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [
+            "24x33"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 43,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "flower-3",
+        "width": 1280,
+        "variant": "normal",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            }
+          ],
+          "footer": 511,
+          "overflow": 0,
+          "tiles": [
+            "26x36"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 20,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "variant": "missing",
+        "live": 0,
+        "dialog": {
+          "art": [],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 0,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "chengdu-4",
+        "width": 390,
+        "variant": "missing",
+        "live": 0,
+        "dialog": {
+          "art": [],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 0,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      },
+      {
+        "mode": "flower-4",
+        "width": 320,
+        "variant": "long",
+        "live": 0,
+        "dialog": {
+          "art": [
+            {
+              "loaded": true,
+              "src": "/characters/star-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/elegant-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/sunny-scene-base.png"
+            },
+            {
+              "loaded": true,
+              "src": "/characters/landlord-scene-base.png"
+            }
+          ],
+          "footer": 520.59375,
+          "overflow": 0,
+          "tiles": [
+            "24x33"
+          ],
+          "viewport": 560
+        },
+        "closed": 0,
+        "reveal": 60,
+        "reopened": 1,
+        "poll": 0,
+        "next": 0
+      }
+    ],
+    "visualReview": [
+      "Desktop Flower: original portraits recognizable behind clear scores and unsquashed win tiles.",
+      "390px Chengdu and 320px Flower: naturally wrapping tiles, readable labels, fixed footer controls."
+    ],
+    "notes": [
+      "All 35 geometry cases were repeated after the background source freeze and returned passed.",
+      "An extra extended flow batch exceeded the browser-tool time limit; it is excluded. Eight final flows were rerun and saved individually.",
+      "Unknown character and image-error fallbacks were tested using actual compiled Vue, not forced in the browser."
+    ]
+  },
+  "aggregateChecks": {
+    "testsPassed": 1511,
+    "testsFailed": 0,
+    "testsSkipped": 0,
+    "lintErrors": 0,
+    "lintExistingWarnings": 3,
+    "build": "passed",
+    "independentFocusedTestsPassed": 287
+  }
+}

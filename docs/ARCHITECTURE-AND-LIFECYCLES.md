@@ -211,3 +211,6 @@ The frameless hand dock follows the same game-long slot lifetime: fixed desktop/
 
 用户明确要求结束后查看每家最终手牌，新 `game.roundSummary` 仅存在于权威 finished 响应。其所有牌区与统计都白名单只读，角色、替补、观战、重连看到同一公开结果；行牌中及下一局都无此字段。当前结束局仍在现有累计账本中只算一次，原参与者身份不被新座位覆盖。该投影不入持久化/历史、不重算分、不增加展示或开局动作。详细合同见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
 The explicitly requested final reveal exists only in authoritative finished responses. Allowlisted zones/statistics are public to every viewer after finish, absent while live or in a subsequent game. The existing ledger counts this game once under original participant identities. The projection is not persisted/archived and creates no scoring, presentation or start action; see the detailed contract.
+
+终局牌桌摊手牌复用上述只读摘要，由当前已显示快照派生，不另存手牌或监听器。摘要/阶段撤销即收起牌面；成都血战已胡但未结束不满足门槛。可见本局原名与当前占座区分，不让替补继承旧手牌归属。结算“返回牌桌”只关闭本地弹层，沿用焦点与busy守卫，不触发房间离席或导航生命周期。
+Table hand reveals derive from that same displayed summary without another hand cache or listener; withdrawn summaries/phases remove faces, and live Chengdu retirements do not qualify. Visible original names distinguish old hands from replacement occupants. Returning from settlement only closes the local dialog under focus/busy guards, without entering departure/navigation lifecycles.

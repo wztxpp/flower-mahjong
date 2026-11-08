@@ -3180,7 +3180,8 @@ html { scrollbar-gutter: stable; }
 .opponent-hand.stable-scroll,
 .header-actions.stable-scroll,
 .action-row[data-stable-scroll],
-.chengdu-action-bar.stable-scroll {
+.chengdu-action-bar.stable-scroll,
+.finished-table-hand.stable-scroll {
   scrollbar-gutter: auto;
 }
 
@@ -3362,3 +3363,34 @@ html { scrollbar-gutter: stable; }
 /* 次要动作悬停仍沿用角色底色，覆盖早期木色hover皮肤；禁用态仍不产生可点击反馈。
    Secondary-action hover retains its role color over the earlier wood skin; disabled controls receive no active feedback. */
 .own-player-area .hand-action-dock .button.secondary:hover:not(:disabled) { background: var(--hand-action-surface); }
+
+
+/* 终局牌桌摊牌只改变结束后的牌背行；进行中固定槽和成都已胡退出布局不受影响。
+   Final table reveals change finished rows only, leaving live fixed slots and retired Chengdu winners untouched.
+   全牌遍历、固定3:4牌面与禁止flex压缩保证不挤扁；原生横滚保留首尾与键盘访问。
+   Full lists, fixed3:4 faces and no flex shrinking prevent squashing; native scrolling keeps both endpoints keyboard-accessible. */
+.finished-table-hand,
+.table-surface:not(.lobby-table) .opponent-hand.finished-table-hand {
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  /* 40px牌 + 16px上下内边距 + 最多20px横向滚动条；底部12px留白也容纳5px牌影，不靠隐藏纵溢出来裁牌。
+     Reserve40px tiles +16px vertical padding + up to20px horizontal scrollbar;12px bottom padding fits the5px shadow without hiding overflow. */
+  height: 76px;
+  min-height: 76px;
+  max-width: 100%;
+  padding: 4px 2px 12px;
+  overflow: auto;
+}
+.finished-table-hand .mahjong-tile.tile-small {
+  flex: 0 0 30px;
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+}
+.finished-table-hand-empty { color: #eee2c5; font-size: 12px; line-height: 1.8; }
+
+.finished-table-hand-label { margin-top: 8px; color: #eee2c5; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }

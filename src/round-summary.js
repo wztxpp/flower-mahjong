@@ -1,6 +1,14 @@
 // 终局总览的纯展示适配：只接收服务端明确提供的终局摘要，不读取历史拼账或猜测对手手牌。
 // Pure finished-round display adapter: use explicit server summaries, never reconstruct ledgers or infer concealed hands.
 import { tilePresentation } from './mahjong-tile-presentation.js';
+import { isCharacterId } from '../shared/character-assignment.js';
+import { CHARACTER_PORTRAITS } from './character-portraits.js';
+
+// 终局装饰只用明确历史角色的固定原图目录；不拼URL、不接受响应中的图片路径，也不按座位补默认人物。
+// Terminal decoration selects an explicit historical ID from the fixed original-art catalog, never response URLs or seat defaults.
+export function roundSummaryPortrait(characterId) {
+  return isCharacterId(characterId) ? CHARACTER_PORTRAITS[characterId].base : null;
+}
 
 // 保留零和负数；缺值与非法值显示“未记录”，不能用 Number(null) 或 || 0 补成真实零。
 // Preserve zero/negative values; absent or invalid values stay unavailable rather than becoming a fabricated zero.
@@ -34,6 +42,7 @@ export function roundSummaryView(state) {
     return [{
       seat: player.seat,
       name: typeof player.name === 'string' && player.name.trim() ? player.name : `${player.seat + 1}号位`,
+      characterId: isCharacterId(player.characterId) ? player.characterId : null,
       huCount: recordedCount(player.huCount),
       roundScore: recordedNumber(player.roundScore),
       tableScore: recordedNumber(player.tableScore),
@@ -61,6 +70,38 @@ export function roundSummaryView(state) {
     }];
   });
   return players.length ? { gameMode, players } : null;
+}
+
+// 牌桌只从当前终局摘要按绝对座位取真实手牌，不使用 players[].hand、hidden 或胡牌引用补牌。
+// Table reveals read exact final hands by absolute seat from this summary only, never ordinary hands, hidden flags or win references.
+// 返回新 Map；缺失、重复、越界座位和跨玩法牌种不公开。原显示顺序及所有重复实体牌保持不动。
+// Return a fresh Map; missing/ambiguous/out-of-range seats and foreign-mode tiles stay concealed, preserving order and every physical copy.
+export function roundSummaryHandsBySeat(state) {
+  const hands = new Map();
+  const summary = roundSummaryView(state);
+  if (!summary) return hands;
+  const game = state.game;
+  // 两个明确玩法字段冲突时不能借优先级选一个；只有双方缺省才沿用旧花麻将解释。
+  // Conflicting explicit mode fields cannot be resolved by precedence; absent legacy modes retain Flower interpretation.
+  if (state.gameMode != null && state.gameMode !== summary.gameMode) return hands;
+  if (!Array.isArray(game.players) || ![3, 4].includes(game.players.length)) return hands;
+  if (summary.gameMode === 'chengdu' && game.players.length !== 4) return hands;
+  const isSeat = (seat) => Number.isInteger(seat) && seat >= 0 && seat < game.players.length;
+  const playerSeats = game.players.map((player) => player?.seat);
+  if (playerSeats.some((seat) => !isSeat(seat)) || new Set(playerSeats).size !== playerSeats.length) return hands;
+  // 净化摘要会忽略重复行；牌桌额外核对原响应，不能把“先出现的一个”误当可靠座位匹配。
+  // The display sanitizer omits duplicates; the table also checks raw rows rather than trusting the first ambiguous seat.
+  const seatCounts = new Map();
+  for (const player of game.roundSummary.players) {
+    if (isSeat(player?.seat)) seatCounts.set(player.seat, (seatCounts.get(player.seat) || 0) + 1);
+  }
+  const tileCount = summary.gameMode === 'chengdu' ? 27 : 18;
+  for (const player of summary.players) {
+    if (!isSeat(player.seat) || seatCounts.get(player.seat) !== 1 || !Array.isArray(player.finalHand)) continue;
+    if (player.finalHand.some((tile) => tile >= tileCount)) continue;
+    hands.set(player.seat, player.finalHand);
+  }
+  return hands;
 }
 
 // 积分符号既有视觉也有文字区别；不根据分数推断胡牌次数、胜者排序或未记录的历史。

@@ -168,7 +168,7 @@ test('horizontal viewports avoid phantom end gutters without changing vertical s
   assert.deepEqual(automaticGutters.sort(), [
     '.hand-scroll.stable-scroll', '.chengdu-hand.stable-scroll', '.meld-tiles.stable-scroll',
     '.opponent-hand.stable-scroll', '.header-actions.stable-scroll', '.action-row[data-stable-scroll]',
-    '.chengdu-action-bar.stable-scroll',
+    '.chengdu-action-bar.stable-scroll', '.finished-table-hand.stable-scroll',
   ].sort());
   assert.match(source, /\.stable-scroll, \[data-stable-scroll\]\s*\{[^}]*overflow: auto;[^}]*scrollbar-gutter: stable;/);
 });

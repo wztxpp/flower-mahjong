@@ -329,7 +329,8 @@ test('terminal preview registers actual keyboard handling while retaining all or
   assert.match(frame, /#app \[data-next-round-trigger\], #app \.next-round-dialog \.modal-close/);
   assert.match(frame, /event\.stopImmediatePropagation\(\)/);
   assert.match(frame, /View-only fixture network boundary/);
-  assert.doesNotMatch(frame, /\.mutate\(|\.startNextRound\(|\.leaveFinishedTable\(/);
+  assert.match(frame, /#app \.next-round-dialog \[data-next-round-return\]/);
+  assert.doesNotMatch(frame, /\.mutate\(|\.startNextRound\(|\.newTable\(/);
   const html = source('tests/browser/stable-table-preview.html');
   for (const control of ['load', 'finish', 'open', 'close', 'poll', 'new-game', 'measure']) assert.ok(html.includes(`id="fixture-summary-${control}"`));
   for (const height of [760, 560, 420]) assert.ok(html.includes(`value="${height}"`));

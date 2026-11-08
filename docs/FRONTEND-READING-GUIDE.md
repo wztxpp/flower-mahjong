@@ -104,9 +104,9 @@ River columns reuse `opponents[0]` (left), `me` (center), and `opponents[1]` (ri
 
 `seats` merges occupancy with current-game participant data; after finishing, `scoreSeats` prefers the game’s participant list. Table totals use participant IDs, not nickname or seat-number merging between new and departed players.
 
-牌种 `0–8` 是一至九条，`9–17` 是一至九筒。`null` 用于隐藏牌或空白，不等于牌种零。对手手牌只有张数，前端画背面占位；共胡虚拟牌是记录副本，不是新增实体牌。
+牌种 `0–8` 是一至九条，`9–17` 是一至九筒。`null` 用于隐藏牌或空白，不等于牌种零。进行中对手手牌只有张数，前端画背面占位；终局仅从明确公开摘要摊牌；共胡虚拟牌是记录副本，不是新增实体牌。
 
-Tile types `0–8` are one through nine bamboo, and `9–17` are one through nine dots. `null` means hidden or blank, not tile zero. Opponent hands expose counts and render backs; shared-win virtual copies are records, not additional physical tiles.
+Tile types `0–8` are one through nine bamboo, and `9–17` are one through nine dots. `null` means hidden or blank, not tile zero. Live opponent hands expose counts and render backs; final faces come only from the explicitly public summary; shared-win virtual copies are records, not additional physical tiles.
 
 ## 7. epoch、取消与“不知道是否成功” / Epochs, cancellation and uncertain outcomes
 
@@ -291,11 +291,11 @@ River headings/counts are also no longer visible: Flower removes `discard-label`
 
 ## 终局后的下一局选择 / Next-round choices after settlement
 
-`App.vue` 的 `showNextRound` 和 `activeModal` 共用规则/邀请的唯一弹层。玩家在本页看到同一局由进行中变为 `finished` 后，等本机音画及已有弹层结束再自动提示一次。首次读到已结束局（刷新、重连、重新进房）不自动提示；花麻将/成都页脚的“下一局选择”可手动打开。观众不自动弹，手动打开也没有开局权限。关闭/X/ESC返回结算，两个主选项为“同桌再来一局”和“返回大厅”。
-`showNextRound` and `activeModal` reuse the single rules/invitation modal. A live same-game finish prompts players once after local media and existing dialogs finish. Loading an already finished game after refresh/re-entry does not prompt; both modes expose a manual footer trigger. Viewers never auto-prompt or gain start authority. Close/Escape reveals settlement; the two primary choices restart the same table or return to the lobby.
+`App.vue` 的 `showNextRound` 和 `activeModal` 共用规则/邀请的唯一弹层。玩家在本页看到同一局由进行中变为 `finished` 后，等本机音画及已有弹层结束再自动提示一次。首次读到已结束局（刷新、重连、重新进房）不自动提示；花麻将/成都页脚的“下一局选择”可手动打开。观众不自动弹，手动打开也没有开局权限。关闭/X/ESC返回结算，两个主选项为“同桌再来一局”和“返回牌桌”。
+`showNextRound` and `activeModal` reuse the single rules/invitation modal. A live same-game finish prompts players once after local media and existing dialogs finish. Loading an already finished game after refresh/re-entry does not prompt; both modes expose a manual footer trigger. Viewers never auto-prompt or gain start authority. Close/Escape reveals settlement; the two primary choices restart the same table or close the dialog and return to that table.
 
-`startNextRound` 仍调用 `mutate(null, true)`，房主、满员、断线、同步、音画和旧房金额守卫不变；`leaveFinishedTable` 走原 `newTable` 离席路由。没有玩法/参数编辑，没有全员准备或投票。开局请求中暂不能关闭/离桌，错误留在层内，未知结果先同步，不重发。新局/换桌会清掉旧弹层，普通轮询不重复弹。键盘圈跳过禁用控件，全禁用时聚焦容器；关闭恢复原控件，原控件已移除/禁用则回到选择入口或牌桌工具。
-`startNextRound` delegates to the original start request and guards; `leaveFinishedTable` uses original departure. There are no rule editors, ready votes or new permissions. In-flight starts retain the dialog and errors; uncertain outcomes synchronize without retrying. New games/navigation clear it; polling never reopens it. Focus skips disabled controls, falls back to the container while all are disabled, and restores to the trigger/table tools when the former control no longer works.
+`startNextRound` 仍调用 `mutate(null, true)`，房主、满员、断线、同步、音画和旧房金额守卫不变；`closeNextRoundDialog` 只委托原 `closeModal`，不走 `newTable` 离席、不清凭证或导航。没有玩法/参数编辑，没有全员准备或投票。开局请求中暂不能关闭/离桌，错误留在层内，未知结果先同步，不重发。新局/换桌会清掉旧弹层，普通轮询不重复弹。键盘圈跳过禁用控件，全禁用时聚焦容器；关闭恢复原控件，原控件已移除/禁用则回到选择入口或牌桌工具。
+`startNextRound` delegates to the original start request and guards; `closeNextRoundDialog` delegates only to closeModal, never departure, credential clearing or navigation. There are no rule editors, ready votes or new permissions. In-flight starts retain the dialog and errors; uncertain outcomes synchronize without retrying. New games/navigation clear it; polling never reopens it. Focus skips disabled controls, falls back to the container while all are disabled, and restores to the trigger/table tools when the former control no longer works.
 
 关闭分支先捕获并清空 `previousFocus`，然后 `await nextTick()` 等实际DOM提交，再校验 `epoch` 和 `activeModal`。新局可能在同一tick删除入口或禁用按钮；若另一弹层接管，旧回调不能抢焦点。只有连接且启用的旧控件可恢复，否则查询当前启用的选择入口/桌面工具。
 The close branch captures and clears `previousFocus`, then awaits the actual DOM flush before checking `epoch` and `activeModal`. A new game can remove or disable the trigger in that tick, and a replacement modal must keep focus. Restore only a connected, enabled old control; otherwise query a current enabled choice trigger or table tool.
@@ -314,8 +314,20 @@ The new reading path leads from App's displayed authoritative summary through a 
 每位本局参与者分别显示胡牌次数、神龙组数、本局净分、本桌累计和结束时手牌。副露与胡牌引用另列；成都自摸记录显示“已含在手牌”，不能再向手牌添加第14张。神龙细节的 `pointsPerOpponent` 显示为“每家付”，不是本人的神龙净收益。旧记录缺失显示“未记录”，成都神龙显示“不适用”；零分、零胡、零组不与缺字段混淆。当前占座者换人不重命名原局参与者。
 Each original participant has hu count, dragon groups, round net, table total and exact terminal hand. Melds and win references remain separate; Chengdu self-draw references say they are already in hand. Dragon amounts are charged per opponent, not net dragon income. Missing records, inapplicable Chengdu dragons and known zero values remain distinct, and replacements do not rename original participants.
 
-整个总览只有一个具名、可聚焦的纵向滚动区，手牌、副露自然换行，不新增每玩家横向滚动条。超过四张胡牌记录默认收进原生 `details`，仍保留每张牌；`summary` 显式 `tabindex="0"` 加入现有焦点圈。底部同桌/大厅控制在滚动区外。新样式只在组件和 `next-round-dialog` 内生效，不改变此前无框手牌和上方动作带。
+整个总览只有一个具名、可聚焦的纵向滚动区，手牌、副露自然换行，不新增每玩家横向滚动条。超过四张胡牌记录默认收进原生 `details`，仍保留每张牌；`summary` 显式 `tabindex="0"` 加入现有焦点圈。底部同桌/返回牌桌控制在滚动区外。新样式只在组件和 `next-round-dialog` 内生效，不改变此前无框手牌和上方动作带。
 One named focusable vertical viewport contains naturally wrapping hand/meld tiles. More than four win references initially collapse in native details without dropping cards; explicit summary tabindex integrates with the existing focus loop. The footer controls remain outside the scroll area. Scoped styling preserves the existing frameless hands and action dock.
 
-`showNextRound`、`openNextRound`、`startNextRound`、`leaveFinishedTable`、请求/同步守卫和关闭后的 `await nextTick()` / epoch 焦点恢复逻辑均沿用。没有新增网络、存储键、监听或游戏动作。只读总览测试与真实浏览器测量应分别报告，SSR不证明320px布局或实际键盘焦点通过。
+`showNextRound`、`openNextRound`、`startNextRound`、`closeNextRoundDialog`、请求/同步守卫和关闭后的 `await nextTick()` / epoch 焦点恢复逻辑均沿用。没有新增网络、存储键、监听或游戏动作。只读总览测试与真实浏览器测量应分别报告，SSR不证明320px布局或实际键盘焦点通过。
 Existing modal state, actions, guards and post-flush epoch-protected focus restoration remain intact. The overview adds no network, storage, listeners or game actions. Report SSR and browser results separately; SSR does not establish narrow layout or actual keyboard focus.
+
+结算原画装饰仅取摘要 `characterId` 的固定基础原图；普通 `game.characters` 对旧局有默认值，不能拿来补历史。背景绝对定位不增加高度，暖白渐变与深色文字保持可读；未知或加载失败只撤下背景，原牌面/积分/焦点不变。当前弹层用至多七项本地失败集合抑制轮询重试，无动画/定时器/持久字段。详细来源和降级见 [终局摘要](FINISHED-ROUND-SUMMARY.md#本局角色原画背景--original-round-character-backgrounds)。
+Settlement decoration selects fixed base art only from summary characterId; ordinary game.characters has legacy defaults and cannot prove historical roles. Out-of-flow art adds no height, and its overlay/text palette preserves readability. Unknown/failed art removes only decoration, retaining tiles/scores/focus. At most seven local failure entries suppress polling retries without animation, timers or persistent fields; see the source/fallback contract.
+
+
+### 牌桌终局摊牌 / Final hands on the table
+
+`roundSummaryHandsBySeat(state)` 复用净化摘要，再检查明确玩法一致、3/4个唯一有效原座位、原摘要同席无重复及本玩法牌种。只返回完整复制的 `finalHand`，不拼胡牌、不读普通 `players[].hand`。App原背牌槽结束后改摊牌；成都只有整局结束才增加牌条，已胡退出仍不公开。缺记录保持原背面或“未记录”，空数组明确“无剩余手牌”。每条可见“本局：原名”及读屏名字只读摘要，替补同名也不继承归属。
+The table helper reuses sanitization, then checks explicit mode agreement, three/four unique valid seats, unambiguous raw-summary rows and mode-valid tiles. It returns complete copied finalHand arrays without appending wins or reading ordinary hands. Flower replaces existing backs at finish; Chengdu adds strips only after the entire game ends, never after one retirement. Missing and known-empty hands remain distinct. Visible original-participant labels and accessible names come solely from the summary, including same-name replacements.
+
+终局牌条固定30×40px、不压缩、原生横滚到末牌；不会修改进行中的固定槽。Vue每次快照重新派生且不缓存，阶段回退、新局、缺摘要或非法数据会撤下已显示牌面。`tests/invitation-copy.test.js` 通过真实组件同实例patch验证，SSR与浏览器验收另行报告。
+Final strips keep fixed30×40px uncompressed tiles with native scrolling to every card, leaving live slots unchanged. Each snapshot re-derives the reveal without caching; phase changes, new games, missing summaries and invalid records withdraw prior faces. Actual-component patch tests complement separate SSR and browser verification.

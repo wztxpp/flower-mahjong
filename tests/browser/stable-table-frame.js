@@ -13,7 +13,7 @@ import { measureStableTable, auditStableTable, auditReachability, setRiverReview
 document.addEventListener('click', (event) => {
   // 仅放行原下一局入口和关闭按钮；开局/离桌/其他生产按钮继续被阻断。
   // Allow only the existing local choice trigger and close control; starts/departures and other production buttons stay blocked.
-  if (event.target.closest('#app [data-next-round-trigger], #app .next-round-dialog .modal-close')) return;
+  if (event.target.closest('#app [data-next-round-trigger], #app .next-round-dialog .modal-close, #app .next-round-dialog [data-next-round-return]')) return;
   if (event.target.closest('#app button, #app a, #app input, #app select')) {
     event.preventDefault();
     event.stopImmediatePropagation();

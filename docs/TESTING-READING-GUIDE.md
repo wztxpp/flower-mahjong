@@ -323,3 +323,19 @@ Real-SFC UI tests cover seven modes/versions/audiences, original names, distinct
 
 `tests/helpers/round-summary-fixtures.js` 和原stable-table预览只构造展示快照，不执行规则动作；活动阶段无roundSummary。新增可见控制测试正常/缺字段/长内容/缺摘要、手动开关、现场终局、同局轮询与新局。AST安全计数、客户端fetch限制和服务端所有API方法403不变，实际onKey单独注册并成对清理。最终人工步骤见 [浏览器说明](../tests/browser/README.md#终局总览纯视图--terminal-summary-view-only-checks)。
 View-only fixtures never execute rules and omit active summaries. New controls exercise modal lifetimes and variants while retaining AST, fetch and server-403 boundaries, with paired actual keyboard listener registration. See the browser instructions for manual steps.
+
+### 终局牌桌回看回归 / Finished-table review regressions
+
+`tests/finished-table-hands.test.js` 覆盖两终局门、玩法冲突、3/4座位与原摘要重复、非法/缺牌区、空手、全部版本/观众、JSON恢复与长牌不截断。`tests/invitation-copy.test.js` 装载真实当前组件并以同一实例验证摘要补齐/更新/删除、单独阶段变化及新局撤回；没有复制渲染模型。`tests/ui.test.js` 另验原参与者/同名替补可见标记、玩家/房主/观众返回牌桌不请求、不清session、不导航、忙碌和未知结果守卫、手动重开及焦点。
+The focused suite covers terminal/mode/seat/data guards, every version/viewer, restoration and complete long hands. Actual mounted components verify summary-only updates and withdrawal without a copied model. UI tests add original/replacement attribution and return behavior across roles, including session/navigation preservation, busy/unknown outcomes, reopening and focus.
+
+长展示夹具为花麻将20张/成都14张，只检验视窗，不宣称为可执行规则局。隔离浏览器点击白名单仅新增安全返回牌桌钩子，生产动作继续阻断。
+Long view fixtures use20 Flower/14 Chengdu tiles solely to exercise viewports, not executable rule states. The browser allowlist adds only the safe return hook; production actions remain blocked.
+
+### 终局原画背景回归 / Terminal original-art regressions
+
+`tests/round-summary-portraits.test.js`：真实引擎完成三代花麻将/3与4座及成都；原meta角色映射验证完整性、稀疏缺项、白名单、唯一性及旧记录不补默认。真实API检查观战/重连、同名替补原角色、缺原映射但game.characters有默认值、下一局撤销与不存储投影。实际Vue SSR覆盖七角色×七玩法/版本/身份视图，额外未知/任意路径/缺角色/未终局均不出现背景。
+The new suite legally finishes every Flower version/table size and Chengdu, testing complete original mappings, sparse holes, allowlists, uniqueness and no legacy inference. Actual API cases cover viewers/reconnects, same-name replacements, absent historical maps despite public defaults, next-game withdrawal and no persisted projection. Real Vue SSR covers seven roles across seven mode/version/audience views, plus unknown/arbitrary-path/missing/live cases without art.
+
+实际组件挂载测试触发img错误，确认只移除该背景、轮询不重试、旧错误不影响新角色，以及阶段/摘要撤销；渲染前后输入深比较不变。真实SFC/CSS编译保护绝对底层、pointer-events/读屏隐藏、74%/82%遮罩最坏像素文字4.5:1和26×36/24×33/flex:none。浏览器网络、像素与手机外观由独立浏览器验收覆盖，不将此套件称为浏览器通过。
+Mounted-component errors remove only the failed layer, avoid polling retries, spare new roles and withdraw on phase/summary changes; input deep comparisons remain unchanged. Actual SFC/CSS checks protect out-of-flow decoration, noninteractive/hidden semantics, worst-pixel4.5:1 contrast and unchanged26×36/24×33/flex:none. Separate browser QA covers network/pixels/phone appearance; this suite makes no browser-pass claim.

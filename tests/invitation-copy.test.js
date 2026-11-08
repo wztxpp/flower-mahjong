@@ -1,4 +1,8 @@
 import * as RoundSummaryModule from '../src/round-summary.js';
+import * as MotionCatalog from '../src/portrait-motion/catalog.js';
+import * as MotionLoader from '../src/portrait-motion/loader.js';
+import * as MotionSettings from '../src/portrait-motion/settings.js';
+import * as MotionController from '../src/portrait-motion/controller.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
@@ -79,7 +83,18 @@ const Tile = compileComponent("MahjongTile.vue", {
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
+// 牌桌patch回归使用当前生产画框/设置组件，避免旧Live2D装载表产生无效节点掩盖真实更新。
+// Table-patch regressions load current production artwork/settings, avoiding invalid nodes from the retired Live2D harness.
+const CharacterArtwork = compileComponent('CharacterArtwork.vue', {
+  './portrait-motion/settings.js': MotionSettings,
+  './portrait-motion/catalog.js': MotionCatalog,
+  './portrait-motion/loader.js': MotionLoader,
+  './portrait-motion/controller.js': MotionController,
+});
+const PortraitMotionSettings = compileComponent('PortraitMotionSettings.vue', { './portrait-motion/settings.js': MotionSettings });
 const ChengduTable = compileComponent("ChengduTable.vue", {
+  "./CharacterArtwork.vue": CharacterArtwork,
+  "./round-summary.js": RoundSummaryModule,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
@@ -90,6 +105,8 @@ const RoundSummary = compileComponent("RoundSummary.vue", {
   "./MahjongTile.vue": Tile,
 });
 const App = compileComponent("App.vue", {
+  "./CharacterArtwork.vue": CharacterArtwork,
+  "./PortraitMotionSettings.vue": PortraitMotionSettings,
   "./RoundSummary.vue": RoundSummary,
   "./round-summary.js": RoundSummaryModule,
   "./Live2DSettings.vue": Live2DSettings,
@@ -218,6 +235,7 @@ function setup({
   url = `${PUBLIC_ORIGIN}/?room=OLDROOM2&token=do-not-share&tracking=old#private`,
   writeText = async () => {},
   userAgent = "Desktop test",
+  initialState = null,
 } = {}) {
   const timers = [];
   const setLocation = (value) => {
@@ -302,7 +320,7 @@ function setup({
         name: "房主",
       };
       scope.playerToken.value = PROFILE;
-      scope.state.value = {
+      scope.state.value = initialState || {
         id: ROOM_A,
         revision: 1,
         phase: "lobby",
@@ -753,3 +771,55 @@ test("ordinary room actions do not leave the copied indicator stuck indefinitely
     "Copy feedback must expire even when starting or playing a hand advances the request epoch",
   );
 });
+
+
+// 真实组件同实例patch：只改变摘要/阶段，不替换普通玩家对象，防止静态SSR漏掉缓存与旧牌残留。
+// Patch the actual mounted component without replacing public player objects, catching caches/stale faces that initial SSR cannot reveal.
+for (const caseId of ['flower-3', 'flower-4', 'flower-legacy-1', 'flower-legacy-2', 'flower-spectator', 'chengdu-4', 'chengdu-spectator']) {
+  test(`terminal table ${caseId} reveals, updates, withdraws and resets without remounting`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    const { terminalSummaryFixture } = await import('./helpers/round-summary-fixtures.js');
+    const state = stableTableSnapshot(caseId, 'finished').state;
+    delete state.game.roundSummary;
+    const { scope, root } = setup({ initialState: state });
+    await settle();
+    const originalPlayers = scope.state.value.game.players;
+    const rows = () => findAll(root, node => node.props['data-table-hand-seat'] != null);
+    const faces = row => findAll(row, node => node.props.class === 'tile-photo-face');
+    assert.ok(rows().length);
+    assert.ok(rows().every(row => faces(row).length === 0));
+    scope.state.value.game.roundSummary = terminalSummaryFixture(state, 'long');
+    await settle();
+    assert.equal(scope.state.value.game.players, originalPlayers);
+    for (const row of rows()) {
+      assert.equal(faces(row).length, caseId.startsWith('chengdu') ? 14 : 20);
+      assert.match(row.props['aria-label'], /结束时手牌/);
+      assert.equal(findAll(row, node => node.tag === 'button').length, 0, 'reveals are not interactive game controls');
+    }
+    scope.state.value.game.roundSummary.players.forEach(player => { player.finalHand = [0, 0, 1]; });
+    await settle();
+    assert.ok(rows().every(row => faces(row).length === 3), 'summary-only polls update the existing card');
+    delete scope.state.value.game.roundSummary;
+    await settle();
+    assert.ok(rows().every(row => faces(row).length === 0), 'missing summary removes all formerly revealed faces');
+    scope.state.value.game.roundSummary = terminalSummaryFixture(state);
+    await settle();
+    assert.ok(rows().every(row => faces(row).length > 0));
+    scope.state.value.phase = 'playing';
+    await settle();
+    assert.ok(rows().every(row => faces(row).length === 0), 'the outer room phase alone retracts reveals');
+    scope.state.value.game.id = 'new-terminal-snapshot';
+    scope.state.value.phase = 'finished';
+    await settle();
+    assert.ok(rows().every(row => faces(row).length > 0));
+    scope.state.value.game.phase = 'turn';
+    await settle();
+    assert.ok(rows().every(row => faces(row).length === 0), 'mixed phases retract reveals immediately');
+    scope.state.value.phase = 'playing';
+    scope.state.value.game.id = 'synthetic-next-round';
+    await settle();
+    assert.ok(rows().every(row => faces(row).length === 0), 'a new live game cannot reuse the stale summary');
+    assert.equal(findAll(root, node => String(node.props.class).includes('finished-table-hand-label')).length, 0);
+    scope.resetRoomContext();
+  });
+}

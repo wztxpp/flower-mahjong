@@ -97,6 +97,7 @@ const CharacterArtwork = compileComponent('CharacterArtwork.vue', {
   './portrait-motion/controller.js': MotionController,
 });
 const ChengduTable = compileComponent("ChengduTable.vue", {
+  "./round-summary.js": RoundSummaryModule,
   './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
@@ -7011,7 +7012,8 @@ for (const mode of ['flower', 'chengdu']) {
     assert.match(dialog, /aria-labelledby="next-round-title"/);
     assert.match(dialog, /aria-describedby="next-round-description"/);
     assert.match(dialog, /同桌再来一局/);
-    assert.match(dialog, /返回大厅/);
+    assert.match(dialog, /返回牌桌/);
+    assert.doesNotMatch(dialog, /返回大厅/);
     assert.doesNotMatch(dialog, /<input|<select|查看结算<\/button>/);
     scope.closeModal();
     await settle();
@@ -7048,7 +7050,7 @@ for (const mode of ['flower', 'chengdu']) {
     await settle();
     await scope.startNextRound();
     scope.closeModal();
-    await scope.leaveFinishedTable();
+    await scope.closeNextRoundDialog();
     assert.equal(requests.length, 1);
     assert.match(requests[0].url, /\/start$/);
     assert.deepEqual(requests[0].body.options, {});
@@ -7207,7 +7209,7 @@ test('next-round dialog traps keyboard focus, handles Escape and restores the tr
   scope.resetRoomContext();
 });
 
-test('next-round dialog keeps failure feedback visible and returns to the lobby through normal departure', async () => {
+test('next-round dialog keeps failure feedback and returns to the same table without departure', async () => {
   const scope = setup(nextRoundFixture());
   await settle();
   scope.openNextRound();
@@ -7223,20 +7225,21 @@ test('next-round dialog keeps failure feedback visible and returns to the lobby 
   assert.equal(scope.showNextRound.value, true);
   assert.equal(scope.busy.value, false);
   assert.match(await render(scope), /class="next-round-error" role="alert">合成开局失败/);
-  const calls = [];
-  scope.playerToken.value = 'a'.repeat(64);
-  globalThis.fetch = async (url) => {
-    calls.push(url);
-    if (url.endsWith('/leave')) return response({ left: true, detached: false });
-    return response({ records: [], totals: [] });
-  };
-  await scope.leaveFinishedTable();
+  const beforeSession = JSON.parse(JSON.stringify(scope.session.value));
+  const beforeState = JSON.parse(JSON.stringify(scope.state.value));
+  const beforeLocation = window.location.href;
+  globalThis.fetch = () => assert.fail('returning to the table must not leave, start or fetch');
+  scope.closeNextRoundDialog();
   await settle();
-  assert.equal(calls.filter(url => url.endsWith('/leave')).length, 1);
-  assert.equal(calls.some(url => url.endsWith('/start')), false);
-  assert.equal(scope.inRoom.value, false);
+  assert.equal(scope.inRoom.value, true);
   assert.equal(scope.showNextRound.value, false);
-  assert.equal(window.location.search, '');
+  assert.deepEqual(scope.session.value, beforeSession);
+  assert.deepEqual(JSON.parse(JSON.stringify(scope.state.value)), beforeState);
+  assert.equal(window.location.href, beforeLocation);
+  scope.openNextRound();
+  await settle();
+  assert.match(await render(scope), /class="next-round-error" role="alert">合成开局失败/);
+  scope.resetRoomContext();
 });
 
 // 请求结果不明时沿用原同步流程；读到已开新局才撤下弹层，不能自动重复 start。
@@ -7270,6 +7273,16 @@ test('next-round dialog reconciles an uncertain start without retry and retains 
       assert.match(await render(scope), /连接中断，操作结果需要同步确认/);
       await scope.startNextRound();
       assert.equal(starts, 1);
+      const session = JSON.stringify(scope.session.value);
+      scope.closeNextRoundDialog();
+      await settle();
+      assert.equal(scope.inRoom.value, true, 'closing an unresolved outcome does not leave the table');
+      assert.equal(scope.offline.value, true, 'closing does not fake a successful resynchronization');
+      assert.equal(JSON.stringify(scope.session.value), session);
+      scope.openNextRound();
+      await settle();
+      await scope.startNextRound();
+      assert.equal(starts, 1, 'reopening keeps the unknown-outcome start lock');
     }
     scope.resetRoomContext();
   }
@@ -7328,7 +7341,8 @@ test('next-round dialog preserves spectator manual choices across full same-game
     await scope.startNextRound();
     const html = await render(scope);
     const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
-    assert.match(dialog, /返回大厅/);
+    assert.match(dialog, /返回牌桌/);
+    assert.doesNotMatch(dialog, /返回大厅/);
     assert.doesNotMatch(dialog, /同桌再来一局<\/button>/);
     scope.closeModal();
     scope.state.value = { ...scope.state.value, revision: scope.state.value.revision + 1 };
@@ -7568,7 +7582,8 @@ for (const caseId of ['flower-3', 'flower-4', 'chengdu-4', 'flower-legacy-1', 'f
     }
     if (caseId.endsWith('spectator')) assert.doesNotMatch(dialog, /同桌再来一局/);
     else assert.match(dialog, /同桌再来一局/);
-    assert.match(dialog, /返回大厅/);
+    assert.match(dialog, /返回牌桌/);
+    assert.doesNotMatch(dialog, /返回大厅/);
     scope.closeModal();
     await settle();
     assert.equal(scope.showNextRound.value, false);
@@ -7596,7 +7611,7 @@ test('finished overview missing fields stay explicitly unavailable, and absent s
   const missing = (await render(scope)).match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
   assert.match(missing, /本局详细记录暂不可用/);
   assert.match(missing, /同桌再来一局/);
-  assert.match(missing, /返回大厅/);
+  assert.match(missing, /返回牌桌/);
   assert.doesNotMatch(missing, /data-round-summary-seat/);
   scope.resetRoomContext();
 });
@@ -7623,5 +7638,86 @@ test('long overview preserves every win and extended meld in native details, wit
   const meld = second.match(/<div class="round-meld">[\s\S]*?<\/div>/)?.[0] || '';
   assert.equal((meld.match(/class="mahjong-tile tile-small"/g) || []).length, 20);
   assert.match(second, /<details class="round-win-details" open>/);
+  scope.resetRoomContext();
+});
+
+
+// 当前占座可换人，终局牌条必须可见地指向摘要原名；同名替补仍显示本局归属，不用姓名相等推定身份。
+// Occupants can change; terminal hands visibly name summary participants, including same-name replacements without inferring identity.
+for (const caseId of ['flower-3', 'flower-spectator', 'chengdu-4', 'chengdu-spectator']) {
+  test(`terminal table ${caseId} attributes replacement-seat hands to original participants`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    for (const sameName of [false, true]) {
+      const state = stableTableSnapshot(caseId, 'finished').state;
+      state.game.roundSummary.players[1].name = '本局原参与者';
+      state.seats[1].name = sameName ? '本局原参与者' : '后来替补';
+      state.seats[1].isCurrentParticipant = false;
+      // 缺旧名字快照也不能回退成当前占座人；原名只能来自明确公开的摘要。
+      // Missing historical name snapshots cannot fall back to occupants; use the explicit public summary only.
+      delete state.game.participantNames;
+      const scope = setup(state);
+      await settle();
+      const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+      const row = html.match(/<div[^>]*data-table-hand-seat="1"[\s\S]*?<\/div>/)?.[0] || '';
+      assert.match(row, /aria-label="本局原参与者的结束时手牌/);
+      assert.doesNotMatch(row, /后来替补/);
+      assert.match(html, /class="finished-table-hand-label">本局：本局原参与者 · 结束时手牌<\/div>/);
+      assert.equal((row.match(/class="tile-photo-face"/g) || []).length, state.game.roundSummary.players[1].finalHand.length);
+      scope.resetRoomContext();
+    }
+  });
+}
+
+// 返回牌桌和关闭按钮共享守卫；结束重连、普通玩家与观众都不离席或改变网址，仍能手动重开本局结算。
+// Return shares close guards; reconnects, players and viewers keep their seat/URL and may reopen this same summary manually.
+for (const mode of ['flower', 'chengdu']) {
+  for (const role of ['host', 'player', 'spectator']) {
+    test(`return-to-table ${mode}/${role} retains session, game, history and reopen control`, async () => {
+      const state = nextRoundFixture(mode);
+      if (role === 'player') state.hostSeat = 1;
+      if (role === 'spectator') { state.viewerRole = 'spectator'; state.you = null; state.game.mySeat = null; }
+      const scope = setup(state);
+      await settle();
+      const before = JSON.stringify({ session: scope.session.value, state: scope.state.value });
+      const beforeLocation = window.location.href;
+      globalThis.fetch = () => assert.fail('closing must make no request');
+      assert.equal(scope.showNextRound.value, false, 'restored finishes do not auto-prompt');
+      scope.openNextRound();
+      await settle();
+      const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+      const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+      assert.match(dialog, /data-next-round-return[^>]*>返回牌桌<\/button>/);
+      assert.doesNotMatch(dialog, /返回大厅/);
+      scope.busy.value = true;
+      scope.closeNextRoundDialog();
+      assert.equal(scope.showNextRound.value, true, 'unknown in-flight starts remain visible');
+      scope.busy.value = false;
+      scope.closeNextRoundDialog();
+      await settle();
+      assert.equal(scope.showNextRound.value, false);
+      assert.equal(scope.inRoom.value, true);
+      assert.equal(JSON.stringify({ session: scope.session.value, state: scope.state.value }), before);
+      assert.equal(window.location.href, beforeLocation);
+      scope.openNextRound();
+      await settle();
+      assert.equal(scope.showNextRound.value, true);
+      scope.resetRoomContext();
+    });
+  }
+}
+
+test('return-to-table restores focus through the existing close watcher', async () => {
+  const scope = setup(nextRoundFixture());
+  await settle();
+  const host = mountNextRoundFocusHost(scope);
+  host.nodes.trigger.focus();
+  scope.openNextRound();
+  await settle();
+  assert.equal(document.activeElement, host.nodes.modalButton);
+  scope.closeNextRoundDialog();
+  await settle();
+  assert.equal(document.activeElement, host.nodes.trigger);
+  assert.equal(host.nodes.trigger.isConnected, true);
+  host.unmount();
   scope.resetRoomContext();
 });

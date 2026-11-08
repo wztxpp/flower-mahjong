@@ -24,10 +24,13 @@ export function terminalSummaryFixture(state, variant = 'normal') {
       return {
         seat,
         name: long ? `合成牌友${seat + 1}·这是用于终局长名字换行的记录` : state.seats[seat].name,
+        // 此处映射是夹具明确选择的历史角色，不模拟生产API对旧记录的默认值；缺记录场景保留null。
+        // This fixture mapping explicitly selects historical roles, not production API legacy defaults; missing-record cases stay null.
+        characterId: missing ? null : state.game.characters?.[seat] ?? null,
         huCount: missing ? null : winCount,
         roundScore: missing ? null : (seat === 0 ? playerCount - 1 : -1) * (long ? 123456 : 12),
         tableScore: missing ? null : (seat === 0 ? playerCount - 1 : -1) * (long ? 234567 : 24),
-        finalHand: missing ? null : Array.from({ length: seat === 0 ? 13 : 10 }, (_, index) => (index + seat * 3) % tileCount),
+        finalHand: missing ? null : Array.from({ length: long ? chengdu ? 14 : 20 : seat === 0 ? 13 : 10 }, (_, index) => (index + seat * 3) % tileCount),
         melds: missing ? null : seat === 0 ? [] : [{
           type: seat % 2 ? 'peng' : 'anGang', tile: seat * 3,
           tiles: Array(long && !chengdu ? 20 : seat % 2 ? 3 : 4).fill(seat * 3),

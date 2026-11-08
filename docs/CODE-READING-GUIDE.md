@@ -3,6 +3,9 @@
 终局总览当前验收：[FINISHED-ROUND-SUMMARY-20261108.md](qa/FINISHED-ROUND-SUMMARY-20261108.md) 与同目录浏览器JSON，记录权威隐私门、完整测试和窄屏/键盘范围。
 Current terminal-overview acceptance records the authoritative privacy gate, complete checks and narrow-screen/keyboard scope in the linked report and companion JSON.
 
+终局原画背景沿 `server/history.js → src/round-summary.js → src/RoundSummary.vue` 阅读；新增维护测试 `tests/round-summary-portraits.test.js` 验证历史角色来源、七角色静态目录及失败降级。合同见 [终局摘要](FINISHED-ROUND-SUMMARY.md#本局角色原画背景--original-round-character-backgrounds)。
+For terminal original-art backgrounds, follow history → display adapter → component. The new maintained portrait suite verifies historical provenance, the seven-role static catalog and failure fallback; see the linked contract.
+
 最新无框手牌/右上动作验收：[THEMED-HAND-ACTIONS-20261108.md](qa/THEMED-HAND-ACTIONS-20261108.md) 与同目录 `themed-hand-actions-browser-20261108.json`，分别记录范围说明和脱敏浏览器测量。
 Latest frameless-hand/upper-right-action acceptance: the linked report and companion JSON separate scope from synthetic browser measurements.
 
@@ -262,3 +265,6 @@ The new maintained projection is registry-selected and finished-only; history jo
 
 现有 `tests/ui.test.js`、`tests/invitation-copy.test.js` 更新真实组件依赖；`tests/stable-table-fixture.test.js` 和原浏览器预览增加终局本地控制与真实键盘处理器验证，API封锁不变。阅读前端展示合同时从 [前端导读](FRONTEND-READING-GUIDE.md#下一局弹层中的终局总览--finished-overview-inside-the-next-round-dialog) 开始。
 Existing UI/invitation harnesses load the real component; fixture/browser helpers add local modal controls and actual keyboard handling without weakening API isolation. Start from the frontend guide for the presentation contract.
+
+终局牌桌回看新增维护测试 `tests/finished-table-hands.test.js`，接线为 `src/round-summary.js → App.vue / ChengduTable.vue`，终局尺寸覆盖位于 `src/tabletop.css`。既有ui/invitation-copy套件验证返回牌桌不离席、原参与者归属与同实例牌面撤销，详见[终局合同](FINISHED-ROUND-SUMMARY.md#牌桌回看与按钮纠正--table-review-and-return-button)。
+Final table review adds the maintained helper-boundary suite, table wiring and terminal-only CSS. Existing UI/mounted-component tests cover no-departure returns, original attribution and reactive reveal withdrawal; see the contract.

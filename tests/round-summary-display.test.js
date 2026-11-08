@@ -3,8 +3,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import * as Vue from 'vue';
+import { renderToString } from 'vue/server-renderer';
+import { parse, compileScript, compileStyle } from '@vue/compiler-sfc';
 import * as flower from '../shared/game.js';
 import { engineFor } from '../server/game-engines.js';
+import * as RoundSummaryModule from '../src/round-summary.js';
+import * as TilePresentation from '../src/mahjong-tile-presentation.js';
 import { roundSummaryView, roundScoreText, roundScoreTone, roundMeldLabel, roundWinLabel } from '../src/round-summary.js';
 import { terminalSummaryFixture } from './helpers/round-summary-fixtures.js';
 import { stableTableSnapshot } from './helpers/stable-table-fixtures.js';
@@ -15,6 +20,29 @@ function stateFixture(caseId = 'flower-3', variant = 'normal') {
   const { state } = stableTableSnapshot(caseId, 'finished');
   state.game.roundSummary = terminalSummaryFixture(state, variant);
   return state;
+}
+
+// 编译实际脚本和模板，只替换编译产物的依赖入口；不复制组件逻辑或伪造牌面。
+// Compile actual setup/template code, replacing only generated imports rather than duplicating components or tiles.
+function displayComponent(filename, dependencies = {}) {
+  const { descriptor, errors } = parse(readFileSync(new URL(`../src/${filename}`, import.meta.url), 'utf8'));
+  assert.deepEqual(errors, []);
+  const script = compileScript(descriptor, { id: filename, inlineTemplate: true });
+  const modules = { vue: Vue, ...dependencies };
+  const loaded = script.content
+    .replace(/import\s+\{([^}]+)\}\s+from\s+['"]([^'"]+)['"];?/g,
+      (_, bindings, module) => `const {${bindings.replace(/\s+as\s+/g, ':')}} = modules[${JSON.stringify(module)}];`)
+    .replace(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"];?/g,
+      (_, binding, module) => `const ${binding} = modules[${JSON.stringify(module)}];`);
+  return new Function('modules', loaded.replace('export default', 'return'))(modules);
+}
+
+// 从实际SSR输出的HTML树查找类名，避免依赖空白、属性顺序或Vue注释标记。
+// Find classes in the actual SSR HTML tree without depending on whitespace, attribute order or Vue comments.
+function renderedElements(node, className) {
+  const classes = node.props?.find((property) => property.type === 6 && property.name === 'class')?.value?.content.split(/\s+/) || [];
+  const children = (node.children || []).flatMap((child) => renderedElements(child, className));
+  return classes.includes(className) ? [node, ...children] : children;
 }
 
 test('terminal display requires both finished gates and a matching explicit server summary', () => {
@@ -140,6 +168,76 @@ test('overview keeps one vertical viewport, wrapped zones and keyboard-reachable
   assert.match(component, /每家付 \{\{ dragon.pointsPerOpponent \}\} 分/);
   assert.match(component, /本局净分/);
   assert.match(component, /本桌累计/);
+});
+
+// flex-basis沿父容器主轴解释：同一张牌在横向手牌/副露与纵向胡牌记录中都必须采用自身宽高。
+// Flex basis follows the parent's main axis: row hands/melds and column wins must both use the tile's own dimensions.
+test('summary tile dimensions remain intrinsic across row and column containers at desktop and phone breakpoints', () => {
+  const source = readFileSync(new URL('../src/RoundSummary.vue', import.meta.url), 'utf8');
+  const { descriptor } = parse(source);
+  const style = compileStyle({ source: descriptor.styles[0].content, filename: 'RoundSummary.vue', id: 'summary-sizing', scoped: true });
+  assert.deepEqual(style.errors, []);
+  for (const viewportWidth of [1280, 601, 600, 390, 320]) {
+    const dimensions = {};
+    let flex = { grow: '0', shrink: '1', basis: 'auto' };
+    style.rawResult.root.walkRules((rule) => {
+      if (rule.selector !== '.round-tile-run[data-v-summary-sizing] .mahjong-tile') return;
+      // 读取同一选择器的媒体覆盖顺序；未知查询要显式补测试，不能静默当作桌面规则。
+      // Apply responsive overrides in source order; new query shapes must be covered explicitly rather than treated as base rules.
+      if (rule.parent.type === 'atrule') {
+        assert.equal(rule.parent.name, 'media');
+        const maximum = rule.parent.params.match(/^\(\s*max-width\s*:\s*(\d+)px\s*\)$/);
+        assert.ok(maximum, rule.parent.params);
+        if (viewportWidth > Number(maximum[1])) return;
+      }
+      rule.walkDecls((declaration) => {
+        const { prop, value } = declaration;
+        if (prop === 'width' || prop === 'height') dimensions[prop] = value;
+        if (prop === 'flex') {
+          const values = value === 'none' ? ['0', '0', 'auto'] : value.split(/\s+/);
+          flex = { grow: values[0], shrink: values[1], basis: values[2] };
+        }
+        if (prop === 'flex-grow') flex.grow = value;
+        if (prop === 'flex-shrink') flex.shrink = value;
+        if (prop === 'flex-basis') flex.basis = value;
+      });
+    });
+    assert.deepEqual(dimensions, viewportWidth <= 600 ? { width: '24px', height: '33px' } : { width: '26px', height: '36px' });
+    assert.deepEqual(flex, { grow: '0', shrink: '0', basis: 'auto' }, `${viewportWidth}px: neither axis may replace width/height or squeeze a tile`);
+  }
+});
+
+// 使用真实RoundSummary与MahjongTile渲染两玩法及长记录，确认三类牌仍共用尺寸作用域且不漏牌。
+// Render both real components for both modes and long records, preserving the shared sizing scope and every tile.
+test('actual summary components keep every hand, meld and winning reference inside the shared tile sizing scope', async () => {
+  const Tile = displayComponent('MahjongTile.vue', { './mahjong-tile-presentation.js': TilePresentation });
+  const Summary = displayComponent('RoundSummary.vue', { './MahjongTile.vue': Tile, './round-summary.js': RoundSummaryModule });
+  for (const [caseId, variant] of [['flower-3', 'normal'], ['chengdu-4', 'normal'], ['flower-3', 'long'], ['flower-3', 'missing']]) {
+    const summary = roundSummaryView(stateFixture(caseId, variant));
+    const before = structuredClone(summary);
+    const html = await renderToString(Vue.createSSRApp(Summary, { summary }));
+    const { descriptor, errors } = parse(`<template>${html}</template>`);
+    assert.deepEqual(errors, []);
+    const players = renderedElements(descriptor.template.ast, 'round-player');
+    assert.equal(players.length, summary.players.length);
+    for (const [index, player] of summary.players.entries()) {
+      const expected = (player.finalHand?.length || 0)
+        + (player.melds || []).reduce((total, meld) => total + (meld.tiles?.length || 0), 0)
+        + (player.wins || []).filter((win) => win.tile !== null).length;
+      const tiles = renderedElements(players[index], 'mahjong-tile');
+      const scopedTiles = renderedElements(players[index], 'round-tile-run')
+        .flatMap((run) => renderedElements(run, 'mahjong-tile'));
+      assert.equal(tiles.length, expected, `${caseId}/${variant}: player ${index} has all recorded tiles`);
+      assert.deepEqual(scopedTiles, tiles, 'hand, meld and win tiles share the same sizing ancestor');
+      const wins = renderedElements(players[index], 'round-win');
+      assert.equal(wins.length, player.wins?.length || 0);
+      for (const win of wins) {
+        assert.equal(renderedElements(win, 'mahjong-tile').length, 1);
+        assert.equal(renderedElements(win, 'round-win-label').length, 1);
+      }
+    }
+    assert.deepEqual(summary, before, 'rendering must not mutate authoritative display data');
+  }
 });
 
 // 以渐变最暗端测普通小字号对比度；这只是数值检查，实际浏览器外观由独立验收覆盖。
