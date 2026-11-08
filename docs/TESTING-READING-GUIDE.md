@@ -41,7 +41,7 @@ A scenario may repeat act/assert phases to cover a lifecycle. A cloned `before` 
 - `tests/d1.test.js`：内存 SQLite 模拟 D1，检查 SQL CAS、读写次数与凭证哈希。 / In-memory SQLite D1 simulation for SQL CAS, read/write counts and credential hashes.
 - `tests/room-switch-integration.test.js`：身份历史、离席恢复、房主转移、重启、旧座位不能被新玩家继承。 / Identity history, leave/resume, host transfer, restarts and replacement-seat isolation.
 - `tests/table-scores.test.js`：累计已结算分加本局临时分，不能重复归档或按昵称继承。 / Settled plus provisional totals, without duplicate archives or nickname-based inheritance.
-- `tests/character-assignment.test.js`：偏好组合、精确枚举随机分支、唯一分配与重启稳定性。 / Preference combinations, exact RNG-branch enumeration, unique assignment and restart stability.
+- `tests/character-assignment.test.js`：偏好组合、精确随机分支、落座唯一分配、首局/续局稳定、旧房兼容、终局换人及 FileStore 重启。 / Preference/RNG enumeration, unique seated roles, first/next-round stability, legacy recovery, replacements and FileStore reloads.
 
 `revision` 是房间状态版本，不是时间戳。两个请求携带同一旧版本时最多一个可以提交；另一个冲突后要读取新状态。SQLite 替身能检验这里使用的 SQL 和存储契约，但不模拟 Cloudflare 的全部运行环境或真实多地域延迟。
 A room revision is not a timestamp. At most one competing write with the same old revision commits; a conflict requires a new read. SQLite checks the SQL/storage contract used here, not all Cloudflare runtime or cross-region behavior.
@@ -222,8 +222,10 @@ Production tests cover draft/mixed/incomplete-save rejection, fixed direction/ex
 `tests/character-portraits.test.js`验证公开事件映射、三/四座、三响、隐藏牌零读取、独立定时器/过期回调、素材兜底、预热与用户PNG哈希。`tests/ui.test.js`实际编译App验证local队列时机、重复/旧快照、重连/后台/换局/换桌清理、成都玩家/观众、自摸隐私、三响及明确略过。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 The new unit suite covers public mapping, seat bounds, triple wins, no concealed-tile reads, independent/stale timers, fallbacks, preloads and supplied PNG hashes. Compiled-App tests cover FIFO timing, deduplication, restore/cancellation, Chengdu players/spectators, self-draw privacy, triple wins and skip.
 
-`tests/browser/portrait-preview-server.mjs` 使用共享MemoryStore提供三个隔离本机端口5380–5382；`portrait-preview-narrow.html` 将真实App置于390px iframe。运行与本次结果见 [场景立绘验收](CHARACTER-SCENE-VALIDATION.md)。测试结束须停止自建进程；不用于生产桌或真人记录。
-The portrait preview server supplies three local origins backed only by MemoryStore; its narrow page hosts the actual App in a 390px iframe. See the scene validation guide and stop these test processes afterward; never use production rooms/records.
+`tests/browser/portrait-preview-server.mjs` 使用共享MemoryStore提供三个隔离本机端口5380–5382；`portrait-preview-narrow.html` 将真实App置于390px iframe。运行与当前结果见 [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md)，原 [场景验收](CHARACTER-SCENE-VALIDATION.md) 保留为历史记录。测试结束须停止自建进程；不用于生产桌或真人记录。
+The portrait preview server supplies three local origins backed only by MemoryStore; its narrow page hosts the actual App in a 390px iframe. See the current seating/portrait validation (the older scene report is historical) and stop these test processes afterward; never use production rooms/records.
 
-`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、主角装饰下层与私有守卫；不复制界面、不运行生产请求。
-The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, decorative image ordering and private guards, without duplicating UI or making production requests.
+`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、独立主角位于手牌之后与私有守卫；不复制界面、不运行生产请求。
+The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, a separate portrait after the hand and private guards, without duplicating UI or making production requests.
+
+- [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md) 记录联合验证；角色矩阵覆盖花麻将3/4席和成都4席，直接调用真实 API、真实文件存储与合法引擎动作，不访问生产牌局。 / The joint validation records Flower three/four-seat and Chengdu four-seat role coverage using real APIs, file storage and legal engine actions, never production games.

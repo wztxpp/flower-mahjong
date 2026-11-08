@@ -44,8 +44,8 @@ function randomIndex(size) {
   } while (sample[0] >= limit);
   return sample[0] % size;
 }
-// 仅开局时一起处理本桌偏好，返回不重复角色；第二参数仍保留旧测试的随机选择注入。
-// Resolve table preferences at start with unique roles; the second parameter preserves existing RNG injection.
+// 保留旧批量分配接口及公平性合同；实际房间现在落座即分配，不在开局重新调用。
+// Preserve the legacy batch assignment API/fairness contract; live rooms now assign on seating, never again at start.
 export function assignCharacters(preferences, chooseIndex = randomIndex, seatCount = SEAT_COUNT) {
   validateSeatCount(seatCount);
   if (!Array.isArray(preferences) || preferences.length !== seatCount) {
@@ -77,6 +77,44 @@ export function assignCharacters(preferences, chooseIndex = randomIndex, seatCou
   for (let seat = 0; seat < assigned.length; seat++) {
     if (assigned[seat] === null) assigned[seat] = remaining.splice(choose(remaining.length), 1)[0];
   }
+  return assigned;
+}
+// 为一位新落座者选角色：先满足仍可用的偏好，否则从剩余角色均匀抽取，不抢旧人的角色。
+// Assign one new occupant: honor an available preference, otherwise draw uniformly from unused roles without displacing anyone.
+// 输入已占用角色来自服务器；返回 ID，不修改输入，随机注入仅供确定性测试。
+// Occupied IDs come from the server; return an ID without mutation, with RNG injection for deterministic tests only.
+export function assignSeatCharacter(preference, occupiedCharacters, chooseIndex = randomIndex) {
+  const requested = preferredCharacter(preference);
+  const available = CHARACTER_IDS.filter((character) => !occupiedCharacters.includes(character));
+  if (!available.length) throw new RangeError('No characters available');
+  if (available.includes(requested)) return requested;
+  const index = available.length === 1 ? 0 : chooseIndex(available.length);
+  if (!Number.isInteger(index) || index < 0 || index >= available.length)
+    throw new RangeError('Invalid random index');
+  return available[index];
+}
+// 只读恢复占座映射：先保留合法且不重复的已分配角色，再补旧偏好，最后按旧座位顺序兜底。
+// Read-only occupancy recovery: reserve valid unique assignments, then legacy preferences, then stable seat-order fallbacks.
+// 空座始终为 null；不抽签、不写回，所以旧房轮询和重连也不会换人。损坏的重复 ID 只保留第一份。
+// Vacancies stay null; no randomness or writes means legacy polls/reconnects stay stable. Keep only the first duplicate saved ID.
+export function seatCharacters(seats) {
+  validateSeatCount(seats.length);
+  const assigned = Array(seats.length).fill(null);
+  const reserve = (seat, character) => {
+    if (isCharacterId(character) && !assigned.includes(character)) assigned[seat] = character;
+  };
+  // 分三轮预留，避免早座位的兜底抢走后座位已保存的角色或可用偏好。
+  // Three passes keep an earlier fallback from stealing a later persisted role or available preference.
+  seats.forEach((person, seat) => { if (person) reserve(seat, person.characterId); });
+  seats.forEach((person, seat) => {
+    if (person && assigned[seat] === null) reserve(seat, person.preferredCharacter);
+  });
+  const fallback = gameCharacters(undefined, seats.length);
+  seats.forEach((person, seat) => {
+    if (!person || assigned[seat] !== null) return;
+    reserve(seat, fallback[seat]);
+    if (assigned[seat] === null) assigned[seat] = CHARACTER_IDS.find((character) => !assigned.includes(character));
+  });
   return assigned;
 }
 // 已有合法映射只复制不修改；旧局没有映射时返回稳定兼容顺序。

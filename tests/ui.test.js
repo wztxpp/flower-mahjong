@@ -6699,9 +6699,9 @@ test('local four-seat triple wins change all three winners and the discarder tog
   scope.resetRoomContext();
 });
 
-// 本人原有身份与私有牌区必须共享同一场景容器，不能只把头像换大；观众仍没有本人牌区。
-// Own identity and private cards share one scene container, rather than enlarging only the avatar; spectators retain no private area.
-test('portrait scenes fill opponent frames and wrap the own identity with its existing hand controls', async () => {
+// 本人立绘独立位于手牌下方，不再充当背景；观众仍没有本人牌区或本人立绘。
+// Own art is separate below the hand rather than a background; spectators retain neither an own hand nor own portrait.
+test('portrait scenes use independent own art below the existing private hand controls', async () => {
   for (const schemaVersion of [1, 2, 3]) {
     const state = fixture({ legacy: schemaVersion === 1, schemaVersion });
     state.game.characters = ['sweet', 'sunny', 'elegant'];
@@ -6710,7 +6710,8 @@ test('portrait scenes fill opponent frames and wrap the own identity with its ex
     assert.equal((html.match(/class="[^"]*\bcharacter-portrait\b/g) || []).length, 2);
     assert.equal((html.match(/class="own-character-scene"/g) || []).length, 1);
     const ownArea = html.slice(html.indexOf('own-player-area'));
-    assert.match(ownArea, /own-character-scene[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt=""[^>]+aria-hidden="true"/);
+    assert.match(ownArea, /own-character-scene[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt="小桃"/);
+    assert.ok(ownArea.indexOf('class="hand-panel"') < ownArea.indexOf('class="own-character-display"'));
     assert.match(ownArea, /own-seat-summary[\s\S]+class="hand-panel"[\s\S]+我的手牌与操作/);
     assert.match(ownArea, /class="my-hand"/);
     scope.resetRoomContext();
@@ -6725,8 +6726,8 @@ test('portrait scenes fill opponent frames and wrap the own identity with its ex
   scope.resetRoomContext();
 });
 
-// 大厅没有正在进行的私有牌场景；终局仍保留同一角色背景并交还既有诊断/下一局流程。
-// Lobbies have no active private-card scene; finished rounds retain the same character background and existing diagnostics/next-round flow.
+// 大厅没有私有牌区；终局保留下方独立角色图并沿用既有诊断/下一局流程。
+// Lobbies have no private hand; finished rounds retain the separate portrait below and existing diagnostics/next-round flow.
 test('own scene lifecycle keeps the lobby undecorated and clears on room exit', async () => {
   const state = fixture({ schemaVersion: 3 });
   state.phase = 'finished';
@@ -6747,13 +6748,38 @@ test('own scene lifecycle keeps the lobby undecorated and clears on room exit', 
 test('scene motion is image-only, edge-safe and disabled for reduced-motion preferences', () => {
   const css = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
   assert.match(css, /@keyframes character-scene-breathe\s*\{[\s\S]*?scale\(1\.035\)[\s\S]*?scale\(1\.045\)/);
-  assert.match(css, /\.own-player-area\s*\{[^}]*overflow: clip;/);
-  assert.match(css, /\.own-character-scene\s*\{[^}]*inset: -3%;[^}]*width: 106%;[^}]*height: 106%;[^}]*z-index: 0;/);
-  assert.match(css, /\.own-player-area\.has-character-scene::after\s*\{[^}]*inset: -1px;[^}]*z-index: 1;/);
-  assert.match(css, /\.own-player-area > :not\(\.own-character-scene\)\s*\{[^}]*z-index: 2;/);
+  assert.match(css, /\.own-character-art\s*\{[^}]*overflow: clip;/);
+  assert.match(css, /\.own-character-scene\s*\{[^}]*position: static;/);
+  assert.doesNotMatch(css, /\.own-player-area\.has-character-scene::after/);
   const enabled = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: no-preference)'), css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
   assert.match(enabled, /\.character-portrait > img\s*\{\s*animation: character-scene-breathe 10s/);
   assert.match(enabled, /\.own-character-scene\s*\{\s*animation: character-scene-breathe 12s/);
   assert.doesNotMatch(enabled, /\.mahjong-tile|\.button|\.hand-panel|\.player-name/);
   assert.match(css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)')), /\.character-portrait > img,\s*\.own-character-scene\s*\{\s*animation: none;\s*transform: none;/);
+});
+
+// 落座后的已分配角色优先于偏好；进入游戏、刷新快照与观战不能重新猜测角色。
+// Assigned seated identities outrank preferences; game entry, refreshed snapshots and spectators must not guess new identities.
+test('seated character identity survives lobby to start and preserves replacement versus game ownership', async () => {
+  const state = fixture({ schemaVersion: 3 });
+  state.seats[0].preferredCharacter = 'sweet';
+  state.seats[0].characterId = 'landlord';
+  const game = structuredClone(state.game);
+  game.characters = ['landlord', 'honest', 'star'];
+  state.game = null;
+  state.phase = 'lobby';
+  const scope = setup(state);
+  assert.equal(scope.characterForPlayer(0).id, 'landlord');
+  assert.match(await render(scope), /落座角色，开局保持/);
+  assert.doesNotMatch(await render(scope), /开局时最终分配|偏好预览/);
+  scope.state.value = { ...state, game, phase: 'playing' };
+  assert.equal(scope.characterForPlayer(0).id, 'landlord');
+  scope.state.value = structuredClone({ ...state, game, phase: 'playing' });
+  assert.equal(scope.characterForPlayer(0).id, 'landlord');
+  scope.state.value.seats[0].isCurrentParticipant = false;
+  scope.state.value.seats[0].characterId = 'elegant';
+  scope.state.value.phase = 'finished';
+  assert.equal(scope.characterForPlayer(0, true).id, 'elegant', 'replacement identity uses its new seated role');
+  assert.equal(scope.characterForPlayer(0).id, 'landlord', 'the old game participant retains its original role');
+  scope.resetRoomContext();
 });

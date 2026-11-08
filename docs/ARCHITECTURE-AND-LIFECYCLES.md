@@ -113,8 +113,8 @@ A foreground local session retains received queues/cursors across any transport-
 
 ### 角色池扩展不改变座位生命周期 / Roster expansion does not change seat lifecycles
 
-七个角色供本桌三或四位玩家开局选择；角色偏好属于座位占用者，已确定角色属于单局快照。扩展池不会重分配已保存局、不迁移旧规则、不改变身份/隐私。旧局缺失映射仅视图回退原三角色。合同、资源与测试见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
-Seven characters serve three or four players at start. Preferences belong to occupants; assigned characters belong to a game snapshot. Roster expansion neither rerolls saved games, migrates rules nor changes identity/privacy. Missing old maps receive a view-only original-three fallback. See [contract, assets and tests](SEVEN-CHARACTERS.md).
+七个角色在三或四位玩家成功落座时分配，`characterId` 跟随占座身份保存，首局及续局只复制到单局快照。空座不占用角色，后来者只能取剩余角色；离席重连不重抽，真正释放后新落座重新选。旧大厅缺字段确定性补齐，读取不写回，占座变更先固定旧人；旧局参与者沿原映射或旧兜底，替补不能改写原局。规则与隐私不变。合同、资源与测试见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
+Seven roles are assigned on successful seating and saved as occupant characterId; first/next games only copy them into round snapshots. Vacancies reserve no role, late joiners use remaining roles, detach/resume keeps identity and actual reseating selects anew. Legacy lobbies recover deterministically without read writes and freeze existing roles before occupancy changes. Existing game participants keep their map/fallback; replacements cannot rewrite the previous round. Rules/privacy remain unchanged. See [contract, assets and tests](SEVEN-CHARACTERS.md).
 
 ## 可变牌桌维护入口 / Variable-table maintenance
 
@@ -165,5 +165,5 @@ Production schema two starts from a complete secure shuffle, never promotes sche
 立绘从实际显示的公开事件派生，独立每座约3秒，既不修改权威状态也不增加动作屏障。普通轮询/飞牌结束不清；后台、换局、历史缩短、换桌、明确略过及卸载清除并使旧计时器失效。完整边界见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 Portraits derive from displayed public events and expire independently per seat without authority or action barriers. Lifecycle resets invalidate timers; normal polls/flights do not. See the dedicated guide.
 
-满框场景只重排花麻将展示容器：本人背景沿现有角色表情更新，大厅/观战不创建该图，离桌由原条件卸载。它不新增订阅、计时器、请求、存储或遮蔽牌面逻辑，旧胡牌/语音生命周期保持不变。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
-Full-frame scenes only rearrange Flower presentation containers. Own art follows existing reactions, is absent in lobby/spectator views and unmounts on leave. No subscriptions, timers, requests, storage or tile-privacy logic are added; existing portrait/audio lifecycles remain unchanged.
+主角立绘现在是手牌与操作下方的独立普通流面板，不再充当牌面背景；花麻将/成都复用原表情，观战不创建本人面板，离桌由原条件卸载。立绘布局不增加订阅、计时器或牌面遮蔽，角色持久化另由上述占座生命周期管理。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
+Self art is now a separate normal-flow panel below the hand/actions, not a card background. Flower/Chengdu reuse existing reactions; spectators have no self panel and leaving unmounts it. Portrait layout adds no subscriptions, timers or tile-privacy logic; character persistence belongs to the occupancy lifecycle above.

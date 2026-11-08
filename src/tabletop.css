@@ -2905,8 +2905,12 @@ p.table-setting-wide { margin-top: -6px; }
 .spectator-entry-note { line-height: 1.7; color: #6d7268; margin: 0 0 18px; }
 .is-spectator .opponent-row { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
 
-/* 用户标注的场景框：在所有历史断点后覆盖 contain/固定图高，让原图等比铺满框。
-   User-marked scene frames: override earlier contain/fixed-image heights at every breakpoint with proportional cover. */
+/* 对手用更高的独立画框，覆盖历史断点的92–124px短横条；等比cover只裁切而不拉伸。
+   Taller independent opponent frames replace historical 92–124px strips; proportional cover crops without stretching. */
+.character-portrait {
+  height: clamp(240px, 25vw, 340px);
+  overflow: clip;
+}
 .character-portrait > img {
   display: block;
   width: 100%;
@@ -2919,45 +2923,15 @@ p.table-setting-wide { margin-top: -6px; }
    Focal points change only cropping, never proportions; Sunny's face sits lower in the supplied scene. */
 .character-sunny { --portrait-focus-y: 33%; }
 .character-elegant { --portrait-focus-y: 20%; }
-/* clip只裁切而不生成可程序滚动容器；否则聚焦手牌可能滚动装饰溢出并把遮罩底边抬起。
-   Clip without creating a programmatic scroll container, so focusing cards cannot scroll decoration overflow and lift the shade edge. */
+/* 本人区是纯桌毡：手牌与下方独立立绘按普通文档流排列，没有共享背景或遮罩。
+   The own area is plain felt: cards and the separate portrait below follow normal document flow, with no shared image/overlay. */
 .own-player-area {
-  position: relative;
-  isolation: isolate;
   min-width: 0;
   margin-top: 18px;
-  overflow: clip;
   border: 1px solid #c29c65;
   border-radius: 16px 16px 22px 22px;
   background: #173c31;
   box-shadow: 0 8px 16px #0004;
-}
-/* 永久预留四周裁切余量，防止窄屏轻晃/旋转把图片底边带进可见框内。
-   Keep permanent overscan so narrow-screen drift/rotation cannot pull an image edge into the visible frame. */
-.own-character-scene {
-  position: absolute;
-  inset: -3%;
-  width: 106%;
-  height: 106%;
-  max-width: none;
-  z-index: 0;
-  object-fit: cover;
-  object-position: 50% var(--portrait-focus-y, 24%);
-  pointer-events: none;
-}
-/* 两端渐暗保留昵称/操作文字对比，中间透出人物；装饰层不能挡住麻将牌和按钮。
-   Darken the text-bearing edges while showing the character centrally; decoration never blocks tiles or buttons. */
-.own-player-area.has-character-scene::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: 1;
-  background: linear-gradient(180deg, #09291fdb 0%, #09291f66 35%, #09291f80 55%, #09291ff2 100%);
-  pointer-events: none;
-}
-.own-player-area > :not(.own-character-scene) {
-  position: relative;
-  z-index: 2;
 }
 .own-player-area > .own-character-label { margin: 0; padding: 10px 18px 0; }
 .own-player-area > .own-seat-summary { margin: 0; padding: 12px 18px; border-bottom: 1px solid #d5dfb842; }
@@ -2968,29 +2942,45 @@ p.table-setting-wide { margin-top: -6px; }
   background: transparent;
   box-shadow: none;
 }
-.own-player-area.has-character-scene > .hand-panel { min-height: 250px; }
-/* 窄屏仍满铺，保留原手牌横向滚动与点击尺寸；不让大背景扩大页面宽度。
-   Narrow screens keep edge-to-edge art, existing hand scrolling and touch sizes without widening the page. */
+/* 独立画框自然占据手牌下方空间；原图比例保留整个人物，不将其绝对定位到操作区。
+   The standalone frame reserves space below the hand, preserving source proportions rather than positioning art behind controls. */
+.own-character-display {
+  display: block;
+  width: calc(100% - 32px);
+  max-width: 520px;
+  margin: 18px auto 20px;
+  border: 1px solid #bc9a64;
+  border-radius: 14px;
+  overflow: clip;
+  background: #102e26;
+}
+.own-character-art {
+  aspect-ratio: 1254 / 1050;
+  overflow: clip;
+}
+.own-character-scene {
+  display: block;
+  position: static;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+.own-character-display figcaption {
+  padding: 10px 14px;
+  color: #f3dfb4;
+  font-weight: 600;
+}
+.own-character-display figcaption span { margin-left: 10px; color: #c6d1bc; font-size: 12px; font-weight: 400; }
+/* 手机对手仍比原框高近一倍；本人画框缩到容器宽，手牌保留独立横向滚动和点击尺寸。
+   Phone opponent frames remain nearly twice as tall; self art fits the container while hands retain independent scrolling/touch sizes. */
 @media (max-width: 640px) {
+  .character-portrait { height: clamp(180px, 48vw, 240px); }
   .own-player-area { margin-top: 12px; border-radius: 12px; }
   .own-player-area > .own-character-label { padding: 10px 12px 0; }
   .own-player-area > .own-seat-summary { padding: 10px 12px; }
-  .own-player-area.has-character-scene > .hand-panel { min-height: 230px; }
-}
-
-/* 场景本身可能很亮，给信息文字独立深底，不能依赖人物背景碰巧提供对比。
-   Scenes may be bright; give information text its own dark backing instead of relying on incidental image contrast. */
-.own-player-area.has-character-scene .hand-info-row {
-  padding: 7px 9px;
-  border-radius: 7px;
-  background: #09291fc9;
-}
-.own-player-area.has-character-scene .own-public-cards .public-zone-label,
-.own-player-area.has-character-scene .own-public-cards .public-zone-empty,
-.own-player-area.has-character-scene .own-public-cards .meld small {
-  padding: 3px 5px;
-  border-radius: 4px;
-  background: #09291fc9;
+  .own-character-display { width: calc(100% - 20px); margin: 12px auto; }
 }
 
 /* 只让装饰图片呼吸/轻晃，标签、牌和按钮的位置完全不动；略放大保证运动时不露边。
@@ -3022,8 +3012,8 @@ p.table-setting-wide { margin-top: -6px; }
   }
 }
 
-/* 两种玩法共享一层清晰桌毡承托真手牌，位于主角色之上；不缩放或移动触控目标。
-   Both modes share a clear felt surface above the main character for real cards, without scaling or moving hit targets. */
+/* 两种玩法共享清晰桌毡承托真手牌；下方独立立绘不影响触控目标。
+   Both modes share a clear felt surface for real cards; the separate portrait below never changes hit targets. */
 .own-player-area .character-hand-table {
   background: linear-gradient(135deg, #1c5748ed, #0c332bed);
   border: 1px solid #c0bb7d99;

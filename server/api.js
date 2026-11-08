@@ -12,10 +12,11 @@ import {
   playerSummary,
 } from './history.js';
 import {
-  assignCharacters,
+  assignSeatCharacter,
   gameCharacters,
   isCharacterId,
   preferredCharacter,
+  seatCharacters,
 } from '../shared/character-assignment.js';
 // 可预期的业务错误同时携带 HTTP 状态、机器错误码和给玩家看的提示。
 // Expected API errors carry an HTTP status, machine code, and player-facing message.
@@ -141,6 +142,28 @@ async function readBody(request) {
 function connected(person, now = Date.now()) {
   return Boolean(person && !person.detached && now - person.lastSeen < 30000);
 }
+// 占座角色与局快照分开：旧局参与者按凭证承接已显示的角色，替补只用自己的落座记录。
+// Separate occupant identity from game snapshots: matching legacy participants retain their displayed roles; replacements use their own records.
+// 这里只派生公开 ID，不改游戏/规则/历史；旧大厅缺字段也会得到稳定且不重复的兼容结果。
+// Derive only public IDs without changing games/rules/history; missing legacy lobby fields get stable unique compatibility roles.
+function roomSeatCharacters(room) {
+  // 当前局映射（包括旧局兜底）优先于占座字段，保持已经显示的参与者身份；只替补者脱离该快照。
+  // Current-game mapping, including legacy fallback, wins over occupant fields to preserve visible participant identity; only replacements detach from it.
+  const characters = room.game ? gameCharacters(room.gameMeta?.characters, room.game.players.length) : null;
+  return seatCharacters(room.seats.map((person, seat) => {
+    if (!person) return null;
+    const isParticipant = characters && (!room.gameMeta ||
+      room.gameMeta.participants?.[seat]?.tokenHash === person.tokenHash);
+    return isParticipant ? { ...person, characterId: characters[seat] } : person;
+  }));
+}
+// 在占座变化或开新局之前固定兼容结果；由调用方同一次房间 CAS 保存，不单独增加读取写入。
+// Freeze compatibility roles before occupancy changes/new games; callers save them in the same room CAS, never a read-only migration.
+function saveSeatCharacters(room) {
+  const characters = roomSeatCharacters(room);
+  room.seats.forEach((person, seat) => { if (person) person.characterId = characters[seat]; });
+  return characters;
+}
 // 先调用引擎的按座位隐私过滤，绝不直接返回保存的完整 game。
 // First ask the engine for a seat-filtered view; never return the full stored game.
 function publicRoom(room, seat, viewerRole = 'player') {
@@ -174,6 +197,7 @@ function publicRoom(room, seat, viewerRole = 'player') {
   // 名字只按本局快照替换；不以当前座位占用者覆盖旧局归属。
   // Resolve names only against this game snapshot, never replacement occupants.
   if (game) game.history = game.history.map((event) => nameEvent(event, game.participantNames));
+  const characters = roomSeatCharacters(room);
   return {
     id: room.id,
     ...(room.gameMode !== undefined ? { gameMode: room.gameMode } : {}),
@@ -205,7 +229,7 @@ function publicRoom(room, seat, viewerRole = 'player') {
         preferredCharacter: isCharacterId(person.preferredCharacter)
           ? person.preferredCharacter
           : null,
-        characterId: isCurrentParticipant ? (game?.characters[index] ?? null) : null,
+        characterId: characters[index],
         score: player?.score ?? 0,
         handCount: player?.handCount ?? 0,
         huCount: player ? playerSummary(room.game, player).huCount : 0,
@@ -797,6 +821,7 @@ export function createApi(store) {
           person = {
             name,
             preferredCharacter: preference,
+            characterId: assignSeatCharacter(preference, []),
             tokenHash: await hashToken(token),
             lastSeen: now,
             ...(playerHash
@@ -907,9 +932,13 @@ export function createApi(store) {
         const token = randomToken(),
           next = structuredClone(room);
         ensureGameMetadata(next);
+        // 先固定旧占座者，再为新人抽取剩余角色；加入成功后角色已确定，不等开局。
+        // Freeze existing occupants first, then choose an unused role for the newcomer; a successful join fixes identity immediately.
+        const occupiedCharacters = saveSeatCharacters(next);
         next.seats[seat] = {
           name,
           preferredCharacter: preference,
+          characterId: assignSeatCharacter(preference, occupiedCharacters),
           tokenHash: await hashToken(token),
           lastSeen: Date.now(),
           ...(playerHash
@@ -967,6 +996,7 @@ export function createApi(store) {
           // 进行中只标记离席，保留手牌；未开局或结束后才真正释放座位。
           // During play only detach and preserve the hand; release seats only before play or after completion.
           const detached = Boolean(next.game && next.game.phase !== 'finished');
+          saveSeatCharacters(next);
           if (detached) {
             next.seats[seat].detached = true;
             next.seats[seat].lastSeen = 0;
@@ -1080,6 +1110,9 @@ export function createApi(store) {
         const next = structuredClone(room);
         await bindProfile(store, next, seat, playerHash);
         ensureGameMetadata(next);
+        // 在替换旧局前取占座角色；续局和首局都只复制，旧参与者不会因偏好再次抽签。
+        // Capture occupant roles before replacing the previous game; first/subsequent starts only copy, never reroll preferences.
+        const characters = saveSeatCharacters(next);
         if (next.game) (next.archivedGames ||= []).push(archiveFinishedGame(next));
         const now = Date.now();
         // 模式可用上一局和房间计数器准备新局；所有返回字段只在同一次房间 CAS 成功后保存。
@@ -1108,13 +1141,9 @@ export function createApi(store) {
         if (mode.currentEngine.presentation && body.presentationMode === 'local') next.gameMeta.presentationMode = 'local';
         recordPresence(next, seat, presentationPresence(request));
         next.seats[seat].lastSeen = now;
-        // 角色在开局时统一分配并保存；重连读取同一映射，不重新抽签。
-        // Assign and save characters once at game start; reconnects reuse the mapping.
-        next.gameMeta.characters = assignCharacters(
-          next.seats.map((person) => person.preferredCharacter),
-          undefined,
-          next.seats.length,
-        );
+        // 单局保留独立快照，结束后有人换座也不能改写旧局角色。
+        // Keep an independent round snapshot so later seat replacements cannot rewrite old game identities.
+        next.gameMeta.characters = [...characters];
         await commit(store, room, next);
         return json({
           state: publicRoom(next, seat),

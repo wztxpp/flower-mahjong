@@ -14,8 +14,8 @@ This guide starts with request flow, then identity, concurrency, and history. Ch
    The store contract has memory and D1 implementations. Business logic uses the same methods for either backend.
 4. `server/history.js`：身份快照、公开历史和本桌成绩，与版本化的麻将规则分离。
    Participant snapshots, public history, and table totals are separate from versioned Mahjong rules.
-5. `shared/character-assignment.js`：开局分配不同角色；刷新只读已经保存的结果。
-   Assign distinct characters once at start; refreshes read the saved mapping.
+5. `shared/character-assignment.js`：落座分配不同角色并保存在占座者；开局复制为单局快照，刷新和续局不重抽。
+   Assign distinct roles on seating and save them on occupants; start copies a game snapshot, while refresh/next rounds never reroll.
 6. `server/node.js`、`server/start.js`：独立 Node 适配和文件持久化路径。
    Standalone Node adaptation and file persistence.
 7. `db/schema.ts`：描述现有 D1 表，不会自己执行迁移。
@@ -54,8 +54,8 @@ Typical action: send `revision` and action → validate origin/body/seat/profile
   Find candidate rooms, verify participation in each game, and include only completed games in settled totals.
 - `POST /api/rooms` 与 `/join`：建房或抢空座。进行中的局不允许新人替换玩家。
   Create a room or claim an empty seat. Active games do not admit replacement players.
-- `POST /start`：只有房主且三人在座、没有进行中局才可开始；先归档旧局再创建新局和角色映射。
-  Require the host, three attached occupants, and no active game; archive before creating a game and character mapping.
+- `POST /start`：只有房主且三人在座、没有进行中局才可开始；先固定占座角色、归档旧局，再创建新局并复制角色映射。
+  Require the host, three attached occupants, and no active game; freeze occupant roles, archive the old game, then create the new game and copy the same role mapping.
 - `POST /action`：只复制允许的动作字段，再由当前局所属版本判定是否合法。
   Copy only allowed action fields and let the saved-version engine determine legality.
 - `POST /leave`：大厅或结束后释放座位；进行中只标记离席，保留牌和分数，不代打、不跳过。
@@ -191,3 +191,8 @@ Compatibility checks field presence rather than truthiness: absent legacy fields
 
 [模式边界](GAME-MODES.md) 是后续成都接入入口：API保留鉴权/CAS/角色/座位/观战凭证，模式适配器负责输入、状态转换、公开配置、三类视图和事件。`server/flower-visibility.js` 保存原花麻将投影，不反向依赖历史模块。
 The mode boundary describes Chengdu integration: API keeps auth/CAS/characters/seats/spectator capabilities; adapters own inputs/transitions/configuration/views/events. Flower projections live in server/flower-visibility.js without importing history.
+
+## 落座角色生命周期 / Seated-character lifecycle
+
+`roomSeatCharacters` 只派生合法唯一公开角色；旧局参与者按凭证沿用旧局映射，替补者用自己的占座角色。`saveSeatCharacters` 只在已有 join/leave/start 写入候选里固定兼容结果；没有额外读取迁移或新 CAS。创建/加入用 `assignSeatCharacter` 选择未占用角色，开局只复制，旧引擎、规则、牌区、历史与身份权限不变。完整兼容合同见 [七角色](SEVEN-CHARACTERS.md)。
+`roomSeatCharacters` derives valid unique public roles, matching existing participants by credentials to the game map and replacements to their own occupancy. `saveSeatCharacters` freezes compatibility results only inside existing join/leave/start candidates, with no read migration or extra CAS. Create/join chooses unused roles; start only copies. Engines, rules, tiles, history and authorization stay unchanged. See the [character contract](SEVEN-CHARACTERS.md).

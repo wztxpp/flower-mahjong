@@ -255,7 +255,10 @@ The preparation section above is historical. Production starts require server ru
 `presentWins → CharacterPortraitReactions → characterForPlayer`仅把已显示的公开胡事件转成每座约3秒的基础/胡牌/放炮图。local接收不提前换脸，成都共用角色呈现但不复用花麻将飞牌。资产、三响、隐私及清理边界见 [用户立绘表情](CHARACTER-PORTRAIT-REACTIONS.md)。
 The portrait path maps displayed public wins to per-seat three-second reactions. Local receipts never reveal future queue events; Chengdu shares character rendering without Flower flights. See the dedicated guide for assets, triple wins, privacy and cleanup.
 
-## 满框角色场景 / Full-frame character scenes
+## 独立角色画框 / Separate character frames
 
-花麻将对手图在原 `character-portrait` 框中等比cover，本人的 `own-player-area` 合并身份与手牌背景但保留原操作元素。裁切焦点、装饰层和观战边界见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md#满框场景布局--edge-to-edge-scene-layout)。花麻将与成都的本人区域都收在各自桌面内，手牌使用共用桌毡上层；两模式合法动作与隐私守卫不改。
-Flower opponent frames use proportional cover, while own-player-area shares a background behind existing identity/hand controls. See the portrait guide for cropping, decorative layers and spectator boundaries. Both modes keep the own area inside their actual board and use the shared felt hand layer; legal actions and privacy guards remain unchanged.
+花麻将及成都对手的 `character-portrait` 使用240–340px桌面、180–240px手机高画框，原图等比cover。`own-player-area` 内的真实手牌保留在桌面，`own-character-display` 作为手牌后方的普通流figure独立显示主角；`own-character-art` 按1254/1050原图比例预留空间并裁切图片动画。人物不再作为手牌背景，不绝对定位到操作区，没有跨控件遮罩。观众无本人图/私有手牌，窄屏仍仅手牌内横向滚动。
+Both modes use tall opponent frames (240–340px desktop, 180–240px phone) with proportional cover. Actual own cards stay on the board; a normal-flow figure after the hand shows the main character separately. The original image ratio reserves space and clips image motion. Art is never a hand background or an absolute-positioned control overlay. Spectators have no own art/private hand; narrow scrolling stays within cards.
+
+`characterForPlayer(seat, forOccupant)` 区分牌局快照与当前占座人：默认读取本局game.characters，保持成都/观战的原参赛者身份；占座身份面板传true，结束后的替补不继承旧人的角色。大厅先读服务端seats[].characterId，偏好只作旧响应兜底。落座分配和续局合同见 [七角色](SEVEN-CHARACTERS.md)，本次验证见 [角色落座与画框验收](CHARACTER-SEATING-VALIDATION.md)。
+The character helper distinguishes game snapshots from present occupants. Game/Chengdu/spectator panels retain original participants; occupant panels explicitly opt into replacement identity after finish. Lobbies prefer the server's saved characterId and use preferences only for legacy responses. See the assignment contract and validation report.

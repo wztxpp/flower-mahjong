@@ -571,22 +571,19 @@ function unlockVoice(event) {
       if (ready) characterAudio.warmWins(game.value?.characters);
     });
 }
-// 优先采用服务端本局角色，再读座位偏好及兼容角色，最后按绝对座位兜底。
-// Prefer the server-assigned game character, then seat preferences and compatibility identity, then absolute-seat fallback.
-function characterForPlayer(seat) {
-  const character = (
-    CHARACTERS.find(
-      (character) =>
-        character.id ===
-        (game.value?.characters?.[seat] ||
-          state.value?.seats?.find((player) => player?.seat === seat)?.preferredCharacter),
-    ) ||
-    CHARACTERS.find(
-      (character) =>
-        character.id === state.value?.seats?.find((player) => player?.seat === seat)?.characterId,
-    ) ||
-    characterForSeat(seat, tablePlayerCount.value)
-  );
+// 正在展示的牌局沿用其角色快照；大厅优先读取落座时保存的角色，不再把偏好当作分配结果。
+// A displayed game retains its character snapshot; lobbies prefer the persisted seated identity, not the preference as an assignment.
+function characterForPlayer(seat, forOccupant = false) {
+  const occupant = state.value?.seats?.find((player) => player?.seat === seat);
+  // 旧响应可能还没有characterId；只在权威角色缺失时兼容此前的偏好/绝对座位显示。
+  // Older responses may lack characterId; only then retain preference/absolute-seat display fallbacks.
+  // 终局补位人的身份面板用新占座角色；原牌局/观战公开区仍显示原参赛角色。
+  // A finished-round replacement's identity uses the new occupant; game/spectator panels retain original participants.
+  const gameCharacter = forOccupant && occupant?.isCurrentParticipant === false ? null : game.value?.characters?.[seat];
+  const character = CHARACTERS.find((character) => character.id === gameCharacter) ||
+    CHARACTERS.find((character) => character.id === occupant?.characterId) ||
+    CHARACTERS.find((character) => character.id === occupant?.preferredCharacter) ||
+    characterForSeat(seat, tablePlayerCount.value);
   // 本人、对手大立绘/头像和成都牌桌共享同一绝对座位的短暂表情。
   // Self, opponent portraits/avatars and Chengdu share one transient reaction per absolute seat.
   return { ...character, portrait: portraitForCharacter(character, portraitReactionsBySeat.value[seat]) };
@@ -2323,11 +2320,11 @@ onUnmounted(() => {
               ><span>{{
                 CHARACTERS.find((character) => character.id === preferredCharacter)?.style
               }}</span
-              ><small>先选喜欢的风格，开局时揭晓同桌角色。</small></div
+              ><small>先选喜欢的风格，落座后角色就固定。</small></div
             ></div
           >
           <p class="character-preference-note"
-            >七位角色，{{ isChengduContext ? '成都固定四人同桌' : '支持三人或四人同桌' }}。开局时确定角色；偏好相同会随机选一人，其余分配不同角色。</p
+            >七位角色，{{ isChengduContext ? '成都固定四人同桌' : '支持三人或四人同桌' }}。落座时确定角色，开局保持不变；偏好已被占用时，从剩余角色中分配。</p
           >
           <!-- 固定四人/定缺无需可切换控件，四个未确认默认值的选择使用必填原生下拉框。
                Four seats/dingque are fixed; native required selects collect the four choices without assuming defaults. -->
@@ -2582,7 +2579,7 @@ onUnmounted(() => {
         <span>自摸：{{ state.settings.selfDraw === 'addBase' ? '加底（封顶后加1分）' : '加番（先加1番再封顶）' }}</span>
         <span>{{ state.settings.fanCap }}番封顶</span>
         <p id="chengdu-room-pending" class="chengdu-pending-note">{{ state.rulesVersion === 2 ? '四人到齐后由房主开始；本桌选项每局沿用。' : '此服务端尚未开放成都开局，请等待版本更新。' }}</p>
-        <small>角色偏好、邀请和观战共用原房间流程；角色会在正式开局时分配。</small>
+        <small>角色偏好、邀请和观战共用原房间流程；角色在落座时确定，开局不重抽。</small>
       </section>
       <!-- 兼容提示按本局保存的规则开关出现，更新前端不会改写已开局的规则。 / Compatibility banners follow saved game flags; updating the frontend does not rewrite an active game. -->
       <div v-if="isLatest && game?.rules?.radishCountsWinPile === false" class="legacy-banner"
@@ -2758,20 +2755,20 @@ onUnmounted(() => {
                 <div
                   v-if="player.name"
                   class="character-portrait"
-                  :class="`character-${characterForPlayer(player.seat).id}`"
+                  :class="`character-${characterForPlayer(player.seat, !isSpectator).id}`"
                   ><img
-                    :src="characterForPlayer(player.seat).portrait"
-                    :alt="`${characterForPlayer(player.seat).name} · ${characterForPlayer(player.seat).style}`"
+                    :src="characterForPlayer(player.seat, !isSpectator).portrait"
+                    :alt="`${characterForPlayer(player.seat, !isSpectator).name} · ${characterForPlayer(player.seat, !isSpectator).style}`"
                   /><span
-                    >{{ characterForPlayer(player.seat).name
-                    }}<small>{{ characterForPlayer(player.seat).style }}</small></span
+                    >{{ characterForPlayer(player.seat, !isSpectator).name
+                    }}<small>{{ characterForPlayer(player.seat, !isSpectator).style }}</small></span
                   ></div
                 ><div class="player-topline"
                   ><div class="avatar" :class="`avatar-${player.seat}`"
                     ><img
                       v-if="player.name"
-                      :src="characterForPlayer(player.seat).portrait"
-                      :alt="characterForPlayer(player.seat).name" /><Icon
+                      :src="characterForPlayer(player.seat, !isSpectator).portrait"
+                      :alt="characterForPlayer(player.seat, !isSpectator).name" /><Icon
                       v-else
                       name="plus"
                       :size="20" /></div
@@ -3043,26 +3040,20 @@ onUnmounted(() => {
               <div v-else class="table-watermark">花间 <span>自贡花麻将</span></div>
             </div>
 
-          <!-- 本人身份和手牌共享同一张场景图；图片只作装饰，不捕获点击或复制私有牌数据。
-               Own identity and hand share one scene; the decorative image intercepts no input and carries no private tiles. -->
+          <!-- 手牌留在桌面，主角在操作区下方独立占位；不把人物铺到牌或按钮背后。
+               Keep cards on the table and give the character its own space below controls, never behind tiles or buttons. -->
           <div v-if="!isSpectator" class="own-player-area"
-            :class="[{ 'has-character-scene': !!game }, `character-${characterForPlayer(mySeat).id}`]">
-            <img v-if="game" class="own-character-scene"
-              :src="characterForPlayer(mySeat).portrait" alt="" aria-hidden="true" />
+            :class="`character-${characterForPlayer(mySeat, true).id}`">
             <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
 
             <div class="own-character-label"
-              >{{ phase === 'lobby' ? '偏好预览：' : ''
-              }}{{
-                phase === 'lobby' && !me.preferredCharacter
-                  ? '随机分配'
-                  : `${characterForPlayer(mySeat).name} · ${characterForPlayer(mySeat).style}`
-              }}<span>{{ phase === 'lobby' ? '开局时最终分配' : '本局角色，全桌一致' }}</span></div
+              >{{ characterForPlayer(mySeat, true).name }} · {{ characterForPlayer(mySeat, true).style
+              }}<span>{{ phase === 'lobby' || me.isCurrentParticipant === false ? '落座角色，开局保持' : '本局角色，全桌一致' }}</span></div
             ><div class="own-seat-summary"
               ><div class="avatar" :class="`avatar-${mySeat}`"
                 ><img
-                  :src="characterForPlayer(mySeat).portrait"
-                  :alt="characterForPlayer(mySeat).name" /></div
+                  :src="characterForPlayer(mySeat, true).portrait"
+                  :alt="characterForPlayer(mySeat, true).name" /></div
               ><div class="player-identity"
                 ><div class="player-name"
                   >{{ me.name }}<span class="you-tag">我</span
@@ -3255,6 +3246,13 @@ onUnmounted(() => {
               ></div
             >
           </section>
+          <!-- 独立普通流画框自然排在手牌后；保留原图比例及表情，图像不承载交互或私有数据。
+               This normal-flow frame follows the hand, preserving source proportions/reactions without carrying input or private data. -->
+          <figure v-if="game" class="own-character-display" aria-label="你的角色立绘">
+            <div class="own-character-art"><img class="own-character-scene"
+              :src="characterForPlayer(mySeat, true).portrait" :alt="characterForPlayer(mySeat, true).name" /></div>
+            <figcaption>{{ characterForPlayer(mySeat, true).name }}<span>{{ characterForPlayer(mySeat, true).style }}</span></figcaption>
+          </figure>
           </div>
           </div>
           <p class="table-footnote"

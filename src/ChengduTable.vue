@@ -109,6 +109,12 @@ function eventText(event) {
       <article v-for="player in game.players" :key="player.seat" class="chengdu-seat"
         :class="[`chengdu-seat-${positionFor(player.seat)}`, { 'chengdu-seat-current': game.currentSeat === player.seat, 'chengdu-seat-won': player.won }]"
         :aria-label="`${nameFor(player.seat)}的公开牌区`">
+        <!-- 对手独立高画框与公开牌区分开，观众看到全部角色；本人完整立绘只在手牌下方。
+             Opponent tall frames stay separate from public tiles; viewers see all roles and self art appears only below the private hand. -->
+        <div v-if="player.seat !== mySeat" class="character-portrait chengdu-character-portrait"
+          :class="`character-${characterForPlayer(player.seat).id}`">
+          <img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
+        </div>
         <div class="chengdu-player-heading"><img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
           <div><strong>{{ nameFor(player.seat) }}</strong><small>{{ mySeat === player.seat ? '你' : `座位 ${player.seat + 1}` }} · {{ characterForPlayer(player.seat).name }}</small></div>
           <b>{{ player.score > 0 ? '+' : '' }}{{ player.score }}</b></div>
@@ -122,11 +128,10 @@ function eventText(event) {
       <div class="chengdu-table-center"><strong>{{ game.phase === 'exchange' ? '换三张' : game.phase === 'dingque' ? '定缺' : isFinished ? '终局' : '成都' }}</strong><span v-if="game.preparation?.exchangeDirection">本局换牌：{{ directionLabels[game.preparation.exchangeDirection] }}</span><span>{{ game.rules.fanCap }}番封顶 · 自摸{{ game.rules.selfDraw === 'addBase' ? '加底' : '加番' }}</span></div>
     <div class="chengdu-status" role="status" aria-live="polite">{{ mySeat == null && !isFinished ? '仅看公开牌面 · ' : '' }}{{ status }}</div>
     <div v-if="game.claim" class="chengdu-claim"><span>{{ nameFor(game.claim.fromSeat) }}{{ game.claim.source === 'robKong' ? '尝试补杠' : '打出' }}</span><MahjongTile :tile="game.claim.tile" small /><span>等待所有有资格的牌友回应</span></div>
-    <!-- 本人手牌也放在同一张桌面：角色是装饰底层，真实手牌及合法动作始终在上层。
-         Keep own cards on the same table: character art is decorative underneath the actual hand and legal actions. -->
-    <div v-if="me?.hand" class="own-player-area has-character-scene chengdu-own-area"
+    <!-- 本人手牌留在桌面；下方独立立绘与操作区不重叠，私有内容仍受me.hand守卫。
+         Keep own cards on the table; the separate art below never overlaps controls, and me.hand still guards private content. -->
+    <div v-if="me?.hand" class="own-player-area chengdu-own-area"
       :class="`character-${characterForPlayer(mySeat).id}`">
-      <img class="own-character-scene" :src="characterForPlayer(mySeat).portrait" alt="" aria-hidden="true" />
     <section class="chengdu-hand-panel" aria-labelledby="chengdu-hand-title">
       <h3 id="chengdu-hand-title">你的手牌<span v-if="me.dingqueSuit"> · 缺{{ suitLabels[me.dingqueSuit] }}</span></h3>
       <p v-if="isExchange">先选同一花色三张，再确认。已选 {{ selectedIndices.length }}/3 张；提交后不能修改。</p>
@@ -146,6 +151,11 @@ function eventText(event) {
       </div>
       <p v-if="game.waitTiles?.length && !me.won" class="chengdu-waits">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p>
     </section>
+    <figure class="own-character-display" aria-label="你的角色立绘">
+      <div class="own-character-art"><img class="own-character-scene"
+        :src="characterForPlayer(mySeat).portrait" :alt="characterForPlayer(mySeat).name" /></div>
+      <figcaption>{{ characterForPlayer(mySeat).name }}<span>{{ characterForPlayer(mySeat).style }}</span></figcaption>
+    </figure>
     </div>
     </div>
     <section v-if="isFinished" class="chengdu-finish" aria-label="成都本局结算">
@@ -173,6 +183,7 @@ function eventText(event) {
 .chengdu-seat-self { grid-area: 3 / 2; }.chengdu-seat-left { grid-area: 2 / 1; }.chengdu-seat-opposite { grid-area: 1 / 2; }.chengdu-seat-right { grid-area: 2 / 3; }
 .chengdu-seat-current { border-color: #edc878; box-shadow: 0 0 0 2px #edc87830; }.chengdu-seat-won { background: #383324; }
 .chengdu-player-heading img { width: 42px; height: 48px; border-radius: 9px; object-fit: cover; }.chengdu-player-heading div { flex: 1; min-width: 65px; }.chengdu-player-heading small { display: block; color: #b7c9c3; margin-top: 4px; }.chengdu-player-heading b { color: #edc878; font-size: 22px; }
+.chengdu-character-portrait { margin: 0 0 12px; }
 .chengdu-seat-meta { margin: 12px 0; font-size: 12px; color: #cfddd5; }.chengdu-seat-meta strong { color: #edc878; }
 .chengdu-table-center { grid-area: 2 / 2; align-self: center; text-align: center; color: #e1c58a; }.chengdu-table-center strong, .chengdu-table-center span { display: block; margin: 8px; }.chengdu-table-center strong { font-size: 32px; }
 .chengdu-river, .chengdu-melds { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }.chengdu-melds small { display: block; }.chengdu-winning-discard { outline: 2px solid #e1c58a; }
@@ -185,7 +196,7 @@ function eventText(event) {
    Own scene/status span the shared board; me.hand still guards private content so spectators never receive it. */
 .chengdu-status, .chengdu-claim, .chengdu-own-area { grid-column: 1 / -1; }
 .chengdu-own-area { margin-top: 0; }
-.chengdu-own-area .chengdu-hand-panel { margin: 0; min-height: 280px; border: 0; background: transparent; }
+.chengdu-own-area .chengdu-hand-panel { margin: 0; border: 0; background: transparent; }
 .chengdu-own-area h3, .chengdu-own-area .chengdu-hand-panel > p { width: fit-content; max-width: 100%; padding: 6px 9px; border-radius: 7px; background: #09291fc9; }
 /* 定缺与普通动作沿用绿色桌面按钮，避免全局浅色按钮配上继承浅字。
    Missing-suit and regular actions use green table buttons rather than global light buttons with inherited light text. */

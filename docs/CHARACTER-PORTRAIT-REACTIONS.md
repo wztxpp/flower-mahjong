@@ -54,31 +54,24 @@ The seven-set/21-image version based on Chengdu integration commit `45bac16` was
 - 未在本实现任务中做真实浏览器布局/人工试听、全仓TypeScript检查或部署。源码提交由发布任务合并后继续发布验收。
   This implementation did not perform real-browser layout/manual listening, repository-wide TypeScript checking or deployment. The release task integrates the source commit and owns publication verification.
 
-## 满框场景布局 / Edge-to-edge scene layout
+## 独立场景画框 / Independent scene frames
 
-用户标记的花麻将对手顶部框使用 `object-fit: cover`、宽高100%，图片等比铺满，不拉伸或留白。`tabletop.css` 最后的规则覆盖早先桌面/手机的固定图片高度和 contain。默认焦点为上方24%，晴禾33%、清岚20%，仅调整可见裁切；原图保持不变。
-The marked Flower opponent frames use cover at full width/height, preserving proportions without gaps. The final tabletop rules override earlier desktop/mobile fixed heights and contain. Upper focal points change only visible cropping, never source pixels.
+用户对v27反馈后，花麻将对手顶部框与成都对手新增大图使用 `object-fit: cover`、宽高100%，等比满框。桌面框高240–340px，手机180–240px，覆盖旧92–124px横条。默认焦点上方24%、晴禾33%、清岚20%，只改变裁切，PNG原字节不变。
+Following feedback on v27, Flower and Chengdu opponent portraits use proportional cover at full width/height in taller frames: 240–340px desktop and 180–240px phone rather than old 92–124px strips. Focal points adjust only cropping; PNG bytes stay unchanged.
 
-本人身份摘要和原手牌区包在 `own-player-area`，共享一张装饰背景。两端渐暗维持文字可读性，图片及遮罩不接收指针，原牌、选牌、出牌、胡碰杠和诊断控件留在上层。大厅不显示背景，观战不创建本人区域；结束局仍可查看自己的原手牌。只移动展示容器，不改变服务端快照、角色映射、表情计时、动作条件或飞牌目标。
-The own identity summary and existing hand share one decorative scene. Edge shading supports text; image/overlay layers ignore pointers while original tiles, actions and diagnostics remain above them. Lobbies omit the image, spectators omit the own area, and finished rounds retain the authorized hand. Only containers move, not authority, mapping, reactions, action conditions or flight targets.
+本人的真实手牌仍在table-surface/chengdu-board内；独立 `own-character-display` figure排在整个手牌操作区之后，下方按1254/1050原图比例展示主角。图片采用普通流，不再绝对定位到本人区或充当手牌背景；无需覆盖文字的整区渐变遮罩。牌区保持统一绿色桌毡，原选牌、出牌、胡碰杠、诊断与动作守卫不变。
+Own actual cards remain inside their board, followed by a standalone figure showing the main character at the source image ratio. The image uses normal flow, never a whole-area background or control overlay. Cards keep shared green felt, original actions, diagnostics and guards.
 
-本轮UI结构与生命周期回归增加到 `tests/ui.test.js`，覆盖三个花麻将schema、观战、终局、大厅和离桌。静态/SSR测试不能代替真实浏览器裁切与交互验收；后者另行记录。
-The UI suite adds structure/lifecycle coverage for all three Flower schemas, spectators, finish, lobby and leave. SSR/static checks do not replace separately recorded browser crop and interaction checks.
+大厅保留落座身份摘要，不画游戏主角大图；观众无本人区域。终局仍显示获准本人手牌和独立主角。替补占座面板读取自己的落座角色，原牌局与观战仍按旧game.characters显示原参与者。角色不重抽的服务端合同见 [七角色](SEVEN-CHARACTERS.md)。
+Lobbies keep seated summaries without a game-size own frame, and spectators have no own area. Finished rounds retain authorized own cards and art. Replacement summaries use their seated character while original game/spectator panels retain original participants; see the server assignment guide.
 
 ## 轻量场景动态 / Lightweight scene motion
 
-用户另授权网页动画：仅对手场景图片与本人装饰背景使用10/12秒缓慢呼吸、极小平移和旋转。文字、牌、按钮、焦点与点击区域不动；1.035–1.045倍预留覆盖防止轻晃时露边。它是静态PNG的CSS运动，不是骨骼、表情驱动或新增角色模型。
-The user also authorized lightweight web animation. Only the opponent art and own decorative image breathe/drift slowly over 10/12-second cycles. Text, tiles, controls, focus and hit areas stay still; small overscan prevents edge gaps. This is CSS motion applied to static PNGs, not rigged or newly generated character models.
+仅对手与本人独立画框内的PNG使用10/12秒缓慢呼吸、极小平移和旋转。文字、牌、按钮、焦点与点击区域不动；1.035–1.045倍放大防止运动露边。人物图只在自己的画框内被 `overflow: clip` 裁切，不能滚动或盖住手牌。
+Only PNGs inside opponent/self frames breathe and drift over 10/12-second cycles. Text, cards, buttons, focus and hit targets stay still; slight overscan prevents edge gaps. Clip applies only within the portrait's own frame, never over the hand.
 
-`prefers-reduced-motion: no-preference`才启用，`reduce`立即关闭动画并恢复原裁切。胡/放炮仍使用原公开事件和三秒静态图切换；没有新增JS计时器、服务端回执或等待。专项静态断言与真实浏览器范围见 [验收记录](CHARACTER-SCENE-VALIDATION.md)。
-Motion is opt-in via the system preference and immediately stops for reduced motion. Existing public-event win/loss image swaps and three-second timing remain unchanged, with no new JS timer, acknowledgement or game wait. See the validation record for automated and real-browser scope.
+`prefers-reduced-motion: no-preference`才启用，reduce恢复静止。胡/放炮仍来自既有公开事件和三秒静态图切换；没有新JS计时器、服务端回执或等待。它是PNG的CSS运动，不是Live2D或新增骨骼模型。
+Motion activates only with no-preference and stops under reduce. Existing public events drive three-second win/loss image swaps without new timers or game barriers. This is CSS motion of PNGs, not Live2D or a rigged model.
 
-
-## 手牌位于桌面上 / Hand above the character on the table
-
-按用户追加要求，花麻将本人区域位于原table-surface内，成都本人区域位于chengdu-board内。`character-hand-table`为两模式共享的绿色桌毡，真实牌及操作层始终盖在主角图上；所有原输入、选择/确认、网络禁止和私有手牌守卫保持。三层显式z-index和永久图像裁切余量防止动画后窄屏底边露亮。
-As additionally requested, each mode places its own area within the existing board. A shared green felt surface supports actual cards above the character while preserving input/confirmation, network restrictions and private-hand guards. Explicit stacking and permanent art overscan prevent an exposed lower edge during narrow-screen animation.
-
-
-本人容器使用 `overflow: clip`，不是 `hidden`：后者会因装饰图的动画溢出成为可程序滚动的容器，聚焦手牌可能把遮罩滚上去露出亮带。clip保持圆角裁切且本人容器scrollTop固定0；真实手牌内层继续独立overflow-x:auto。两模式实看与动作回归已验证。
-The own container uses overflow:clip rather than hidden. Hidden creates a programmatic scroll container from animated art overflow, so focusing a card can scroll the shade upward and reveal a bright strip. Clip preserves rounded clipping without this scroll; the actual hand retains its independent horizontal scrolling. Both modes were verified visually and interactively.
+结构/生命周期/座位身份回归在 `tests/portrait-layout.test.js`、`tests/ui.test.js`、`tests/chengdu-ui.test.js`，全模式座位持久化在 `tests/character-assignment.test.js`。真实浏览器与自动检查范围见 [当前验收](CHARACTER-SEATING-VALIDATION.md)；[v27验收](CHARACTER-SCENE-VALIDATION.md)保留当时实现与历史证据，不代表新的独立画框布局。
+Structural, lifecycle and identity regressions cover both real templates and components; assignment tests cover persistence. See current validation for executed checks; the v27 report remains historical evidence of its earlier background design.

@@ -23,10 +23,14 @@ All new voices are fictional adults, without imitating real celebrities or using
 
 ## 分配与兼容 / Assignment and compatibility
 
-- 创建/加入只保存偏好，开局一次性分配。无竞争的明确偏好必定获得；有冲突时在请求者中等概率抽签；剩余座位从剩余角色中不放回随机抽取。三人全随机有210种等概率结果，三人都选同一角色有90种等概率结果。
-  Create/join saves preferences; start assigns once. Uncontested requests are honored, conflicting requesters draw fairly, and unmatched seats draw without replacement. All-random has 210 equiprobable outcomes; a three-way tie has 90.
+- 创建/加入成功时即为该占座者分配并保存 `room.seats[seat].characterId`。偏好仍可用就直接选中，否则从未占用角色中均匀抽取；后加入者不能抢走先落座者的角色。开局只把占座映射复制到 `gameMeta.characters`，首局、下一局、刷新及离席重连都不重新抽签。只有真正释放座位并重新加入才产生新角色分配。
+  Successful create/join assigns and saves `room.seats[seat].characterId`. Honor an available preference, otherwise draw uniformly from unoccupied roles; later joiners cannot displace seated players. Start only copies occupancy into `gameMeta.characters`, preserving first/next rounds, refresh and detach/resume. Only releasing a seat and joining anew creates a new assignment.
+- 缺角色字段的旧大厅先保留有效且唯一的已存角色，再保留可用偏好，最后按旧座位顺序稳定补位；重复/非法字段不产生重复角色，空位不占角色。读取不写回；加入、离开、开局的既有 CAS 先固定这些可见结果，再变更占座，避免新玩家或离席改变其余人的角色。
+  Legacy lobbies reserve valid unique saved roles, then available preferences, then stable seat-order fallbacks; invalid/duplicate fields cannot duplicate roles and vacancies reserve none. Reads do not persist. Existing join/leave/start CAS operations freeze visible compatibility identities before changing occupancy so other players remain stable.
 - 已保存合法三/四人映射原样复制，不重新抽签。不合法/缺失映射只在读取视图时按本桌人数回退（旧三人顺序，四人追加地主），不写回、不补规则、不重算历史。三个引擎版本均保留此边界。
   Valid saved three/four-person maps are copied without rerolling. Missing/malformed maps receive a size-aware view-only fallback (the original three, with landlord fourth) without persistence, rule backfills or history recalculation, across all three engines.
+  当前局原参与者按凭证匹配，始终沿该局已显示映射（含旧兜底），即使占座字段不同；真正换入的人使用自己的落座映射，不改旧局。下一局复制当前占座角色，归档原映射保持原样。
+  Credential-matched current participants keep the game’s visible mapping, including old fallbacks, even if occupant fields differ. Replacements use their own occupancy mapping without changing the old game. The next round copies current occupancy; archived mappings stay intact.
 - 大厅、本人和对手头像都使用稳定ID；任意观察者看到同一绝对座位的角色一致。声音按同一ID读取资源，只有明确四人映射允许座位3；座位4–6永不有效。胡牌预热最多取本局3/4人的9/12条，不预热整池。
   Lobby/self/opponent portraits use stable IDs and agree across viewers. Audio uses the same IDs; only an explicit four-entry map enables seat three, and seats four through six remain invalid. Warming fetches at most nine/twelve assigned calls, never the whole roster.
 
@@ -43,8 +47,8 @@ Maintained tests cover all 512 preference combinations, probabilities, server id
 
 ## 显式四人调用接口 / Explicit four-seat integration
 
-为后续已授权的变人数功能预留显式参数：`assignCharacters(preferences, chooseIndex, seatCount=3)`、`gameCharacters(mapping, seatCount=3)`、`characterForSeat(seat, seatCount=3)`只允许3或4。旧调用缺省仍为3；四人兜底为原三角色加地主，前三项不变。不得从七人池长度推算人数。
-Explicit parameters support the separately authorized variable-table work: the assignment, saved-map and seat-fallback helpers accept only three or four seats and default to three. Four-seat fallback adds landlord after the original three, without altering legacy calls or inferring seats from the roster.
+旧批量分配工具仍保留显式参数与公平性测试，但实际房间不再在开局调用：`assignCharacters(preferences, chooseIndex, seatCount=3)`、`gameCharacters(mapping, seatCount=3)`、`characterForSeat(seat, seatCount=3)`只允许3或4。旧调用缺省仍为3；四人兜底为原三角色加地主，前三项不变。不得从七人池长度推算人数。
+The legacy batch helper retains explicit parameters and fairness tests, but live rooms no longer call it at start: the assignment, saved-map and seat-fallback helpers accept only three or four seats and default to three. Four-seat fallback adds landlord after the original three, without altering legacy calls or inferring seats from the roster.
 
 声音层仅在公开映射长度恰为4时允许第四位，并预热最多12条胡法语音，仍最多3个并行请求。角色提交本身未把房间改成四人；整合版实际建房/规则/界面人数由[可变牌桌](VARIABLE-TABLES.md)的房间配置和新局快照明确启用。第四座位专项含4096种偏好组合、合法边界和预热检查。
 The audio layer accepts seat four only for a four-entry public map and warms at most 12 win calls with three concurrent requests. The character commit alone does not create four-player rooms; the integrated variable-table feature enables sizes through explicit configuration and new-game snapshots. Tests cover 4096 four-seat preference combinations, seat bounds and preloads.
@@ -69,3 +73,8 @@ See [the verification record](SEVEN-CHARACTERS-QA.md) for the source branch’s 
 
 以上生成清单保留其历史文件来源。新的基础/胡牌/放炮立绘采用用户原PNG及独立清单，覆盖运行时目录，不改变角色ID或声音；当前素材与完整事件/生命周期契约见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 The generated manifest above remains historical provenance. Supplied PNG sets use a separate catalog/manifest without changing IDs or voices; the new guide records current assets and lifecycle contracts.
+
+## 落座身份回归 / Seated-identity regression
+
+`tests/character-assignment.test.js` 新增顺序落座的全部三/四席偏好组合、冲突偏好、只读旧大厅补位、并发抢座、首局与下一局、真实 FileStore 重启、终局换人和旧局快照隐私。矩阵为花麻将3/4席、成都既有4席；以合法动作推进终局，不修改规则或手牌夹具。界面与整体验证见 [落座与立绘验收](CHARACTER-SEATING-VALIDATION.md)。
+The character suite now covers every three/four-seat sequential preference combination, conflicting preferences, read-only legacy recovery, joining races, first/next rounds, real FileStore reloads, replacements and old-game privacy. The matrix is Flower three/four seats and existing Chengdu four seats, reaching finish with legal actions rather than rewriting rules or hands. See [seating/portrait validation](CHARACTER-SEATING-VALIDATION.md).

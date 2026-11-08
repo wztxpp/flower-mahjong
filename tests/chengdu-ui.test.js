@@ -182,3 +182,25 @@ test('Chengdu history formatter preserves round names, payment reasons and hidde
   assert.equal(chengduEventText({ type: 'drawSettlement', payments: [{ from: 2, to: 3, points: 2, reason: 'notReady' }] }, names), '流局查花猪、查叫与退杠已结算；换座前 → 第四席 2分（查叫）');
   assert.equal(chengduEventText({ type: 'unknown', message: 'do not echo', tile: 18 }, names), '牌局动态');
 });
+
+// 两种公开身份都不能拿到本人画框；玩家的独立主角在真实手牌之后，三位对手各有高画框。
+// Public-only identities receive no own frame; players get standalone art after the hand and three tall opponent frames.
+test('Chengdu renders separate own art after the hand and tall portraits for public opponents', async () => {
+  const { scope } = setup();
+  const html = await render(scope);
+  assert.equal((html.match(/\bchengdu-character-portrait\b/g) || []).length, 3);
+  assert.equal((html.match(/class="own-character-display"/g) || []).length, 1);
+  assert.ok(html.indexOf('class="chengdu-hand-panel"') < html.indexOf('class="own-character-display"'));
+  assert.doesNotMatch(html, /has-character-scene/);
+  for (const spectator of [true, false]) {
+    const state = fixture();
+    state.viewerRole = spectator ? 'spectator' : 'player';
+    state.game.mySeat = null;
+    delete state.game.players[0].hand;
+    state.game.legalActions = [];
+    const { scope: publicScope } = setup(state);
+    const publicHtml = await render(publicScope);
+    assert.equal((publicHtml.match(/\bchengdu-character-portrait\b/g) || []).length, 4);
+    assert.doesNotMatch(publicHtml, /own-character-display|own-character-scene/);
+  }
+});

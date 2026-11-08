@@ -21,7 +21,7 @@ for (const [file, boardClass, handClass] of [
   ['App.vue', 'table-surface', 'hand-panel'],
   ['ChengduTable.vue', 'chengdu-board', 'chengdu-hand-panel'],
 ]) {
-  test(`${file} keeps the private hand above its own character inside the actual table`, () => {
+  test(`${file} keeps the private hand on the table and a separate character frame below it`, () => {
     const source = readFileSync(new URL(`../src/${file}`, import.meta.url), 'utf8');
     const { descriptor, errors } = parse(source);
     assert.deepEqual(errors, []);
@@ -29,11 +29,29 @@ for (const [file, boardClass, handClass] of [
     assert.ok(board, 'the table container exists');
     const ownArea = findByClass(board, 'own-player-area');
     assert.ok(ownArea, 'the character/hand area is inside the same table');
-    const image = findByClass(ownArea, 'own-character-scene');
+    const display = findByClass(ownArea, 'own-character-display');
+    const image = findByClass(display, 'own-character-scene');
     const hand = findByClass(ownArea, handClass);
-    assert.ok(image && hand);
-    assert.ok(ownArea.children.indexOf(image) < ownArea.children.indexOf(hand), 'decorative image precedes the interactive hand layer');
+    assert.ok(display && image && hand);
+    assert.equal(display.tag, 'figure', 'standalone art has its own semantic frame');
+    const handIndex = ownArea.children.indexOf(hand);
+    const displayIndex = ownArea.children.indexOf(display);
+    assert.ok(handIndex >= 0 && displayIndex > handIndex, 'the actual image frame follows the hand in normal flow');
+    assert.equal(findByClass(hand, 'own-character-scene'), null, 'art cannot return inside hand controls as a background');
+    assert.ok(findByClass(display, 'own-character-art'), 'image motion is clipped only within its own frame');
     assert.ok(findByClass(hand, 'character-hand-table'), 'real tiles sit on the shared felt layer');
     assert.ok(ownArea.props.some((property) => property.type === 7 && property.name === 'if'), 'private area retains its conditional guard');
   });
 }
+
+// 帧高和文档流是用户反馈后的新契约，不能只改img大小而仍保留短外框或全区绝对定位。
+// Frame height and normal flow are the corrected contract, not larger images in short frames or area-wide absolute positioning.
+test('portrait frames are tall at desktop and mobile widths without own-background positioning', () => {
+  const css = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const current = css.slice(css.indexOf('/* 对手用更高的独立画框'));
+  assert.match(current, /\.character-portrait\s*\{[^}]*height: clamp\(240px, 25vw, 340px\)/);
+  assert.match(current, /@media \(max-width: 640px\)\s*\{\s*\.character-portrait \{ height: clamp\(180px, 48vw, 240px\)/);
+  assert.match(current, /\.own-character-art\s*\{[^}]*aspect-ratio: 1254 \/ 1050;[^}]*overflow: clip;/);
+  assert.match(current, /\.own-character-scene\s*\{[^}]*position: static;[^}]*width: 100%;[^}]*height: 100%;/);
+  assert.doesNotMatch(current, /has-character-scene|position: absolute|z-index:/);
+});

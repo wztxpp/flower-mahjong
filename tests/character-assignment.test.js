@@ -12,10 +12,13 @@ import {
   LEGACY_CHARACTER_IDS,
   SEAT_COUNT,
   assignCharacters,
+  assignSeatCharacter,
+  seatCharacters,
   gameCharacters,
   preferredCharacter,
 } from "../shared/character-assignment.js";
 import { createApi } from "../server/api.js";
+import { engineFor } from "../server/game-engines.js";
 import { MemoryStore } from "../server/store.js";
 import { FileStore } from "../server/node.js";
 import { createGame as createLegacyGame } from "../shared/legacy-game.js";
@@ -23,9 +26,9 @@ import { createGame as createV2Game } from "../shared/v2-game.js";
 import { createGame as createCurrentGame } from "../shared/game.js";
 // 验证三个座位的角色分配没有重复；偏好冲突不能让两位玩家共享同一角色。
 // Verify distinct assignments across three seats; conflicting preferences must not duplicate a character.
-function assertDistinct(characters) {
-  assert.equal(characters.length, SEAT_COUNT);
-  assert.equal(new Set(characters).size, SEAT_COUNT);
+function assertDistinct(characters, seatCount = SEAT_COUNT) {
+  assert.equal(characters.length, seatCount);
+  assert.equal(new Set(characters).size, seatCount);
   assert.ok(characters.every((id) => CHARACTER_IDS.includes(id)));
 }
 
@@ -115,11 +118,12 @@ function apiHarness(store = new MemoryStore()) {
 }
 // 建立三位独立玩家的测试桌；具体开局、偏好或存储条件由本文件参数决定。
 // Build a three-player test table with the start, preference or storage conditions defined by this file’s parameters.
-async function table(api, preferences = ["sweet", "sweet", "elegant"]) {
+async function table(api, preferences = ["sweet", "sweet", "elegant"], options = {}) {
   const host = await api.request("/api/rooms", {
     method: "POST",
     body: {
       name: "东家",
+      ...options,
       preferredCharacter: preferences[0],
     },
   });
@@ -127,7 +131,7 @@ async function table(api, preferences = ["sweet", "sweet", "elegant"]) {
   const clients = [host];
   // 逐项覆盖 [1,2]；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in [1,2] with the same checks, preserving the listed order.
-  for (const seat of [1, 2]) {
+  for (let seat = 1; seat < host.state.seats.length; seat++) {
     const result = await api.request(`/api/rooms/${host.roomId}/join`, {
       method: "POST",
       body: {
@@ -136,6 +140,11 @@ async function table(api, preferences = ["sweet", "sweet", "elegant"]) {
       },
     });
     assert.equal(result.status, 201);
+    // 后加入的人不得改动已落座者的角色。
+    // A later join must not change any existing occupant’s role.
+    for (let previousSeat = 0; previousSeat < seat; previousSeat++) {
+      assert.equal(result.state.seats[previousSeat].characterId, clients[previousSeat].state.seats[previousSeat].characterId);
+    }
     clients.push(result);
   }
   const path = `/api/rooms/${host.roomId}`;
@@ -143,7 +152,7 @@ async function table(api, preferences = ["sweet", "sweet", "elegant"]) {
     path,
     clients,
     host,
-    state: clients[2].state,
+    state: clients.at(-1).state,
   };
 }
 // 检查角色快照不泄漏凭证、哈希或底牌，并且只有当前座位含手牌字段。
@@ -406,7 +415,8 @@ test("create/join reject invalid preferences without reserving seats or exposing
   // Check response/revision contracts, distinguishing success, conflicts and unchanged replies.
   assert.equal(host.status, 201);
   assert.equal(host.state.seats[0].preferredCharacter, null);
-  assert.equal(host.state.seats[0].characterId, null);
+  assert.ok(CHARACTER_IDS.includes(host.state.seats[0].characterId));
+  assert.equal((await api.store.get(host.roomId)).seats[0].characterId, host.state.seats[0].characterId);
   // 逐项覆盖 invalidValues；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in invalidValues with the same checks, preserving the listed order.
   for (const preferredCharacter of invalidValues) {
@@ -437,11 +447,12 @@ test("create/join reject invalid preferences without reserving seats or exposing
   // Check response/revision contracts, distinguishing success, conflicts and unchanged replies.
   assert.equal(joined.status, 201);
   assert.equal(joined.state.seats[1].preferredCharacter, null);
-  assert.equal(joined.state.seats[1].characterId, null);
+  assert.ok(CHARACTER_IDS.includes(joined.state.seats[1].characterId));
+  assert.notEqual(joined.state.seats[1].characterId, host.state.seats[0].characterId);
 });
-// 场景：角色分配仅在开局进行，由服务端权威确定、保持私密，并在动作与重连中稳定
-// Scenario: assignment waits for start and is authoritative, private, and stable through actions/reconnect
-test("assignment waits for start and is authoritative, private, and stable through actions/reconnect", async () => {
+// 场景：落座即确定角色，开局复制结果，并在动作与重连中保持角色和隐私。
+// Scenario: seating fixes authoritative roles; start copies them, with stable identities/privacy through actions and reconnect.
+test("assignment begins on seating and stays authoritative, private, and stable through start/actions/reconnect", async () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const api = apiHarness();
@@ -455,10 +466,9 @@ test("assignment waits for start and is authoritative, private, and stable throu
     lobby.seats.map((person) => person.preferredCharacter),
     ["sweet", "sweet", "elegant"],
   );
-  assert.deepEqual(
-    lobby.seats.map((person) => person.characterId),
-    [null, null, null],
-  );
+  const lobbyCharacters = lobby.seats.map((person) => person.characterId);
+  assertDistinct(lobbyCharacters);
+  assert.equal(lobbyCharacters[0], "sweet");
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   const storedLobby = await api.store.get(host.roomId);
@@ -484,8 +494,8 @@ test("assignment waits for start and is authoritative, private, and stable throu
   // 核对本步骤的期望结果；严格比较同时检查值和结构，而不只检查是否有返回值。
   // Verify this step’s expected result; strict assertions check values/structure rather than mere presence.
   assertDistinct(characters);
-  assert.equal(characters[2], "elegant");
-  assert.ok([0, 1].includes(characters.indexOf("sweet")));
+  assert.deepEqual(characters, lobbyCharacters);
+  assert.equal(characters[0], "sweet");
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   const stored = await api.store.get(host.roomId);
@@ -609,9 +619,9 @@ test("a released lobby seat does not reserve its preferred character", async () 
   assert.equal(started.state.game.characters[2], "sunny");
   assert.ok([0, 1].includes(started.state.game.characters.indexOf("sweet")));
 });
-// 场景：已结束牌局的替补玩家不继承旧角色，下一局按当前偏好分配
-// Scenario: finished-game replacements do not inherit old characters and the next game uses current preferences
-test("finished-game replacements do not inherit old characters and the next game uses current preferences", async () => {
+// 场景：终局换人获得自己的落座角色，旧局快照不变，下一局延续当前占座映射。
+// Scenario: replacements get their own seated role; the finished snapshot stays intact and the next game copies current occupancy.
+test("finished-game replacements get stable seated characters without changing the previous game", async () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const api = apiHarness();
@@ -651,7 +661,9 @@ test("finished-game replacements do not inherit old characters and the next game
   // 核对接口返回及版本，区分成功、冲突与未变化响应。
   // Check response/revision contracts, distinguishing success, conflicts and unchanged replies.
   assert.equal(replacement.status, 201);
-  assert.equal(replacement.state.seats[1].characterId, null);
+  assert.ok(CHARACTER_IDS.includes(replacement.state.seats[1].characterId));
+  assert.notEqual(replacement.state.seats[1].characterId, "sweet");
+  assert.deepEqual(replacement.state.seats.filter((person) => person.seat !== 1).map((person) => person.characterId), ["sweet", "sunny"]);
   assert.equal(replacement.state.seats[1].isCurrentParticipant, false);
   assert.deepEqual(
     replacement.state.game.characters,
@@ -674,6 +686,7 @@ test("finished-game replacements do not inherit old characters and the next game
   assert.equal(restarted.status, 200);
   assert.notEqual(restarted.state.game.id, started.state.game.id);
   assertDistinct(restarted.state.game.characters);
+  assert.deepEqual(restarted.state.game.characters, replacement.state.seats.map((person) => person.characterId));
   assert.equal(restarted.state.game.characters[2], "sunny");
   assert.equal(restarted.state.seats[1].isCurrentParticipant, true);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
@@ -703,7 +716,10 @@ test("legacy live games receive only a view fallback without changing stored rul
   });
   // 逐项覆盖 room.seats；同一组检查用于每个样本，顺序以代码列出的集合为准。
   // Exercise each entry in room.seats with the same checks, preserving the listed order.
-  for (const person of room.seats) delete person.preferredCharacter;
+  for (const person of room.seats) {
+    delete person.preferredCharacter;
+    delete person.characterId;
+  }
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   await api.store.compareAndSwap(room, room.revision);
@@ -879,6 +895,8 @@ test("all engine versions preserve old character maps and saved bytes", async ()
       const result = await api.request(path, { token: host.token });
       assert.equal(result.status, 200);
       assert.deepEqual(result.state.game.characters, characters || LEGACY_CHARACTER_IDS);
+      assert.deepEqual(result.state.seats.map((person) => person.characterId), characters || LEGACY_CHARACTER_IDS,
+        'a matching participant keeps the game’s visible identity even if occupant fields differ');
       assert.deepEqual(await api.store.get(host.roomId), before);
     }
   }
@@ -911,4 +929,246 @@ test("explicit four-seat assignment preserves three-seat defaults", () => {
       if (seat !== -1) assert.equal(assigned[seat], id);
     }
   }
+});
+
+// 场景：顺序落座先保留旧人，再处理新偏好；遍历三/四席全部偏好组合，随机选择只针对未占用角色。
+// Scenario: sequential seating reserves existing roles before new preferences, covering every three/four-seat preference combination.
+test('sequential assignments never displace existing roles or accept invalid random choices', () => {
+  const options = [null, ...CHARACTER_IDS];
+  for (const seatCount of [3, 4]) {
+    for (let combination = 0; combination < options.length ** seatCount; combination++) {
+      let remaining = combination;
+      const assigned = [];
+      for (let seat = 0; seat < seatCount; seat++) {
+        const preference = options[remaining % options.length];
+        remaining = Math.floor(remaining / options.length);
+        const before = [...assigned];
+        const character = assignSeatCharacter(preference, assigned, (size) => size - 1);
+        assert.deepEqual(assigned, before, 'the helper does not mutate occupied IDs');
+        if (preference && !assigned.includes(preference)) assert.equal(character, preference);
+        assert.ok(!assigned.includes(character));
+        assigned.push(character);
+      }
+      assertDistinct(assigned, seatCount);
+    }
+  }
+  assert.throws(() => assignSeatCharacter('invalid', []), TypeError);
+  assert.throws(() => assignSeatCharacter(null, CHARACTER_IDS), RangeError);
+  for (const invalid of [-1, 7, 0.5, NaN]) {
+    assert.throws(() => assignSeatCharacter(null, [], () => invalid), RangeError);
+  }
+  assert.equal(assignSeatCharacter('star', [], () => { throw Error('No draw needed'); }), 'star');
+});
+
+// 场景：旧大厅缺字段或有重复/非法角色时，只读兜底保持确定性、合法性与空座，不改原对象。
+// Scenario: missing/duplicate/invalid legacy lobby roles get deterministic valid read-only fallbacks without filling vacancies.
+test('legacy occupancy mapping reserves saved roles before preferences and repairs invalid entries read-only', () => {
+  const seats = [{ characterId: 'sunny' }, { preferredCharacter: 'sunny' }, { characterId: 'invalid', preferredCharacter: 'star' }, null];
+  const original = structuredClone(seats);
+  assert.deepEqual(seatCharacters(seats), ['sunny', 'elegant', 'star', null]);
+  assert.deepEqual(seatCharacters(seats), seatCharacters(seats));
+  assert.deepEqual(seats, original);
+  assert.deepEqual(seatCharacters([{ preferredCharacter: 'star' }, { characterId: 'star' }, { characterId: 'star' }]),
+    ['sweet', 'star', 'sunny']);
+  assert.deepEqual(seatCharacters([null, {}, {}, {}]), [null, 'elegant', 'sunny', 'landlord']);
+  assert.throws(() => seatCharacters([{}, {}]), TypeError);
+});
+
+const CHARACTER_TABLE_MODES = [
+  { name: 'Flower three-seat', options: { gameMode: 'flower', settings: { playerCount: 3, deckCount: 1 } } },
+  { name: 'Flower four-seat', options: { gameMode: 'flower', settings: { playerCount: 4, deckCount: 1 } } },
+  { name: 'Chengdu four-seat', options: { gameMode: 'chengdu', settings: { endCondition: 'bloodBattle', exchangeThree: true, selfDraw: 'addBase', fanCap: 4 } } },
+];
+
+// 只在合成存储推进合法动作到真实终局；不手工伪造 finished、牌墙、规则或分数。
+// Advance legal engine actions only in synthetic storage to a genuine finish, without fabricating phase/wall/rules/scores.
+async function finishCharacterTable(api, roomId) {
+  const room = await api.store.get(roomId);
+  for (let step = 0; step < 800 && room.game.phase !== 'finished'; step++) {
+    const engine = engineFor(room.game);
+    let choice;
+    for (let seat = 0; seat < room.seats.length && !choice; seat++) {
+      const actions = engine.view(room.game, seat).legalActions;
+      const action = actions.find((entry) => entry.type === 'pass') || actions.find((entry) => entry.type === 'discard') || actions[0];
+      if (action) choice = { seat, action };
+    }
+    assert.ok(choice, 'An active synthetic game exposes a legal action');
+    room.game = engine.apply(room.game, choice.seat, choice.action);
+  }
+  assert.equal(room.game.phase, 'finished');
+  assert.equal(await api.store.compareAndSwap(room, room.revision), true);
+  return room;
+}
+
+// 场景：随机/冲突偏好经过落座、重启、开局、观战、离席重连、真实终局和续局都保持同一身份。
+// Scenario: random/conflicting preferences keep identity through seating/restart/start/spectating/reconnect/legal finish/next game.
+for (const { name, options } of CHARACTER_TABLE_MODES) {
+  for (const preference of [null, 'sweet']) {
+    test(`${name}: ${preference ?? 'random'} seated characters survive FileStore reload and every round boundary`, async (t) => {
+      const directory = await mkdtemp(join(tmpdir(), 'mahjong-seat-identity-'));
+      t.after(() => rm(directory, { recursive: true, force: true }));
+      let api = apiHarness(new FileStore(directory));
+      const { path, host, clients, state } = await table(api, Array(4).fill(preference), options);
+      const characters = state.seats.map((person) => person.characterId);
+      assertDistinct(characters, clients.length);
+      if (preference) assert.equal(characters[0], preference);
+      api = apiHarness(new FileStore(directory));
+      const lobby = await api.request(path, { token: host.token });
+      assert.equal(lobby.state.game, null);
+      assert.deepEqual(lobby.state.seats.map((person) => person.characterId), characters);
+      const resumedLobby = await api.request(`${path}/resume`, { method: 'POST', token: host.token, body: {} });
+      assert.deepEqual(resumedLobby.state.seats.map((person) => person.characterId), characters);
+      const started = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: resumedLobby.state.revision } });
+      assert.equal(started.status, 200);
+      assert.deepEqual(started.state.game.characters, characters);
+      const beforeReconnect = await api.store.get(host.roomId);
+      const spectator = await api.request(`${path}/spectate`, { method: 'POST', body: {} });
+      assert.deepEqual(spectator.state.game.characters, characters);
+      assert.ok(spectator.state.game.players.every((person) => !('hand' in person)));
+      const left = await api.request(`${path}/leave`, { method: 'POST', token: clients[1].token, body: {} });
+      assert.equal(left.detached, true);
+      api = apiHarness(new FileStore(directory));
+      const resumed = await api.request(`${path}/resume`, { method: 'POST', token: clients[1].token, body: {} });
+      assert.equal(resumed.status, 200);
+      assert.deepEqual(resumed.state.game.characters, characters);
+      assert.deepEqual((await api.store.get(host.roomId)).game, beforeReconnect.game, 'reconnect preserves rules, hidden tiles and scores');
+      for (let seat = 0; seat < clients.length; seat++) {
+        const view = await api.request(path, { token: clients[seat].token });
+        assert.deepEqual(view.state.seats.map((person) => person.characterId), characters);
+        assertPrivate(view.state, beforeReconnect, seat, clients);
+      }
+      const finished = await finishCharacterTable(api, host.roomId);
+      api = apiHarness(new FileStore(directory));
+      const next = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: finished.revision } });
+      assert.equal(next.status, 200, JSON.stringify(next));
+      assert.notEqual(next.state.game.id, started.state.game.id);
+      assert.deepEqual(next.state.game.characters, characters);
+      const saved = await api.store.get(host.roomId);
+      assert.deepEqual(saved.seats.map((person) => person.characterId), characters);
+      assert.deepEqual(saved.archivedGames[0].meta.characters, characters);
+      assert.deepEqual(saved.game.rules, finished.game.rules);
+      assert.equal(saved.archivedGames.length, 1);
+    });
+  }
+}
+
+// 场景：旧大厅读时不迁移，任一落座变更都先固定原显示结果，离席者的角色才可以被复用。
+// Scenario: legacy lobby reads do not migrate; occupancy changes freeze existing visible roles before a released role is reused.
+test('legacy lobby reads, joins and leaves keep existing identities and freeze them before start', async () => {
+  const api = apiHarness();
+  const { path, host, clients } = await table(api, ['star', 'sweet', 'sunny']);
+  const room = await api.store.get(host.roomId);
+  for (const person of room.seats) delete person.characterId;
+  room.seats[1].preferredCharacter = 'star';
+  room.seats[2].preferredCharacter = 'unknown';
+  await api.store.compareAndSwap(room, room.revision);
+  const original = await api.store.get(host.roomId);
+  const view = await api.request(path, { token: host.token });
+  assert.deepEqual(view.state.seats.map((person) => person.characterId), ['star', 'elegant', 'sunny']);
+  assert.deepEqual(await api.store.get(host.roomId), original);
+  await api.request(`${path}/leave`, { method: 'POST', token: host.token, body: {} });
+  const replacement = await api.request(`${path}/join`, { method: 'POST', body: { name: '替补', preferredCharacter: 'star', characterId: 'sunny' } });
+  assert.equal(replacement.status, 201);
+  const characters = replacement.state.seats.map((person) => person.characterId);
+  assert.deepEqual(characters, ['star', 'elegant', 'sunny']);
+  assert.equal((await api.store.get(host.roomId)).seats[1].characterId, 'elegant', 'departure does not upgrade the remaining duplicate preference');
+  const started = await api.request(`${path}/start`, { method: 'POST', token: clients[1].token, body: { revision: replacement.state.revision } });
+  assert.equal(started.status, 200);
+  assert.deepEqual(started.state.game.characters, characters);
+});
+
+// 场景：旧局已保存/缺失/损坏映射都沿原公开结果续局，不用旧偏好再抽，不改旧规则或原元信息。
+// Scenario: saved/missing/malformed old game maps continue from their original public identity, without rerolling preferences or rewriting old data.
+for (const { name, options } of CHARACTER_TABLE_MODES) {
+  test(`${name}: legacy game maps remain read-only and carry into the next round`, async () => {
+    for (const mapping of [undefined, ['wealthy', 'landlord', 'honest', 'star'], ['bad', 'bad', 'sweet', 'sweet']]) {
+      const api = apiHarness();
+      const { path, host, state } = await table(api, ['star', 'sunny', 'sweet', 'elegant'], options);
+      const started = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: state.revision } });
+      assert.equal(started.status, 200);
+      const room = await api.store.get(host.roomId);
+      for (const person of room.seats) delete person.characterId;
+      if (mapping) room.gameMeta.characters = mapping.slice(0, room.seats.length);
+      else delete room.gameMeta.characters;
+      await api.store.compareAndSwap(room, room.revision);
+      const original = await api.store.get(host.roomId);
+      const view = await api.request(path, { token: host.token });
+      const expected = gameCharacters(room.gameMeta.characters, room.seats.length);
+      assert.deepEqual(view.state.game.characters, expected);
+      assert.deepEqual(view.state.seats.map((person) => person.characterId), expected);
+      assert.deepEqual(await api.store.get(host.roomId), original);
+      const finished = await finishCharacterTable(api, host.roomId);
+      const next = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: finished.revision } });
+      assert.equal(next.status, 200);
+      assert.deepEqual(next.state.game.characters, expected);
+      const saved = await api.store.get(host.roomId);
+      assert.deepEqual(saved.archivedGames[0].meta, finished.gameMeta, 'character compatibility does not rewrite archived metadata');
+      assert.deepEqual(saved.game.rules, finished.game.rules);
+    }
+  });
+}
+
+// 场景：同时抢座只提交一个新角色，输掉的候选不能改变已有占座者；失败开局也不能重抽。
+// Scenario: racing joins commit only one new role; losing candidates and rejected starts cannot displace existing occupants.
+test('concurrent seating and rejected starts preserve committed character assignments', async () => {
+  const api = apiHarness();
+  const host = await api.request('/api/rooms', { method: 'POST', body: { name: '房主', preferredCharacter: 'star' } });
+  const path = `/api/rooms/${host.roomId}`;
+  const joins = await Promise.all(['甲', '乙'].map((name) => api.request(`${path}/join`, {
+    method: 'POST', body: { name, seat: 1, preferredCharacter: 'star', characterId: 'star' },
+  })));
+  assert.deepEqual(joins.map((response) => response.status).sort(), [201, 409]);
+  const winner = joins.find((response) => response.status === 201);
+  assert.equal(winner.state.seats[0].characterId, 'star');
+  assert.notEqual(winner.state.seats[1].characterId, 'star');
+  const before = await api.store.get(host.roomId);
+  const denied = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: before.revision } });
+  assert.equal(denied.code, 'NOT_FULL');
+  assert.deepEqual(await api.store.get(host.roomId), before);
+});
+
+// 场景：终局后换人只重新分配该占座身份，旧公开局仍按旧人显示，下一局和归档各自保留正确映射。
+// Scenario: replacement changes only the occupant identity; the old public game, next game and archive retain their separate mappings.
+for (const { name, options } of CHARACTER_TABLE_MODES) {
+  test(`${name}: finished-game seat replacement cannot reroll other players or inherit private hands`, async () => {
+    const api = apiHarness();
+    const { path, host, clients, state } = await table(api, ['sweet', 'elegant', 'sunny', 'landlord'], options);
+    const started = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: state.revision } });
+    assert.equal(started.status, 200);
+    const characters = started.state.game.characters;
+    const finished = await finishCharacterTable(api, host.roomId);
+    const left = await api.request(`${path}/leave`, { method: 'POST', token: clients[1].token, body: {} });
+    assert.equal(left.detached, false);
+    const joined = await api.request(`${path}/join`, { method: 'POST', body: { name: '新占座者', preferredCharacter: 'star' } });
+    assert.equal(joined.status, 201);
+    const expected = characters.map((character, seat) => seat === 1 ? 'star' : character);
+    assert.deepEqual(joined.state.seats.map((person) => person.characterId), expected);
+    assert.deepEqual(joined.state.game.characters, characters);
+    assert.equal(joined.state.seats[1].isCurrentParticipant, false);
+    assert.ok(joined.state.game.players.every((person) => !('hand' in person)));
+    assert.deepEqual((await api.store.get(host.roomId)).game, finished.game);
+    const oldCredential = await api.request(`${path}/resume`, { method: 'POST', token: clients[1].token, body: {} });
+    assert.equal(oldCredential.status, 401);
+    const next = await api.request(`${path}/start`, { method: 'POST', token: host.token, body: { revision: joined.state.revision } });
+    assert.equal(next.status, 200);
+    assert.deepEqual(next.state.game.characters, expected);
+    assert.deepEqual((await api.store.get(host.roomId)).archivedGames[0].meta.characters, characters);
+  });
+}
+
+// 场景：向缺字段旧大厅直接加入前，须先固定已显示的兜底角色，不能让新偏好抢占已有显示。
+// Scenario: joining a legacy lobby first freezes visible compatibility roles, so a new preference cannot steal an existing identity.
+test('joining a legacy lobby freezes previously visible roles before resolving the new preference', async () => {
+  const api = apiHarness();
+  const { path, host } = await table(api, [null, null, null]);
+  const room = await api.store.get(host.roomId);
+  room.seats[2] = null;
+  for (const person of room.seats.filter(Boolean)) delete person.characterId;
+  await api.store.compareAndSwap(room, room.revision);
+  const before = await api.request(path, { token: host.token });
+  assert.deepEqual(before.state.seats.map((person) => person?.characterId ?? null), ['sweet', 'elegant', null]);
+  const joined = await api.request(`${path}/join`, { method: 'POST', body: { name: '新玩家', preferredCharacter: 'sweet' } });
+  assert.equal(joined.status, 201);
+  assert.deepEqual(joined.state.seats.slice(0, 2).map((person) => person.characterId), ['sweet', 'elegant']);
+  assertDistinct(joined.state.seats.map((person) => person.characterId));
 });

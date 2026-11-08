@@ -39,7 +39,7 @@ Every change starts with AGENTS.md; it links the required guides so future work 
 | `shared/v2-game.js` | schema 2 旧局兼容，不能替换成新版。 / Schema-two compatibility. |
 | `shared/legacy-game.js` | schema 1/缺版本旧局兼容。 / Version-one/missing-version compatibility. |
 | `shared/start-options.js` | 前后端共用的开局喜钱默认值、上限与金额校验。 / Shared ready-bonus defaults, bounds, and validation. |
-| `shared/character-assignment.js` | 开局角色分配与旧局角色映射。 / Character assignment and legacy mapping. |
+| `shared/character-assignment.js` | 落座角色分配、占座稳定映射与旧局兼容。 / Seating-time roles, stable occupancy and legacy-game mappings. |
 | `server/api.js` | HTTP 路由、身份与原子提交，调用模式适配器。 / Routing, identity and CAS through mode adapters. |
 | `server/game-engines.js` | 按模式与版本选引擎，隔离动作/配置/隐私/展示能力。 / Mode/version registry and action/config/privacy/pacing adapters. |
 | `server/flower-visibility.js` | 花麻将既有事件与观战公开投影。 / Existing Flower event/spectator projections. |
@@ -194,8 +194,10 @@ New maintained production-entry, snapshot-contract and production-test files sep
 新增自维护 `src/character-portraits.js`、`tests/character-portraits.test.js` 与用户原图来源 `public/characters/portrait-reactions-manifest.json`；沿 `App.presentWins → CharacterPortraitReactions → characterForPlayer` 阅读。双模式、隐私、三响、取消及资产说明见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 New maintained files cover the portrait catalog/controller, focused tests and supplied-image provenance. Follow the App presentation path and the dedicated guide for mode/privacy/triple-win/cancellation contracts.
 
-满框场景的维护说明与验收见 [场景立绘验收](CHARACTER-SCENE-VALIDATION.md)。新增 `tests/browser/portrait-preview-server.mjs` 和 `portrait-preview-narrow.html` 仅用于隔离内存牌桌/390px实看，不部署、不访问生产资料。
-See the scene validation guide. The two portrait-preview browser files serve isolated in-memory and 390px QA only, never production data or deployment.
+当前布局与落座角色验收见 [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md)；原满框场景记录保留在 [历史场景验收](CHARACTER-SCENE-VALIDATION.md)。新增 `tests/browser/portrait-preview-server.mjs` 和 `portrait-preview-narrow.html` 仅用于隔离内存牌桌/390px实看，不部署、不访问生产资料。
+See the current seating/portrait validation; the older scene report is historical. The two portrait-preview browser files serve isolated in-memory and 390px QA only, never production data or deployment.
 
-`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、主角装饰下层与私有守卫；不复制界面、不运行生产请求。
-The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, decorative image ordering and private guards, without duplicating UI or making production requests.
+`tests/portrait-layout.test.js` 遍历真实Vue模板AST验证花麻将/成都手牌位于同一桌面、独立主角位于手牌之后与私有守卫；不复制界面、不运行生产请求。
+The portrait-layout suite inspects the real Vue template AST for both modes' shared-table ancestry, a separate portrait after the hand and private guards, without duplicating UI or making production requests.
+
+- [落座身份与立绘验收](CHARACTER-SEATING-VALIDATION.md)：独立本人立绘、加高对手展示，以及落座/开局/续局角色稳定的联合回归。 / Separate self art, taller opponent portraits and stable roles across seating/start/next rounds.

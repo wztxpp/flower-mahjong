@@ -116,8 +116,8 @@ The engines use consistent private helpers for serialization, sorting, labels, c
 
 ## 七角色池 / Seven-character roster
 
-`SEAT_COUNT` 默认固定为3，`CHARACTER_IDS` 是7个可选角色ID，不是座位列表。`LEGACY_CHARACTER_IDS` 固定为旧三角色的绝对座位回退；`gameMeta.characters` 是本桌三或四项已分配快照。详见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
-`SEAT_COUNT` defaults to three; `CHARACTER_IDS` contains seven selectable IDs, not seats. `LEGACY_CHARACTER_IDS` preserves the original absolute-seat fallback; `gameMeta.characters` is a three/four-entry assigned snapshot. See [seven characters, three/four seats](SEVEN-CHARACTERS.md).
+`SEAT_COUNT` 默认固定为3，`CHARACTER_IDS` 是7个可选角色ID，不是座位列表。`LEGACY_CHARACTER_IDS` 固定为旧三角色的绝对座位回退；`room.seats[seat].characterId` 是随占座身份保留的角色；`preferredCharacter` 只在首次落座选择时参考，不能在开局重抽。`gameMeta.characters` 是从当前占座复制的本局三或四项快照，旧局不会被换入者覆盖。详见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
+`SEAT_COUNT` defaults to three; `CHARACTER_IDS` contains seven selectable IDs, not seats. `LEGACY_CHARACTER_IDS` preserves the original absolute-seat fallback; `room.seats[seat].characterId` belongs to an occupant; `preferredCharacter` guides first seating, never a start-time reroll. `gameMeta.characters` copies three/four occupant roles into the round snapshot, which replacements cannot rewrite. See [seven characters, three/four seats](SEVEN-CHARACTERS.md).
 
 ## 可变牌桌 / Variable tables
 
