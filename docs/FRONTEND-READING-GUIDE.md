@@ -1,5 +1,9 @@
 # 前端阅读指南 / Frontend reading guide
 
+全局 `Live2DSettings` 提供官方许可选择，`live2d/consent.js` 保存本地版本；`CharacterArtwork` 自身门禁覆盖两玩法及独立挂载，默认静态、不阻挡操作。 / Global settings and versioned local consent gate every frame, including standalone mounts; static play is the default.
+
+新增大立绘阅读路径见 [Live2D 展示层](LIVE2D-RUNTIME.md)。原 `CharacterPortraitReactions` 仍管理公开胡/放炮三秒原图，模型不得替换成未验情绪。 / See the Live2D guide; the original public three-second reaction scheduler remains unchanged and unverified model expressions do not replace it.
+
 这份指南面向刚接触前端的读者。先理解数据从哪里来、谁有权修改，再看模板与 CSS。代码中的注释采用中文在前、英文在后的顺序；公开字段、存储键、资源路径和规则保持兼容。
 
 This guide is for readers new to frontend development. First understand where data comes from and who can change it, then read templates and CSS. Source comments put Chinese before English; public fields, storage keys, resource paths and rules remain compatible.

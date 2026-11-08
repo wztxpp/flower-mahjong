@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     ".sites-runtime/**",
     "outputs/**",
     "work/**",
+    // 官方 SDK 保留原字节、注释与许可证；不通过应用 lint 自动重写上游代码。
+    // Preserve official SDK bytes, comments and licenses instead of rewriting upstream code with application lint.
+    "vendor/live2d/**",
+    "public/vendor/live2d/**",
   ]),
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],

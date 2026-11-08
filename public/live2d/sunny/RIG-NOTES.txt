@@ -1,0 +1,1 @@
+Genuine patched MOC, official Core numerical checks passed. Raw CMO3 is retained in raw/ and is NOT synchronized with the patched MOC. Visual QA is separately required. Automatic motions/physics/expressions/LipSync omitted.

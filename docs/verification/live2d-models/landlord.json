@@ -1,0 +1,65 @@
+{
+  "character": "landlord",
+  "reconstructed": true,
+  "sourceImageSha256": "2814c3f381473f333507a0aa85e6d46a85aa7ce1327af4a7b0ea6dd28f907867",
+  "verifiedCoreBindings": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "disabledParameters": [
+    "ParamBodyLean",
+    "ParamProportion",
+    "ParamEyeBallX",
+    "ParamEyeBallY",
+    "ParamEyeBallForm",
+    "ParamBrowLY",
+    "ParamBrowRY",
+    "ParamMouthForm",
+    "ParamMouthOpenY",
+    "ParamHairFront",
+    "ParamHairBack"
+  ],
+  "runtimeSha256": {
+    "character.cdi3.json": {
+      "bytes": 4536,
+      "sha256": "d7c9e7ce6967657f3e06a0355705233a435438cc94d987301a0b40eb1e3a7e36"
+    },
+    "character.model3.json": {
+      "bytes": 336,
+      "sha256": "2989f3a07fa92d9e4d0f44680ef64dfe8bc87b8cd8437db1063eb61d88f6455c"
+    },
+    "RIG-NOTES.txt": {
+      "bytes": 224,
+      "sha256": "4004b5355fc28093f6b1bd9f8eeebeea788e5c9e703b6eae6e1727ce0322946b"
+    },
+    "background.png": {
+      "bytes": 1699407,
+      "sha256": "8454d1238fbdae40cf3aa82aa0431732fa5b6ba7ce93b97493e51c7cf0096bfc"
+    },
+    "character.moc3": {
+      "bytes": 148736,
+      "sha256": "cf8f8789ed12ec1ad03c1eeecc11adb73ab004626f5121355110365062238c5f"
+    },
+    "character.2048/texture_00.png": {
+      "bytes": 1777276,
+      "sha256": "490c37edfb321c1017b457416df380f517ea04bd2ce9a1e9d07e7d7649786073"
+    }
+  },
+  "coreVersion": 100663297,
+  "coreConsistency": 1,
+  "visualReport": "qa/visual-report.json",
+  "visualStatus": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "webglVerified": false,
+  "expressionsBound": false,
+  "rawCmo3ContainsFinalPatches": false,
+  "rebuild": "../rebuild-tools/export-character.py with retained authoring inputs and rig configuration"
+}

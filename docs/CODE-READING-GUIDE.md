@@ -1,5 +1,10 @@
 # 从这里开始读代码 / Start reading here
 
+Live2D 重建入口：[展示层](LIVE2D-RUNTIME.md)、[官方许可选择与历史草稿](LIVE2D-LICENSE-REVIEW.md)、[实际验收边界](LIVE2D-VALIDATION.md)。新增维护文件：`src/CharacterArtwork.vue`、`src/Live2DSettings.vue`、`src/live2d/{consent,catalog,portrait-controller,loader,renderer,idle-motion,cleanup}.js`、`tests/live2d-{consent,controller,component,renderer,core,sdk}.test.js`、`tests/helpers/live2d-core-audit.js`。`vendor/live2d/**`、`public/vendor/live2d/**` 是保留原字节的官方 SDK，不手工美化。
+Live2D recovery adds the listed maintained presentation/tests and real-Core helper. Read the runtime/licensing guides; official vendor bytes are not hand-reformatted.
+
+角色资产位于 `public/live2d/<id>/`，原字节及离线证据位于 `docs/verification/live2d-models/`。当前七人均有完整离线放行与真实浏览器Core检查；`available` 不等于GPU或发布通过，详见 [当前范围](LIVE2D-RUNTIME.md)。 / Character assets and per-file/offline evidence live in the listed paths. All seven roles have full offline approval and actual browser Core checks; availability does not mean GPU or release approval.
+
 这不是只给代码加标题的改动。自维护源码已经展开压缩写法，按文件职责、函数、状态、关键判断和副作用增加中文在上、英文在下的说明。你可以按以下路线通读，不必先懂整个前端生态。
 Maintained source has expanded layout and Chinese-first bilingual explanations of responsibilities, functions, state, decisions, and effects. Follow this route without first learning the entire frontend ecosystem.
 

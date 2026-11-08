@@ -123,3 +123,11 @@ The four preview files inspect the actual component, production CSS and audio wi
 
 在目标仓库目录运行 `node tests/browser/wan-preview-server.mjs`，访问 `http://localhost:5374/tests/browser/wan-preview.html` 或 `wan-preview-narrow.html`。服务器显式关闭主Vite配置，使用独立127.0.0.1端口；若工具shell与官方浏览器不共享localhost，须从浏览器所在电脑的授权原生终端启动。完成后停止自建进程，禁止部署这些页面。验证范围见 [集成验收](../../docs/CHENGDU-INTEGRATION-VALIDATION.md)。
 Run the server script from the target repository and open either page on localhost port 5374. It disables the main Vite config and binds a separate loopback port. If the tool shell/browser do not share localhost, start it through an authorized native terminal on the browser computer. Stop the process afterward and never deploy these pages. See the integration validation for actual scope.
+
+## Live2D 重建隔离验收 / Isolated Live2D rebuild acceptance
+
+`live2d-preview-server.mjs` 的5460–5463端口共享MemoryStore，可从真实App建立三/四席合成测试桌；`live2d-preview.html/js` 使用实际CharacterArtwork组件、官方Core和各自moc3，按钮把资源/192帧数值及普通WebGL上下文探测结果写入可见DOM。`tests/helpers/live2d-core-audit.js` 是Node与浏览器共用的真实Core检查，不模拟模型。缺WebGL时只准记为原图回退，不能称GPU可见通过。完整结果和未验范围见 [Live2D验收](../../docs/LIVE2D-VALIDATION.md)。
+The four origins share only synthetic in-memory rooms. The isolated page uses the real component and official Core, exposing resource, 192-frame and ordinary-context results in visible DOM. Core audits are not mocked models and do not prove GPU rendering. See the validation report for exact boundaries. None of these helpers are included in the production build.
+
+许可选择回归可传可选日志路径和起始端口：`node tests/browser/live2d-preview-server.mjs /tmp/live2d-resources.jsonl 5470`。只记录 SDK / 模型 / renderer 静态路径和状态，不记录 API、参数或凭证。新 origin 正常验证首次访问，无需改写浏览器存储；明确同意前诊断按钮也不可运行。实际结果见 [选择流程验收](../../docs/verification/live2d-consent-browser.md)。
+For consent regression, optional arguments select a resource-only log and four fresh origins. The diagnostic button also requires explicit assent. Use a new origin instead of editing browser storage; see the linked actual results. Stop the isolated server after testing.

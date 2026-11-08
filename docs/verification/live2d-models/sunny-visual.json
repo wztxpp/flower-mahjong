@@ -1,0 +1,55 @@
+{
+  "status": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "coreVersion": 100663297,
+  "modelSha256": "f91f313d2c42f9e721f25573b8943b332783c1346c53915279c29e96fb6e5ca9",
+  "driverSha256": "6e8db32097ee24b3d32c56593fa1dc18f7ec621f3ba60761283d94350b0560b3",
+  "drawables": 13,
+  "verifiedIdleParameters": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "closedSamples": [
+    "idle-036",
+    "idle-090",
+    "idle-150"
+  ],
+  "durationSeconds": 8,
+  "fps": 24,
+  "frames": 192,
+  "webglVerified": false,
+  "inspected": [
+    "neutral",
+    "half-close",
+    "closed",
+    "hair-stress-left",
+    "hair-stress-right",
+    "combined-positive",
+    "combined-negative",
+    "idle-036",
+    "idle-090",
+    "idle-150",
+    "sequence-contact",
+    "portrait-200-contact",
+    "portrait-340-contact"
+  ],
+  "findings": [
+    "Registered revised eye whites inspected at open/half/closed; no residual iris or doubled lash at full close.",
+    "Both pigtail roots and neck/collar remain joined in tested hair and head/body extremes.",
+    "Bilateral blink remains distinguishable at 200px and 340px portrait widths."
+  ],
+  "limits": [
+    "Offline CPU evidence is not browser/WebGL visual acceptance.",
+    "Generated art edges and automated rigs are prototype quality; no arbitrary full-angle or lipsync approval."
+  ],
+  "video": "natural-8s.mp4",
+  "maskLeak": 0.0
+}

@@ -13,6 +13,10 @@ import { readFileSync } from "node:fs";
 import * as Vue from "vue";
 import * as CharacterAudioModule from "../src/character-audio.js";
 import * as CharacterPortraitModule from "../src/character-portraits.js";
+import * as Live2DCatalog from '../src/live2d/catalog.js';
+import * as Live2DLoader from '../src/live2d/loader.js';
+import * as Live2DConsent from '../src/live2d/consent.js';
+import * as Live2DController from '../src/live2d/portrait-controller.js';
 import * as SharedPlaybackModule from "../src/shared-playback.js";
 import * as MahjongPhotoModule from "../src/mahjong-photo-faces.js";
 import * as MahjongPresentationModule from "../src/mahjong-tile-presentation.js";
@@ -85,12 +89,22 @@ const Tile = compileComponent("MahjongTile.vue", {
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
+const CharacterArtwork = compileComponent('CharacterArtwork.vue', {
+  './live2d/consent.js': Live2DConsent,
+  './live2d/catalog.js': Live2DCatalog,
+  './live2d/loader.js': Live2DLoader,
+  './live2d/portrait-controller.js': Live2DController,
+});
 const ChengduTable = compileComponent("ChengduTable.vue", {
+  './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
+const Live2DSettings = compileComponent('Live2DSettings.vue', { './live2d/consent.js': Live2DConsent });
 const App = compileComponent("App.vue", {
+  "./Live2DSettings.vue": Live2DSettings,
+  './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
@@ -444,7 +458,11 @@ test("legacy board keeps draw control and switches tables in the same tab", asyn
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
   assert.match(html, /本桌已开局，继续使用旧规则/);
   assert.match(html, /离开旧桌，返回大厅换新桌/);
-  assert.doesNotMatch(html, /target="_blank"/);
+  // 换桌必须留在本页；官方许可链接另开页不应被这条导航合同误禁。
+  // Room switching stays in this tab; official-license links may open separately without violating navigation.
+  const leaveControl = html.match(/<button[^>]*class="[^"]*leave-table-button[^"]*"[^>]*>[\s\S]*?<\/button>/)?.[0];
+  assert.ok(leaveControl);
+  assert.doesNotMatch(leaveControl, /target="_blank"/);
   assert.match(html, /摸一张/);
   assert.doesNotMatch(html, /胡后固定|查看当前胡牌判断/);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
@@ -6504,6 +6522,8 @@ test('App routes Chengdu schema two to its own table without Flower compatibilit
   const scope = setup(state);
   assert.equal(scope.isOlderGame.value, false); assert.equal(scope.isLegacy.value, false); assert.equal(scope.isLatest.value, false);
   const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+  assert.match(html, /class="live2d-settings"/);
+  assert.doesNotMatch(html, /<canvas|character-artwork-background/);
   assert.match(html, /aria-label="成都麻将牌桌"/); assert.match(html, /定缺万/); assert.match(html, /你的手牌/);
   assert.doesNotMatch(html, /本桌保留 v0|胡后自动打出|萝卜|神龙|大单吊/);
 });
@@ -6708,9 +6728,9 @@ test('portrait scenes use independent own art below the existing private hand co
     const scope = setup(state);
     const html = await render(scope);
     assert.equal((html.match(/class="[^"]*\bcharacter-portrait\b/g) || []).length, 2);
-    assert.equal((html.match(/class="own-character-scene"/g) || []).length, 1);
+    assert.equal((html.match(/class="[^"]*\bown-character-scene\b/g) || []).length, 1);
     const ownArea = html.slice(html.indexOf('own-player-area'));
-    assert.match(ownArea, /own-character-scene[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt="小桃"/);
+    assert.match(ownArea, /own-character-scene[\s\S]+character-artwork-original[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt="小桃"/);
     assert.ok(ownArea.indexOf('class="hand-panel"') < ownArea.indexOf('class="own-character-display"'));
     assert.match(ownArea, /own-seat-summary[\s\S]+class="hand-panel"[\s\S]+我的手牌与操作/);
     assert.match(ownArea, /class="my-hand"/);
@@ -6743,19 +6763,19 @@ test('own scene lifecycle keeps the lobby undecorated and clears on room exit', 
   assert.doesNotMatch(await render(scope), /own-character-scene/);
 });
 
-// 动画只属于图片：系统偏好可立即关闭，牌/标签/按钮不进入动画目标，也不引入脚本计时。
-// Motion belongs only to images: the system preference disables it, with no moving tiles/labels/buttons or script timers.
-test('scene motion is image-only, edge-safe and disabled for reduced-motion preferences', () => {
+// 局部模型动画替代整图 CSS 摆动；系统偏好由真实组件监听，原图/牌/标签保持静止。
+// Local model animation replaces whole-image CSS motion; the real component observes preferences while art/tiles/labels remain still.
+test('scene motion is model-only and observes live reduced-motion changes', () => {
   const css = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
-  assert.match(css, /@keyframes character-scene-breathe\s*\{[\s\S]*?scale\(1\.035\)[\s\S]*?scale\(1\.045\)/);
+  const artwork = readFileSync(new URL('../src/CharacterArtwork.vue', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /@keyframes character-scene-breathe|animation: character-scene-breathe/);
   assert.match(css, /\.own-character-art\s*\{[^}]*overflow: clip;/);
   assert.match(css, /\.own-character-scene\s*\{[^}]*position: static;/);
   assert.doesNotMatch(css, /\.own-player-area\.has-character-scene::after/);
-  const enabled = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: no-preference)'), css.lastIndexOf('@media (prefers-reduced-motion: reduce)'));
-  assert.match(enabled, /\.character-portrait > img\s*\{\s*animation: character-scene-breathe 10s/);
-  assert.match(enabled, /\.own-character-scene\s*\{\s*animation: character-scene-breathe 12s/);
-  assert.doesNotMatch(enabled, /\.mahjong-tile|\.button|\.hand-panel|\.player-name/);
-  assert.match(css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)')), /\.character-portrait > img,\s*\.own-character-scene\s*\{\s*animation: none;\s*transform: none;/);
+  assert.match(artwork, /prefers-reduced-motion: reduce/);
+  assert.match(artwork, /addEventListener\?\.\('change', motionChanged\)/);
+  assert.match(artwork, /removeEventListener\?\.\('change', motionChanged\)/);
+  assert.match(artwork, /pointer-events: none/);
 });
 
 // 落座后的已分配角色优先于偏好；进入游戏、刷新快照与观战不能重新猜测角色。
@@ -6782,4 +6802,27 @@ test('seated character identity survives lobby to start and preserves replacemen
   assert.equal(scope.characterForPlayer(0, true).id, 'elegant', 'replacement identity uses its new seated role');
   assert.equal(scope.characterForPlayer(0).id, 'landlord', 'the old game participant retains its original role');
   scope.resetRoomContext();
+});
+
+
+// 设置入口独立于模式和牌局；只引用官方许可，默认静态，不把自拟七条或义务转移给玩家。
+// Settings are independent of mode/game, reference only official licenses, default static and never impose the superseded draft.
+test('both actual App modes expose optional official-license settings without preloading dynamic assets', async () => {
+  for (const gameMode of ['flower', 'chengdu']) {
+    const state = startFixture();
+    state.gameMode = gameMode;
+    if (gameMode === 'chengdu') {
+      state.rulesVersion = 2;
+      state.settings = { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
+    }
+    const html = await render(setup(state));
+    assert.match(html, /<details class="live2d-settings">/);
+    assert.match(html, /动态角色：未启用/);
+    assert.match(html, /同意并启用动态角色/);
+    assert.match(html, /不启用，使用静态角色/);
+    assert.match(html, /适用于本游戏所含 Live2D 组件使用及保护的条款/);
+    for (const url of Object.values(Live2DConsent.LIVE2D_LICENSE_URLS)) assert.ok(html.includes(`href="${url}"`));
+    assert.doesNotMatch(html, /(?:src|href)="(?:\/vendor\/live2d|\/live2d\/|[^" ]*renderer[^" ]*\.js)/);
+    assert.doesNotMatch(html, /<canvas|Live2D 组件使用条款|赔偿承诺|收入申报/);
+  }
 });

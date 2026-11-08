@@ -2957,6 +2957,7 @@ p.table-setting-wide { margin-top: -6px; }
 .own-character-art {
   aspect-ratio: 1254 / 1050;
   overflow: clip;
+  --portrait-focus-y: 50%;
 }
 .own-character-scene {
   display: block;
@@ -2983,34 +2984,10 @@ p.table-setting-wide { margin-top: -6px; }
   .own-character-display { width: calc(100% - 20px); margin: 12px auto; }
 }
 
-/* 只让装饰图片呼吸/轻晃，标签、牌和按钮的位置完全不动；略放大保证运动时不露边。
-   Animate only decorative art; labels, tiles and buttons remain stationary. Slight overscan prevents edge gaps while moving. */
-@keyframes character-scene-breathe {
-  0%, 100% { transform: translate3d(-.25%, 0, 0) scale(1.035) rotate(-.12deg); }
-  50% { transform: translate3d(.25%, -.35%, 0) scale(1.045) rotate(.12deg); }
-}
-/* 仅在系统允许动态时启用低幅长周期动画；不使用JS计时器，也不改变表情切换的三秒生命周期。
-   Opt in only when the system permits motion, with slow low-amplitude cycles and no JS timers or reaction-lifetime changes. */
-@media (prefers-reduced-motion: no-preference) {
-  .character-portrait > img {
-    animation: character-scene-breathe 10s ease-in-out infinite;
-    transform-origin: 50% 35%;
-  }
-  .opponent-seat:nth-child(even) .character-portrait > img { animation-delay: -4s; }
-  .own-character-scene {
-    animation: character-scene-breathe 12s ease-in-out -6s infinite;
-    transform-origin: 50% 35%;
-  }
-}
-/* 系统切到减少动态后立即恢复静止满框图；胡牌/放炮仍换为对应静态表情。
-   A live reduced-motion preference immediately restores still full-frame art; win/loss reactions continue as static images. */
-@media (prefers-reduced-motion: reduce) {
-  .character-portrait > img,
-  .own-character-scene {
-    animation: none;
-    transform: none;
-  }
-}
+/* 真模型负责局部动作，不再把整张原图平移当作 Live2D；标签、牌与按钮始终静止。
+   Real models own local movement; whole-image transforms are not Live2D. Labels, tiles and controls remain still. */
+.character-portrait > .character-artwork { position: static; }
+.own-character-art > .character-artwork { position: static; }
 
 /* 两种玩法共享清晰桌毡承托真手牌；下方独立立绘不影响触控目标。
    Both modes share a clear felt surface for real cards; the separate portrait below never changes hit targets. */

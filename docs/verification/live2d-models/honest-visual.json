@@ -1,0 +1,56 @@
+{
+  "status": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "coreVersion": 100663297,
+  "modelSha256": "c30536b3aeed9bad1b135e3c15dd46f183465c0e2c33f85d7de70bd3f8e0b786",
+  "driverSha256": "6e8db32097ee24b3d32c56593fa1dc18f7ec621f3ba60761283d94350b0560b3",
+  "drawables": 13,
+  "verifiedIdleParameters": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "closedSamples": [
+    "idle-036",
+    "idle-090",
+    "idle-150"
+  ],
+  "durationSeconds": 8,
+  "fps": 24,
+  "frames": 192,
+  "webglVerified": false,
+  "inspected": [
+    "neutral",
+    "half-close",
+    "closed",
+    "hair-stress-left",
+    "hair-stress-right",
+    "combined-positive",
+    "combined-negative",
+    "idle-036",
+    "idle-090",
+    "idle-150",
+    "sequence-contact",
+    "portrait-200-contact",
+    "portrait-340-contact",
+    "face-detail/contact"
+  ],
+  "findings": [
+    "Source-resolution open/half/closed inspected: restrained upper eyelid lines, no added long lashes or doubled closed line.",
+    "Short side hair roots, neck/collar and hands/table alignment intact in tested head/body combinations and hair extremes.",
+    "Bilateral complete blinks distinguishable at 200px and 340px; central fringe/crown not separately animated."
+  ],
+  "limits": [
+    "Offline CPU evidence is not browser/WebGL visual acceptance.",
+    "Generated art edges and automated rigs are prototype quality; no arbitrary full-angle or lipsync approval."
+  ],
+  "video": "natural-8s.mp4",
+  "maskLeak": 0.0
+}

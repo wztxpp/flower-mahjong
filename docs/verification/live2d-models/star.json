@@ -1,0 +1,65 @@
+{
+  "character": "star",
+  "reconstructed": true,
+  "sourceImageSha256": "957ef044bf1bd77ff8694c6b92dc67fc74d7566cd12e5b16f40840c4f8056ef7",
+  "verifiedCoreBindings": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "disabledParameters": [
+    "ParamBodyLean",
+    "ParamProportion",
+    "ParamEyeBallX",
+    "ParamEyeBallY",
+    "ParamEyeBallForm",
+    "ParamBrowLY",
+    "ParamBrowRY",
+    "ParamMouthForm",
+    "ParamMouthOpenY",
+    "ParamHairFront",
+    "ParamHairBack"
+  ],
+  "runtimeSha256": {
+    "character.cdi3.json": {
+      "bytes": 4609,
+      "sha256": "1ec67015e01e84ba13ba942c0997f9dffc9126baf69c7ed71b2ad514d81b42e4"
+    },
+    "character.model3.json": {
+      "bytes": 336,
+      "sha256": "2989f3a07fa92d9e4d0f44680ef64dfe8bc87b8cd8437db1063eb61d88f6455c"
+    },
+    "RIG-NOTES.txt": {
+      "bytes": 224,
+      "sha256": "4004b5355fc28093f6b1bd9f8eeebeea788e5c9e703b6eae6e1727ce0322946b"
+    },
+    "background.png": {
+      "bytes": 1479438,
+      "sha256": "105a2b0af24d421b81f6712cf21c15e90762dde31f4d0ec3c21bb3029b2d0ff4"
+    },
+    "character.moc3": {
+      "bytes": 198656,
+      "sha256": "ad053ba24c8a104a4b00a280b945e8ca3b5954b3e024547a246c84f8f0c9cf18"
+    },
+    "character.2048/texture_00.png": {
+      "bytes": 1914575,
+      "sha256": "7713e381479a135c7a0f5f2baab98ebcddbdf79e5ea84c261d30a5d99bf806c5"
+    }
+  },
+  "coreVersion": 100663297,
+  "coreConsistency": 1,
+  "visualReport": "qa/visual-report.json",
+  "visualStatus": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "webglVerified": false,
+  "expressionsBound": false,
+  "rawCmo3ContainsFinalPatches": false,
+  "rebuild": "../rebuild-tools/export-character.py with retained authoring inputs and rig configuration"
+}

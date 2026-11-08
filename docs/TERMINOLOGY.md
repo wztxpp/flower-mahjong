@@ -1,5 +1,11 @@
 # 项目术语与命名 / Project terminology and naming
 
+- `LIVE2D_CONSENT_VERSION`：官方 Core2.1 / Framework1.4 及本次范围提示的本地确认版本，不是账号、法律认证或游戏规则版本。 / Local assent version for official licenses and scoped notice, not an account, legal certification or rule version.
+- `canUseLive2D`：当前版本明确同意与宿主启用同时成立；不代表实际绘制成功。 / Current-version assent plus the host switch, not proof of successful drawing.
+- `verifiedBindings`：逐模型实际验收的参数 ID 白名单，不是所有已声明参数。 / Individually audited parameter IDs, not all declared parameters.
+- `portraitPhaseKey`：角色与绝对座位组成的本地动画相位键，不是凭证或持久协议。 / Local role/absolute-seat animation phase, not a credential or persisted protocol.
+- `PortraitController`：装饰资源和代次拥有者，不拥有三秒原图反应调度、游戏或声音。 / Decorative-resource/generation owner, not reaction, game or audio authority.
+
 本字典解释“同一个词在代码里具体指什么”。中文优先用下列名称；英文标识保留既有对外字段，通过作用域和类型区分，不强改存档键。
 This dictionary defines each concept in code. Prefer the Chinese terms below and consistent English names. Preserve existing external keys and distinguish them by scope/type rather than migrating saved state for style.
 

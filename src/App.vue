@@ -7,6 +7,8 @@ import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
 import ChengduTable from './ChengduTable.vue';
 import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
+import CharacterArtwork from './CharacterArtwork.vue';
+import Live2DSettings from './Live2DSettings.vue';
 import { chengduEventText } from './chengdu-event-text.js';
 import { isChengduRoomSettings, CHENGDU_FAN_CAPS } from '../shared/chengdu-room-settings.js';
 import { SharedPlaybackCoordinator } from './shared-playback.js';
@@ -586,7 +588,14 @@ function characterForPlayer(seat, forOccupant = false) {
     characterForSeat(seat, tablePlayerCount.value);
   // 本人、对手大立绘/头像和成都牌桌共享同一绝对座位的短暂表情。
   // Self, opponent portraits/avatars and Chengdu share one transient reaction per absolute seat.
-  return { ...character, portrait: portraitForCharacter(character, portraitReactionsBySeat.value[seat]) };
+  return {
+    ...character,
+    portrait: portraitForCharacter(character, portraitReactionsBySeat.value[seat]),
+    // 模型只接收公开展示状态和稳定座位相位，不接收手牌、候选回应或私人身份。
+    // Models receive only public presentation state and stable seat phase, never hands, pending claims or private identity.
+    portraitReaction: portraitReactionsBySeat.value[seat] || 'base',
+    portraitPhaseKey: `${character.id}:${seat}`,
+  };
 }
 // 同时记录牌种和显示下标；再次点击同一张取消选择，同牌种的两张仍可区分。
 // Track both tile type and display index; clicking the same instance deselects it, even when tile types repeat.
@@ -2191,6 +2200,8 @@ onUnmounted(() => {
         >
       </div>
     </header>
+    <!-- 全局可选设置同时覆盖两玩法；不阻挡建房、开局或静态角色。 / Optional global settings cover both modes without blocking rooms, play or static art. -->
+    <Live2DSettings />
 
     <!-- 短暂飞牌覆盖层不持有真实牌；稳定 eventKey 区分每次已提交事件。 / Transient flight overlays do not own real tiles; stable eventKey values identify committed events. -->
     <div
@@ -2756,10 +2767,7 @@ onUnmounted(() => {
                   v-if="player.name"
                   class="character-portrait"
                   :class="`character-${characterForPlayer(player.seat, !isSpectator).id}`"
-                  ><img
-                    :src="characterForPlayer(player.seat, !isSpectator).portrait"
-                    :alt="`${characterForPlayer(player.seat, !isSpectator).name} · ${characterForPlayer(player.seat, !isSpectator).style}`"
-                  /><span
+                  ><CharacterArtwork :character="characterForPlayer(player.seat, !isSpectator)" /><span
                     >{{ characterForPlayer(player.seat, !isSpectator).name
                     }}<small>{{ characterForPlayer(player.seat, !isSpectator).style }}</small></span
                   ></div
@@ -3249,8 +3257,8 @@ onUnmounted(() => {
           <!-- 独立普通流画框自然排在手牌后；保留原图比例及表情，图像不承载交互或私有数据。
                This normal-flow frame follows the hand, preserving source proportions/reactions without carrying input or private data. -->
           <figure v-if="game" class="own-character-display" aria-label="你的角色立绘">
-            <div class="own-character-art"><img class="own-character-scene"
-              :src="characterForPlayer(mySeat, true).portrait" :alt="characterForPlayer(mySeat, true).name" /></div>
+            <div class="own-character-art"><CharacterArtwork class="own-character-scene"
+              :character="characterForPlayer(mySeat, true)" /></div>
             <figcaption>{{ characterForPlayer(mySeat, true).name }}<span>{{ characterForPlayer(mySeat, true).style }}</span></figcaption>
           </figure>
           </div>

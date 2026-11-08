@@ -1,0 +1,219 @@
+{
+  "scope": "Actual browser Core and resources only; not WebGL visibility",
+  "graphics": [
+    {
+      "type": "webgl2",
+      "available": false,
+      "creationMessage": "Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: ."
+    },
+    {
+      "type": "webgl",
+      "available": false,
+      "creationMessage": "Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: ."
+    }
+  ],
+  "models": [
+    {
+      "id": "sweet",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 14,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    },
+    {
+      "id": "sunny",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 13,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        },
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    },
+    {
+      "id": "elegant",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 15,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    },
+    {
+      "id": "star",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 14,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    },
+    {
+      "id": "wealthy",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 16,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    },
+    {
+      "id": "honest",
+      "coreVersion": 100663297,
+      "mocVersion": 5,
+      "consistency": 1,
+      "drawableCount": 13,
+      "verifiedBindings": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamAngleZ",
+        "ParamBodyAngleX",
+        "ParamBodyAngleY",
+        "ParamBodyAngleZ",
+        "ParamEyeLOpen",
+        "ParamEyeROpen",
+        "ParamBreath",
+        "ParamHairSideR",
+        "ParamHairSideL"
+      ],
+      "finiteFrames": 192,
+      "changedFrames": 192,
+      "webglVerified": false,
+      "textures": [
+        {
+          "width": 2048,
+          "height": 2048
+        }
+      ],
+      "background": {
+        "width": 1254,
+        "height": 1050
+      }
+    }
+  ]
+}

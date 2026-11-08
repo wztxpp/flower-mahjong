@@ -1,0 +1,58 @@
+{
+  "status": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "coreVersion": 100663297,
+  "modelSha256": "2a0ff3f013a665b37e4f99ee071bef70bc1d0761f71769f92f9e6ab96db1b9cc",
+  "driverSha256": "6e8db32097ee24b3d32c56593fa1dc18f7ec621f3ba60761283d94350b0560b3",
+  "drawables": 15,
+  "verifiedIdleParameters": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "closedSamples": [
+    "idle-036",
+    "idle-090",
+    "idle-150"
+  ],
+  "durationSeconds": 8,
+  "fps": 24,
+  "frames": 192,
+  "webglVerified": false,
+  "inspected": [
+    "neutral",
+    "half-close",
+    "closed",
+    "hair-stress-left",
+    "hair-stress-right",
+    "combined-positive",
+    "combined-negative",
+    "idle-036",
+    "idle-090",
+    "idle-150",
+    "sequence-contact",
+    "portrait-200-contact",
+    "portrait-340-contact",
+    "earwear-detail/contact"
+  ],
+  "findings": [
+    "Both earrings share one ArtMeshLayer accessory mesh, not independent EarwearL/R. Core confirms head XYZ follow without HairSide influence.",
+    "Source-resolution neutral, combined head/body signs and hair extremes inspected: no visible rectangular skin-cut edge, duplicated earring or exposed back-hair fill seam at tested amplitude.",
+    "High collar remains near chin as in source design; no new separation observed.",
+    "Bilateral complete blink visible at 200px and 340px; three complete closure frames reviewed."
+  ],
+  "limits": [
+    "Offline CPU evidence is not browser/WebGL visual acceptance.",
+    "Generated art edges and automated rigs are prototype quality; no arbitrary full-angle or lipsync approval.",
+    "Mechanically extracted combined earring layer was accepted only within tested modest motion; larger turns require renewed visual QA."
+  ],
+  "video": "natural-8s.mp4",
+  "maskLeak": 0.0
+}

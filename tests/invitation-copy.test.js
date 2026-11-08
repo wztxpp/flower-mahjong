@@ -11,6 +11,7 @@ import test, { afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as Vue from "vue";
+import * as Live2DConsent from "../src/live2d/consent.js";
 import * as CharacterAudioModule from "../src/character-audio.js";
 import * as CharacterPortraitModule from "../src/character-portraits.js";
 import * as SharedPlaybackModule from "../src/shared-playback.js";
@@ -82,7 +83,9 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
+const Live2DSettings = compileComponent("Live2DSettings.vue", { "./live2d/consent.js": Live2DConsent });
 const App = compileComponent("App.vue", {
+  "./Live2DSettings.vue": Live2DSettings,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,

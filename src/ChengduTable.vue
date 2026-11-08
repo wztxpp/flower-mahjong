@@ -5,6 +5,7 @@
 // App/room layers own transport, identity, reconnects, characters and ledgers; this component never judges wins, scores or chooses automatically.
 import { computed, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
+import CharacterArtwork from './CharacterArtwork.vue';
 import { chengduEventText } from './chengdu-event-text.js';
 import { tilePresentation } from './mahjong-tile-presentation.js';
 
@@ -113,7 +114,7 @@ function eventText(event) {
              Opponent tall frames stay separate from public tiles; viewers see all roles and self art appears only below the private hand. -->
         <div v-if="player.seat !== mySeat" class="character-portrait chengdu-character-portrait"
           :class="`character-${characterForPlayer(player.seat).id}`">
-          <img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
+          <CharacterArtwork :character="characterForPlayer(player.seat)" />
         </div>
         <div class="chengdu-player-heading"><img :src="characterForPlayer(player.seat).portrait" :alt="characterForPlayer(player.seat).name" />
           <div><strong>{{ nameFor(player.seat) }}</strong><small>{{ mySeat === player.seat ? '你' : `座位 ${player.seat + 1}` }} · {{ characterForPlayer(player.seat).name }}</small></div>
@@ -152,8 +153,8 @@ function eventText(event) {
       <p v-if="game.waitTiles?.length && !me.won" class="chengdu-waits">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p>
     </section>
     <figure class="own-character-display" aria-label="你的角色立绘">
-      <div class="own-character-art"><img class="own-character-scene"
-        :src="characterForPlayer(mySeat).portrait" :alt="characterForPlayer(mySeat).name" /></div>
+      <div class="own-character-art"><CharacterArtwork class="own-character-scene"
+        :character="characterForPlayer(mySeat)" /></div>
       <figcaption>{{ characterForPlayer(mySeat).name }}<span>{{ characterForPlayer(mySeat).style }}</span></figcaption>
     </figure>
     </div>

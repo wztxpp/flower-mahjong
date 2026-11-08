@@ -1,0 +1,69 @@
+{
+  "character": "sunny",
+  "reconstructed": true,
+  "sourceImageSha256": "5488b63d16b9833575921c5a85085ea9b4877282f2bd10c4eba41df418e79d46",
+  "verifiedCoreBindings": [
+    "ParamAngleX",
+    "ParamAngleY",
+    "ParamAngleZ",
+    "ParamBodyAngleX",
+    "ParamBodyAngleY",
+    "ParamBodyAngleZ",
+    "ParamBreath",
+    "ParamEyeLOpen",
+    "ParamEyeROpen",
+    "ParamHairSideL",
+    "ParamHairSideR"
+  ],
+  "disabledParameters": [
+    "ParamBodyLean",
+    "ParamProportion",
+    "ParamEyeBallX",
+    "ParamEyeBallY",
+    "ParamEyeBallForm",
+    "ParamBrowLY",
+    "ParamBrowRY",
+    "ParamMouthForm",
+    "ParamMouthOpenY",
+    "ParamHairFront",
+    "ParamHairBack"
+  ],
+  "runtimeSha256": {
+    "character.cdi3.json": {
+      "bytes": 4539,
+      "sha256": "fcef17108f855969d2be2902e0005e8051460ce0fee115d9ee8c55745c8b4682"
+    },
+    "character.model3.json": {
+      "bytes": 375,
+      "sha256": "48f89b0c85ae24f39c1b99c68a13923ab258d5ad611835c3aa3a1f4b11c40914"
+    },
+    "RIG-NOTES.txt": {
+      "bytes": 224,
+      "sha256": "4004b5355fc28093f6b1bd9f8eeebeea788e5c9e703b6eae6e1727ce0322946b"
+    },
+    "background.png": {
+      "bytes": 1488155,
+      "sha256": "c64352406503073e5866017be285f46773c029a2803b7ab2f61ccd0b4409f7c3"
+    },
+    "character.moc3": {
+      "bytes": 186112,
+      "sha256": "f91f313d2c42f9e721f25573b8943b332783c1346c53915279c29e96fb6e5ca9"
+    },
+    "character.2048/texture_01.png": {
+      "bytes": 546338,
+      "sha256": "12ac4c11fe32411a7427772c316b2d0ca668c269ebc0f50f994f81bfee747337"
+    },
+    "character.2048/texture_00.png": {
+      "bytes": 1176081,
+      "sha256": "c3f10b0ec6aaafdc133586ec9700eef33c04549613f5e4f18e1a7309bed79022"
+    }
+  },
+  "coreVersion": 100663297,
+  "coreConsistency": 1,
+  "visualReport": "qa/visual-report.json",
+  "visualStatus": "passed_offline_Core_visual_QA_for_tested_idle_and_stress_poses",
+  "webglVerified": false,
+  "expressionsBound": false,
+  "rawCmo3ContainsFinalPatches": false,
+  "rebuild": "../rebuild-tools/export-character.py with retained authoring inputs and rig configuration"
+}

@@ -1,5 +1,8 @@
 # 架构与生命周期 / Architecture and lifecycles
 
+Live2D 大立绘只在当前版本明确同意、可见、前台、基础表情、允许动态时加载；表情暂停复用，撤销同意/换角色/卸载释放旧所有权。独立 keyed canvas、post watcher、加载后代次检查保护新上下文；失败保留原图，不发动作、不改声音或规则。详见 [展示层](LIVE2D-RUNTIME.md)，官方许可引用选择已实现；GPU未验证而用户已选择先发布后自行验收，不把它记为通过。
+Large art loads only when visible, foreground, in base state and motion-enabled. Reactions reuse paused instances; role changes/unmount revoke ownership. Keyed canvases, post watchers and generation checks protect contexts. Failures preserve art without actions or rule/audio changes; licensing/GPU remain separate release gates.
+
 ## 1. 一次点击经过哪些层 / The path of a click
 
 1. `src/App.vue` 从服务器视图的 `legalActions` 展示按钮，玩家点击提交动作意图。 / App renders server-supplied legal actions and submits intent.
@@ -167,3 +170,8 @@ Portraits derive from displayed public events and expire independently per seat 
 
 主角立绘现在是手牌与操作下方的独立普通流面板，不再充当牌面背景；花麻将/成都复用原表情，观战不创建本人面板，离桌由原条件卸载。立绘布局不增加订阅、计时器或牌面遮蔽，角色持久化另由上述占座生命周期管理。见 [立绘指南](CHARACTER-PORTRAIT-REACTIONS.md)。
 Self art is now a separate normal-flow panel below the hand/actions, not a card background. Flower/Chengdu reuse existing reactions; spectators have no self panel and leaving unmounts it. Portrait layout adds no subscriptions, timers or tile-privacy logic; character persistence belongs to the occupancy lifecycle above.
+
+## Live2D 本地选择生命周期 / Local Live2D choice lifecycle
+
+`consent.js` 与 `Live2DSettings.vue` 不依赖房间/局，切换玩法沿用同一页的选择，不改状态快照。当前版本明确 true 才允许 SDK，旧版/未知/不可读记录不自动加载。关闭同步增加画框代次并 dispose，解除在途模型/纹理及绘制所有权；普通表情暂停仍复用实例。副页 storage 撤销同步关闭；最后消费者卸载移除监听。已授权的脚本/缓存字节不能撤回，也不冒充从浏览器删除了 SDK。
+Consent and settings are page-local and independent of rooms/games; changing modes preserves choice without changing snapshots. Only exact-version true authorizes loading. Disabling synchronously revokes generation/resource ownership; ordinary reaction pauses still reuse models. Sibling storage withdrawal disables and the last consumer removes listeners. Previously authorized script/cache bytes cannot be recalled or claimed deleted.
