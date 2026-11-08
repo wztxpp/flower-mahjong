@@ -517,17 +517,32 @@ function contextualWaitTiles(game, player, hand, melds = player.melds) {
   ]);
   return pattern.waitTiles.filter((tile) => owned[tile] < copiesPerTile(game.rules));
 }
+// 本人打出的同种牌，在本人下一次实际摸牌之前不能接胡；只读已提交的公开事件。
+// A self-discarded identity cannot be claimed for hu until this seat actually draws again.
+// 普通摸、胡后续摸和杠补摸都有 draw；碰/杠申请、抢杠放牌和进入摸牌步骤都不是摸牌。
+// Normal/continuation/replacement draws all log draw; peng, kong offers and entering a draw step do not.
+// 新旧schema3共用完整追加历史，不回填规则/状态；没有可用证据时不从牌河或暗手猜禁胡。
+// Both current and saved schema-three games use append-only history without migration; missing evidence never invents a lock.
+function hasSelfDiscardHuLock(game, seat, tile) {
+  for (let index = game.history.length - 1; index >= 0; index--) {
+    const event = game.history[index];
+    if (event.seat !== seat) continue;
+    if (event.type === 'draw') return false;
+    if (event.type === 'discard' && event.tile === tile) return true;
+  }
+  return false;
+}
 /* 取候选胡牌前的待牌手牌，再按本版本规则验证能否胡；不能胡返回 null，能胡返回听口。
  * Build the waiting hand before the candidate win and validate this version’s hu rules; return null or its wait list. */
-function getAllowedHuWaits(game, seat, tile, fromHand, kongDiscard = false) {
+function getAllowedHuWaits(game, seat, tile, fromHand, honorCommittedClaim = false) {
+  if (!fromHand && !honorCommittedClaim && hasSelfDiscardHuLock(game, seat, tile)) return null;
   const player = game.players[seat];
   const base = [...player.hand];
   if (fromHand) removeTilesFromHand(base, tile);
   const waits = contextualWaitTiles(game, player, base);
   if (!waits.includes(tile)) return null;
-  // Winning once does not block a later legal discard win before a natural draw.
-  // Legacy lock fields remain readable for saved-state compatibility only; source
-  // protection (ordinary discards by an already-won player) stays in claimOptions.
+  // 胡过本身不锁下一次接胡；本次只禁止自己打出过的同种牌，旧huLock字段不复活。
+  // A prior win alone does not lock subsequent claims; only self-discarded identities are blocked, not legacy huLock fields.
   return waits;
 }
 /* 复制手牌并扣除当前最后摸到的牌，恢复计算听口需要的待牌张数。
@@ -544,6 +559,14 @@ function canDeclareKong(game, seat, type, tile) {
   /* 保留补摸与萝卜所需的牌墙余量；不能宣告无法完成后续步骤的杠。
    * Require enough wall capacity for replacement/radish steps before declaring a kong. */
   if (game.wall.length < 2) return false;
+  // 胡后锁的是原手牌，不只是听口。补碰/加杠只能用本次真正摸入的同牌；
+  // 否则会把锁定顺子里的牌抽走，再用另一张摸牌拼回相同听口（例如345筒换456筒）。
+  // After hu the held hand itself is locked, not merely its waits. An upgrade must use
+  // the actual current draw; otherwise 345 dots can illegally become 456 with unchanged waits.
+  // 暗杠/明杠仍由原听口检查决定；未胡者仍可使用早先保留的牌补杠。
+  // Concealed/exposed kongs retain their wait checks; unwon players may still upgrade held tiles.
+  if (player.huCount > 0 && ['buGang', 'addGang'].includes(type) &&
+    (game.lastDraw?.seat !== seat || game.lastDraw.tile !== tile)) return false;
   if (!player.huCount || !game.rules.preserveWaitsOnPostHuKong) return true;
   const before = contextualWaitTiles(game, player, getHandBeforeLastDraw(game, seat));
   const hand = [...player.hand];
@@ -577,7 +600,7 @@ function getDiscardClaimOptions(game, seat, discarded) {
   const sourceHasHu = game.players[discarded.seat].huCount > 0;
   const canHu =
     (!sourceHasHu || discarded.afterKong) &&
-    getAllowedHuWaits(game, seat, discarded.tile, false, discarded.afterKong === true);
+    getAllowedHuWaits(game, seat, discarded.tile, false);
   // A post-hu source is protected from both peng and mingGang, even after its kong.
   /* 来源已胡时保留胡牌例外，但不允许以该弃牌碰或明杠。
    * For an already-won source, retain any hu exception but forbid peng and exposed kong. */
@@ -660,7 +683,12 @@ export function getLegalActions(game, seat) {
   ) return [];
   if (game.phase === 'claim') {
     if (!game.claim?.eligibleSeats.includes(seat) || game.claim.responses[seat]) return [];
-    const options = cloneSerializable(game.claim.options[seat]);
+    // 已保存未回应窗口也要过滤新禁胡条件，但保留过牌让旧窗口可正常收束。
+    // Filter unanswered saved windows too, retaining pass so a now-blocked old window can close.
+    // 已提交回应在上面返回空动作，不在读取时改写或撤销。
+    // Already committed responses returned above are never rewritten or revoked on read.
+    const options = cloneSerializable(game.claim.options[seat]).filter((action) =>
+      action.type !== 'hu' || !hasSelfDiscardHuLock(game, seat, game.claim.tile));
     // 已胡者能胡就只能胡，普通接炮和抢杠共用此入口。读取时也过滤旧存档的选项，
     // 但不改写原窗口、已提交回应或历史；旧客户端不能通过直接发“过”绕过。
     // A prior winner must take an available discard/rob-kong win. Filter saved options on read
@@ -801,6 +829,8 @@ export function getHuDiagnostic(game, seat) {
     tile,
     waitTiles,
   };
+  if (!fromHand && hasSelfDiscardHuLock(game, seat, tile))
+    return reply('SELF_DISCARD_LOCK', `你打出过${tileLabel(tile)}，下次自己摸牌前不能胡这张牌；其他听口不受此限制。`, extra);
   if (!waitTiles.includes(tile)) {
     return reply(
       'SHAPE',
@@ -1223,12 +1253,23 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
    * Prepare zones and patterns for every winner before entering the scoring loop below. */
   const prepared = winners.map((seat, index) => {
     const player = game.players[seat];
+    // 仅当前这个已接受的接胡回应可保留旧意图；牌种、来源位、弃牌索引及胡牌来源均须一致。
+    // Only this exact accepted claim may retain an old intent: identity, source seat, river index and win source must match.
+    const claimedDiscard = game.discards[discardIndex];
+    const honorCommittedClaim = !selfDraw && game.phase === 'claim' &&
+      game.claim?.tile === tile && game.claim.discardSeat === fromSeat &&
+      game.claim.discardIndex === discardIndex && game.claim.responses[seat]?.type === 'hu' &&
+      source === (game.claim.kind === 'robKong' ? 'robKong' : claimedDiscard?.afterKong ? 'kongDiscard' : 'discard');
     const waits = getAllowedHuWaits(
       game,
       seat,
       tile,
       selfDraw,
-      source === 'kongDiscard' || source === 'robKong',
+      // 发布前已接受的回应属于已提交意图，不能因新禁胡规则卡死整个多人窗口。
+      // Honor an accepted pre-correction claim so the new lock cannot strand a saved multi-party window.
+      // 新请求先经getLegalActions拒绝，因此此例外不能让旧客户端新提交禁胡动作。
+      // New requests already pass getLegalActions, so old clients cannot use this settlement-only exception to bypass the lock.
+      honorCommittedClaim,
     );
     if (!waits) throw new Error('当前不能胡牌');
     /* 四组已成副露加最后一对，表示大单吊胡牌形状。
@@ -1486,7 +1527,7 @@ function offerKongUpgrade(game, seat, type, tile, presentationOptions) {
   const options = {};
   for (const other of turnOrderAfter(game, seat)) {
     // Rob-kong is its own repeat-win exception. It never offers peng or mingGang.
-    if (getAllowedHuWaits(game, other, tile, false, true))
+    if (getAllowedHuWaits(game, other, tile, false))
       options[other] = [
         {
           type: 'hu',

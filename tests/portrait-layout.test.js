@@ -34,6 +34,11 @@ for (const [file, boardClass, handClass] of [
     const hand = findByClass(ownArea, handClass);
     assert.ok(display && image && hand);
     assert.equal(display.tag, 'figure', 'standalone art has its own semantic frame');
+    // 名片在模板中删除而非仅用CSS遮住；角色图组件及其可访问替代文本继续保留。
+    // Remove nameplates from markup instead of hiding them with CSS; retain artwork and its accessible alternative text.
+    assert.equal(display.children.some((node) => node.tag === 'figcaption'), false, 'own art has no role caption');
+    const opponentPortrait = findByClass(board, 'character-portrait');
+    assert.deepEqual(opponentPortrait.children.filter((node) => node.type === 1).map((node) => node.tag), ['CharacterArtwork'], 'opponent art has no role-name overlay');
     const handIndex = ownArea.children.indexOf(hand);
     const displayIndex = ownArea.children.indexOf(display);
     assert.ok(handIndex >= 0 && displayIndex > handIndex, 'the actual image frame follows the hand in normal flow');

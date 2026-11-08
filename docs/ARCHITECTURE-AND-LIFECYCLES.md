@@ -189,3 +189,11 @@ Retired Live2D source/license records remain historical without modifying users'
 
 进行中的牌桌视窗按玩法/人数/屏宽确定尺寸，内容随已显示快照更新，槽位不随回合或牌河行数增删。可滚动状态留在原DOM中，不写入服务器、浏览器存储或音画队列；开局/终局/换桌仍可明确切换布局。详见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
 Active-table slots are sized by mode/count/width and survive turn/river-row changes. Native scroll state stays in the DOM, not authority, browser storage or presentation queues. Explicit game/navigation lifecycle transitions may still change layout; see [the layout contract](STABLE-TABLE-LAYOUT.md).
+
+主桌面状态/终局/身份页脚只是DOM重排：私有手牌继续受原参与者/观战守卫，终局和重开仍由同一阶段、权限及处理器控制。固定接牌槽在玩家手牌动作附近常驻；观众只有公开页脚提示。大厅身份不随这次局内移动改变位置。没有新增状态、订阅或网络副作用。
+The main-table status/finish/identity footer is a DOM rearrangement only. Original participant/spectator guards protect hands, and existing phases, permissions and handlers govern finish/restart. Fixed player claim slots remain by hand controls; spectators get public footer prompts only. Lobby identity stays in place, with no new state, subscriptions or transport effects.
+
+## 自弃限制的生命周期 / Self-discard lock lifecycle
+
+schema3从完整追加历史读取本人最近实际摸牌后的全部弃牌，不持久化第二份锁集合。所有真正弃牌（含手动点过与自动打出）建立限制，任何来源的本人实际摸牌解除之前的限制；碰、胡、抢杠申请和展示暂停不解除。读取旧窗口不回写；已接受回应在精确匹配本窗口时保留结算资格。缺失历史不从牌河猜测，详见[规则纠错](FLOWER-HAND-LOCK-CORRECTION.md)。
+Schema three derives locks from committed history instead of persisting a duplicate set. Every actual discard adds an identity, and every actual own draw clears prior identities; non-draw actions and presentation pauses do not. Saved-window reads never rewrite state, accepted responses retain narrow exact-window treatment, and absent history is never guessed from rivers.

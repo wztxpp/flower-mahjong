@@ -252,6 +252,9 @@ Run the focused Core/SDK command and then the standard aggregate checks. Only av
 `tests/stable-table-layout.test.js`：真实Vue模板/CSS编译、稳定空槽、Tab入口、滚动区名称、完整牌河遍历、原隐藏牌绑定与无全页滚动补偿。它不运行规则、不联系服务器，也不把源码断言称为浏览器像素实测。现有 `tests/ui.test.js` 的已胡必胡容器匹配接受新可及性属性，并继续严格验证唯一胡按钮；落座身份验证头像路径/角色名而非已删除说明。浏览器验收清单见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
 The new suite covers actual compilation, persistent slots, keyboard/naming contracts, complete rivers, masked tiles and no document-scroll compensation. It runs no rules/server traffic and makes no pixel claims. Existing mandatory-win and seated-identity assertions remain behavioral, accommodating accessible attributes/removal of redundant prose. See the linked guide for browser checks.
 
+同一结构套件还保护花麻将操作条首尾 auto 外边距、flex-start 溢出起点、nowrap 与68px固定高度；真实浏览器需另测单按钮/多按钮居中、窄屏首尾动作可达和手牌/页面不移位。
+The same structural suite protects Flower edge auto margins, the flex-start overflow origin, nowrap and the fixed68px height. Browser QA separately checks single/group centering, narrow-screen endpoint reachability and unchanged hand/document geometry.
+
 ### 稳定牌桌浏览器夹具清单 / Stable-table browser fixture inventory
 
 - `tests/browser/stable-table-preview-server.mjs`：仅本机独立Vite；禁用主配置与所有API请求。 / Loopback-only standalone Vite without the main configuration or API traffic.
@@ -266,3 +269,17 @@ The new suite covers actual compilation, persistent slots, keyboard/naming contr
 
 运行方法、四份浏览器JSON和98幅SSR辅助报告见 [稳定牌桌验收](STABLE-TABLE-VALIDATION.md)。浏览器矩阵/非零scrollY/原生按键是独立验证层，不把SSR或Tab属性检查说成实体手机、其他浏览器或读屏语音验收。
 See [stable table validation](STABLE-TABLE-VALIDATION.md) for commands, four browser JSON reports and98 supplemental SSR frames. Matrices, nonzero scrollY and native keys are separate evidence; neither SSR nor tabindex checks prove physical phones, other browsers or spoken screen-reader behavior.
+
+手动视口选择另提供320px，用于触发操作条真实横向溢出并验证首尾按钮可达；自动六组矩阵仍只使用1280/390px，不扩大既有验收声明。
+The manual width selector also offers320px to trigger real action-bar overflow and check first/last button reachability. The automatic six-case matrix remains1280/390px and its existing acceptance claims are unchanged.
+
+“多暗杠与胡牌动作”是仅限当前花麻将玩家的独立手动画面：本人0/1/2各四张、3两张，展示三种暗杠、自摸胡与出牌，共五个按钮。此过滤视图不构造完整引擎状态，不执行牌局动作/API，未加入自动阶段或六组矩阵；选择320px后可实测首尾溢出可达性。旧版、成都及观战选择此画面会明确拒绝。
+“Multiple concealed kongs and hu” is a separate manual current-Flower-player view: four each of0/1/2 and two3 tiles expose three concealed kongs, self-draw hu and discard as five buttons. This filtered view neither constructs a full engine state nor executes actions/APIs. It stays outside automatic stages/matrices; select320px to inspect overflow endpoints. Legacy, Chengdu and spectator combinations are explicitly rejected.
+
+## 锁手牌与自弃限制 / Held-hand and self-discard locks
+
+`tests/post-hu-held-tile.test.js`用守恒牌形反证“相同听口就可换手牌”；`tests/self-discard-lock.test.js`覆盖真实连续回合、累计自弃、三类摸牌、旧待决窗、自动出牌和隐私；`tests/flower-lock-api.test.js`验证真实HTTP处理器、非法请求无写入及FileStore重启。均不访问生产房间，不需要浏览器。
+These three suites cover conserved hand-exchange counterexamples, real turns, accumulated discards, all draw sources, saved claims, privacy, HTTP authority and disk restart, without production access or browsers.
+
+联合分支在`ui.test.js`另将真实引擎视图送入已调整布局：非法胡后补/加杠只剩过，合法暗杠仍有按钮，自弃旧窗口在JSON恢复/重投影后不可胡，观众不能看到该私有诊断。参见[联合验收](TABLE-RULE-FEEDBACK-INTEGRATION.md)，不要将SSR当像素或联机实测。
+Integration UI cases feed real engine views into the revised layout, covering held-upgrade rejection, retained concealed-kong controls, restored self-discard locks and private diagnostic exclusion. See the report; SSR is not pixel or multiplayer acceptance.

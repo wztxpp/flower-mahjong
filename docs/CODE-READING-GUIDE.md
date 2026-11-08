@@ -230,3 +230,10 @@ The portrait-layout suite inspects the real Vue template AST for both modes' sha
 - `tests/helpers/stable-table-browser-audit.js`：真实DOM尺寸、滚动保留与末端可达检查。 / Real-DOM geometry, scroll-retention and endpoint checks.
 - `tests/helpers/stable-table-report.js`：≤24KiB可见摘要及完整非渲染JSON证据。 / Bounded visible summaries and complete non-rendered JSON evidence.
 - `tests/stable-table-fixture.test.js`：上述隔离、比较、末端几何和报告完整性回归。 / Isolation, comparisons, endpoint geometry and report-integrity regressions.
+
+## 锁手牌与自弃纠错 / Held-hand and self-discard correction
+
+[规则纠错说明](FLOWER-HAND-LOCK-CORRECTION.md)解释schema3的摸入牌升级限制及从完整历史恢复的自弃同牌禁胡。新增维护测试为`tests/post-hu-held-tile.test.js`、`tests/self-discard-lock.test.js`、`tests/flower-lock-api.test.js`，规则入口仍为`shared/game.js`。
+[The correction guide](FLOWER-HAND-LOCK-CORRECTION.md) covers drawn-tile upgrades and history-based self-discard locks. The three listed suites join the maintained inventory; the authority remains shared/game.js.
+
+[牌桌布局与规则反馈联合验收](TABLE-RULE-FEEDBACK-INTEGRATION.md)记录main ac10fa3上的UI/规则组合、真实引擎→Vue交叉检查、1400项全量及保存历史/浏览器限制。 / The integration report covers the ac10fa3-based UI/rules combination, real-engine-to-Vue checks,1400-test pass and history/browser limits.

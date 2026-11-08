@@ -129,3 +129,8 @@ Read [the Chengdu guide](CHENGDU-ENGINE-FOUNDATION.md), then contract gates, pur
 
 最新正式纯入口改为 `chengdu-engine.js`，保存独立schema 2、rulesVersion和runtimeKind。`chengdu-production-contract.js` 固定座位方向、展示和轮回，旧原型createGame仍阻断。双方共用确定性准备/回合算法，但外部正式入口严格拒绝原型与混合标记。首胡流局已确认同血战三项结算，旧pending不再支持。见[最新合同](CHENGDU-ENGINE.md)。
 The production entry uses separate schema two/rules/runtime identifiers and fixed geometry, visibility and cycle contracts. Legacy draft creation remains blocked. Deterministic mechanics are shared, but production rejects drafts/mixed flags. First-win draws now use the same three settlements; obsolete pending states reject.
+
+## 胡后锁手牌和自弃禁胡 / Held-hand and self-discard checks
+
+`canDeclareKong`在听口试算前限制已胡者只能用当前摸牌补/加杠，暗杠路径不变。`hasSelfDiscardHuLock`逆扫本人事件到最近实际摸牌；`getAllowedHuWaits`和旧窗口白名单都检查，结构听口计算不受影响。结算对精确匹配的已接受旧回应保留窄例外，仍验牌型，见[完整边界](FLOWER-HAND-LOCK-CORRECTION.md)。
+Post-hu upgrades require the current draw before wait simulation. The history-based self-discard check guards new/saved claims without altering structural waits; a narrow exact-claim exception honors accepted old responses while still checking shape.

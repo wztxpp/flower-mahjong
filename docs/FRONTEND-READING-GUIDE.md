@@ -263,6 +263,9 @@ The portrait path maps displayed public wins to per-seat three-second reactions.
 
 ## 独立角色画框 / Separate character frames
 
+画框只显示立绘，不再叠加角色名称或在本人图下显示角色/声线名片；成都身份栏也不重复角色名。玩家昵称与座位标记仍在身份栏，角色选择器和图片alt仍保留名称。维护时不要把角色名片与真实玩家身份混为一谈。
+Frames show art without role-name overlays or own-art name/voice captions, and Chengdu identity rows no longer repeat role names. Player nicknames and seats remain in identity rows; selectors and image alternatives retain character names. Do not confuse decorative role nameplates with real player identity.
+
 花麻将及成都对手的 `character-portrait` 使用240–340px桌面、180–240px手机高画框，原图等比cover。`own-player-area` 内的真实手牌保留在桌面，`own-character-display` 作为手牌后方的普通流figure独立显示主角；`own-character-art` 按1254/1050原图比例预留空间并裁切图片动画。人物不再作为手牌背景，不绝对定位到操作区，没有跨控件遮罩。观众无本人图/私有手牌，窄屏仍仅手牌内横向滚动。
 Both modes use tall opponent frames (240–340px desktop, 180–240px phone) with proportional cover. Actual own cards stay on the board; a normal-flow figure after the hand shows the main character separately. The original image ratio reserves space and clips image motion. Art is never a hand background or an absolute-positioned control overlay. Spectators have no own art/private hand; narrow scrolling stays within cards.
 
@@ -273,3 +276,6 @@ The character helper distinguishes game snapshots from present occupants. Game/C
 
 参见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)：`App.vue` 和 `ChengduTable.vue` 把条件内容放在游戏期间常驻槽位中；`tabletop.css` 最后覆盖固定可视高度及滚动条占位。维护时不要把 `v-if` 移到空槽父级、只留下 max-height，或添加整页滚动补偿。长内容必须保留可命名、可聚焦的原生滚动入口。
 See [stable table layout](STABLE-TABLE-LAYOUT.md): conditional content lives inside game-long slots, with final CSS fixing visible heights/gutters. Do not move conditionals onto empty parents, restore max-height-only growth or add document-scroll compensation. Long content requires named, focusable native scrolling.
+
+主牌桌底部信息由 `table-info-footer` / `chengdu-table-footer` 承载：状态、终局控制及花麻将本人身份在真实DOM中排到手牌/立绘后；成都还排在账本/动态后。玩家接牌槽紧邻手牌动作，观众公开提示在页脚。大厅身份保持原位置；不要把该移动误解为身份、私有手牌或合法动作权限变化。细节和回归见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
+Main-table footers place status, finish controls and Flower own identity after hand/art in real DOM order; Chengdu additionally follows its ledger/history. Player claims stay by hand actions, while spectator claims live in the footer. Lobby identity stays in place. These moves change no identity, private-hand or action permissions; see the layout guide and regressions.

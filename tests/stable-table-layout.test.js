@@ -42,19 +42,19 @@ for (const [file, descriptor] of Object.entries(descriptors)) {
   });
 }
 
-// 只移除红框内说明，角色名、原图、语音按钮与本人身份不能随之消失。
-// Remove only the boxed descriptions; character names, original art, voice controls and own identity remain.
-test('boxed voice labels and watermark disappear while names, portraits and voice controls remain', () => {
+// 移除说明与角色名片，原图、语音按钮及玩家昵称仍保留；角色目录不被删改。
+// Remove descriptions and role nameplates while preserving art, voice controls, player nicknames and the character catalog.
+test('boxed labels and role nameplates disappear while player identity, portraits and voice controls remain', () => {
   const root = descriptors['App.vue'].template.ast;
   assert.equal(elements(root).some((node) => hasClass(node, 'table-watermark')), false);
   assert.equal(elements(root).some((node) => hasClass(node, 'own-character-label')), false);
   const portrait = find(root, 'character-portrait');
-  assert.match(portrait.loc.source, /characterForPlayer\(player.seat, !isSpectator\)\.name/);
-  assert.doesNotMatch(portrait.loc.source, /\.style/);
+  assert.doesNotMatch(portrait.loc.source, /characterForPlayer\([^)]*\)\.(?:name|style)/);
   assert.ok(elements(portrait).some((node) => node.tag === 'CharacterArtwork'));
   assert.match(find(root, 'voice-toggle').loc.source, /@click="toggleVoice"/);
   assert.match(find(root, 'own-seat-summary').loc.source, /me.name/);
-  assert.match(find(root, 'own-character-display').loc.source, /characterForPlayer\(mySeat, true\)\.name/);
+  assert.ok(elements(find(root, 'own-character-display')).some((node) => node.tag === 'CharacterArtwork'));
+  assert.doesNotMatch(find(root, 'own-character-display').loc.source, /figcaption|\.(?:name|style)/);
 });
 
 // 条件内容留在稳定父槽内；v-if不得重新挂到这些父槽导致空闲时又塌缩。
@@ -76,7 +76,7 @@ for (const [file, names] of [
 test('desktop and narrow overrides use fixed heights instead of only growth limits', () => {
   const tabletop = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
   const styles = [tabletop, descriptors['ChengduTable.vue'].styles[0].content];
-  const required = new Set(['.table-surface .discard-tiles', '.opponent-public-cards', '.table-surface .shared-radish-pool', '.own-player-area .own-public-cards', '.own-player-area .action-row', '.hand-feedback', '.room-sidebar .history-list', '.room-sidebar .table-ledger, .room-sidebar .round-ledger', '.chengdu-play-heading', '.chengdu-river', '.chengdu-public-cards', '.chengdu-action-bar', '.chengdu-details .chengdu-history', '.chengdu-details .chengdu-ledger']);
+  const required = new Set(['.table-surface .discard-tiles', '.opponent-public-cards', '.table-surface .shared-radish-pool', '.own-player-area .own-public-cards', '.own-player-area .action-row', '.hand-feedback', '.room-sidebar .history-list', '.room-sidebar .round-ledger', '.room-sidebar .table-ledger', '.chengdu-play-heading', '.chengdu-river', '.chengdu-public-cards', '.chengdu-action-bar', '.chengdu-details .chengdu-history', '.chengdu-details .chengdu-ledger']);
   for (const source of styles) {
     const compiled = compileStyle({ source, filename: 'stable.css', id: 'stable' });
     assert.deepEqual(compiled.errors, []);
@@ -124,4 +124,201 @@ test('horizontal viewports avoid phantom end gutters without changing vertical s
     '.chengdu-action-bar.stable-scroll',
   ].sort());
   assert.match(source, /\.stable-scroll, \[data-stable-scroll\]\s*\{[^}]*overflow: auto;[^}]*scrollbar-gutter: stable;/);
+});
+
+// 首尾元素自动外边距仅使用正的剩余空间；禁用按钮和等待文字也要按整组居中。
+// Edge auto margins use only positive spare space; disabled buttons and waiting text also center as a group.
+test('Flower actions center with edge auto margins while preserving the overflow origin', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'tabletop.css', id: 'stable' });
+  assert.deepEqual(compiled.errors, []);
+  const rules = new Map();
+  compiled.rawResult.root.walkRules((rule) => {
+    if (rule.selector.startsWith('.own-player-area .action-row') && rule.parent.type !== 'atrule') {
+      rules.set(rule.selector, Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+    }
+  });
+  const row = rules.get('.own-player-area .action-row');
+  assert.equal(row['justify-content'], 'flex-start', 'overflow cannot center into negative/unreachable coordinates');
+  assert.equal(row['flex-wrap'], 'nowrap');
+  assert.equal(row.height, '68px');
+  assert.equal(rules.get('.own-player-area .action-row > *')['flex-shrink'], '0');
+  assert.deepEqual(rules.get('.own-player-area .action-row > :first-child'), { 'margin-inline-start': 'auto' });
+  assert.deepEqual(rules.get('.own-player-area .action-row > :last-child'), { 'margin-inline-end': 'auto' });
+  const actionRow = find(descriptors['App.vue'].template.ast, 'action-row');
+  assert.ok(actionRow.children.filter((node) => node.type === 1).every((node) => ['button', 'span'].includes(node.tag)), 'edge selectors address actual actions/status, not a wrapper');
+  assert.match(actionRow.loc.source, /:disabled="!canDiscard \|\| busy \|\| offline \|\| syncing"/);
+  assert.match(actionRow.loc.source, /v-if="busy"/);
+  assert.match(actionRow.loc.source, /等待牌友/);
+});
+
+// 为常规折叠内容保留响应式高度并缩小重复留白；不能改为随内容增长或隐藏溢出。
+// Reserve responsive space for normal collapsed feedback and compact duplicate spacing, never auto-grow or hide overflow.
+test('Flower feedback reserves compact fixed space at desktop and narrow widths', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'feedback.css', id: 'feedback' });
+  assert.deepEqual(compiled.errors, []);
+  const heights = [];
+  const spacing = new Map();
+  compiled.rawResult.root.walkRules((rule) => {
+    const declarations = Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
+    if (rule.selector === '.hand-feedback') {
+      heights.push([rule.parent.type === 'atrule' ? rule.parent.params : 'base', declarations.height]);
+      assert.equal(declarations.overflow, undefined, 'native overflow contract remains inherited');
+    }
+    if (rule.selector.startsWith('.hand-feedback >')) spacing.set(rule.selector, declarations);
+  });
+  assert.deepEqual(heights, [['base', '80px'], ['(max-width: 640px)', '120px'], ['(max-width: 360px)', '140px']]);
+  assert.deepEqual(spacing.get('.hand-feedback > .hu-diagnostic'), { 'margin-top': '0', 'padding-top': '6px' });
+  assert.deepEqual(spacing.get('.hand-feedback > .own-score-detail'), { 'margin-top': '6px', 'padding-top': '6px' });
+  const feedback = find(descriptors['App.vue'].template.ast, 'hand-feedback');
+  assert.ok(elements(feedback).some((node) => node.tag === 'details' && hasClass(node, 'hu-diagnostic')));
+  assert.match(find(feedback, 'own-score-detail').loc.source, /scoreSummary\(lastOwnScore, lastOwnHu\?\.payments\)/);
+});
+
+// 普通四人名单与手机标题/状态有独立容量；保留固定高度及原生溢出，而非裁掉内容。
+// Ordinary four-player lists and phone headings/statuses get distinct capacities, retaining fixed heights and native overflow rather than clipping.
+test('ordinary ledgers and Chengdu phone text reserve sufficient fixed capacity', () => {
+  const tabletop = compileStyle({ source: readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8'), filename: 'capacity.css', id: 'capacity' });
+  const chengdu = compileStyle({ source: descriptors['ChengduTable.vue'].styles[0].content, filename: 'chengdu-capacity.css', id: 'chengdu-capacity' });
+  assert.deepEqual([...tabletop.errors, ...chengdu.errors], []);
+  const capacities = new Map();
+  for (const compiled of [tabletop, chengdu]) compiled.rawResult.root.walkRules((rule) => {
+    if (!['.room-sidebar .round-ledger', '.room-sidebar .table-ledger', '.opponent-public-cards', '.table-surface .shared-radish-pool', '.chengdu-play-heading', '.chengdu-status'].includes(rule.selector)) return;
+    const declarations = Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
+    if (!declarations.height) return;
+    assert.ok(!declarations.overflow || declarations.overflow === 'auto', 'capacity rules cannot hide overflow');
+    capacities.set(`${rule.parent.type === 'atrule' ? rule.parent.params : 'base'}:${rule.selector}`, declarations.height);
+  });
+  assert.equal(capacities.get('base:.room-sidebar .round-ledger'), '200px');
+  assert.equal(capacities.get('base:.room-sidebar .table-ledger'), '288px');
+  assert.equal(capacities.get('base:.opponent-public-cards'), '96px');
+  assert.equal(capacities.get('(max-width: 640px):.opponent-public-cards'), '98px');
+  assert.equal(capacities.get('base:.table-surface .shared-radish-pool'), '120px');
+  assert.equal(capacities.get('(max-width: 640px):.table-surface .shared-radish-pool'), '152px');
+  assert.equal(capacities.get('base:.chengdu-play-heading'), '88px');
+  assert.equal(capacities.get('base:.chengdu-status'), '66px');
+  assert.equal(capacities.get('(max-width: 560px):.chengdu-play-heading'), '104px');
+  assert.equal(capacities.get('(max-width: 560px):.chengdu-status'), '88px');
+});
+
+// 只解除极窄局内body下限；大厅原320px下限和可滚动内容均保持，不使用overflow隐藏问题。
+// Release only the tiny in-game body's width floor; preserve the lobby floor and accessible overflow instead of hiding the problem.
+test('the narrowest in-game page fits its scrollbar-reduced client width without changing the lobby', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'narrow-body.css', id: 'narrow-body' });
+  assert.deepEqual(compiled.errors, []);
+  const rules = [];
+  compiled.rawResult.root.walkRules((rule) => {
+    if (rule.selector !== 'body:has(.app-shell.in-game)') return;
+    assert.equal(rule.parent.type, 'atrule');
+    assert.equal(rule.parent.params, '(max-width: 360px)');
+    rules.push(Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+  });
+  assert.deepEqual(rules, [{ 'min-width': '0' }]);
+  assert.match(readFileSync(new URL('../src/style.css', import.meta.url), 'utf8'), /body\s*\{[^}]*min-width: 320px;/);
+});
+
+// 320px实测四回应仅多5px；只减少三处按钮间隙，不改变按钮padding、字体、触控尺寸或滚动权限。
+// Four responses exceed the measured320px layout by only5px; reduce three gaps, not button padding, text, touch dimensions or scrolling.
+test('tiny Flower action rows compact only gaps so four ordinary responses fit', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'flower-actions.css', id: 'flower-actions' });
+  assert.deepEqual(compiled.errors, []);
+  const compact = [];
+  compiled.rawResult.root.walkRules((rule) => {
+    if (rule.selector !== '.own-player-area .action-row' || rule.parent.type !== 'atrule') return;
+    assert.equal(rule.parent.params, '(max-width: 360px)');
+    compact.push(Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+  });
+  assert.deepEqual(compact, [{ gap: '3px' }]);
+  const actionRow = find(descriptors['App.vue'].template.ast, 'action-row');
+  assert.ok(attribute(actionRow, 'data-stable-scroll'));
+  assert.equal(attribute(actionRow, 'tabindex').value.content, '0');
+});
+
+// 只缩小最窄成都按钮的行内留白，不能为了消除滚动而缩小字或44px触控高度。
+// Compact only inline padding on the narrowest Chengdu buttons, not text size or the44px touch height.
+test('tiny Chengdu action rows compact side padding while preserving touch height and overflow', () => {
+  const compiled = compileStyle({ source: descriptors['ChengduTable.vue'].styles[0].content, filename: 'chengdu-actions.css', id: 'chengdu-actions' });
+  assert.deepEqual(compiled.errors, []);
+  const compact = [];
+  let minimumHeight;
+  compiled.rawResult.root.walkRules((rule) => {
+    const declarations = Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
+    if (rule.selector === '.chengdu-action-bar button') minimumHeight = declarations['min-height'];
+    if (rule.selector === '.chengdu-action-bar > button' && rule.parent.type === 'atrule') {
+      assert.equal(rule.parent.params, '(max-width: 360px)');
+      compact.push(declarations);
+    }
+  });
+  assert.equal(minimumHeight, '44px');
+  assert.deepEqual(compact, [{ 'padding-inline': '12px' }]);
+  assert.ok(hasClass(find(descriptors['ChengduTable.vue'].template.ast, 'chengdu-action-bar'), 'stable-scroll'));
+});
+
+// 页脚使用真实DOM顺序，不能只用CSS搬动外观；唯一的本人摘要继续受观众权限保护。
+// Footers use actual DOM order, not CSS-only rearrangement; the unique own summary keeps its spectator guard.
+test('Flower groups status, finish controls and own identity after the entire main table', () => {
+  const root = descriptors['App.vue'].template.ast;
+  const board = find(root, 'table-surface');
+  const footer = find(board, 'table-info-footer');
+  const ownArea = find(board, 'own-player-area');
+  assert.equal(footer.tag, 'footer');
+  assert.ok(footer.loc.start.offset > ownArea.loc.end.offset, 'footer follows hand and portrait');
+  for (const name of ['game-status', 'finished-banner', 'own-seat-summary']) {
+    assert.equal(elements(root).filter((node) => hasClass(node, name)).length, 1, `${name} is not duplicated`);
+    assert.ok(find(footer, name));
+    assert.equal(elements(find(board, 'playing-center')).some((node) => hasClass(node, name)), false, `${name} no longer interrupts public tiles`);
+  }
+  assert.equal(find(footer, 'own-seat-summary').props.find((property) => property.name === 'if').exp.content, '!isSpectator');
+  assert.equal(binding(footer, 'class').exp.content, "{ 'own-player-area': !game }", 'lobby keeps its identity styling and position');
+  assert.match(find(footer, 'finished-banner').loc.source, /@click="mutate\(null, true\)"/);
+  assert.match(find(footer, 'finished-banner').loc.source, /@click="newTable"/);
+  assert.match(find(footer, 'game-status').loc.source, /game.wallCount/);
+  const claim = find(find(ownArea, 'hand-panel'), 'claim-slot');
+  assert.ok(claim.loc.start.offset > find(ownArea, 'hand-scroll').loc.end.offset);
+  assert.ok(claim.loc.end.offset < find(ownArea, 'action-row').loc.start.offset, 'claim stays beside real actions');
+  assert.ok(find(footer, 'claim-slot'), 'public-only viewers retain the claim in their footer');
+});
+
+// 成都账本与私有牌区完整保留，状态/终局到末端；换三张/定缺/碰杠胡的动作处理不迁移。
+// Chengdu ledgers/private zones remain intact before the status/finish footer; action handlers stay with their hand controls.
+test('Chengdu finishes with status/results and keeps claim information next to hand actions', () => {
+  const root = descriptors['ChengduTable.vue'].template.ast;
+  const table = find(root, 'chengdu-play');
+  const footer = find(table, 'chengdu-table-footer');
+  assert.equal(footer.tag, 'footer');
+  assert.ok(footer.loc.start.offset > find(table, 'chengdu-details').loc.end.offset);
+  for (const name of ['chengdu-status', 'chengdu-finish']) {
+    assert.equal(elements(root).filter((node) => hasClass(node, name)).length, 1);
+    assert.ok(find(footer, name));
+  }
+  const hand = find(table, 'chengdu-hand-panel');
+  const claim = find(hand, 'chengdu-claim-slot');
+  assert.ok(claim.loc.start.offset > find(hand, 'chengdu-hand').loc.end.offset);
+  assert.ok(claim.loc.end.offset < find(hand, 'chengdu-action-bar').loc.start.offset);
+  assert.ok(find(footer, 'chengdu-claim-slot'));
+  assert.match(find(footer, 'chengdu-finish').loc.source, /@click="emit\('start'\)"/);
+  assert.match(find(footer, 'chengdu-finish').loc.source, /game.settlement\?\.payments/);
+});
+
+// 手机终局说明先占整行；只改结束态页脚首段，不影响进行中固定槽或按钮事件。
+// Phone finish text occupies its own row; scope only the first finished-footer span, leaving active slots and handlers untouched.
+test('phone footer finish text gets a full row above end-of-round controls', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'finish-footer.css', id: 'finish-footer' });
+  assert.deepEqual(compiled.errors, []);
+  const rules = [];
+  compiled.rawResult.root.walkRules((rule) => {
+    if (rule.selector !== '.table-info-footer > .finished-banner > span:first-of-type') return;
+    assert.equal(rule.parent.type, 'atrule');
+    assert.equal(rule.parent.params, '(max-width: 640px)');
+    rules.push(Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+  });
+  assert.deepEqual(rules, [{ flex: '1 1 calc(100% - 38px)' }]);
+  const banner = find(descriptors['App.vue'].template.ast, 'finished-banner');
+  const firstSpan = banner.children.find((node) => node.type === 1 && node.tag === 'span');
+  assert.match(firstSpan.loc.source, /finishText/);
+  assert.equal(banner.props.find((property) => property.name === 'if').exp.content, "phase === 'finished'");
 });

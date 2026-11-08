@@ -6736,8 +6736,15 @@ test('portrait scenes use independent own art below the existing private hand co
     assert.equal((html.match(/class="[^"]*\bown-character-scene\b/g) || []).length, 1);
     const ownArea = html.slice(html.indexOf('own-player-area'));
     assert.match(ownArea, /own-character-scene[\s\S]+character-artwork-original[^>]+src="\/characters\/sweet-scene-base\.png"[^>]+alt="小桃"/);
+    // 可见角色名片消失，但原图的alt与玩家身份仍保留，旧schema也使用同一展示约定。
+    // Visible role nameplates disappear while image alternatives/player identity remain, including legacy schemas.
+    assert.doesNotMatch(html, /<figcaption\b|>\s*(?:小桃|晴禾|清岚)\s*</);
+    for (const name of ['牌友1', '牌友2', '牌友3']) {
+      assert.match(html, new RegExp(`class="player-name"[^>]*>\\s*${name}`));
+    }
     assert.ok(ownArea.indexOf('class="hand-panel"') < ownArea.indexOf('class="own-character-display"'));
-    assert.match(ownArea, /own-seat-summary[\s\S]+class="hand-panel"[\s\S]+我的手牌与操作/);
+    assert.ok(ownArea.indexOf('class="own-character-display"') < ownArea.indexOf('table-info-footer'));
+    assert.match(ownArea, /table-info-footer[\s\S]+own-seat-summary/);
     assert.match(ownArea, /class="my-hand"/);
     scope.resetRoomContext();
   }
@@ -6834,4 +6841,122 @@ test('both actual App modes expose ordinary local settings without preloading dy
     assert.doesNotMatch(html, /(?:src|href)="(?:\/vendor\/live2d|\/live2d\/|[^" ]*renderer[^" ]*\.js)/);
     assert.doesNotMatch(html, /<canvas|Live2D 组件使用条款|赔偿承诺|收入申报/);
   }
+});
+
+// 真实SSR覆盖旧版本、玩家/观众和终局；移动不能复制接牌提示、遗失按钮或把私有区带入观战。
+// Real SSR covers legacy versions, players/spectators and finish; moving must not duplicate claims, lose controls or expose private zones.
+test('Flower footer preserves one public status/claim and original finish controls across views', async () => {
+  for (const schemaVersion of [1, 2, 3]) {
+    for (const spectator of [false, true]) {
+      const state = fixture({ legacy: schemaVersion === 1, schemaVersion });
+      state.game.phase = 'claim';
+      state.game.claim = { tile: 4, discardSeat: 1, kind: 'discard' };
+      if (spectator) { state.viewerRole = 'spectator'; state.you = null; }
+      const scope = setup(state);
+      const html = await render(scope);
+      const footer = html.indexOf('class="table-info-footer');
+      assert.ok(footer >= 0);
+      assert.equal((html.match(/class="claim-slot stable-scroll"/g) || []).length, 1);
+      assert.equal((html.match(/class="game-status"/g) || []).length, 1);
+      assert.ok(html.indexOf('class="game-status"') > footer);
+      const claim = html.indexOf('class="claim-slot stable-scroll"');
+      if (spectator) {
+        assert.ok(claim > footer);
+        assert.doesNotMatch(html, /own-seat-summary|我的手牌与操作/);
+      } else {
+        assert.ok(claim < footer && claim > html.indexOf('class="my-hand"'));
+        assert.ok(claim < html.indexOf('class="action-row"'));
+        assert.equal((html.match(/class="[^"]*\bown-seat-summary\b/g) || []).length, 1, 'one own identity summary remains');
+      }
+      scope.state.value = { ...state, phase: 'finished', game: { ...state.game, phase: 'finished', claim: null, legalActions: [] } };
+      const finished = await render(scope);
+      assert.ok(finished.indexOf('class="finished-banner"') > finished.indexOf('class="table-info-footer'));
+      assert.match(finished, /返回大厅换桌/);
+      assert.equal(finished.includes('同桌再来一局'), !spectator);
+      scope.resetRoomContext();
+    }
+  }
+});
+
+// 整合回归把真实schema3投影送入已居中/置底的App，不能用旧UI合成动作掩盖规则修复。
+// Integration sends real schema-three projections into the centered/footer App instead of inventing stale UI actions.
+test('integrated Flower UI removes held-tile post-hu upgrades while preserving pass and footer order', async () => {
+  const { variableFixture, meld } = await import('./fixtures/variable-table.js');
+  for (const count of [3, 4, 7]) {
+    const raw = variableFixture({ playerCount: 3, deckCount: 3, drawTile: 14,
+      hands: [[3, 4, 5, 5, 11, 12, 13, 14]], melds: [[meld(11, count, count === 3 ? 'peng' : 'buGang'), meld(1)]],
+      huCounts: [2], rules: { specialHuPatterns: false, autoDiscardAfterHu: false } });
+    const state = fixture({ schemaVersion: 3 }); state.game = getPlayerView(raw, 0);
+    const scope = setup(state);
+    assert.deepEqual(scope.gangActions.value, []);
+    assert.deepEqual(scope.primaryActions.value, [{ type: 'pass' }]);
+    const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+    const actions = html.match(/<div class="action-row"[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(actions); assert.match(actions, /过/); assert.doesNotMatch(actions, /加杠|补杠|暗杠|胡牌/);
+    assert.ok(html.indexOf('class="table-info-footer') > html.indexOf('class="action-row"'));
+    assert.doesNotMatch(html, /own-character-label|own-role-note/);
+    scope.resetRoomContext();
+  }
+});
+
+// 不能为“锁手牌”把暗杠一刀切掉：合法暗杠须继续出现在同一权威操作栏。
+// Held-hand correction must not remove legal concealed kongs from the same authoritative action bar.
+test('integrated Flower UI keeps a legal post-hu concealed kong in its accessible action bar', async () => {
+  const raw = postHuKongGame({ type: 'anGang' });
+  const state = fixture({ schemaVersion: 3 }); state.game = getPlayerView(raw, 0);
+  const scope = setup(state);
+  assert.deepEqual(scope.gangActions.value, [{ type: 'anGang', tile: raw.lastDraw.tile }]);
+  const html = await render(scope);
+  const actions = html.match(/<div class="action-row"[^>]*>([\s\S]*?)<\/div>/)?.[1];
+  assert.match(actions, /暗杠/); assert.doesNotMatch(actions, /加杠|补杠/);
+  assert.match(html, /class="action-row"[^>]*tabindex="0"[^>]*aria-label="合法动作，可横向滚动"/);
+  scope.resetRoomContext();
+});
+
+// 已保存待回应窗仍可能列出旧hu。规则先过滤再投影，UI不能把已胡身份变回“必胡”。
+// Saved claim options may contain old hu; engine filtering must reach UI before prior-win mandatory-hu presentation.
+test('integrated Flower UI restores a self-discard-locked old claim as pass, with private explanation', async () => {
+  const { assertGameInvariants } = await import('../shared/game.js');
+  for (const kind of ['discard', 'robKong']) {
+    const raw = postHuWinClaim({ kind });
+    const tile = raw.claim.tile;
+    const wallIndex = raw.wall.indexOf(tile); assert.notEqual(wallIndex, -1);
+    raw.wall.splice(wallIndex, 1);
+    raw.discards.unshift({ seat: 0, tile, claimable: false, afterKong: false });
+    raw.claim.discardIndex++;
+    raw.history.unshift({ type: 'discard', seat: 0, tile, revision: 0 });
+    assertGameInvariants(raw);
+    const before = JSON.stringify(raw);
+    const state = fixture({ schemaVersion: 3 }); state.game = getPlayerView(JSON.parse(before), 0);
+    const scope = setup(state);
+    assert.deepEqual(scope.primaryActions.value, [{ type: 'pass' }]);
+    assert.equal(scope.mustHu.value, false); assert.equal(scope.canHu.value, false);
+    assert.equal(scope.huDiagnostic.value.code, 'SELF_DISCARD_LOCK');
+    const html = await render(scope);
+    const actions = html.match(/<div class="action-row"[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    assert.match(actions, /过/); assert.doesNotMatch(actions, /胡牌/);
+    assert.match(html, /下次自己摸牌前不能胡这张牌/);
+    assert.equal(JSON.stringify(raw), before, 'reading/rendering must not rewrite stored old options or history');
+    // 模拟刷新重新投影，不能靠重载页面解除本人的自弃限制。
+    // Reprojection on refresh cannot clear the self-discard restriction.
+    scope.state.value = { ...state, game: getPlayerView(JSON.parse(before), 0) };
+    assert.deepEqual(scope.primaryActions.value, [{ type: 'pass' }]);
+    scope.resetRoomContext();
+  }
+});
+
+// 自弃锁诊断只给本人；观众仍只看下方公开状态和待接牌，不能得到手牌或动作。
+// Only the owner sees the lock diagnosis; spectators retain public footer/claim content without hands or controls.
+test('integrated Flower spectator footer retains public claims without private lock explanations', async () => {
+  const { engineFor } = await import('../server/game-engines.js');
+  const raw = postHuWinClaim();
+  raw.history.unshift({ type: 'discard', seat: 0, tile: raw.claim.tile, revision: 0 });
+  const state = fixture({ schemaVersion: 3 });
+  state.viewerRole = 'spectator'; state.you = null;
+  state.game = engineFor(raw).spectatorView(raw);
+  const scope = setup(state);
+  const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+  assert.ok(html.indexOf('class="claim-slot stable-scroll"') > html.indexOf('class="table-info-footer'));
+  assert.doesNotMatch(html, /SELF_DISCARD_LOCK|下次自己摸牌前不能胡这张牌|我的手牌与操作|class="action-row"/);
+  scope.resetRoomContext();
 });

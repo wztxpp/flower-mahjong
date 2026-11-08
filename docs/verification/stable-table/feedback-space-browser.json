@@ -1,0 +1,692 @@
+{
+  "scope": "Read-only DOM measurement of synthetic view fixture; no game actions or user records.",
+  "normalFit": [
+    {
+      "width": 1280,
+      "stage": "empty",
+      "feedback": {
+        "children": [],
+        "clientHeight": 80,
+        "clientWidth": 777,
+        "height": 80,
+        "open": false,
+        "scrollHeight": 80,
+        "scrollWidth": 777
+      },
+      "geometry": {
+        "documentHeight": 2976,
+        "documentWidth": 1265,
+        "hand": {
+          "bottom": 2188.52,
+          "documentTop": 2056.52,
+          "height": 132,
+          "left": 98,
+          "right": 895,
+          "top": 2056.52,
+          "width": 797
+        },
+        "scrollY": 0
+      }
+    },
+    {
+      "width": 1280,
+      "stage": "normal-feedback",
+      "feedback": {
+        "children": [
+          {
+            "bottom": 24,
+            "tag": "DETAILS",
+            "text": "查看当前胡牌判断仅自己可见合成诊断：当前手牌尚未满足胡牌条件。判断牌：1条",
+            "top": 0
+          },
+          {
+            "bottom": 55,
+            "tag": "DIV",
+            "text": "上次胡牌结算杠上花 +1番 · 3 番 4 分 + 共享萝卜 6 = 10 分 / 付款方；合成牌友2付10分 · 合成牌友3付10分其中三牌区同牌加 1 番",
+            "top": 30
+          }
+        ],
+        "clientHeight": 80,
+        "clientWidth": 777,
+        "height": 80,
+        "open": false,
+        "scrollHeight": 80,
+        "scrollWidth": 777
+      },
+      "geometry": {
+        "documentHeight": 2976,
+        "documentWidth": 1265,
+        "hand": {
+          "bottom": 2188.52,
+          "documentTop": 2056.52,
+          "height": 132,
+          "left": 98,
+          "right": 895,
+          "top": 2056.52,
+          "width": 797
+        },
+        "scrollY": 0
+      }
+    },
+    {
+      "width": 390,
+      "stage": "empty",
+      "feedback": {
+        "children": [],
+        "clientHeight": 120,
+        "clientWidth": 289,
+        "height": 120,
+        "open": false,
+        "scrollHeight": 120,
+        "scrollWidth": 289
+      },
+      "geometry": {
+        "documentHeight": 3932,
+        "documentWidth": 375,
+        "hand": {
+          "bottom": 2091.91,
+          "documentTop": 1979.91,
+          "height": 112,
+          "left": 32,
+          "right": 343,
+          "top": 1979.91,
+          "width": 311
+        },
+        "scrollY": 0
+      }
+    },
+    {
+      "width": 390,
+      "stage": "normal-feedback",
+      "feedback": {
+        "children": [
+          {
+            "bottom": 24,
+            "tag": "DETAILS",
+            "text": "查看当前胡牌判断仅自己可见合成诊断：当前手牌尚未满足胡牌条件。判断牌：1条",
+            "top": 0
+          },
+          {
+            "bottom": 109.953125,
+            "tag": "DIV",
+            "text": "上次胡牌结算杠上花 +1番 · 3 番 4 分 + 共享萝卜 6 = 10 分 / 付款方；合成牌友2付10分 · 合成牌友3付10分其中三牌区同牌加 1 番",
+            "top": 30
+          }
+        ],
+        "clientHeight": 120,
+        "clientWidth": 289,
+        "height": 120,
+        "open": false,
+        "scrollHeight": 120,
+        "scrollWidth": 289
+      },
+      "geometry": {
+        "documentHeight": 3932,
+        "documentWidth": 375,
+        "hand": {
+          "bottom": 2091.91,
+          "documentTop": 1979.91,
+          "height": 112,
+          "left": 32,
+          "right": 343,
+          "top": 1979.91,
+          "width": 311
+        },
+        "scrollY": 0
+      }
+    },
+    {
+      "width": 320,
+      "stage": "empty",
+      "feedback": {
+        "children": [],
+        "clientHeight": 140,
+        "clientWidth": 234,
+        "height": 140,
+        "open": false,
+        "scrollHeight": 140,
+        "scrollWidth": 234
+      },
+      "geometry": {
+        "documentHeight": 3933,
+        "documentWidth": 320,
+        "hand": {
+          "bottom": 2118.91,
+          "documentTop": 2006.91,
+          "height": 112,
+          "left": 32,
+          "right": 288,
+          "top": 2006.91,
+          "width": 256
+        },
+        "scrollY": 0
+      }
+    },
+    {
+      "width": 320,
+      "stage": "normal-feedback",
+      "feedback": {
+        "children": [
+          {
+            "bottom": 24,
+            "tag": "DETAILS",
+            "text": "查看当前胡牌判断仅自己可见合成诊断：当前手牌尚未满足胡牌条件。判断牌：1条",
+            "top": 0
+          },
+          {
+            "bottom": 109.953125,
+            "tag": "DIV",
+            "text": "上次胡牌结算杠上花 +1番 · 3 番 4 分 + 共享萝卜 6 = 10 分 / 付款方；合成牌友2付10分 · 合成牌友3付10分其中三牌区同牌加 1 番",
+            "top": 30
+          }
+        ],
+        "clientHeight": 140,
+        "clientWidth": 234,
+        "height": 140,
+        "open": false,
+        "scrollHeight": 140,
+        "scrollWidth": 234
+      },
+      "geometry": {
+        "documentHeight": 3933,
+        "documentWidth": 320,
+        "hand": {
+          "bottom": 2118.91,
+          "documentTop": 2006.91,
+          "height": 112,
+          "left": 32,
+          "right": 288,
+          "top": 2006.91,
+          "width": 256
+        },
+        "scrollY": 0
+      }
+    }
+  ],
+  "longDetails": {
+    "closed": {
+      "documentHeight": 3932,
+      "hand": {
+        "bottom": 2091.91,
+        "documentTop": 1979.91,
+        "height": 112,
+        "left": 32,
+        "right": 343,
+        "top": 1979.91,
+        "width": 311
+      },
+      "scrollY": 0
+    },
+    "open": {
+      "documentHeight": 3932,
+      "hand": {
+        "bottom": 257.91,
+        "documentTop": 1979.91,
+        "height": 112,
+        "left": 32,
+        "right": 343,
+        "top": 145.91,
+        "width": 311
+      },
+      "scrollY": 1834
+    },
+    "start": {
+      "full": 432,
+      "height": 120,
+      "open": true,
+      "top": 0
+    },
+    "closedVisible": {
+      "documentHeight": 3932,
+      "hand": {
+        "bottom": 258.91,
+        "documentTop": 1979.91,
+        "height": 112,
+        "left": 32,
+        "right": 343,
+        "top": 146.91,
+        "width": 311
+      },
+      "scrollY": 1833
+    },
+    "openVisible": {
+      "documentHeight": 3932,
+      "hand": {
+        "bottom": 257.91,
+        "documentTop": 1979.91,
+        "height": 112,
+        "left": 32,
+        "right": 343,
+        "top": 145.91,
+        "width": 311
+      },
+      "scrollY": 1834
+    },
+    "end": {
+      "full": 432,
+      "height": 120,
+      "lastBottom": 128.515625,
+      "open": true,
+      "top": 297
+    },
+    "endSettled": {
+      "full": 432,
+      "height": 120,
+      "lastBottom": 113.515625,
+      "open": true,
+      "top": 312
+    },
+    "home": {
+      "full": 432,
+      "height": 120,
+      "open": true,
+      "top": 0
+    }
+  },
+  "ordinaryOverflowBefore": [
+    {
+      "caseId": "flower-3",
+      "width": 1280,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 240,
+          "x": 0,
+          "y": 124
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 240,
+          "x": 0,
+          "y": 124
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 240,
+          "x": 0,
+          "y": 124
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 200,
+          "x": 0,
+          "y": 39
+        }
+      ]
+    },
+    {
+      "caseId": "flower-3",
+      "width": 390,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 82,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 82,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 82,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "我的手牌，可横向滚动",
+          "class": "hand-scroll character-hand-table stable-scroll",
+          "h": 98,
+          "tag": "DIV",
+          "w": 309,
+          "x": 316,
+          "y": 0
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 309,
+          "x": 0,
+          "y": 39
+        }
+      ]
+    },
+    {
+      "caseId": "flower-3",
+      "width": 320,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 64,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 64,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 64,
+          "x": 0,
+          "y": 599
+        },
+        {
+          "aria": "我的手牌，可横向滚动",
+          "class": "hand-scroll character-hand-table stable-scroll",
+          "h": 98,
+          "tag": "DIV",
+          "w": 254,
+          "x": 371,
+          "y": 0
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 254,
+          "x": 0,
+          "y": 39
+        }
+      ]
+    },
+    {
+      "caseId": "flower-4",
+      "width": 1280,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 382,
+          "x": 0,
+          "y": 32
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 382,
+          "x": 0,
+          "y": 32
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 382,
+          "x": 0,
+          "y": 32
+        },
+        {
+          "aria": "合成牌友4的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 156,
+          "tag": "DIV",
+          "w": 382,
+          "x": 0,
+          "y": 32
+        },
+        {
+          "aria": "本局积分，可滚动查看",
+          "class": "score-list round-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 200,
+          "x": 0,
+          "y": 15
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 200,
+          "x": 0,
+          "y": 108
+        }
+      ]
+    },
+    {
+      "caseId": "flower-4",
+      "width": 390,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 138,
+          "x": 0,
+          "y": 230
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 138,
+          "x": 0,
+          "y": 230
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 138,
+          "x": 0,
+          "y": 230
+        },
+        {
+          "aria": "合成牌友4的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 138,
+          "x": 0,
+          "y": 230
+        },
+        {
+          "aria": "我的手牌，可横向滚动",
+          "class": "hand-scroll character-hand-table stable-scroll",
+          "h": 98,
+          "tag": "DIV",
+          "w": 309,
+          "x": 316,
+          "y": 0
+        },
+        {
+          "aria": "本局积分，可滚动查看",
+          "class": "score-list round-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 309,
+          "x": 0,
+          "y": 19
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 309,
+          "x": 0,
+          "y": 108
+        }
+      ]
+    },
+    {
+      "caseId": "flower-4",
+      "width": 320,
+      "regions": [
+        {
+          "aria": "合成牌友2的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 110,
+          "x": 0,
+          "y": 353
+        },
+        {
+          "aria": "合成牌友3的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 110,
+          "x": 0,
+          "y": 353
+        },
+        {
+          "aria": "合成牌友1的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 110,
+          "x": 0,
+          "y": 353
+        },
+        {
+          "aria": "合成牌友4的牌河，可滚动查看全部记录",
+          "class": "discard-tiles stable-scroll",
+          "h": 144,
+          "tag": "DIV",
+          "w": 110,
+          "x": 0,
+          "y": 353
+        },
+        {
+          "aria": "我的手牌，可横向滚动",
+          "class": "hand-scroll character-hand-table stable-scroll",
+          "h": 98,
+          "tag": "DIV",
+          "w": 254,
+          "x": 371,
+          "y": 0
+        },
+        {
+          "aria": "本局积分，可滚动查看",
+          "class": "score-list round-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 254,
+          "x": 0,
+          "y": 19
+        },
+        {
+          "aria": "本桌累计积分，可滚动查看",
+          "class": "score-list table-ledger stable-scroll",
+          "h": 168,
+          "tag": "DIV",
+          "w": 254,
+          "x": 0,
+          "y": 108
+        }
+      ]
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 1280,
+      "regions": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 390,
+      "regions": [
+        {
+          "aria": "成都本局玩法、余牌与庄家",
+          "class": "chengdu-play-heading stable-scroll",
+          "h": 88,
+          "tag": "DIV",
+          "w": 345,
+          "x": 0,
+          "y": 9
+        },
+        {
+          "aria": "本人私有手牌",
+          "class": "chengdu-hand character-hand-table stable-scroll",
+          "h": 114,
+          "tag": "DIV",
+          "w": 301,
+          "x": 404,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 320,
+      "regions": [
+        {
+          "aria": "成都本局玩法、余牌与庄家",
+          "class": "chengdu-play-heading stable-scroll",
+          "h": 88,
+          "tag": "DIV",
+          "w": 290,
+          "x": 0,
+          "y": 9
+        },
+        {
+          "aria": null,
+          "class": "chengdu-status stable-scroll",
+          "h": 66,
+          "tag": "DIV",
+          "w": 268,
+          "x": 0,
+          "y": 14
+        },
+        {
+          "aria": "本人私有手牌",
+          "class": "chengdu-hand character-hand-table stable-scroll",
+          "h": 114,
+          "tag": "DIV",
+          "w": 246,
+          "x": 459,
+          "y": 0
+        }
+      ]
+    }
+  ]
+}

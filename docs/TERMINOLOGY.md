@@ -126,6 +126,9 @@ The engines use consistent private helpers for serialization, sorting, labels, c
 
 ## 七角色池 / Seven-character roster
 
+角色名片是立绘上或图下显示的角色名称/声线文案，不是玩家自己填写的昵称。牌桌不再显示这些名片，但角色名称仍用于选择器与图片替代文本；玩家昵称和座位身份继续显示。
+A character nameplate is a role-name/voice-style label on or below artwork, distinct from a player's chosen nickname. Tables no longer display these nameplates; character names remain in selectors/image alternatives, while player nicknames and seat identity stay visible.
+
 `SEAT_COUNT` 默认固定为3，`CHARACTER_IDS` 是7个可选角色ID，不是座位列表。`LEGACY_CHARACTER_IDS` 固定为旧三角色的绝对座位回退；`room.seats[seat].characterId` 是随占座身份保留的角色；`preferredCharacter` 只在首次落座选择时参考，不能在开局重抽。`gameMeta.characters` 是从当前占座复制的本局三或四项快照，旧局不会被换入者覆盖。详见 [七角色与三/四座位](SEVEN-CHARACTERS.md)。
 `SEAT_COUNT` defaults to three; `CHARACTER_IDS` contains seven selectable IDs, not seats. `LEGACY_CHARACTER_IDS` preserves the original absolute-seat fallback; `room.seats[seat].characterId` belongs to an occupant; `preferredCharacter` guides first seating, never a start-time reroll. `gameMeta.characters` copies three/four occupant roles into the round snapshot, which replacements cannot rewrite. See [seven characters, three/four seats](SEVEN-CHARACTERS.md).
 
@@ -203,7 +206,12 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 
 - `portraitReaction`：公开胡牌事件产生的临时立绘状态，`win`为胡者、`discardLoss`仅为弃牌炮家；不是服务端规则状态或未决回应。`CharacterPortraitReactions` 每个绝对座位独立计时。 / Transient public-win portrait state, never game authority or pending claims; independently timed per absolute seat.
 
-- `own-player-area` / 本人场景区域：花麻将本人身份摘要和手牌的共同展示容器，不是新座位、权威牌区或存储字段；`own-character-scene` 为忽略指针的装饰背景。 / A presentation container for own identity and hand, not a new seat, authoritative card zone or stored field; its scene is pointer-transparent decoration.
+- `own-player-area` / 本人场景区域：局内本人手牌和独立立绘的共同展示容器；大厅仍用此样式承托身份摘要，不是新座位、权威牌区或存储字段；`own-character-scene` 为忽略指针的装饰背景。 / A presentation container for the in-game own hand/art, also styling the lobby identity, not a new seat, authoritative card zone or stored field; its scene is pointer-transparent decoration.
 
 - `stable-scroll` / `data-stable-scroll`：可命名、可聚焦的局部滚动视窗；只固定可视高度，不截断记录、不改变全页滚动，也不是新牌区或协议字段。 / Named, focusable local scroll viewports with fixed visible height, not truncated records, document-scroll control, new game zones or protocol fields.
 - `claim-slot` / `hand-feedback`：局内常驻的接牌提示/私有诊断和结算展示容器；其内容仍由原服务端裁剪视图决定。 / Game-long claim/private-feedback presentation slots whose contents still come from the original filtered server view.
+
+- `table-info-footer` / `chengdu-table-footer`：主牌桌末端的状态、身份或结算展示区；按DOM顺序置后，不是新牌区、存储字段或动作权限。玩家接牌提示仍靠手牌，观众只在页脚读取公开提示。 / End-of-table status/identity/results in actual DOM order, never new game zones, stored fields or authority. Player claims stay by hand controls; public-only viewers read them in the footer.
+
+- 自弃同牌限制 / self-discard hu lock：本人最近一次实际`draw`后所有`discard`牌种暂时不能接胡/抢杠胡；不等同旧`huLockActive`、整套听口锁或永久禁止。私有诊断码为`SELF_DISCARD_LOCK`，没有新增持久字段。
+- 胡后锁手牌 / post-hu held-hand lock：补碰及已有杠加张只能消耗本次摸入同牌；只保证听口相同不足以证明未换牌。合法暗杠与未胡者补杠仍按原条件。

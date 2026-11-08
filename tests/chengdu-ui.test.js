@@ -200,6 +200,15 @@ test('Chengdu renders separate own art after the hand and tall portraits for pub
   const html = await render(scope);
   assert.equal((html.match(/\bchengdu-character-portrait\b/g) || []).length, 3);
   assert.equal((html.match(/class="own-character-display"/g) || []).length, 1);
+  // 角色名保留在图片alt，不再作为可见名片；昵称与本人/座位标识不能一起删掉。
+  // Character names remain in image alternatives, not visible nameplates; preserve nicknames and own/seat labels.
+  assert.doesNotMatch(html, /<figcaption\b|>[^<]*角色\d[^<]*</);
+  for (const seat of [0, 1, 2, 3]) {
+    assert.match(html, new RegExp(`<strong>测试${seat}</strong>`));
+    assert.match(html, new RegExp(`alt="角色${seat}"`));
+  }
+  assert.match(html, /<small>你<\/small>/);
+  assert.match(html, /<small>座位 2<\/small>/);
   assert.ok(html.indexOf('class="chengdu-hand-panel"') < html.indexOf('class="own-character-display"'));
   assert.doesNotMatch(html, /has-character-scene/);
   for (const spectator of [true, false]) {
@@ -211,6 +220,38 @@ test('Chengdu renders separate own art after the hand and tall portraits for pub
     const { scope: publicScope } = setup(state);
     const publicHtml = await render(publicScope);
     assert.equal((publicHtml.match(/\bchengdu-character-portrait\b/g) || []).length, 4);
+    assert.doesNotMatch(publicHtml, />[^<]*角色\d[^<]*</);
     assert.doesNotMatch(publicHtml, /own-character-display|own-character-scene/);
+  }
+});
+
+// 玩家靠手牌看接牌，观众在底部看公开提示；终局仍保留唯一状态、结算与原开局权限。
+// Players see claims by the hand and spectators in the footer; finish retains unique status/results and original start permissions.
+test('Chengdu footer preserves public-only claims and host finish controls', async () => {
+  for (const spectator of [false, true]) {
+    const state = fixture('claim');
+    state.game.claim = { fromSeat: 1, tile: 4, source: 'discard' };
+    if (spectator) {
+      state.viewerRole = 'spectator'; state.game.mySeat = null;
+      delete state.game.players[0].hand; state.game.legalActions = [];
+    }
+    const { scope, props } = setup(state);
+    const html = await render(scope);
+    const footer = html.indexOf('class="chengdu-table-footer"');
+    assert.ok(footer > html.indexOf('class="chengdu-details"'));
+    assert.equal((html.match(/class="chengdu-claim-slot stable-scroll"/g) || []).length, 1);
+    assert.equal((html.match(/class="chengdu-status stable-scroll"/g) || []).length, 1);
+    const claim = html.indexOf('class="chengdu-claim-slot stable-scroll"');
+    if (spectator) {
+      assert.ok(claim > footer);
+      assert.doesNotMatch(html, /id="chengdu-hand-title"|aria-label="成都合法动作"/);
+    } else {
+      assert.ok(claim > html.indexOf('aria-label="本人私有手牌"') && claim < html.indexOf('class="chengdu-action-bar'));
+    }
+    props.state.game.phase = 'finished'; props.state.game.claim = null; props.state.game.legalActions = [];
+    props.canStart = !spectator;
+    const finished = await render(scope);
+    assert.ok(finished.indexOf('class="chengdu-finish"') > finished.indexOf('class="chengdu-table-footer"'));
+    assert.equal(finished.includes('开始下一局</button>'), !spectator);
   }
 });

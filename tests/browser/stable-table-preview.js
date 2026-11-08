@@ -1,7 +1,7 @@
 // 可见诊断控件只调用同源iframe中的纯视图API；不控制浏览器或执行真实游戏动作。
 // Visible diagnostics call the same-origin frame's view API only, never browser automation or real game actions.
 import { writeStableTableReport, clearStableTableReport } from '../helpers/stable-table-report.js';
-import { STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES } from '../helpers/stable-table-fixtures.js';
+import { STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES } from '../helpers/stable-table-fixtures.js';
 const frame = document.querySelector('#fixture-frame');
 const caseInput = document.querySelector('#fixture-case');
 const widthInput = document.querySelector('#fixture-width');
@@ -12,7 +12,7 @@ const rawOutput = document.querySelector('#fixture-raw-json');
 for (const [id, label] of [['flower-legacy-1', '旧schema1花麻将'], ['flower-legacy-2', '旧schema2花麻将'], ['flower-spectator', '花麻将观战'], ['chengdu-spectator', '成都观战']]) {
   const option = document.createElement('option'); option.value = id; option.textContent = label; caseInput.append(option);
 }
-for (const [id, label] of STABLE_TABLE_STAGES) {
+for (const [id, label] of [...STABLE_TABLE_STAGES, ...STABLE_TABLE_MANUAL_STAGES]) {
   const option = document.createElement('option'); option.value = id; option.textContent = label; stageInput.append(option);
 }
 // 可见结果只保留有界摘要；完整测量留在独立非渲染JSON节点供审计读取。

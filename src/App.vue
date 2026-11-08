@@ -2768,14 +2768,13 @@ onUnmounted(() => {
                 :class="{ 'seat-current': isTurn(player), 'seat-empty': !player.name, 'opposite-seat': opponentPosition(player.seat) === '对家' }"
               >
                 <span v-if="!isSpectator && tablePlayerCount === 4" class="relative-seat-label">{{ opponentPosition(player.seat) }}</span>
+                <!-- 立绘只展示原角色图，不叠加角色名片；玩家昵称仍在下方身份栏。
+                     Show original character art without a role nameplate; player nicknames remain in the identity row below. -->
                 <div
                   v-if="player.name"
                   class="character-portrait"
                   :class="`character-${characterForPlayer(player.seat, !isSpectator).id}`"
-                  ><CharacterArtwork :character="characterForPlayer(player.seat, !isSpectator)" /><span
-                    >{{ characterForPlayer(player.seat, !isSpectator).name
-                    }}</span
-                  ></div
+                  ><CharacterArtwork :character="characterForPlayer(player.seat, !isSpectator)" /></div
                 ><div class="player-topline" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" :aria-label="`${player.name || '空座'}的身份与积分`"
                   ><div class="avatar" :class="`avatar-${player.seat}`"
                     ><img
@@ -2945,28 +2944,6 @@ onUnmounted(() => {
                   >
                 </div>
               </div>
-              <div class="game-status" aria-live="polite"
-                ><div class="stable-scroll" tabindex="0" role="region" aria-label="当前回合状态"
-                  ><span
-                    class="turn-indicator"
-                    :class="{ 'your-turn': isMyTurn || legalActions.length }"
-                  ></span
-                  ><strong>{{ statusTitle }}</strong></div
-                ><div class="wall-counter"
-                  ><span>余牌</span><b>{{ game.wallCount }}</b
-                  ><span>张</span></div
-                ></div
-              >
-              <!-- 接牌阶段展示等待回应的牌；抢杠仍是待确认动作，不能显示成已成立副露。 / During claims, show the tile awaiting responses; a rob-kong proposal is not yet a completed meld. -->
-              <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
-              <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
-                ><MahjongTile :tile="game.claim.tile" small /><span
-                  ><b>{{ seatLabel(game.claim.discardSeat) }}</b>
-                  {{ game.claim.kind === 'robKong' ? `正在${pendingKongLabel}` : '打出了' }}
-                  {{ tileLabel(game.claim.tile) }}</span
-                ></div
-              >
-              </div>
               <!-- 新版只有一个全桌共享池；旧局的个人萝卜使用各自兼容区块。 / Newer games have one shared pool; older personal radishes remain in compatibility sections. -->
               <section
                 v-if="isLatest"
@@ -3046,54 +3023,13 @@ onUnmounted(() => {
                   ></div
                 ></div
               >
-              <!-- 同桌下一局走 start 请求并保留房间账本；换桌则走离席和大厅路由。 / Another round uses start and preserves the table ledger; changing tables uses departure and lobby routing. -->
-              <div v-if="phase === 'finished'" class="finished-banner"
-                ><Icon name="trophy" :size="21" /><span>{{ finishText }}</span
-                ><button
-                  v-if="isHost"
-                  class="button gold"
-                  :disabled="!canStart || filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
-                  @click="mutate(null, true)"
-                  >同桌再来一局<Icon name="arrow" :size="16" /></button
-                ><span v-else>等待房主再开一局</span
-                ><button class="button" @click="newTable">返回大厅换桌</button></div
-              >
+
             </div>
 
           <!-- 手牌留在桌面，主角在操作区下方独立占位；不把人物铺到牌或按钮背后。
                Keep cards on the table and give the character its own space below controls, never behind tiles or buttons. -->
-          <div v-if="!isSpectator" class="own-player-area"
+          <div v-if="!isSpectator && game" class="own-player-area"
             :class="`character-${characterForPlayer(mySeat, true).id}`">
-            <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
-
-            <div class="own-seat-summary" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" aria-label="我的身份与积分"
-              ><div class="avatar" :class="`avatar-${mySeat}`"
-                ><img
-                  :src="characterForPlayer(mySeat, true).portrait"
-                  :alt="characterForPlayer(mySeat, true).name" /></div
-              ><div class="player-identity"
-                ><div class="player-name"
-                  >{{ me.name }}<span class="you-tag">我</span
-                  ><span v-if="isHost" class="host-tag">房主</span
-                  ><span
-                    v-if="game && mySeat === (game.dealerSeat ?? 0)"
-                    class="host-tag dealer-tag"
-                    >庄</span
-                  ></div
-                ><span class="player-caption">{{
-                  phase === 'lobby'
-                    ? '你的专属位置已留好'
-                    : me.isCurrentParticipant === false
-                      ? '已落座，等待下一局'
-                      : `已胡 ${me.huCount} 次 · ${me.handCount} 张手牌`
-                }}</span></div
-              ><span class="own-seat-status" v-if="phase === 'lobby'"
-                ><Icon name="check" :size="16" />已落座</span
-              ><span v-else class="player-score own-score" :class="{ negative: me.score < 0 }"
-                >{{ scoreLabel(me.score) }}<small>分</small></span
-              ></div
-            >
-
           <!-- 只有本局参与者才显示私有手牌和动作，新落座的下一局玩家不能操作旧局。 / Only current-game participants see the private hand/actions; newly seated next-round players cannot act in the old round. -->
           <section
             v-if="!isSpectator && game && me.isCurrentParticipant !== false"
@@ -3181,6 +3117,18 @@ onUnmounted(() => {
                   "
                   @click="selectHand(tile, tileIndex)" /></div
             ></div>
+            <!-- 接牌槽贴近手牌和动作；空闲时仍保留同高，不再占用共享萝卜前方的空白。
+                 Keep the fixed claim slot beside hand/actions rather than reserving empty space before the shared radishes. -->
+            <!-- 接牌阶段展示等待回应的牌；抢杠仍是待确认动作，不能显示成已成立副露。 / During claims, show the tile awaiting responses; a rob-kong proposal is not yet a completed meld. -->
+            <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
+            <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
+              ><MahjongTile :tile="game.claim.tile" small /><span
+                ><b>{{ seatLabel(game.claim.discardSeat) }}</b>
+                {{ game.claim.kind === 'robKong' ? `正在${pendingKongLabel}` : '打出了' }}
+                {{ tileLabel(game.claim.tile) }}</span
+              ></div
+            >
+            </div>
             <!-- 听牌信息来自私有快照；动作按钮提交完整服务端动作，出牌按钮才构造选中的 discard。 / Wait tiles come from the private snapshot; action buttons submit server actions, while discard constructs the selected discard request. -->
             <div class="hand-bottom-row"
               ><div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
@@ -3267,14 +3215,86 @@ onUnmounted(() => {
             >
             </div>
           </section>
-          <!-- 独立普通流画框自然排在手牌后；保留原图比例及表情，图像不承载交互或私有数据。
-               This normal-flow frame follows the hand, preserving source proportions/reactions without carrying input or private data. -->
+          <!-- 独立普通流画框自然排在手牌后；保留原图比例及表情，不附角色名/声线名片。
+               This normal-flow frame follows the hand, preserving source proportions/reactions without role-name or voice-style captions. -->
           <figure v-if="game" class="own-character-display" aria-label="你的角色立绘">
             <div class="own-character-art"><CharacterArtwork class="own-character-scene"
               :character="characterForPlayer(mySeat, true)" /></div>
-            <figcaption>{{ characterForPlayer(mySeat, true).name }}<span>{{ characterForPlayer(mySeat, true).style }}</span></figcaption>
           </figure>
           </div>
+          <!-- 状态、结束操作和本人身份按DOM顺序放在主桌面末端；大厅仍在原位置使用同一身份摘要。
+               Status, end-of-round controls and own identity follow the main table in DOM order; the lobby keeps the same summary in its original place. -->
+          <footer v-if="game || !isSpectator" class="table-info-footer"
+            :class="{ 'own-player-area': !game }" aria-label="牌桌状态与我的信息">
+            <div v-if="game" class="game-status" aria-live="polite"
+              ><div class="stable-scroll" tabindex="0" role="region" aria-label="当前回合状态"
+                ><span
+                  class="turn-indicator"
+                  :class="{ 'your-turn': isMyTurn || legalActions.length }"
+                ></span
+                ><strong>{{ statusTitle }}</strong></div
+              ><div class="wall-counter"
+                ><span>余牌</span><b>{{ game.wallCount }}</b
+                ><span>张</span></div
+              ></div
+            >
+            <!-- 观众没有私有手牌，公开接牌提示放在页脚；不因此开放任何动作。
+                 Spectators have no private hand, so their public claim stays in the footer without granting actions. -->
+            <template v-if="isSpectator && game">
+              <!-- 接牌阶段展示等待回应的牌；抢杠仍是待确认动作，不能显示成已成立副露。 / During claims, show the tile awaiting responses; a rob-kong proposal is not yet a completed meld. -->
+              <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
+              <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
+                ><MahjongTile :tile="game.claim.tile" small /><span
+                  ><b>{{ seatLabel(game.claim.discardSeat) }}</b>
+                  {{ game.claim.kind === 'robKong' ? `正在${pendingKongLabel}` : '打出了' }}
+                  {{ tileLabel(game.claim.tile) }}</span
+                ></div
+              >
+              </div>
+            </template>
+            <!-- 同桌下一局走 start 请求并保留房间账本；换桌则走离席和大厅路由。 / Another round uses start and preserves the table ledger; changing tables uses departure and lobby routing. -->
+            <div v-if="phase === 'finished'" class="finished-banner"
+              ><Icon name="trophy" :size="21" /><span>{{ finishText }}</span
+              ><button
+                v-if="isHost"
+                class="button gold"
+                :disabled="!canStart || filledSeats < tablePlayerCount || busy || offline || syncing || !validStartOptions"
+                @click="mutate(null, true)"
+                >同桌再来一局<Icon name="arrow" :size="16" /></button
+              ><span v-else>等待房主再开一局</span
+              ><button class="button" @click="newTable">返回大厅换桌</button></div
+            >
+            <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
+
+            <div v-if="!isSpectator" class="own-seat-summary" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="region" aria-label="我的身份与积分"
+              ><div class="avatar" :class="`avatar-${mySeat}`"
+                ><img
+                  :src="characterForPlayer(mySeat, true).portrait"
+                  :alt="characterForPlayer(mySeat, true).name" /></div
+              ><div class="player-identity"
+                ><div class="player-name"
+                  >{{ me.name }}<span class="you-tag">我</span
+                  ><span v-if="isHost" class="host-tag">房主</span
+                  ><span
+                    v-if="game && mySeat === (game.dealerSeat ?? 0)"
+                    class="host-tag dealer-tag"
+                    >庄</span
+                  ></div
+                ><span class="player-caption">{{
+                  phase === 'lobby'
+                    ? '你的专属位置已留好'
+                    : me.isCurrentParticipant === false
+                      ? '已落座，等待下一局'
+                      : `已胡 ${me.huCount} 次 · ${me.handCount} 张手牌`
+                }}</span></div
+              ><span class="own-seat-status" v-if="phase === 'lobby'"
+                ><Icon name="check" :size="16" />已落座</span
+              ><span v-else class="player-score own-score" :class="{ negative: me.score < 0 }"
+                >{{ scoreLabel(me.score) }}<small>分</small></span
+              ></div
+            >
+
+          </footer>
           </div>
           <p class="table-footnote"
             ><Icon name="shield" :size="13" />只与朋友切磋牌技，所有得分均为虚拟积分。<button

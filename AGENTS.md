@@ -38,3 +38,6 @@ Normally saved rules must not change silently. The user-authorized pung timing c
 
 用户另确认 schema 3 已胡者能胡必胡，当前及已保存待回应窗口只提供胡；不倒改已提交回应、历史或旧账，schema1/2 冻结。见 [胡后必胡纠错](docs/POST-HU-WIN-CORRECTION.md)。
 The user also confirmed mandatory available wins for prior winners in schema three, including saved unanswered windows. Do not retroactively change submitted responses/history/scores or frozen schemas one/two. See [mandatory-win correction](docs/POST-HU-WIN-CORRECTION.md).
+
+2026-11-08用户另确认：schema3胡后补/加杠只能用本次真实摸入同牌，不能借听口不变换掉锁定手牌，合法暗杠仍保留；自弃同牌至本人下一次实际摸牌前禁胡。当前与保存局后续动作共用检查，不迁移、不改已接受回应或旧账，缺历史不猜。详见[锁手牌与自弃纠错](docs/FLOWER-HAND-LOCK-CORRECTION.md)。
+The 2026-11-08 correction locks held tiles after hu and blocks self-discarded identities until the next actual own draw. Apply to future schema-three actions without migrations, revoking accepted responses or guessing absent history; preserve legal concealed kongs and frozen engines.

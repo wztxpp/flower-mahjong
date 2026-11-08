@@ -56,6 +56,9 @@ The seven-set/21-image version based on Chengdu integration commit `45bac16` was
 
 ## 独立场景画框 / Independent scene frames
 
+立绘不再附加角色名片：花麻将对手的角色名覆盖、两玩法本人画框下的角色名/声线说明，以及成都身份栏中重复的角色名均从模板移除。玩家自己填写的昵称、座位/房主/庄家标记仍显示；角色选择器及图片替代文本保留名称。此改动不改PNG、角色ID/分配、表情、声音或规则。
+Portraits have no role nameplates: Flower opponent overlays, both modes' own-art name/voice captions and repeated Chengdu identity-row role names are removed from templates. Player nicknames and seat/host/dealer labels remain, as do names in the selector and image alternatives. PNGs, role IDs/assignment, reactions, voices and rules are unchanged.
+
 用户对v27反馈后，花麻将对手顶部框与成都对手新增大图使用 `object-fit: cover`、宽高100%，等比满框。桌面框高240–340px，手机180–240px，覆盖旧92–124px横条。默认焦点上方24%、晴禾33%、清岚20%，只改变裁切，PNG原字节不变。
 Following feedback on v27, Flower and Chengdu opponent portraits use proportional cover at full width/height in taller frames: 240–340px desktop and 180–240px phone rather than old 92–124px strips. Focal points adjust only cropping; PNG bytes stay unchanged.
 

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse, compileScript } from '@vue/compiler-sfc';
-import { stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES } from './helpers/stable-table-fixtures.js';
+import { stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES } from './helpers/stable-table-fixtures.js';
 import { transformStableTableApp } from './helpers/stable-table-transform.js';
 import { rejectStableTableApi } from './helpers/stable-table-server-boundary.js';
 import { compareStableTable, isStableTableEndVisible } from './helpers/stable-table-browser-audit.js';
@@ -140,4 +140,148 @@ test('browser report uses non-rendering raw JSON and clears output before operat
   assert.match(browser, /document\.querySelector\('#fixture-raw-json'\)/);
   assert.match(browser, /clearStableTableReport\(output, rawOutput\);[\s\S]*?await operation\(\)/);
   assert.doesNotMatch(browser, /output\.textContent = JSON\.stringify/);
+});
+
+// 320px只为手动溢出检查，不改变已经固定的桌面/窄屏自动矩阵。
+// 320px is for manual overflow inspection only, without changing the established automatic desktop/narrow matrix.
+test('manual preview offers 320px while the automatic matrix retains its two widths', () => {
+  const html = source('tests/browser/stable-table-preview.html');
+  const widthSelector = html.match(/<select id="fixture-width">([\s\S]*?)<\/select>/)?.[1];
+  assert.ok(widthSelector);
+  const widths = [...widthSelector.matchAll(/<option value="(\d+)">/g)].map((match) => Number(match[1]));
+  assert.deepEqual(widths, [1280, 390, 320]);
+  assert.match(source('tests/browser/stable-table-preview.js'), /for \(const width of \[1280, 390\]\)/);
+});
+
+// 手牌可拆成四组012与33对子；每种暗杠恰有四张，动作字段沿用引擎协议但不运行引擎。
+// The hand forms four 012 sequences and a 33 pair; each concealed kong has four tiles. Validate protocol fields without executing the engine.
+test('manual Flower self-draw fixture exposes three concealed kongs, hu and discards outside the automatic matrix', () => {
+  assert.deepEqual(STABLE_TABLE_MANUAL_STAGES[0], ['many-actions', '多暗杠与胡牌动作（花麻将手动）']);
+  assert.equal(STABLE_TABLE_STAGES.length, 14);
+  assert.equal(STABLE_TABLE_STAGES.some(([id]) => id === 'many-actions'), false);
+  for (const caseId of ['flower-3', 'flower-4']) {
+    const { state } = stableTableSnapshot(caseId, 'many-actions');
+    const game = state.game;
+    assert.equal(game.currentSeat, 0);
+    assert.equal(game.phase, 'turn');
+    assert.equal(game.turnStep, 'discard');
+    assert.equal(game.drawnTile, 3);
+    assert.equal(game.rules.preHuActionChoice, true);
+    assert.equal(game.players[0].huCount, 0);
+    assert.deepEqual(game.players[0].melds, []);
+    assert.deepEqual(game.players[0].hand, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3]);
+    assert.deepEqual(game.legalActions, [0, 1, 2, 3].map((tile) => ({ type: 'discard', tile }))
+      .concat({ type: 'hu' }, [0, 1, 2].map((tile) => ({ type: 'anGang', tile }))));
+    assert.ok(game.players.slice(1).every((player) => !Object.hasOwn(player, 'hand')));
+    assert.equal(game.discards.length, 0);
+  }
+  for (const caseId of ['chengdu-4', ...STABLE_TABLE_COMPAT_CASES]) {
+    assert.throws(() => stableTableSnapshot(caseId, 'many-actions'), /requires current Flower player view/);
+  }
+});
+
+// 普通夹具覆盖截图缺失的付款方与加番小字；长诊断供展开后内部滚动验收。
+// Normal feedback includes screenshot payer/bonus text; long diagnostics exercise expanded local scrolling.
+test('manual feedback fixtures include real score inputs without entering the automatic matrix', () => {
+  for (const stage of ['normal-feedback', 'long-feedback']) {
+    assert.equal(STABLE_TABLE_STAGES.some(([id]) => id === stage), false);
+    for (const caseId of ['flower-3', 'flower-4']) {
+      const { game } = stableTableSnapshot(caseId, stage).state;
+      assert.equal(game.huDiagnostic.canHu, false);
+      assert.equal(game.scoreBreakdown.copyFanBonus, 1);
+      assert.deepEqual(game.scoreBreakdown.patternBonuses, [{ type: 'kongReplacement', fan: 1 }]);
+      assert.equal(game.history.at(-1).type, 'hu');
+      assert.equal(game.history.at(-1).payments.filter((payment) => payment.delta < 0).length, 2);
+      assert.equal(game.discards.length, 0);
+      assert.deepEqual(game.legalActions, []);
+      assert.ok(game.players.slice(1).every((player) => !Object.hasOwn(player, 'hand')));
+    }
+    for (const caseId of ['chengdu-4', ...STABLE_TABLE_COMPAT_CASES]) {
+      assert.throws(() => stableTableSnapshot(caseId, stage), /requires current Flower player view/);
+    }
+  }
+  assert.ok(stableTableSnapshot('flower-3', 'long-feedback').state.game.huDiagnostic.message.length > 500);
+});
+
+// 成都准备文字和收到的三张牌此前未进普通容量验收；仅补纯视图，仍禁止网络和实际动作。
+// Preparation instructions/received tiles were absent from ordinary-capacity checks; add view-only cases without network or real actions.
+test('manual Chengdu preparation fixtures cover instructions and private receipt without growth stress', () => {
+  for (const stage of ['chengdu-exchange', 'chengdu-dingque']) {
+    assert.ok(STABLE_TABLE_MANUAL_STAGES.some(([id]) => id === stage));
+    assert.equal(STABLE_TABLE_STAGES.some(([id]) => id === stage), false);
+    const { state } = stableTableSnapshot('chengdu-4', stage);
+    const game = state.game;
+    assert.equal(state.phase, 'playing');
+    assert.equal(game.phase, stage === 'chengdu-exchange' ? 'exchange' : 'dingque');
+    assert.equal(game.turnStep, null);
+    assert.equal(game.rules.exchangeThree, true);
+    assert.equal(game.preparation.exchangeDirection, 'clockwise');
+    assert.equal(game.history.length, 0);
+    assert.equal(game.discards.length, 0);
+    assert.equal(state.tableScores.length, 4);
+    assert.ok(game.players.every((player) => !player.dingqueSubmitted && player.dingqueSuit === null && player.melds.length === 0 && !player.won));
+    assert.ok(game.players.slice(1).every((player) => !Object.hasOwn(player, 'hand') && !Object.hasOwn(player, 'receivedExchange')));
+    assert.doesNotMatch(JSON.stringify(state), /token|credential|authorization|profileHash/i);
+    for (const caseId of [...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES].filter((id) => id !== 'chengdu-4')) {
+      assert.throws(() => stableTableSnapshot(caseId, stage), /requires current Chengdu player view/);
+    }
+  }
+  const exchange = stableTableSnapshot('chengdu-4', 'chengdu-exchange').state.game;
+  assert.deepEqual(exchange.legalActions, [{ type: 'exchangeThree', tiles: [0, 0, 1] }]);
+  assert.equal(exchange.preparation.myExchange, null);
+  assert.equal(exchange.preparation.receivedExchange, undefined);
+  const dingque = stableTableSnapshot('chengdu-4', 'chengdu-dingque').state.game;
+  assert.deepEqual(dingque.legalActions, ['bamboo', 'dots', 'characters'].map((suit) => ({ type: 'dingque', suit })));
+  assert.deepEqual(dingque.preparation.receivedExchange, { fromSeat: 3, tiles: [0, 0, 1] });
+  assert.deepEqual(dingque.preparation.exchangeSubmittedSeats, [0, 1, 2, 3]);
+  assert.equal(STABLE_TABLE_STAGES.length, 14);
+});
+
+// 终局属于明确生命周期切换，不加入局中等高矩阵；它只显示按钮，不执行再开或伪造积分。
+// Finish is an explicit lifecycle transition outside the in-game stability matrix; show controls without restarting or inventing scores.
+test('manual finished views expose footer controls for both modes and compatibility audiences', () => {
+  assert.ok(STABLE_TABLE_MANUAL_STAGES.some(([id]) => id === 'finished'));
+  assert.equal(STABLE_TABLE_STAGES.some(([id]) => id === 'finished'), false);
+  for (const caseId of [...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES]) {
+    const { state } = stableTableSnapshot(caseId, 'finished');
+    assert.equal(state.phase, 'finished');
+    assert.equal(state.game.phase, 'finished');
+    assert.equal(state.game.turnStep, null);
+    assert.equal(state.game.wallCount, 0);
+    assert.equal(state.game.finishReason, 'wallExhausted');
+    assert.deepEqual(state.game.legalActions, []);
+    assert.equal(state.game.claim, null);
+    assert.equal(state.tableScores.length, state.game.players.length);
+    assert.ok(state.game.players.every((player) => player.score === 0));
+    assert.equal(state.game.players.filter((player) => Object.hasOwn(player, 'hand')).length, caseId.endsWith('spectator') ? 0 : 1);
+  }
+});
+
+// 普通公开牌仍保留完整十八张/人牌河，但不混入极长副露、十二次胡或六十条历史。
+// Ordinary public cards retain eighteen discards per seat without mixing in extreme melds, twelve wins or sixty history events.
+test('ordinary-public isolates normal public-card capacity from long-content stress', () => {
+  assert.ok(STABLE_TABLE_MANUAL_STAGES.some(([id]) => id === 'ordinary-public'));
+  assert.equal(STABLE_TABLE_STAGES.some(([id]) => id === 'ordinary-public'), false);
+  for (const caseId of [...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES]) {
+    const { state } = stableTableSnapshot(caseId, 'ordinary-public');
+    const game = state.game;
+    const chengdu = caseId.startsWith('chengdu');
+    assert.equal(game.phase, 'turn');
+    assert.equal(game.history.length, 0);
+    assert.equal(state.tableScores.length, game.players.length);
+    assert.equal(game.sharedRadishes.length, chengdu ? 0 : 13);
+    for (const player of game.players) {
+      assert.equal(player.melds.length, 1);
+      assert.equal(player.melds[0].type, 'peng');
+      assert.equal(player.melds[0].tiles.length, 3);
+      assert.equal(player.winPile.length, chengdu ? 0 : 1);
+      assert.equal(player.huCount, chengdu ? 0 : 1);
+      assert.equal(player.won, null);
+      assert.equal(game.discards.filter((discard) => discard.seat === player.seat).length, 18);
+      if (player.seat !== 0 || caseId.endsWith('spectator')) {
+        assert.equal(Object.hasOwn(player, 'hand'), false);
+        assert.ok(player.winPile.every((win) => win.tile === null && win.hidden));
+      }
+    }
+  }
 });

@@ -11,6 +11,18 @@ export const STABLE_TABLE_STAGES = [
   ['hint', '听牌与诊断提示'], ['busy', '本页忙碌提示'], ['syncing', '本页同步提示'],
   ['offline', '本页离线提示'], ['restored', '恢复等待'],
 ];
+// 手动场景与自动阶段分开，避免改变既有13次变化矩阵；各玩法私有场景只供对应玩家视图。
+// Keep manual views outside the existing thirteen-transition matrix; private scenarios require the matching mode's player view.
+export const STABLE_TABLE_MANUAL_STAGES = [
+  ['many-actions', '多暗杠与胡牌动作（花麻将手动）'],
+  ['normal-feedback', '折叠诊断与普通上次结算（花麻将手动）'],
+  ['long-feedback', '超长诊断与结算（花麻将手动）'],
+  ['chengdu-exchange', '换三张普通说明（成都手动）'],
+  ['chengdu-dingque', '定缺与收到三张牌（成都手动）'],
+  ['finished', '本局结束与下一局入口（手动）'],
+  ['ordinary-public', '普通碰杠、胡牌与十三张萝卜（手动）'],
+];
+const MANY_ACTIONS_HAND = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
 const CHARACTERS = ['sweet', 'elegant', 'sunny', 'landlord'];
 const HAND = [0, 0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 17];
 
@@ -18,43 +30,63 @@ const HAND = [0, 0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 17];
 // Return a fresh object for the view setter only; no fetch, storage, rule execution, or credential exists here.
 export function stableTableSnapshot(caseId, stageId) {
   if (![...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES].includes(caseId)) throw new Error('Unknown fixture case');
-  if (!STABLE_TABLE_STAGES.some(([id]) => id === stageId)) throw new Error('Unknown fixture stage');
+  const stages = [...STABLE_TABLE_STAGES, ...STABLE_TABLE_MANUAL_STAGES];
+  if (!stages.some(([id]) => id === stageId)) throw new Error('Unknown fixture stage');
+  const manyActions = stageId === 'many-actions';
+  const feedback = ['normal-feedback', 'long-feedback'].includes(stageId);
+  const chengduPreparation = ['chengdu-exchange', 'chengdu-dingque'].includes(stageId);
+  const exchange = stageId === 'chengdu-exchange';
+  const finished = stageId === 'finished';
+  const ordinaryPublic = stageId === 'ordinary-public';
+  const manual = manyActions || feedback || chengduPreparation || finished || ordinaryPublic;
+  if (chengduPreparation && caseId !== 'chengdu-4') throw new Error('Manual preparation fixture requires current Chengdu player view');
+  if (feedback && !['flower-3', 'flower-4'].includes(caseId)) throw new Error('Manual feedback fixture requires current Flower player view');
+  if (manyActions && !['flower-3', 'flower-4'].includes(caseId)) throw new Error('Manual many-actions fixture requires current Flower player view');
+  const hand = manyActions ? MANY_ACTIONS_HAND : HAND;
   const chengdu = caseId.startsWith('chengdu');
   const spectator = caseId.endsWith('spectator');
   const legacyVersion = caseId.includes('legacy') ? Number(caseId.at(-1)) : null;
   const playerCount = caseId === 'flower-3' || legacyVersion ? 3 : 4;
-  const stageIndex = STABLE_TABLE_STAGES.findIndex(([id]) => id === stageId);
-  const growing = stageIndex >= 6 && stageId !== 'restored';
-  const historyGrowth = stageIndex >= 7 && stageId !== 'restored';
+  const stageIndex = stages.findIndex(([id]) => id === stageId);
+  const growing = !manual && stageIndex >= 6 && stageId !== 'restored';
+  const historyGrowth = !manual && stageIndex >= 7 && stageId !== 'restored';
   const longNames = stageId === 'long-names';
   const claim = stageId === 'claim';
-  const discarding = stageId === 'discard';
-  const perSeatDiscards = stageId === 'empty' || stageId === 'restored' ? 0 : stageId === 'one-row' ? 3 : chengdu ? stageId === 'river-growth' ? 15 : 10 : stageId === 'river-growth' ? 48 : 36;
+  const discarding = stageId === 'discard' || manyActions;
+  const perSeatDiscards = ordinaryPublic ? 18 : manual || stageId === 'empty' || stageId === 'restored' ? 0 : stageId === 'one-row' ? 3 : chengdu ? stageId === 'river-growth' ? 15 : 10 : stageId === 'river-growth' ? 48 : 36;
   const names = Array.from({ length: playerCount }, (_, seat) => longNames
     ? `合成牌友${seat + 1}·这是用于换行验收的长名字` : `合成牌友${seat + 1}`);
   const scores = Array.from({ length: playerCount }, (_, seat) => historyGrowth
     ? seat === 0 ? 123456 * (playerCount - 1) : -123456 : 0);
   const players = names.map((name, seat) => ({
     seat, name, handCount: seat === 0 ? 14 : 13,
-    ...(seat === 0 && !spectator ? { hand: [...HAND] } : {}), score: scores[seat],
-    huCount: growing && !chengdu ? 12 : 0, kongCount: growing ? 2 : 0,
-    melds: growing ? Array.from({ length: 4 }, (_, index) => ({
-      type: !chengdu && !legacyVersion && index === 0 ? 'anGang' : index % 2 ? 'anGang' : 'peng', tile: (seat * 4 + index) % (chengdu ? 27 : 18),
-      tiles: Array(!chengdu && !legacyVersion && index === 0 ? 20 : index % 2 ? 4 : 3).fill((seat * 4 + index) % (chengdu ? 27 : 18)),
+    ...(seat === 0 && !spectator ? { hand: [...hand] } : {}), score: scores[seat],
+    huCount: !chengdu ? growing ? 12 : ordinaryPublic ? 1 : 0 : 0, kongCount: growing ? 2 : 0,
+    // 普通公开牌场景只加一组碰与一次胡，不能沿用四副露/十二胡的极限增长数据。
+    // Ordinary public cards use one peng and one win, not the four-meld/twelve-win growth stress data.
+    melds: growing || ordinaryPublic ? Array.from({ length: growing ? 4 : 1 }, (_, index) => ({
+      type: growing && !chengdu && !legacyVersion && index === 0 ? 'anGang' : index % 2 ? 'anGang' : 'peng', tile: (seat * 4 + index) % (chengdu ? 27 : 18),
+      tiles: Array(growing && !chengdu && !legacyVersion && index === 0 ? 20 : index % 2 ? 4 : 3).fill((seat * 4 + index) % (chengdu ? 27 : 18)),
     })) : [],
-    winPile: growing && !chengdu ? Array.from({ length: 12 }, (_, index) => ({
+    winPile: (growing || ordinaryPublic) && !chengdu ? Array.from({ length: growing ? 12 : 1 }, (_, index) => ({
       tile: seat === 0 && !spectator ? index % 18 : null, hidden: seat !== 0 || spectator, source: 'selfDraw', virtual: false,
     })) : [],
-    radishes: growing && legacyVersion ? Array.from({ length: 12 }, (_, index) => index % 18) : [], dingqueSuit: 'characters', dingqueSubmitted: true,
+    radishes: growing && legacyVersion ? Array.from({ length: 12 }, (_, index) => index % 18) : [],
+    dingqueSuit: chengduPreparation ? null : 'characters', dingqueSubmitted: !chengduPreparation,
     won: growing && chengdu && seat !== 0 ? { tile: (seat * 9) % 27, source: 'discard', points: 64 } : null,
   }));
   const settings = chengdu
-    ? { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 }
+    ? { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: chengduPreparation, selfDraw: 'addBase', fanCap: 4 }
     : { playerCount, deckCount: 5, dragonStartCount: 8, autoDiscardAfterHu: false, bigSingleReadyPoints: 0 };
   const history = Array.from({ length: historyGrowth ? 60 : 0 }, (_, index) => ({
     type: 'discard', seat: index % playerCount, tile: index % (chengdu ? 27 : 18),
     message: `合成记录 ${index + 1}：牌友出牌；这是一条用来检查换行与内部滚动的公开记录。`,
   }));
+  // 与截图相同的真实模板字段：诊断、结算加番、本人胡牌付款记录；仅为合成展示，不执行结算。
+  // Match actual template inputs: diagnostic, score bonus and own-hu payments; synthetic display only, never settlement.
+  if (feedback) history.push({ type: 'hu', seat: 0, tile: 0, source: 'selfDraw', payments: [
+    { seat: 0, delta: 20 }, { seat: 1, delta: -10 }, { seat: 2, delta: -10 },
+  ] });
   const tableScores = Array.from({ length: historyGrowth ? 28 : playerCount }, (_, index) => ({
     id: `fixture-score-${index}`, name: index < playerCount ? names[index] : `已离桌合成人物${index + 1}`,
     seat: index < playerCount ? index : null, detached: index >= playerCount,
@@ -62,18 +94,22 @@ export function stableTableSnapshot(caseId, stageId) {
     totalScore: historyGrowth ? index % 2 ? -123456 : 123456 : 0,
   }));
   return {
-    label: STABLE_TABLE_STAGES[stageIndex][1], caseId, stageId,
+    label: stages[stageIndex][1], caseId, stageId,
     ui: { busy: stageId === 'busy', syncing: stageId === 'syncing', offline: stageId === 'offline' },
     state: {
-      id: 'VIEWONLY', gameMode: chengdu ? 'chengdu' : 'flower', phase: 'playing', you: spectator ? null : 0,
+      id: 'VIEWONLY', gameMode: chengdu ? 'chengdu' : 'flower', phase: finished ? 'finished' : 'playing', you: spectator ? null : 0,
       viewerRole: spectator ? 'spectator' : 'player', hostSeat: 0, rulesVersion: chengdu ? 2 : 3, revision: stageIndex,
       settings, presentationMode: 'local', tableScores,
       seats: names.map((name, seat) => ({ seat, name, character: CHARACTERS[seat], connected: true, isCurrentParticipant: true })),
       game: {
         id: `view-only-${caseId}`, gameMode: chengdu ? 'chengdu' : 'flower', schemaVersion: chengdu ? 2 : legacyVersion || 3,
         mySeat: spectator ? null : 0, characters: CHARACTERS.slice(0, playerCount), participantNames: names, players,
-        phase: claim ? 'claim' : 'turn', turnStep: claim ? null : 'discard', currentSeat: discarding ? 0 : 1,
-        dealerSeat: 0, wallCount: 60, revision: stageIndex, rules: {
+        phase: finished ? 'finished' : chengduPreparation ? exchange ? 'exchange' : 'dingque' : claim ? 'claim' : 'turn',
+        turnStep: finished || claim || chengduPreparation ? null : 'discard', currentSeat: chengduPreparation || discarding ? 0 : 1,
+        // 终局仅供页脚/再开按钮的位置检查，不把合成视图交给规则引擎或实际点击下一局。
+        // Finished views inspect footer/restart placement only, never execute these synthetic snapshots or click through to a new game.
+        ...(finished ? { finishReason: 'wallExhausted' } : {}),
+        dealerSeat: 0, wallCount: finished ? 0 : 60, revision: stageIndex, rules: {
           ...settings, specialHuPatterns: true, preHuActionChoice: true, concealedKongAfterPungDiscard: true,
           radishCountsWinPile: true, pungUpgradeAfterDiscard: true, turnDirection: 'counterclockwise',
           exponentialDragon: true, extendedCopyFan: true,
@@ -81,14 +117,28 @@ export function stableTableSnapshot(caseId, stageId) {
         discards: Array.from({ length: perSeatDiscards * playerCount }, (_, index) => ({
           seat: index % playerCount, tile: index % (chengdu ? 27 : 18), claimed: false,
         })), history,
-        sharedRadishes: growing && !chengdu ? Array.from({ length: 36 }, (_, index) => index % 18) : [],
-        legalActions: spectator ? [] : discarding ? HAND.map((tile) => ({ type: 'discard', tile })) : claim
+        sharedRadishes: (growing || ordinaryPublic) && !chengdu ? Array.from({ length: growing ? 36 : 13 }, (_, index) => index % 18) : [],
+        // 当前引擎动作协议：先列可出牌，再列自摸胡与三种暗杠；按钮只是展示，不执行动作。
+        // Current engine action protocol: distinct discards, self-draw hu and three concealed kongs; display only, never execute.
+        // 准备阶段只给本人合法选择/收到的三张牌；没有提交、网络或对手私有换牌数据。
+        // Preparation exposes only own choices/received tiles, without submission, networking or opponents' private exchange data.
+        ...(chengduPreparation ? { preparation: {
+          exchangeDirection: 'clockwise', exchangeSubmittedSeats: exchange ? [] : [0, 1, 2, 3],
+          myExchange: exchange ? null : [0, 0, 1],
+          ...(exchange ? {} : { receivedExchange: { fromSeat: 3, tiles: [0, 0, 1] } }),
+        } } : {}),
+        legalActions: spectator ? [] : chengduPreparation
+          ? exchange ? [{ type: 'exchangeThree', tiles: [0, 0, 1] }]
+            : ['bamboo', 'dots', 'characters'].map((suit) => ({ type: 'dingque', suit }))
+          : manyActions
+          ? [...new Set(hand)].map((tile) => ({ type: 'discard', tile })).concat({ type: 'hu' }, [0, 1, 2].map((tile) => ({ type: 'anGang', tile })))
+          : discarding ? HAND.map((tile) => ({ type: 'discard', tile })) : claim
           ? [{ type: 'hu' }, { type: 'peng', tile: 0 }, { type: 'mingGang', tile: 0 }, { type: 'pass' }] : [],
         claim: claim ? { tile: 0, discardSeat: 1, fromSeat: 1, source: 'discard', eligibleSeats: [0], respondedSeats: [] } : null,
         waitTiles: stageId === 'hint' ? [0, 3, 6, 9, 12, 15, 17] : [],
-        huDiagnostic: stageId === 'hint' ? { canHu: false, tile: 0, message: '合成提示：当前手牌尚未满足胡牌条件。仅用来验收提示切换后布局是否固定。' } : null,
-        scoreBreakdown: stageId === 'hint' ? { fan: 12, fanPoints: 4096, radishBonus: 36, total: 4132 } : null,
-        specialHuPattern: null, drawnTile: discarding ? 17 : null,
+        huDiagnostic: feedback ? { canHu: false, tile: 0, message: '合成诊断：当前手牌尚未满足胡牌条件。'.repeat(stageId === 'long-feedback' ? 30 : 1) } : stageId === 'hint' ? { canHu: false, tile: 0, message: '合成提示：当前手牌尚未满足胡牌条件。仅用来验收提示切换后布局是否固定。' } : null,
+        scoreBreakdown: feedback ? { fan: 3, fanPoints: 4, radishBonus: 6, total: 10, copyFanBonus: 1, patternBonuses: [{ type: 'kongReplacement', fan: 1 }] } : stageId === 'hint' ? { fan: 12, fanPoints: 4096, radishBonus: 36, total: 4132 } : null,
+        specialHuPattern: null, drawnTile: manyActions ? 3 : discarding ? 17 : null,
       },
     },
   };

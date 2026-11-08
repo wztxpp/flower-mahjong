@@ -1,0 +1,23 @@
+{
+  "scope": "Final <=360px Flower action gap, after viewport minimum-width correction. Native keyboard input only, no game action.",
+  "claim": {
+    "centerDelta": 0,
+    "full": 229,
+    "gap": "3px",
+    "height": 68,
+    "width": 229
+  },
+  "start": {
+    "first": 4,
+    "full": 480,
+    "height": 68,
+    "left": 0,
+    "width": 229
+  },
+  "end": {
+    "full": 480,
+    "lastRight": 224.546875,
+    "left": 251,
+    "width": 229
+  }
+}
