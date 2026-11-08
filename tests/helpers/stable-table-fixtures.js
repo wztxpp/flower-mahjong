@@ -2,6 +2,8 @@
 // View-only snapshots, not executable engine states: local layout acceptance only, without rooms or real identities.
 // 对手只含公开区域/手牌数量。变化彼此独立，刻意不宣称一次合法对局可以依次经过所有画面。
 // Opponents contain public zones/counts only. Independent variations do not claim a legal game can traverse every frame.
+import { terminalSummaryFixture } from './round-summary-fixtures.js';
+
 export const STABLE_TABLE_CASES = ['flower-3', 'flower-4', 'chengdu-4'];
 export const STABLE_TABLE_COMPAT_CASES = ['flower-legacy-1', 'flower-legacy-2', 'flower-spectator', 'chengdu-spectator'];
 export const STABLE_TABLE_STAGES = [
@@ -21,28 +23,34 @@ export const STABLE_TABLE_MANUAL_STAGES = [
   ['chengdu-dingque', '定缺与收到三张牌（成都手动）'],
   ['finished', '本局结束与下一局入口（手动）'],
   ['ordinary-public', '普通碰杠、胡牌与十三张萝卜（手动）'],
+  ['short-hand', '短手牌居中（手动）'],
+  ['rob-kong', '他家补杠回应（手动）'],
 ];
 const MANY_ACTIONS_HAND = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
-const CHARACTERS = ['sweet', 'elegant', 'sunny', 'landlord'];
+export const STABLE_TABLE_CHARACTERS = ['sweet', 'elegant', 'sunny', 'landlord', 'honest', 'wealthy', 'star'];
 const HAND = [0, 0, 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 17];
 
 // 返回新对象，按钮只能把它交给视图setter；这里没有fetch、存储、规则执行或凭证。
 // Return a fresh object for the view setter only; no fetch, storage, rule execution, or credential exists here.
-export function stableTableSnapshot(caseId, stageId) {
+export function stableTableSnapshot(caseId, stageId, characterId = 'sweet') {
   if (![...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES].includes(caseId)) throw new Error('Unknown fixture case');
   const stages = [...STABLE_TABLE_STAGES, ...STABLE_TABLE_MANUAL_STAGES];
   if (!stages.some(([id]) => id === stageId)) throw new Error('Unknown fixture stage');
+  if (!STABLE_TABLE_CHARACTERS.includes(characterId)) throw new Error('Unknown fixture character');
+  const characters = [characterId, 'elegant', 'sunny', 'landlord'];
+  const shortHand = stageId === 'short-hand';
+  const robKong = stageId === 'rob-kong';
   const manyActions = stageId === 'many-actions';
   const feedback = ['normal-feedback', 'long-feedback'].includes(stageId);
   const chengduPreparation = ['chengdu-exchange', 'chengdu-dingque'].includes(stageId);
   const exchange = stageId === 'chengdu-exchange';
   const finished = stageId === 'finished';
   const ordinaryPublic = stageId === 'ordinary-public';
-  const manual = manyActions || feedback || chengduPreparation || finished || ordinaryPublic;
+  const manual = manyActions || feedback || chengduPreparation || finished || ordinaryPublic || shortHand || robKong;
   if (chengduPreparation && caseId !== 'chengdu-4') throw new Error('Manual preparation fixture requires current Chengdu player view');
   if (feedback && !['flower-3', 'flower-4'].includes(caseId)) throw new Error('Manual feedback fixture requires current Flower player view');
   if (manyActions && !['flower-3', 'flower-4'].includes(caseId)) throw new Error('Manual many-actions fixture requires current Flower player view');
-  const hand = manyActions ? MANY_ACTIONS_HAND : HAND;
+  const hand = manyActions ? MANY_ACTIONS_HAND : shortHand ? [0, 1, 9, 17] : HAND;
   const chengdu = caseId.startsWith('chengdu');
   const spectator = caseId.endsWith('spectator');
   const legacyVersion = caseId.includes('legacy') ? Number(caseId.at(-1)) : null;
@@ -51,15 +59,15 @@ export function stableTableSnapshot(caseId, stageId) {
   const growing = !manual && stageIndex >= 6 && stageId !== 'restored';
   const historyGrowth = !manual && stageIndex >= 7 && stageId !== 'restored';
   const longNames = stageId === 'long-names';
-  const claim = stageId === 'claim';
-  const discarding = stageId === 'discard' || manyActions;
+  const claim = stageId === 'claim' || robKong;
+  const discarding = stageId === 'discard' || manyActions || shortHand;
   const perSeatDiscards = ordinaryPublic ? 18 : manual || stageId === 'empty' || stageId === 'restored' ? 0 : stageId === 'one-row' ? 3 : chengdu ? stageId === 'river-growth' ? 15 : 10 : stageId === 'river-growth' ? 48 : 36;
   const names = Array.from({ length: playerCount }, (_, seat) => longNames
     ? `合成牌友${seat + 1}·这是用于换行验收的长名字` : `合成牌友${seat + 1}`);
   const scores = Array.from({ length: playerCount }, (_, seat) => historyGrowth
     ? seat === 0 ? 123456 * (playerCount - 1) : -123456 : 0);
   const players = names.map((name, seat) => ({
-    seat, name, handCount: seat === 0 ? 14 : 13,
+    seat, name, handCount: seat === 0 ? hand.length : 13,
     ...(seat === 0 && !spectator ? { hand: [...hand] } : {}), score: scores[seat],
     huCount: !chengdu ? growing ? 12 : ordinaryPublic ? 1 : 0 : 0, kongCount: growing ? 2 : 0,
     // 普通公开牌场景只加一组碰与一次胡，不能沿用四副露/十二胡的极限增长数据。
@@ -93,17 +101,17 @@ export function stableTableSnapshot(caseId, stageId) {
     settledScore: historyGrowth ? index % 2 ? -123456 : 123456 : 0, provisionalScore: 0,
     totalScore: historyGrowth ? index % 2 ? -123456 : 123456 : 0,
   }));
-  return {
+  const snapshot = {
     label: stages[stageIndex][1], caseId, stageId,
     ui: { busy: stageId === 'busy', syncing: stageId === 'syncing', offline: stageId === 'offline' },
     state: {
       id: 'VIEWONLY', gameMode: chengdu ? 'chengdu' : 'flower', phase: finished ? 'finished' : 'playing', you: spectator ? null : 0,
       viewerRole: spectator ? 'spectator' : 'player', hostSeat: 0, rulesVersion: chengdu ? 2 : 3, revision: stageIndex,
       settings, presentationMode: 'local', tableScores,
-      seats: names.map((name, seat) => ({ seat, name, character: CHARACTERS[seat], connected: true, isCurrentParticipant: true })),
+      seats: names.map((name, seat) => ({ seat, name, characterId: characters[seat], connected: true, isCurrentParticipant: true })),
       game: {
         id: `view-only-${caseId}`, gameMode: chengdu ? 'chengdu' : 'flower', schemaVersion: chengdu ? 2 : legacyVersion || 3,
-        mySeat: spectator ? null : 0, characters: CHARACTERS.slice(0, playerCount), participantNames: names, players,
+        mySeat: spectator ? null : 0, characters: characters.slice(0, playerCount), participantNames: names, players,
         phase: finished ? 'finished' : chengduPreparation ? exchange ? 'exchange' : 'dingque' : claim ? 'claim' : 'turn',
         turnStep: finished || claim || chengduPreparation ? null : 'discard', currentSeat: chengduPreparation || discarding ? 0 : 1,
         // 终局仅供页脚/再开按钮的位置检查，不把合成视图交给规则引擎或实际点击下一局。
@@ -132,9 +140,9 @@ export function stableTableSnapshot(caseId, stageId) {
             : ['bamboo', 'dots', 'characters'].map((suit) => ({ type: 'dingque', suit }))
           : manyActions
           ? [...new Set(hand)].map((tile) => ({ type: 'discard', tile })).concat({ type: 'hu' }, [0, 1, 2].map((tile) => ({ type: 'anGang', tile })))
-          : discarding ? HAND.map((tile) => ({ type: 'discard', tile })) : claim
-          ? [{ type: 'hu' }, { type: 'peng', tile: 0 }, { type: 'mingGang', tile: 0 }, { type: 'pass' }] : [],
-        claim: claim ? { tile: 0, discardSeat: 1, fromSeat: 1, source: 'discard', eligibleSeats: [0], respondedSeats: [] } : null,
+          : discarding ? hand.map((tile) => ({ type: 'discard', tile })) : claim
+          ? robKong ? [{ type: 'hu' }, { type: 'pass' }] : [{ type: 'hu' }, { type: 'peng', tile: 0 }, { type: 'mingGang', tile: 0 }, { type: 'pass' }] : [],
+        claim: claim ? { tile: 0, discardSeat: 1, fromSeat: 1, source: robKong ? 'robKong' : 'discard', kind: robKong ? 'robKong' : 'discard', kongType: robKong ? 'buGang' : undefined, eligibleSeats: [0], respondedSeats: [] } : null,
         waitTiles: stageId === 'hint' ? [0, 3, 6, 9, 12, 15, 17] : [],
         huDiagnostic: feedback ? { canHu: false, tile: 0, message: '合成诊断：当前手牌尚未满足胡牌条件。'.repeat(stageId === 'long-feedback' ? 30 : 1) } : stageId === 'hint' ? { canHu: false, tile: 0, message: '合成提示：当前手牌尚未满足胡牌条件。仅用来验收提示切换后布局是否固定。' } : null,
         scoreBreakdown: feedback ? { fan: 3, fanPoints: 4, radishBonus: 6, total: 10, copyFanBonus: 1, patternBonuses: [{ type: 'kongReplacement', fan: 1 }] } : stageId === 'hint' ? { fan: 12, fanPoints: 4096, radishBonus: 36, total: 4132 } : null,
@@ -142,4 +150,8 @@ export function stableTableSnapshot(caseId, stageId) {
       },
     },
   };
+  // 终局才增加显式公开摘要；原玩家牌区仍按原隐私形状保留。
+  // Only terminal views gain the explicit public summary; existing player-zone privacy shapes remain unchanged.
+  if (finished) snapshot.state.game.roundSummary = terminalSummaryFixture(snapshot.state);
+  return snapshot;
 }

@@ -1,3 +1,4 @@
+import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
@@ -102,7 +103,13 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const PortraitMotionSettings = compileComponent('PortraitMotionSettings.vue', { './portrait-motion/settings.js': MotionSettings });
+const RoundSummary = compileComponent("RoundSummary.vue", {
+  "./round-summary.js": RoundSummaryModule,
+  "./MahjongTile.vue": Tile,
+});
 const App = compileComponent("App.vue", {
+  "./RoundSummary.vue": RoundSummary,
+  "./round-summary.js": RoundSummaryModule,
   "./PortraitMotionSettings.vue": PortraitMotionSettings,
   './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
@@ -6870,7 +6877,8 @@ test('Flower footer preserves one public status/claim and original finish contro
         assert.ok(claim > footer);
         assert.doesNotMatch(html, /own-seat-summary|我的手牌与操作/);
       } else {
-        assert.ok(claim < footer && claim > html.indexOf('class="my-hand"'));
+        assert.ok(claim < footer && claim < html.indexOf('class="my-hand"'));
+        assert.ok(claim > html.indexOf('class="hand-action-dock"'));
         assert.ok(claim < html.indexOf('class="action-row"'));
         assert.equal((html.match(/class="[^"]*\bown-seat-summary\b/g) || []).length, 1, 'one own identity summary remains');
       }
@@ -7450,5 +7458,170 @@ test('next-round dialog closing restore yields to another modal taking over duri
   assert.equal(document.activeElement, host.nodes.modalButton);
   assert.equal(document.body.style.overflow, 'hidden');
   host.unmount();
+  scope.resetRoomContext();
+});
+
+// 动作带只是搬家：提示取本人回合，按钮仍取白名单；他家回合、已回应和忙碌不改变权限。
+// The dock only relocates presentation: prompt follows own turn, buttons follow the allowlist across other turns, answered claims and blocked UI.
+test('Flower upper-right dock preserves own/other-turn, claim, answered and blocked action visibility', async () => {
+  const cases = [
+    { label: 'own', own: true, actions: [{ type: 'discard', tile: 0 }], expected: ['选牌后打出'] },
+    { label: 'other', own: false, actions: [], expected: [] },
+    { label: 'claim', own: false, actions: [{ type: 'hu' }, { type: 'peng', tile: 0 }, { type: 'mingGang', tile: 0 }, { type: 'pass' }], expected: ['胡牌', '碰', '明杠', '过'] },
+    { label: 'answered', own: false, actions: [], expected: [] },
+  ];
+  for (const entry of cases) for (const blocked of [null, 'busy', 'offline', 'syncing']) {
+    const state = fixture({ schemaVersion: 3 });
+    state.game.currentSeat = entry.own ? 0 : 1;
+    state.game.legalActions = entry.actions;
+    if (['claim', 'answered'].includes(entry.label)) {
+      state.game.phase = 'claim'; state.game.claim = { tile: 0, discardSeat: 1, kind: 'discard', respondedSeats: entry.label === 'answered' ? [0] : [] };
+    }
+    const scope = setup(state); if (blocked) scope[blocked].value = true;
+    const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+    const dock = html.slice(html.indexOf('class="hand-action-dock"'), html.indexOf('class="hand-scroll'));
+    const buttons = [...dock.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
+    assert.equal(buttons.length, entry.expected.length, `${entry.label}/${blocked}: do not suppress legal actions`);
+    for (const label of entry.expected) assert.ok(dock.includes(label), label);
+    assert.equal(dock.includes('轮到你了'), entry.own, 'claim responders are not mislabeled as current turn');
+    if (blocked) assert.ok(buttons.every((button) => /\bdisabled\b/.test(button[1])));
+    assert.doesNotMatch(dock, /等待牌友/);
+    assert.ok(dock.includes('tabindex="0"'));
+    scope.resetRoomContext();
+  }
+});
+
+// 必胡使用真实引擎投影：加杠窗口的currentSeat在他家，不能因提示未亮而隐藏唯一胡牌按钮。
+// Mandatory hu uses real engine projections: another seat owns rob-kong turns, but the sole hu button must remain visible.
+test('Flower dock keeps a mandatory out-of-turn hu and rob-kong context from the real engine', async () => {
+  for (const kind of ['discard', 'robKong']) {
+    const state = fixture({ schemaVersion: 3 }); state.game = getPlayerView(postHuWinClaim({ kind }), 0);
+    const scope = setup(state); assert.equal(scope.isMyTurn.value, false); assert.equal(scope.mustHu.value, true);
+    const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+    const dock = html.slice(html.indexOf('class="hand-action-dock"'), html.indexOf('class="hand-scroll'));
+    assert.equal((dock.match(/<button\b/g) || []).length, 1); assert.match(dock, /胡牌/); assert.doesNotMatch(dock, /轮到你了/);
+    if (kind === 'robKong') assert.match(dock, /正在加杠/);
+    scope.resetRoomContext();
+  }
+});
+
+// 未知角色不能成为自由样式输入：沿用原七角色解析与旧局绝对座位兜底。
+// Unknown roles never become arbitrary style inputs: retain the seven-role resolver and legacy absolute-seat fallback.
+test('hand action theme uses every known character and safely falls back for unknown IDs', async () => {
+  for (const id of [...CharacterAudioModule.CHARACTERS.map((character) => character.id), 'unknown; color: red']) {
+    const state = fixture({ schemaVersion: 3 }); state.game.characters = [id, 'elegant', 'sunny'];
+    const scope = setup(state); const resolved = scope.characterForPlayer(0, true).id;
+    assert.ok(CharacterAudioModule.CHARACTERS.some((character) => character.id === resolved));
+    assert.equal(resolved, id.startsWith('unknown') ? 'sweet' : id);
+    const html = await render(scope);
+    const ownClasses = [...html.matchAll(/<div class="([^"]*)"/g)].map((match) => match[1].split(/\s+/)).find((classes) => classes.includes('own-player-area'));
+    assert.ok(ownClasses?.includes(`character-${resolved}`));
+    assert.doesNotMatch(html, /unknown; color: red/);
+    scope.resetRoomContext();
+  }
+});
+
+// 总览用独立合成响应验证真实SFC；动作、自动弹层与焦点异步回归继续由上方原用例覆盖。
+// Verify the actual overview SFC with synthetic responses; existing tests above continue covering actions, auto-open and async focus.
+for (const caseId of ['flower-3', 'flower-4', 'chengdu-4', 'flower-legacy-1', 'flower-legacy-2', 'flower-spectator', 'chengdu-spectator']) {
+  test(`finished overview ${caseId}: authoritative names, cards and separate score scopes appear in the existing modal`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    const state = stableTableSnapshot(caseId, 'finished').state;
+    const summary = state.game.roundSummary;
+    // 房间现占座人故意改名，摘要仍必须显示本局原参与者。
+    // Deliberately rename a current occupant; the summary must retain the original round participant.
+    state.seats[1].name = '下一局替补不该冒名';
+    const scope = setup(state);
+    await settle();
+    globalThis.fetch = () => assert.fail('read-only summary must not request data');
+    scope.openNextRound();
+    await settle();
+    const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+    const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+    assert.match(dialog, /本局结算/);
+    assert.match(dialog, /data-round-summary-scroll/);
+    assert.match(dialog, /本局净分/);
+    assert.match(dialog, /本桌累计/);
+    assert.match(dialog, /结束时手牌/);
+    assert.doesNotMatch(dialog, /下一局替补不该冒名|tile-back/);
+    assert.equal((dialog.match(/data-round-summary-seat=/g) || []).length, summary.players.length);
+    for (const player of summary.players) {
+      const article = dialog.match(new RegExp(`<article[^>]*data-round-summary-seat="${player.seat}"[\\s\\S]*?</article>`))?.[0] || '';
+      assert.ok(article.includes(player.name));
+      assert.ok(article.includes(RoundSummaryModule.roundScoreText(player.roundScore)));
+      assert.ok(article.includes(RoundSummaryModule.roundScoreText(player.tableScore)));
+      assert.ok(article.includes(`${player.huCount} 次`));
+      for (const tile of player.finalHand) assert.ok(article.includes(MahjongPresentationModule.tilePresentation(tile).label));
+    }
+    if (caseId.startsWith('chengdu')) {
+      assert.match(dialog, /不适用/);
+      assert.match(dialog, /已含在手牌/);
+      assert.doesNotMatch(dialog, /每家付/);
+    } else if (caseId.includes('legacy')) {
+      assert.match(dialog, /未记录/);
+      assert.doesNotMatch(dialog, /每家付/);
+    } else {
+      assert.match(dialog, /1 组/);
+      assert.match(dialog, /0 组/);
+      assert.match(dialog, /每家付 10 分/);
+      assert.match(dialog, /共胡/);
+    }
+    if (caseId.endsWith('spectator')) assert.doesNotMatch(dialog, /同桌再来一局/);
+    else assert.match(dialog, /同桌再来一局/);
+    assert.match(dialog, /返回大厅/);
+    scope.closeModal();
+    await settle();
+    assert.equal(scope.showNextRound.value, false);
+    scope.resetRoomContext();
+  });
+}
+
+test('finished overview missing fields stay explicitly unavailable, and absent summary retains both existing choices', async () => {
+  const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+  const { terminalSummaryFixture } = await import('./helpers/round-summary-fixtures.js');
+  const state = stableTableSnapshot('flower-3', 'finished').state;
+  state.game.roundSummary = terminalSummaryFixture(state, 'missing');
+  const scope = setup(state);
+  await settle();
+  scope.openNextRound();
+  await settle();
+  const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+  const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+  assert.match(dialog, /手牌未记录/);
+  assert.match(dialog, /副露未记录/);
+  assert.match(dialog, /胡牌明细未记录/);
+  assert.doesNotMatch(dialog, /0 次|0 组|class="mahjong-tile/);
+  delete scope.state.value.game.roundSummary;
+  await settle();
+  const missing = (await render(scope)).match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+  assert.match(missing, /本局详细记录暂不可用/);
+  assert.match(missing, /同桌再来一局/);
+  assert.match(missing, /返回大厅/);
+  assert.doesNotMatch(missing, /data-round-summary-seat/);
+  scope.resetRoomContext();
+});
+
+test('long overview preserves every win and extended meld in native details, without truncating authoritative tiles', async () => {
+  const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+  const { terminalSummaryFixture } = await import('./helpers/round-summary-fixtures.js');
+  const state = stableTableSnapshot('flower-4', 'finished').state;
+  state.game.roundSummary = terminalSummaryFixture(state, 'long');
+  const scope = setup(state);
+  await settle();
+  scope.openNextRound();
+  await settle();
+  const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+  const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+  const first = dialog.match(/<article[^>]*data-round-summary-seat="0"[\s\S]*?<\/article>/)?.[0] || '';
+  const second = dialog.match(/<article[^>]*data-round-summary-seat="1"[\s\S]*?<\/article>/)?.[0] || '';
+  assert.match(first, /24 次/);
+  assert.match(first, /8 组/);
+  assert.match(first, /<details class="round-win-details">/);
+  assert.match(first, /<summary tabindex="0">胡牌记录/);
+  assert.equal((first.match(/class="round-win"/g) || []).length, 24);
+  assert.equal((first.match(/每家付 40960 分/g) || []).length, 8);
+  const meld = second.match(/<div class="round-meld">[\s\S]*?<\/div>/)?.[0] || '';
+  assert.equal((meld.match(/class="mahjong-tile tile-small"/g) || []).length, 20);
+  assert.match(second, /<details class="round-win-details" open>/);
   scope.resetRoomContext();
 });

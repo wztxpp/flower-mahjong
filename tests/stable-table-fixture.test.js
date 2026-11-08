@@ -288,3 +288,67 @@ test('ordinary-public isolates normal public-card capacity from long-content str
     }
   }
 });
+
+// 七角色选择只改变本座公开角色映射；不制造私有数据、动作或网络通道。
+// Seven-role previews change only seat zero's public role mapping, never private data, actions or network access.
+test('manual hand previews isolate short lists, rob-kong responses and safe role selection', () => {
+  const roles = ['sweet', 'elegant', 'sunny', 'landlord', 'honest', 'wealthy', 'star'];
+  for (const caseId of ['flower-3', 'flower-4', 'chengdu-4']) {
+    for (const role of roles) {
+      const short = stableTableSnapshot(caseId, 'short-hand', role).state;
+      assert.deepEqual(short.game.players[0].hand, [0, 1, 9, 17]);
+      assert.equal(short.game.drawnTile, 17, 'the displayed draw is a real member of the short hand');
+      assert.equal(short.game.currentSeat, 0); assert.equal(short.game.characters[0], role); assert.equal(short.seats[0].characterId, role);
+      assert.deepEqual(short.game.characters.slice(1), ['elegant', 'sunny', 'landlord'].slice(0, short.game.players.length - 1));
+      const claim = stableTableSnapshot(caseId, 'rob-kong', role).state;
+      assert.equal(claim.game.currentSeat, 1); assert.equal(claim.game.phase, 'claim');
+      assert.equal(claim.game.claim.kind, 'robKong'); assert.equal(claim.game.claim.source, 'robKong');
+      assert.deepEqual(claim.game.legalActions, [{ type: 'hu' }, { type: 'pass' }]);
+      assert.ok(claim.game.players.slice(1).every((player) => !Object.hasOwn(player, 'hand')));
+    }
+  }
+  assert.throws(() => stableTableSnapshot('flower-3', 'empty', 'red; color:blue'), /Unknown fixture character/);
+  assert.equal(STABLE_TABLE_STAGES.length, 14);
+  assert.match(source('tests/browser/stable-table-preview.html'), /id="fixture-character"/);
+  const frame = source('tests/browser/stable-table-frame.js');
+  assert.match(frame, /if \(caseId !== currentCase\) \{ app.unmount\(\); app = createApp\(App\); app.mount\('#app'\); \}/);
+  assert.match(frame, /setSnapshot\(snapshot\)/);
+});
+
+// 终局预览只开放既有本地弹层函数；不能为浏览器测试重新启用生产网络或游戏动作。
+// Terminal preview exposes only existing local modal functions, never production network or gameplay actions.
+test('terminal preview registers actual keyboard handling while retaining all original isolation guards', () => {
+  const transformed = parse(transformStableTableApp(source('src/App.vue'))).descriptor.scriptSetup.content;
+  assert.match(transformed, /window\.addEventListener\('keydown', onKey\)/);
+  assert.match(transformed, /window\.removeEventListener\('keydown', onKey\)/);
+  assert.match(transformed, /async openSummary\(\) \{ openNextRound\(\)/);
+  assert.match(transformed, /async closeSummary\(\) \{ closeModal\(\)/);
+  assert.match(transformed, /async pollSummary\(\)/);
+  assert.doesNotMatch(transformed, /onMounted\(\s*\(/);
+  const frame = source('tests/browser/stable-table-frame.js');
+  assert.match(frame, /#app \[data-next-round-trigger\], #app \.next-round-dialog \.modal-close/);
+  assert.match(frame, /event\.stopImmediatePropagation\(\)/);
+  assert.match(frame, /View-only fixture network boundary/);
+  assert.doesNotMatch(frame, /\.mutate\(|\.startNextRound\(|\.leaveFinishedTable\(/);
+  const html = source('tests/browser/stable-table-preview.html');
+  for (const control of ['load', 'finish', 'open', 'close', 'poll', 'new-game', 'measure']) assert.ok(html.includes(`id="fixture-summary-${control}"`));
+  for (const height of [760, 560, 420]) assert.ok(html.includes(`value="${height}"`));
+});
+
+test('terminal summary fixture variants never leak into active stages and retain unavailable versus zero semantics', async () => {
+  const { terminalSummaryFixture } = await import('./helpers/round-summary-fixtures.js');
+  for (const caseId of [...STABLE_TABLE_CASES, ...STABLE_TABLE_COMPAT_CASES]) {
+    const active = stableTableSnapshot(caseId, 'empty').state;
+    assert.equal(active.game.roundSummary, undefined);
+    const finished = stableTableSnapshot(caseId, 'finished').state;
+    assert.equal(finished.game.roundSummary.players.length, finished.game.players.length);
+    assert.equal(terminalSummaryFixture(finished, 'absent'), null);
+    const missing = terminalSummaryFixture(finished, 'missing');
+    assert.ok(missing.players.every((player) => player.finalHand === null && player.huCount === null && player.roundScore === null && player.tableScore === null));
+    const long = terminalSummaryFixture(finished, 'long');
+    assert.equal(long.players.reduce((sum, player) => sum + player.roundScore, 0), 0);
+    assert.equal(long.players.reduce((sum, player) => sum + player.tableScore, 0), 0);
+    assert.doesNotMatch(JSON.stringify(long), /token|credential|profileHash/i);
+  }
+  assert.throws(() => terminalSummaryFixture({}, 'untrusted'), /Unknown summary fixture variant/);
+});

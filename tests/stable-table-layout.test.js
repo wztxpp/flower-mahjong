@@ -198,7 +198,7 @@ for (const [file, prefix] of [['App.vue', '.own-player-area .action-row'], ['Che
     if (file === 'App.vue') {
       assert.match(actionRow.loc.source, /:disabled="!canDiscard \|\| busy \|\| offline \|\| syncing"/);
       assert.match(actionRow.loc.source, /v-if="busy"/);
-      assert.match(actionRow.loc.source, /等待牌友/);
+      assert.doesNotMatch(actionRow.loc.source, /等待牌友/, 'idle guidance stays in the existing footer rather than duplicating the empty dock');
     }
   });
 }
@@ -212,7 +212,7 @@ test('compact play areas remove repeated titles while preserving meaningful stat
   assert.equal(elements(flower).some((node) => hasClass(node, 'shared-radish-heading')), false);
   const hand = find(flower, 'hand-panel');
   assert.match(binding(hand, 'aria-description').exp.content, /postHu.*statusDetail/);
-  assert.match(find(flower, 'waits-info').loc.source, /v-if="isMyTurn"[\s\S]*轮到你了/);
+  assert.match(find(flower, 'hand-turn-prompt').loc.source, /v-if="isMyTurn"[\s\S]*轮到你了/);
   assert.doesNotMatch(hand.loc.source, /class="(?:frozen-hand-pill|section-kicker|muted-hand-caption)"/);
   const pool = find(flower, 'shared-radish-pool');
   assert.match(binding(pool, 'aria-label').exp.content, /全桌共享萝卜.*sharedRadishes.length/);
@@ -228,7 +228,7 @@ test('compact play areas remove repeated titles while preserving meaningful stat
   assert.ok(!elements(chengduHand).some((node) => /^h[1-6]$/.test(node.tag)));
   assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /selectedIndices.length/);
   assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /me.dingqueSuit/);
-  assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /game.currentSeat === mySeat/);
+  assert.match(find(chengduHand, 'hand-turn-prompt').loc.source, /game.currentSeat === mySeat/);
   assert.ok(find(flower, 'table-info-footer'));
   assert.ok(find(chengdu, 'chengdu-table-footer'));
 });
@@ -354,7 +354,7 @@ test('phone Chengdu action rows compact gaps and side padding while preserving t
     }
   });
   assert.equal(minimumHeight, '44px');
-  assert.deepEqual(compact, [{ 'padding-inline': '10px' }]);
+  assert.deepEqual(compact, [{ 'padding-inline': '8px' }]);
   assert.deepEqual(gaps, [['(max-width: 560px)', { gap: '6px' }], ['(max-width: 360px)', { gap: '5px' }]]);
   assert.ok(hasClass(find(descriptors['ChengduTable.vue'].template.ast, 'chengdu-action-bar'), 'stable-scroll'));
 });
@@ -379,7 +379,7 @@ test('Flower groups status, finish controls and own identity after the entire ma
   assert.match(find(footer, 'finished-banner').loc.source, /@click="newTable"/);
   assert.match(find(footer, 'game-status').loc.source, /game.wallCount/);
   const claim = find(find(ownArea, 'hand-panel'), 'claim-slot');
-  assert.ok(claim.loc.start.offset > find(ownArea, 'hand-scroll').loc.end.offset);
+  assert.ok(find(ownArea, 'hand-action-dock').loc.end.offset < find(ownArea, 'hand-scroll').loc.start.offset, 'dock and claims precede tiles in real DOM order');
   assert.ok(claim.loc.end.offset < find(ownArea, 'action-row').loc.start.offset, 'claim stays beside real actions');
   assert.ok(find(footer, 'claim-slot'), 'public-only viewers retain the claim in their footer');
 });
@@ -398,7 +398,7 @@ test('Chengdu finishes with status/results and keeps claim information next to h
   }
   const hand = find(table, 'chengdu-hand-panel');
   const claim = find(hand, 'chengdu-claim-slot');
-  assert.ok(claim.loc.start.offset > find(hand, 'chengdu-hand').loc.end.offset);
+  assert.ok(find(hand, 'hand-action-dock').loc.end.offset < find(hand, 'chengdu-hand').loc.start.offset, 'preparation and response dock precedes tiles');
   assert.ok(claim.loc.end.offset < find(hand, 'chengdu-action-bar').loc.start.offset);
   assert.ok(find(footer, 'chengdu-claim-slot'));
   assert.match(find(footer, 'chengdu-finish').loc.source, /@click="emit\('start'\)"/);

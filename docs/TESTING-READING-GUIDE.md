@@ -298,3 +298,28 @@ The named cases compile actual App code and cover both modes' finish/reload/re-e
 
 `stable-table-preview` 的捕获层仍阻止 App 按钮提交，App 挂载事件仍被移除，因此该只读预览可验证自动弹层外观，但不能宣称通过真实浏览器的开局/离席/ESC/焦点交互。自动测试的模拟交互与浏览器视觉验收必须分别报告。
 The stable-table preview still blocks App button submission and removes App mount events. It supports automatic-dialog appearance checks, not claims of real-browser start/departure/Escape/focus validation. Report simulated interaction tests separately from visual browser checks.
+
+
+### 无框手牌动作带回归 / Frameless hand-dock regressions
+
+`tests/hand-action-dock.test.js` 是新增维护测试：真实SFC AST、PostCSS规则、普通流固定槽、内容宽度auto边距、七角色/中性配色、4.5:1文字对比及44px按钮下限。`tests/ui.test.js` / `tests/chengdu-ui.test.js` 追加SSR阶段矩阵、真实引擎必胡和未知角色兜底。`stable-table-layout` 精确更新被用户授权的DOM顺序，保留全部旧隐私/终局/溢出断言；`stable-table-fixture` 保护新增手动预览与API隔离。这些不是像素或真实键盘测试，后者仍从隔离浏览器测量。
+The new dock suite checks real SFC AST/PostCSS, fixed normal-flow slots, intrinsic-width auto margins, seven/neutral palettes,4.5:1 text contrast and44px targets. Existing UI suites add SSR stage matrices, real-engine mandatory hu and unknown-role fallback. Stability assertions change only authorized DOM order while retaining privacy/finish/overflow coverage; fixture regressions guard new manual controls and API isolation. None substitutes for browser pixel/keyboard measurements.
+
+## 终局摘要专项 / Finished-summary suite
+
+`tests/round-summary.test.js` 使用真实引擎动作与隔离API，覆盖花麻将v1/v2/v3、三/四人、成都自摸/接炮/血战流局、已记录神龙及缺记录、所有玩家/观众/替补/重连/下一局隐私、累计去重和FileStore恢复。`node --test tests/round-summary.test.js tests/spectators.test.js` 可单独运行；完整合同见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。这些测试不连接生产、不部署。
+The real-engine/isolated-API suite covers every Flower version, both table sizes, Chengdu outcomes, actual/missing dragon records, every viewer lifecycle, totals/deduplication and file restoration. Run it with the spectator suite; see the contract. Tests never connect to production or deploy.
+
+花麻将/成都另用真实引擎及原 `ensureGameMetadata → archiveFinishedGame → newGameMetadata` 流程覆盖估计旧身份归档后的下一局累计仍未知；重复档案回归验证首条记录优先，查询不改原账本或本局分数。
+Flower/Chengdu regressions use real engines and the original metadata/archive/start helpers to keep subsequent totals unknown after an estimated historical identity. Duplicate-order tests preserve first-record precedence and verify reads never alter ledger or round scores.
+
+### 终局总览显示与隔离浏览器 / Terminal overview display and isolated browser
+
+`tests/round-summary-display.test.js` 用真实服务端完成局摘要验证 `pointsPerOpponent` 到显示层的字段合同，另用纯视图覆盖终局双守卫、零和缺记录、未知牌种不静默丢牌、成都不适用及自摸牌已在手牌。它还检查单纵向滚动/自然换行结构，并计算最暗渐变背景上的小字对比度；这些数值不代替真实浏览器验收。
+The display suite validates the actual completed-engine per-opponent dragon contract, plus terminal guards, zero/unavailable values, invalid-zone handling and Chengdu semantics. Structural and numeric contrast checks do not replace browser acceptance.
+
+`tests/ui.test.js` 新增七种玩法/版本/观众视图的真实SSR、原参与者名字、不借用现占座人、两种积分、缺摘要时操作保留、多胡/20张杠明细不截断。原自动弹层、房主/观众、busy/offline/sync、未知请求结果、关闭与DOM提交后焦点恢复用例完整保留。`tests/invitation-copy.test.js` 只更新新组件装载依赖。
+Real-SFC UI tests cover seven modes/versions/audiences, original names, distinct score scopes, missing-summary controls and complete long records. Existing lifecycle, permission, uncertain-request and focus regressions remain intact. Invitation tests only gain the new component dependency.
+
+`tests/helpers/round-summary-fixtures.js` 和原stable-table预览只构造展示快照，不执行规则动作；活动阶段无roundSummary。新增可见控制测试正常/缺字段/长内容/缺摘要、手动开关、现场终局、同局轮询与新局。AST安全计数、客户端fetch限制和服务端所有API方法403不变，实际onKey单独注册并成对清理。最终人工步骤见 [浏览器说明](../tests/browser/README.md#终局总览纯视图--terminal-summary-view-only-checks)。
+View-only fixtures never execute rules and omit active summaries. New controls exercise modal lifetimes and variants while retaining AST, fetch and server-403 boundaries, with paired actual keyboard listener registration. See the browser instructions for manual steps.

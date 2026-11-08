@@ -1,3 +1,4 @@
+import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
@@ -84,7 +85,13 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Live2DSettings = compileComponent("Live2DSettings.vue", { "./live2d/consent.js": Live2DConsent });
+const RoundSummary = compileComponent("RoundSummary.vue", {
+  "./round-summary.js": RoundSummaryModule,
+  "./MahjongTile.vue": Tile,
+});
 const App = compileComponent("App.vue", {
+  "./RoundSummary.vue": RoundSummary,
+  "./round-summary.js": RoundSummaryModule,
   "./Live2DSettings.vue": Live2DSettings,
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./MahjongTile.vue": Tile,

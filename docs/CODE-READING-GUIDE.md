@@ -1,5 +1,11 @@
 # 从这里开始读代码 / Start reading here
 
+终局总览当前验收：[FINISHED-ROUND-SUMMARY-20261108.md](qa/FINISHED-ROUND-SUMMARY-20261108.md) 与同目录浏览器JSON，记录权威隐私门、完整测试和窄屏/键盘范围。
+Current terminal-overview acceptance records the authoritative privacy gate, complete checks and narrow-screen/keyboard scope in the linked report and companion JSON.
+
+最新无框手牌/右上动作验收：[THEMED-HAND-ACTIONS-20261108.md](qa/THEMED-HAND-ACTIONS-20261108.md) 与同目录 `themed-hand-actions-browser-20261108.json`，分别记录范围说明和脱敏浏览器测量。
+Latest frameless-hand/upper-right-action acceptance: the linked report and companion JSON separate scope from synthetic browser measurements.
+
 当前原图局部动效入口：[Canvas2D展示层](PORTRAIT-MOTION.md)。维护文件为 `src/CharacterArtwork.vue`、`src/PortraitMotionSettings.vue`、`src/portrait-motion/{settings,catalog,loader,controller,renderer,timeline,images,geometry}.js`、`scripts/verify-portrait-motion-build.mjs` 与 `tests/portrait-motion-{settings,controller,component,renderer,timeline,geometry,build}.test.js`。素材目录为 `public/portrait-motion/`，原始 `public/characters/` 字节保持不动。
 The current original-preserving Canvas2D guide owns the listed maintained files/tests and new asset directory; original character bytes stay unchanged.
 
@@ -237,3 +243,22 @@ The portrait-layout suite inspects the real Vue template AST for both modes' sha
 [The correction guide](FLOWER-HAND-LOCK-CORRECTION.md) covers drawn-tile upgrades and history-based self-discard locks. The three listed suites join the maintained inventory; the authority remains shared/game.js.
 
 [牌桌布局与规则反馈联合验收](TABLE-RULE-FEEDBACK-INTEGRATION.md)记录main ac10fa3上的UI/规则组合、真实引擎→Vue交叉检查、1400项全量及保存历史/浏览器限制。 / The integration report covers the ac10fa3-based UI/rules combination, real-engine-to-Vue checks,1400-test pass and history/browser limits.
+
+
+无框手牌与角色动作带维护入口为 `src/App.vue` / `src/ChengduTable.vue` 模板、`src/tabletop.css` 后置覆盖、`tests/hand-action-dock.test.js` 和原 `ui` / `chengdu-ui` / `stable-table-layout` / `stable-table-fixture` 测试。纯视图七角色与短手牌/抢杠控制位于 `tests/browser/stable-table-{preview,frame}.{html,js}`（frame只有js逻辑）及 `tests/helpers/stable-table-fixtures.js`。合同见 [稳定布局](STABLE-TABLE-LAYOUT.md)，不修改引擎、脚本动作、媒体或下一局弹层。
+Frameless hands/themed docks are maintained in the two templates, final tabletop CSS overrides, the dedicated dock suite and existing UI/stability suites. Isolated role/short-hand/rob-kong controls live in the existing browser preview/frame files and snapshot helper. See the stable-layout contract; engines, action scripts, media and next-round dialogs remain unchanged.
+
+## 终局摘要维护入口 / Finished-summary maintenance entry
+
+`server/round-summary.js` 是新增维护模块，经 `server/game-engines.js` 分发，只读终局真实统计与牌区；`server/history.js` 加入原参与者身份累计，`server/api.js` 仅在finished输出。新增 `tests/round-summary.test.js`，既有观战测试补明终局摊牌例外。相关字段、版本边界和隐私授权见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
+The new maintained projection is registry-selected and finished-only; history joins original-participant totals and the API gates disclosure. The dedicated suite and updated spectator case cover the explicit final-reveal exception. See the contract for fields, versions and privacy authorization.
+
+### 终局总览前端维护清单 / Terminal-overview frontend inventory
+
+- `src/RoundSummary.vue`：原下一局弹层内的只读参与者总览，牌面换行、单一纵向滚动与原生胡牌详情。 / Read-only participant overview with wrapped tiles, one vertical viewport and native win details.
+- `src/round-summary.js`：双重终局/模式守卫、明确缺记录语义、纯显示复制与中文标签；没有客户端计分。 / Terminal/mode guards, explicit unavailable values, immutable presentation copies and labels, without client scoring.
+- `tests/round-summary-display.test.js`：显示合同、真实服务端神龙字段集成、零/缺字段/成都区别、单滚动样式与对比度数值。 / Display contract, actual server dragon-field integration, zero/missing/Chengdu distinctions, scroll styling and contrast calculations.
+- `tests/helpers/round-summary-fixtures.js`：正常/缺字段/长内容/缺摘要的合成只读数据，供SSR与隔离浏览器使用。 / Synthetic normal/missing/long/absent responses for SSR and isolated browser checks.
+
+现有 `tests/ui.test.js`、`tests/invitation-copy.test.js` 更新真实组件依赖；`tests/stable-table-fixture.test.js` 和原浏览器预览增加终局本地控制与真实键盘处理器验证，API封锁不变。阅读前端展示合同时从 [前端导读](FRONTEND-READING-GUIDE.md#下一局弹层中的终局总览--finished-overview-inside-the-next-round-dialog) 开始。
+Existing UI/invitation harnesses load the real component; fixture/browser helpers add local modal controls and actual keyboard handling without weakening API isolation. Start from the frontend guide for the presentation contract.

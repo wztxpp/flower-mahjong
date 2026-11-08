@@ -181,7 +181,7 @@ test('spectators cannot read old opt-out self-draws, private claim options, conc
   assertGameInvariants(game);
 });
 
-test('finished spectators reveal public winning tiles but never hands or credential metadata', async () => {
+test('finished spectators reveal final hands only through the explicit round summary, never credential metadata', async () => {
   const app = await table();
   await app.fill();
   const game = applyPresentedAction(postHuKongGame({ winningDraw: true }), 0, { type: 'hu' });
@@ -193,6 +193,8 @@ test('finished spectators reveal public winning tiles but never hands or credent
   assert.equal(view.game.players[0].winPile.at(-1).tile, game.players[0].winPile.at(-1).tile);
   assert.equal(view.game.history.find((event) => event.type === 'hu').tile, game.history.find((event) => event.type === 'hu').tile);
   assert.ok(view.game.players.every((player) => !Object.hasOwn(player, 'hand')));
+  assert.deepEqual(view.game.roundSummary.players.map((player) => player.finalHand), game.players.map((player) => player.hand));
+  assert.ok(view.game.roundSummary.players.every((player) => !Object.hasOwn(player, 'tokenHash')));
   assert.equal(view.game.scoreBreakdown, null);
   assert.deepEqual(view.game.legalActions, []);
 });

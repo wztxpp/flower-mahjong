@@ -10,6 +10,7 @@ import {
   recordsForProfile,
   tableScores,
   playerSummary,
+  roundSummaryForRoom,
 } from './history.js';
 import {
   assignSeatCharacter,
@@ -185,6 +186,9 @@ function publicRoom(room, seat, viewerRole = 'player') {
       ...view,
       schemaVersion: room.game.schemaVersion ?? 1,
       ...(room.game.gameMode !== undefined ? { gameMode: room.game.gameMode } : {}),
+      // 用户要求终局摊手牌，单独白名单通路只在服务器 finished 后开放；旧 live/hand 投影不变。
+      // Requested final-hand disclosure uses a separate allowlist only after server-side finish; existing live/hand views stay unchanged.
+      ...(room.game.phase === 'finished' ? { roundSummary: roundSummaryForRoom(room) } : {}),
     };
   }
   if (game) game.id = room.gameMeta?.id || `legacy-${room.createdAt}`;

@@ -283,8 +283,8 @@ Main-table footers place status, finish controls and Flower own identity after h
 
 ### 紧凑牌区与动作靠右 / Compact play areas and right-aligned actions
 
-两玩法不再显示重复手牌框标题；花麻将完整状态仍在手牌可访问描述和原页脚，当前回合徽章在听牌行。共享萝卜是无标题的牌优先条，读屏名称保留归属/总数，动态增加和待翻仍可见。成都简化顶部玩法条与手牌说明，但保留换牌选中数量、定缺、回合和接牌。`tabletop.css`及成都组件样式用首个动作的单侧auto边距靠右，溢出时回到可达起点；不要恢复旧尾部auto边距。固定槽、原SFC脚本、服务端动作与立绘不变，详见[布局契约](STABLE-TABLE-LAYOUT.md)。
-Both modes remove repeated hand-box titles. Flower retains complete status in the hand's accessible description and existing footer, with its turn badge beside waits. Shared radishes use a tile-first strip with accessible ownership/count and visible changes/pending information. Chengdu simplifies its top strip and hand guidance while retaining exchange progress, missing suit, turn and claims. A start-only auto margin on the first action right-aligns controls and resolves to a reachable overflow origin; do not restore the old trailing auto margin. Fixed slots, SFC scripts, server actions and portraits remain unchanged; see the layout contract.
+两玩法不再显示重复手牌框标题；花麻将完整状态仍在手牌可访问描述和原页脚，当前回合徽章在手牌上方动作带右侧。共享萝卜是无标题的牌优先条，读屏名称保留归属/总数，动态增加和待翻仍可见。成都简化顶部玩法条与手牌说明，但保留换牌选中数量、定缺、回合和接牌。`tabletop.css`及成都组件样式用首个动作的单侧auto边距靠右，溢出时回到可达起点；不要恢复旧尾部auto边距。固定槽、原SFC脚本、服务端动作与立绘不变，详见[布局契约](STABLE-TABLE-LAYOUT.md)。
+Both modes remove repeated hand-box titles. Flower retains complete status in the hand's accessible description and existing footer, with its turn badge in the upper-right action dock. Shared radishes use a tile-first strip with accessible ownership/count and visible changes/pending information. Chengdu simplifies its top strip and hand guidance while retaining exchange progress, missing suit, turn and claims. A start-only auto margin on the first action right-aligns controls and resolves to a reachable overflow origin; do not restore the old trailing auto margin. Fixed slots, SFC scripts, server actions and portraits remain unchanged; see the layout contract.
 
 牌河标题和记录数量也不再可见；花麻将 `discard-label` 整块删除，成都原本无此标题。牌河容量、座位key/排列和每张弃牌保留，归属通过原具名可访问区域读取。手机成都动作只收紧gap/左右内边距以容纳普通四回应，不缩小字、44px按钮高度或删除长动作的滚动入口。
 River headings/counts are also no longer visible: Flower removes `discard-label`, while Chengdu already had none. River capacity, seat keys/order and every discard remain, with ownership in the original named accessible regions. Phone Chengdu actions compact gaps/inline padding to fit four ordinary responses without shrinking text,44px height or removing long-group scrolling.
@@ -299,3 +299,23 @@ River headings/counts are also no longer visible: Flower removes `discard-label`
 
 关闭分支先捕获并清空 `previousFocus`，然后 `await nextTick()` 等实际DOM提交，再校验 `epoch` 和 `activeModal`。新局可能在同一tick删除入口或禁用按钮；若另一弹层接管，旧回调不能抢焦点。只有连接且启用的旧控件可恢复，否则查询当前启用的选择入口/桌面工具。
 The close branch captures and clears `previousFocus`, then awaits the actual DOM flush before checking `epoch` and `activeModal`. A new game can remove or disable the trigger in that tick, and a replacement modal must keep focus. Restore only a connected, enabled old control; otherwise query a current enabled choice trigger or table tool.
+
+
+### 无框手牌与上方动作带 / Frameless hand and upper action dock
+
+`hand-action-dock` 在两玩法模板里真实排在手牌前，空闲也常驻；只让回合提示条件显示，不能用本人回合条件包住接炮/抢杠合法动作。原事件/禁用表达式和两组件脚本不改。手牌实体列表按内容定宽加auto边距，足宽居中、超宽起点可达。七角色class只选择固定调色变量，不接受自由CSS。完整高度、手机侧边留白、测试与纯视图入口见 [稳定布局](STABLE-TABLE-LAYOUT.md#无框居中手牌与角色动作带--frameless-centered-hands-and-themed-actions)。
+Both real templates place a persistent hand-action-dock before tiles. Condition only the prompt, never the claim/rob-kong allowlist container. Original events/disabled expressions and both scripts remain unchanged. Intrinsic-width lists with auto margins center when fitting and keep a reachable overflow origin. Seven enum classes select fixed palette variables, never arbitrary CSS. See the stable-layout guide for capacities, phone spacing, tests and isolated preview controls.
+
+## 下一局弹层中的终局总览 / Finished overview inside the next-round dialog
+
+`App.vue → round-summary.js → RoundSummary.vue → MahjongTile.vue` 是新的阅读路线。App 的 `finishedRoundSummary` 只读取当前已显示快照的 `game.roundSummary`；纯展示适配要求房间和游戏同时为 `finished`，且摘要玩法匹配。它不访问当前占座人的累计账、不从历史数胡或神龙，也不把已隐藏的玩家牌区拼成对手手牌。服务端合同见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
+The new reading path leads from App's displayed authoritative summary through a pure adapter to tiles. Both room/game must be finished and modes must match. The adapter never uses current occupants' totals, reconstructs hu/dragon counts from history, or infers concealed hands. See the server contract.
+
+每位本局参与者分别显示胡牌次数、神龙组数、本局净分、本桌累计和结束时手牌。副露与胡牌引用另列；成都自摸记录显示“已含在手牌”，不能再向手牌添加第14张。神龙细节的 `pointsPerOpponent` 显示为“每家付”，不是本人的神龙净收益。旧记录缺失显示“未记录”，成都神龙显示“不适用”；零分、零胡、零组不与缺字段混淆。当前占座者换人不重命名原局参与者。
+Each original participant has hu count, dragon groups, round net, table total and exact terminal hand. Melds and win references remain separate; Chengdu self-draw references say they are already in hand. Dragon amounts are charged per opponent, not net dragon income. Missing records, inapplicable Chengdu dragons and known zero values remain distinct, and replacements do not rename original participants.
+
+整个总览只有一个具名、可聚焦的纵向滚动区，手牌、副露自然换行，不新增每玩家横向滚动条。超过四张胡牌记录默认收进原生 `details`，仍保留每张牌；`summary` 显式 `tabindex="0"` 加入现有焦点圈。底部同桌/大厅控制在滚动区外。新样式只在组件和 `next-round-dialog` 内生效，不改变此前无框手牌和上方动作带。
+One named focusable vertical viewport contains naturally wrapping hand/meld tiles. More than four win references initially collapse in native details without dropping cards; explicit summary tabindex integrates with the existing focus loop. The footer controls remain outside the scroll area. Scoped styling preserves the existing frameless hands and action dock.
+
+`showNextRound`、`openNextRound`、`startNextRound`、`leaveFinishedTable`、请求/同步守卫和关闭后的 `await nextTick()` / epoch 焦点恢复逻辑均沿用。没有新增网络、存储键、监听或游戏动作。只读总览测试与真实浏览器测量应分别报告，SSR不证明320px布局或实际键盘焦点通过。
+Existing modal state, actions, guards and post-flush epoch-protected focus restoration remain intact. The overview adds no network, storage, listeners or game actions. Report SSR and browser results separately; SSR does not establish narrow layout or actual keyboard focus.

@@ -137,34 +137,41 @@ function eventText(event) {
     <div v-if="me?.hand" class="own-player-area chengdu-own-area"
       :class="`character-${characterForPlayer(mySeat).id}`">
     <section class="chengdu-hand-panel" aria-label="我的手牌与操作">
-      <!-- 不再把手牌标题和教程单独框起；同一固定行只保留准备进度、缺门与当前行动提示。
-           Remove the separate hand-title/tutorial box; one fixed row retains preparation progress, missing suit and the current action prompt. -->
+      <!-- 无重复标题；准备进度和缺门保留在固定说明行，回合提示位于下方动作带右上方。
+           No repeated title: preparation/missing suit keep their fixed note row, with the turn prompt at the dock’s upper right. -->
       <!-- 各阶段说明只替换内容，不增删槽位；手机长文可聚焦后滚动。
            Phase instructions replace content, not slots; long phone text remains focusable and scrollable. -->
       <div class="chengdu-hand-note stable-scroll" tabindex="0" role="region" aria-label="手牌操作说明">
       <p v-if="isExchange">同花色三张 · 已选 {{ selectedIndices.length }}/3<span class="chengdu-commit-note">提交后不能修改</span></p>
       <p v-else-if="game.phase === 'dingque'">选择缺门 · 提交后不能修改</p>
-      <p v-else><span v-if="me.dingqueSuit">缺{{ suitLabels[me.dingqueSuit] }}</span><span v-if="!isFinished && !me.won && game.currentSeat === mySeat" class="chengdu-own-turn">轮到你了</span></p>
+      <p v-else><span v-if="me.dingqueSuit">缺{{ suitLabels[me.dingqueSuit] }}</span></p>
       </div>
-      <div class="chengdu-hand character-hand-table stable-scroll" tabindex="0" role="region" aria-label="本人私有手牌" aria-description="可横向滚动查看全部手牌">
-        <MahjongTile v-for="(tile, index) in hand" :key="index" :tile="tile" interactive
-          :selected="selectedIndices.includes(index)" :disabled="blocked || (!isExchange && !legalActions.some((action) => action.type === 'discard' && action.tile === tile)) || (isExchange && !legalActions.some((action) => action.type === 'exchangeThree'))"
-          @click="chooseTile(index)" />
-      </div>
-      <div v-if="game.rules.exchangeThree" class="chengdu-receipt-slot stable-scroll" tabindex="0" role="region" aria-label="我的换牌结果">
-      <div v-if="game.preparation?.receivedExchange" class="chengdu-exchange-receipt"><span>收到的三张：</span><MahjongTile v-for="(tile, index) in game.preparation.receivedExchange.tiles" :key="index" :tile="tile" small /></div>
-      </div>
+      <!-- 操作带始终预留在手牌上方；换牌、定缺和他家回合的回应仍由原白名单显示。
+           Reserve the dock above tiles throughout the game; preparation and out-of-turn responses still use the original allowlist. -->
+      <div class="hand-action-dock">
       <!-- 接牌信息紧邻手牌动作；等候说明放在可访问描述，避免普通姓名加牌也被重复长句挤出滚动条。
            Keep claims beside hand actions; an accessible waiting description avoids wrapping an ordinary name/tile into needless scrolling. -->
       <div class="chengdu-claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看"
         :aria-description="game.claim ? '等待所有有资格的牌友回应' : undefined">
       <div v-if="game.claim" class="chengdu-claim"><span>{{ nameFor(game.claim.fromSeat) }}{{ game.claim.source === 'robKong' ? '尝试补杠' : '打出' }}</span><MahjongTile :tile="game.claim.tile" small /></div>
       </div>
+      <div class="hand-turn-prompt" role="status" aria-live="polite">
+        <span v-if="game.phase === 'turn' && !me.won && game.currentSeat === mySeat" class="my-turn-pill">轮到你了</span>
+      </div>
       <div class="chengdu-action-bar stable-scroll" tabindex="0" role="region" aria-label="成都合法动作" aria-description="可横向滚动查看全部动作">
         <button v-if="isExchange && legalActions.some((action) => action.type === 'exchangeThree')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认换三张</button>
         <button v-if="legalActions.some((action) => action.type === 'discard')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认出牌{{ selectedAction ? ` · ${labelFor(selectedAction.tile)}` : '' }}</button>
         <button v-for="action in dingqueActions" :key="action.suit" class="button" :disabled="blocked" @click="submit(action)">定缺{{ suitLabels[action.suit] }}</button>
         <button v-for="action in responseActions" :key="`${action.type}:${action.tile ?? ''}`" class="button" :class="{ gold: action.type === 'hu' }" :disabled="blocked" @click="submit(action)">{{ actionLabel(action) }}</button>
+      </div>
+      </div>
+      <div class="chengdu-hand character-hand-table stable-scroll" tabindex="0" role="region" aria-label="本人私有手牌" aria-description="可横向滚动查看全部手牌">
+        <div class="chengdu-hand-tiles"><MahjongTile v-for="(tile, index) in hand" :key="index" :tile="tile" interactive
+          :selected="selectedIndices.includes(index)" :disabled="blocked || (!isExchange && !legalActions.some((action) => action.type === 'discard' && action.tile === tile)) || (isExchange && !legalActions.some((action) => action.type === 'exchangeThree'))"
+          @click="chooseTile(index)" /></div>
+      </div>
+      <div v-if="game.rules.exchangeThree" class="chengdu-receipt-slot stable-scroll" tabindex="0" role="region" aria-label="我的换牌结果">
+      <div v-if="game.preparation?.receivedExchange" class="chengdu-exchange-receipt"><span>收到的三张：</span><MahjongTile v-for="(tile, index) in game.preparation.receivedExchange.tiles" :key="index" :tile="tile" small /></div>
       </div>
       <div class="chengdu-waits stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"><p v-if="game.waitTiles?.length && !me.won">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p></div>
     </section>
@@ -263,13 +270,21 @@ function eventText(event) {
 .chengdu-details .chengdu-history { height: 280px; max-height: 280px; }
 .chengdu-details .chengdu-ledger { height: 160px; }
 
+/* 与花麻将共用无框动作带；真实牌组按内容定宽，过长时auto边距归零，首尾均可滚到。
+   Share Flower's frameless dock; intrinsic-width tile lists center when fitting and reset auto margins on overflow. */
+.chengdu-own-area .chengdu-hand { display: block; height: 112px; }
+.chengdu-hand-tiles { display: flex; width: max-content; min-width: 0; margin-inline: auto; gap: 5px; }
+.chengdu-own-area .hand-action-dock > .chengdu-action-bar { margin-top: 0; }
+.chengdu-own-area .hand-action-dock .button:not(.gold) { color: var(--hand-accent-light); background: var(--hand-action-surface); border-color: var(--hand-accent); }
+.chengdu-own-area .hand-action-dock .button.gold { color: var(--hand-accent-ink); background: linear-gradient(160deg, var(--hand-accent-light), var(--hand-accent)); border-color: var(--hand-accent-light); }
+
 /* 页脚保持普通文档流，不能覆盖手牌或用视觉order改变焦点顺序。
    Keep the footer in normal flow, never overlaying hands or using visual order to disagree with focus order. */
 .chengdu-table-footer { margin-top: 16px; min-width: 0; }
 .chengdu-table-footer .chengdu-claim-slot { margin-top: 8px; }
 
 @media (max-width: 900px) { .chengdu-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }.chengdu-seat-self, .chengdu-seat-left, .chengdu-seat-opposite, .chengdu-seat-right { grid-area: auto; }.chengdu-table-center { grid-area: auto; grid-column: 1 / -1; order: -1; } }
-@media (max-width: 560px) { .chengdu-board, .chengdu-audience, .chengdu-details { grid-template-columns: minmax(0, 1fr); }.chengdu-board { padding: 10px; }.chengdu-hand-panel, .chengdu-finish, .chengdu-details section { padding: 14px; }.chengdu-hand { gap: 3px; }.chengdu-turn-note { font-size: 12px; } }
+@media (max-width: 560px) { .chengdu-board, .chengdu-audience, .chengdu-details { grid-template-columns: minmax(0, 1fr); }.chengdu-board { padding: 10px; }.chengdu-hand-panel, .chengdu-finish, .chengdu-details section { padding: 14px; }.chengdu-hand-tiles { gap: 3px; }.chengdu-turn-note { font-size: 12px; } }
 /* 普通手机标题和两行状态也应完整显示；各阶段始终预留同高，超长姓名仍可局部滚动。
    Fit normal phone headings and two-line statuses in fixed slots across phases; unusually long names remain locally scrollable. */
 @media (max-width: 560px) {
@@ -281,6 +296,6 @@ function eventText(event) {
    Four ordinary phone responses should not overflow because of spare spacing; compact gaps/side padding only, retaining text size,44px height and long-action scrolling. */
 @media (max-width: 360px) {
   .chengdu-action-bar { gap: 5px; }
-  .chengdu-action-bar > button { padding-inline: 10px; }
+  .chengdu-action-bar > button { padding-inline: 8px; }
 }
 </style>

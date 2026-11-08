@@ -227,3 +227,60 @@ export function playerSummary(game, player, archived = false) {
   const engine = engineFor(game, { archived });
   return engine.playerSummary ? engine.playerSummary(player) : { huCount: player.huCount || 0, kongCount: player.kongCount || 0 };
 }
+
+// 旧账可能只剩部分字段；本摘要不继承通用账本的“缺分按0”展示兜底，否则会把未知累计说成真数。
+// Partial old ledgers must not inherit the general ledger's missing-score-as-zero fallback and present an unknown total as fact.
+function hasRecordedTableScore(room, participant) {
+  if (!participant?.tokenHash || (room.archivedGames !== undefined && !Array.isArray(room.archivedGames))) return false;
+  const entries = [...(room.archivedGames || []), { game: room.game, meta: room.gameMeta }];
+  const seen = new Set();
+  for (const { game, meta } of entries) {
+    if (!meta?.id || !Array.isArray(meta.participants) || !Array.isArray(game?.players) ||
+      meta.participants.length !== game.players.length) return false;
+    // 与 tableScores 保持相同先后与去重优先级；不让未计入的重复残缺档案推翻已有记录。
+    // Match tableScores ordering/deduplication so an ignored incomplete duplicate cannot invalidate the counted record.
+    for (const person of meta.participants) {
+      // 缺失旧身份无法证明与当前人无关；不能静默跳过该行再把部分合计显示为完整累计。
+      // An unknown historical identity cannot be proven unrelated; skipping it would present a partial sum as a complete total.
+      if (!Number.isInteger(person?.seat) || person.seat < 0 || person.seat >= game.players.length) return false;
+      const key = `${meta.id}:${person.seat}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // 估计身份归档后仍不可靠；只检查实际计入的首条记录，不让后置重复档案改变去重结果。
+      // Estimated identity stays uncertain after archival; check counted first records without changing duplicate precedence.
+      if (meta.startedAtEstimated) return false;
+      if (!person.tokenHash) return false;
+      if (person.tokenHash === participant.tokenHash && !Number.isFinite(game?.players?.[person.seat]?.score)) return false;
+    }
+  }
+  return true;
+}
+
+// 本局终局摘要只在权威 phase 通过后建立；房间层只补身份与累计，不推断玩法统计。
+// Build a summary only after the authoritative phase gate; the room layer adds identity/totals, never inferred rule statistics.
+export function roundSummaryForRoom(room) {
+  if (room.game?.phase !== 'finished') return null;
+  const summary = engineFor(room.game).roundSummary(room.game);
+  const participants = room.gameMeta?.participants;
+  // 复用既有 gameId/seat 去重账本，包含当前已结束局一次；开下一局前才归档，不额外加本局。
+  // Reuse existing gameId/seat deduplication, including the current finished game once; it archives at next start, so never add it again.
+  // 临时以本局参与者作为座位映射，可定位已离开的原玩家；不按昵称或现任座位继承累计。
+  // A temporary round-participant seat map locates departed originals without inheriting totals by nickname/current seat.
+  const hasIdentity = Boolean(room.gameMeta?.id && !room.gameMeta.startedAtEstimated && Array.isArray(participants));
+  const recordedSeats = new Set(hasIdentity
+    ? participants.filter((person) => hasRecordedTableScore(room, person)).map((person) => person.seat)
+    : []);
+  const totals = recordedSeats.size ? tableScores({ ...room, seats: participants }) : [];
+  return {
+    ...summary,
+    players: summary.players.map((player) => {
+      const participant = participants?.[player.seat];
+      const total = recordedSeats.has(player.seat) ? totals.find((row) => row.seat === player.seat) : null;
+      return {
+        ...player,
+        name: participant?.name || `${player.seat + 1}号位`,
+        tableScore: total?.totalScore ?? null,
+      };
+    }),
+  };
+}

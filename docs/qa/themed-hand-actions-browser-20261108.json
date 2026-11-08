@@ -1,0 +1,2097 @@
+{
+  "baselineCommit": "58d45d2ebcd9fb70a45e5e30ac223e18e2fab7fd",
+  "scope": "Real Chromium, compiled production Vue templates/CSS, synthetic local snapshots only. No live rooms, network actions, hardware touch device, Safari or Firefox verification.",
+  "sourceSha256": {
+    "src/App.vue": "3473bc9d1b3c85f20e75edd9430e5411def76a6c702b7eaaa3863c00752e4b14",
+    "src/ChengduTable.vue": "b86ea3726f20003be756cb3cd79ee53aa9c4d48e7c93214eea1bcbdbf4c20dd4",
+    "src/tabletop.css": "62effc155818d103fde4abd26587ae8f50aebb981938a5d544568a69ab528d66",
+    "tests/browser/stable-table-frame.js": "abaf71ba00788326fba8a36ba06dc8e77c1fdd3b0332bf119177b7c7018c2f52",
+    "tests/helpers/stable-table-fixtures.js": "6a8cec90ab2e337aef5200411f86aa5d5041fa987e581ce094530951c48052e1"
+  },
+  "stableLayouts": [
+    {
+      "case": "flower-3",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 291.52,
+          "bottom": 403.52,
+          "left": 92,
+          "right": 901,
+          "width": 809,
+          "height": 112,
+          "documentTop": 1785.52
+        },
+        "handPanel": {
+          "top": 107.52,
+          "bottom": 527.52,
+          "left": 80,
+          "right": 913,
+          "width": 833,
+          "height": 420,
+          "documentTop": 1601.52
+        },
+        "table": {
+          "top": -841.73,
+          "bottom": 1216.23,
+          "left": 44,
+          "right": 949,
+          "width": 905,
+          "height": 2057.97,
+          "documentTop": 652.27
+        },
+        "action": {
+          "top": 223.52,
+          "bottom": 291.52,
+          "left": 367,
+          "right": 901,
+          "width": 534,
+          "height": 68,
+          "documentTop": 1717.52
+        },
+        "claim": {
+          "top": 225.52,
+          "bottom": 285.52,
+          "left": 92,
+          "right": 359,
+          "width": 267,
+          "height": 60,
+          "documentTop": 1719.52
+        }
+      }
+    },
+    {
+      "case": "flower-4",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 499.52,
+          "bottom": 611.52,
+          "left": 92,
+          "right": 901,
+          "width": 809,
+          "height": 112,
+          "documentTop": 1993.52
+        },
+        "handPanel": {
+          "top": 315.52,
+          "bottom": 735.52,
+          "left": 80,
+          "right": 913,
+          "width": 833,
+          "height": 420,
+          "documentTop": 1809.52
+        },
+        "table": {
+          "top": -841.73,
+          "bottom": 1424.23,
+          "left": 44,
+          "right": 949,
+          "width": 905,
+          "height": 2265.97,
+          "documentTop": 652.27
+        },
+        "action": {
+          "top": 431.52,
+          "bottom": 499.52,
+          "left": 367,
+          "right": 901,
+          "width": 534,
+          "height": 68,
+          "documentTop": 1925.52
+        },
+        "claim": {
+          "top": 433.52,
+          "bottom": 493.52,
+          "left": 92,
+          "right": 359,
+          "width": 267,
+          "height": 60,
+          "documentTop": 1927.52
+        }
+      }
+    },
+    {
+      "case": "chengdu-4",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 1176.91,
+          "bottom": 1288.91,
+          "left": 68,
+          "right": 1197,
+          "width": 1129,
+          "height": 112,
+          "documentTop": 2670.91
+        },
+        "handPanel": {
+          "top": 1026.91,
+          "bottom": 1342.91,
+          "left": 56,
+          "right": 1209,
+          "width": 1153,
+          "height": 316,
+          "documentTop": 2520.91
+        },
+        "table": {
+          "top": -937.59,
+          "bottom": 1828.63,
+          "left": 44,
+          "right": 1221,
+          "width": 1177,
+          "height": 2766.22,
+          "documentTop": 556.41
+        },
+        "action": {
+          "top": 1108.91,
+          "bottom": 1176.91,
+          "left": 449.66,
+          "right": 1197,
+          "width": 747.34,
+          "height": 68,
+          "documentTop": 2602.91
+        },
+        "claim": {
+          "top": 1106.91,
+          "bottom": 1170.91,
+          "left": 68,
+          "right": 441.66,
+          "width": 373.66,
+          "height": 64,
+          "documentTop": 2600.91
+        }
+      }
+    },
+    {
+      "case": "flower-3",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 285.91,
+          "bottom": 385.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 100,
+          "documentTop": 1779.91
+        },
+        "handPanel": {
+          "top": 53.91,
+          "bottom": 555.91,
+          "left": 26,
+          "right": 349,
+          "width": 323,
+          "height": 502,
+          "documentTop": 1547.91
+        },
+        "table": {
+          "top": -748.09,
+          "bottom": 1024.94,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 1773.03,
+          "documentTop": 745.91
+        },
+        "action": {
+          "top": 217.91,
+          "bottom": 285.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 68,
+          "documentTop": 1711.91
+        },
+        "claim": {
+          "top": 153.91,
+          "bottom": 213.91,
+          "left": 38,
+          "right": 321,
+          "width": 283,
+          "height": 60,
+          "documentTop": 1647.91
+        }
+      }
+    },
+    {
+      "case": "flower-4",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 962.91,
+          "bottom": 1062.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 100,
+          "documentTop": 2456.91
+        },
+        "handPanel": {
+          "top": 730.91,
+          "bottom": 1232.91,
+          "left": 26,
+          "right": 349,
+          "width": 323,
+          "height": 502,
+          "documentTop": 2224.91
+        },
+        "table": {
+          "top": -748.09,
+          "bottom": 1701.94,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 2450.03,
+          "documentTop": 745.91
+        },
+        "action": {
+          "top": 894.91,
+          "bottom": 962.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 68,
+          "documentTop": 2388.91
+        },
+        "claim": {
+          "top": 830.91,
+          "bottom": 890.91,
+          "left": 38,
+          "right": 321,
+          "width": 283,
+          "height": 60,
+          "documentTop": 2324.91
+        }
+      }
+    },
+    {
+      "case": "chengdu-4",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 1802.72,
+          "bottom": 1914.72,
+          "left": 34,
+          "right": 341,
+          "width": 307,
+          "height": 112,
+          "documentTop": 3296.72
+        },
+        "handPanel": {
+          "top": 1612.72,
+          "bottom": 1968.72,
+          "left": 22,
+          "right": 353,
+          "width": 331,
+          "height": 356,
+          "documentTop": 3106.72
+        },
+        "table": {
+          "top": -807.28,
+          "bottom": 2265.44,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 3072.72,
+          "documentTop": 686.72
+        },
+        "action": {
+          "top": 1734.72,
+          "bottom": 1802.72,
+          "left": 34,
+          "right": 341,
+          "width": 307,
+          "height": 68,
+          "documentTop": 3228.72
+        },
+        "claim": {
+          "top": 1670.72,
+          "bottom": 1734.72,
+          "left": 34,
+          "right": 325,
+          "width": 291,
+          "height": 64,
+          "documentTop": 3164.72
+        }
+      }
+    },
+    {
+      "case": "flower-legacy-1",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 165.73,
+          "bottom": 277.73,
+          "left": 92,
+          "right": 901,
+          "width": 809,
+          "height": 112,
+          "documentTop": 1659.73
+        },
+        "handPanel": {
+          "top": -18.27,
+          "bottom": 401.73,
+          "left": 80,
+          "right": 913,
+          "width": 833,
+          "height": 420,
+          "documentTop": 1475.73
+        },
+        "table": {
+          "top": -887.52,
+          "bottom": 1090.45,
+          "left": 44,
+          "right": 949,
+          "width": 905,
+          "height": 1977.97,
+          "documentTop": 606.48
+        },
+        "action": {
+          "top": 97.73,
+          "bottom": 165.73,
+          "left": 367,
+          "right": 901,
+          "width": 534,
+          "height": 68,
+          "documentTop": 1591.73
+        },
+        "claim": {
+          "top": 99.73,
+          "bottom": 159.73,
+          "left": 92,
+          "right": 359,
+          "width": 267,
+          "height": 60,
+          "documentTop": 1593.73
+        }
+      }
+    },
+    {
+      "case": "flower-legacy-2",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 200.13,
+          "bottom": 312.13,
+          "left": 92,
+          "right": 901,
+          "width": 809,
+          "height": 112,
+          "documentTop": 1694.13
+        },
+        "handPanel": {
+          "top": 16.13,
+          "bottom": 436.13,
+          "left": 80,
+          "right": 913,
+          "width": 833,
+          "height": 420,
+          "documentTop": 1510.13
+        },
+        "table": {
+          "top": -853.12,
+          "bottom": 1124.84,
+          "left": 44,
+          "right": 949,
+          "width": 905,
+          "height": 1977.97,
+          "documentTop": 640.88
+        },
+        "action": {
+          "top": 132.13,
+          "bottom": 200.13,
+          "left": 367,
+          "right": 901,
+          "width": 534,
+          "height": 68,
+          "documentTop": 1626.13
+        },
+        "claim": {
+          "top": 134.13,
+          "bottom": 194.13,
+          "left": 92,
+          "right": 359,
+          "width": 267,
+          "height": 60,
+          "documentTop": 1628.13
+        }
+      }
+    },
+    {
+      "case": "flower-spectator",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": null,
+        "handPanel": null,
+        "table": {
+          "top": -769.73,
+          "bottom": 1179.77,
+          "left": 44,
+          "right": 949,
+          "width": 905,
+          "height": 1949.5,
+          "documentTop": 724.27
+        },
+        "action": null,
+        "claim": {
+          "top": 1066.77,
+          "bottom": 1126.77,
+          "left": 94,
+          "right": 899,
+          "width": 805,
+          "height": 60,
+          "documentTop": 2560.77
+        }
+      }
+    },
+    {
+      "case": "chengdu-spectator",
+      "width": 1280,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": null,
+        "handPanel": null,
+        "table": {
+          "top": -865.59,
+          "bottom": 770.91,
+          "left": 44,
+          "right": 1221,
+          "width": 1177,
+          "height": 1636.5,
+          "documentTop": 628.41
+        },
+        "action": null,
+        "claim": {
+          "top": 1251.91,
+          "bottom": 1315.91,
+          "left": 44,
+          "right": 1221,
+          "width": 1177,
+          "height": 64,
+          "documentTop": 2745.91
+        }
+      }
+    },
+    {
+      "case": "flower-legacy-1",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 137.61,
+          "bottom": 237.61,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 100,
+          "documentTop": 1631.61
+        },
+        "handPanel": {
+          "top": -94.39,
+          "bottom": 407.61,
+          "left": 26,
+          "right": 349,
+          "width": 323,
+          "height": 502,
+          "documentTop": 1399.61
+        },
+        "table": {
+          "top": -780.39,
+          "bottom": 876.64,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 1657.03,
+          "documentTop": 713.61
+        },
+        "action": {
+          "top": 69.61,
+          "bottom": 137.61,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 68,
+          "documentTop": 1563.61
+        },
+        "claim": {
+          "top": 5.61,
+          "bottom": 65.61,
+          "left": 38,
+          "right": 321,
+          "width": 283,
+          "height": 60,
+          "documentTop": 1499.61
+        }
+      }
+    },
+    {
+      "case": "flower-legacy-2",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 183.91,
+          "bottom": 283.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 100,
+          "documentTop": 1677.91
+        },
+        "handPanel": {
+          "top": -48.09,
+          "bottom": 453.91,
+          "left": 26,
+          "right": 349,
+          "width": 323,
+          "height": 502,
+          "documentTop": 1445.91
+        },
+        "table": {
+          "top": -734.09,
+          "bottom": 922.94,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 1657.03,
+          "documentTop": 759.91
+        },
+        "action": {
+          "top": 115.91,
+          "bottom": 183.91,
+          "left": 38,
+          "right": 337,
+          "width": 299,
+          "height": 68,
+          "documentTop": 1609.91
+        },
+        "claim": {
+          "top": 51.91,
+          "bottom": 111.91,
+          "left": 38,
+          "right": 321,
+          "width": 283,
+          "height": 60,
+          "documentTop": 1545.91
+        }
+      }
+    },
+    {
+      "case": "flower-spectator",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": null,
+        "handPanel": null,
+        "table": {
+          "top": -620.09,
+          "bottom": 1891.91,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 2512,
+          "documentTop": 873.91
+        },
+        "action": null,
+        "claim": {
+          "top": 1792.91,
+          "bottom": 1852.91,
+          "left": 36,
+          "right": 339,
+          "width": 303,
+          "height": 60,
+          "documentTop": 3286.91
+        }
+      }
+    },
+    {
+      "case": "chengdu-spectator",
+      "width": 390,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": null,
+        "handPanel": null,
+        "table": {
+          "top": -679.28,
+          "bottom": 1932.72,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 2612,
+          "documentTop": 814.72
+        },
+        "action": null,
+        "claim": {
+          "top": 2698.72,
+          "bottom": 2762.72,
+          "left": 10,
+          "right": 365,
+          "width": 355,
+          "height": 64,
+          "documentTop": 4192.72
+        }
+      }
+    },
+    {
+      "case": "flower-3",
+      "width": 320,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 330.22,
+          "bottom": 430.22,
+          "left": 38,
+          "right": 267,
+          "width": 229,
+          "height": 100,
+          "documentTop": 1824.22
+        },
+        "handPanel": {
+          "top": 98.22,
+          "bottom": 620.22,
+          "left": 26,
+          "right": 279,
+          "width": 253,
+          "height": 522,
+          "documentTop": 1592.22
+        },
+        "table": {
+          "top": -703.78,
+          "bottom": 1030.63,
+          "left": 10,
+          "right": 295,
+          "width": 285,
+          "height": 1734.41,
+          "documentTop": 790.22
+        },
+        "action": {
+          "top": 262.22,
+          "bottom": 330.22,
+          "left": 38,
+          "right": 267,
+          "width": 229,
+          "height": 68,
+          "documentTop": 1756.22
+        },
+        "claim": {
+          "top": 198.22,
+          "bottom": 258.22,
+          "left": 38,
+          "right": 251,
+          "width": 213,
+          "height": 60,
+          "documentTop": 1692.22
+        }
+      }
+    },
+    {
+      "case": "flower-4",
+      "width": 320,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 1007.22,
+          "bottom": 1107.22,
+          "left": 38,
+          "right": 267,
+          "width": 229,
+          "height": 100,
+          "documentTop": 2501.22
+        },
+        "handPanel": {
+          "top": 775.22,
+          "bottom": 1297.22,
+          "left": 26,
+          "right": 279,
+          "width": 253,
+          "height": 522,
+          "documentTop": 2269.22
+        },
+        "table": {
+          "top": -703.78,
+          "bottom": 1707.63,
+          "left": 10,
+          "right": 295,
+          "width": 285,
+          "height": 2411.41,
+          "documentTop": 790.22
+        },
+        "action": {
+          "top": 939.22,
+          "bottom": 1007.22,
+          "left": 38,
+          "right": 267,
+          "width": 229,
+          "height": 68,
+          "documentTop": 2433.22
+        },
+        "claim": {
+          "top": 875.22,
+          "bottom": 935.22,
+          "left": 38,
+          "right": 251,
+          "width": 213,
+          "height": 60,
+          "documentTop": 2369.22
+        }
+      }
+    },
+    {
+      "case": "chengdu-4",
+      "width": 320,
+      "passed": true,
+      "transitions": 13,
+      "maximumMeasuredDeltaPx": 0,
+      "retention": [
+        true,
+        true
+      ],
+      "reachabilityPassed": true,
+      "baseline": {
+        "hand": {
+          "top": 1851.81,
+          "bottom": 1963.81,
+          "left": 34,
+          "right": 271,
+          "width": 237,
+          "height": 112,
+          "documentTop": 3345.81
+        },
+        "handPanel": {
+          "top": 1661.81,
+          "bottom": 2017.81,
+          "left": 22,
+          "right": 283,
+          "width": 261,
+          "height": 356,
+          "documentTop": 3155.81
+        },
+        "table": {
+          "top": -758.19,
+          "bottom": 2255.92,
+          "left": 10,
+          "right": 295,
+          "width": 285,
+          "height": 3014.11,
+          "documentTop": 735.81
+        },
+        "action": {
+          "top": 1783.81,
+          "bottom": 1851.81,
+          "left": 34,
+          "right": 271,
+          "width": 237,
+          "height": 68,
+          "documentTop": 3277.81
+        },
+        "claim": {
+          "top": 1719.81,
+          "bottom": 1783.81,
+          "left": 34,
+          "right": 255,
+          "width": 221,
+          "height": 64,
+          "documentTop": 3213.81
+        }
+      }
+    }
+  ],
+  "actionChecks": [
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "discard",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰",
+        "明杠",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "short-hand",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 1280,
+      "stage": "many-actions",
+      "buttons": [
+        "暗杠 · 1条",
+        "暗杠 · 2条",
+        "暗杠 · 3条",
+        "胡牌",
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 32,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 420,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "discard",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰",
+        "明杠",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "short-hand",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 390,
+      "stage": "many-actions",
+      "buttons": [
+        "暗杠 · 1条",
+        "暗杠 · 2条",
+        "暗杠 · 3条",
+        "胡牌",
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 175,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 502,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "discard",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰",
+        "明杠",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "short-hand",
+      "buttons": [
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "flower-3",
+      "width": 320,
+      "stage": "many-actions",
+      "buttons": [
+        "暗杠 · 1条",
+        "暗杠 · 2条",
+        "暗杠 · 3条",
+        "胡牌",
+        "选牌后打出"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 197,
+      "handHeight": 100,
+      "dockHeight": 132,
+      "panelHeight": 522,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 316,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "discard",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 316,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰 1条",
+        "明杠 1条",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 316,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 316,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "short-hand",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 316,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "chengdu-exchange",
+      "buttons": [
+        "确认换三张"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 378,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 1280,
+      "stage": "chengdu-dingque",
+      "buttons": [
+        "定缺条",
+        "定缺筒",
+        "定缺万"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 92,
+      "panelHeight": 378,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "discard",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰 1条",
+        "明杠 1条",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "short-hand",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "chengdu-exchange",
+      "buttons": [
+        "确认换三张"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 418,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 390,
+      "stage": "chengdu-dingque",
+      "buttons": [
+        "定缺条",
+        "定缺筒",
+        "定缺万"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 418,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "empty",
+      "buttons": [],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": null,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "discard",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "claim",
+      "buttons": [
+        "胡牌",
+        "碰 1条",
+        "明杠 1条",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "rob-kong",
+      "buttons": [
+        "胡牌",
+        "过"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "short-hand",
+      "buttons": [
+        "确认出牌"
+      ],
+      "prompt": "轮到你了",
+      "fittedHandCenteredDeltaPx": 0.0,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 356,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "chengdu-exchange",
+      "buttons": [
+        "确认换三张"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 418,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "chengdu-4",
+      "width": 320,
+      "stage": "chengdu-dingque",
+      "buttons": [
+        "定缺条",
+        "定缺筒",
+        "定缺万"
+      ],
+      "prompt": "",
+      "fittedHandCenteredDeltaPx": null,
+      "allButtonsAboveHand": true,
+      "minimumButtonHeight": 44,
+      "rootOverflowPx": 0,
+      "handVerticalOverflowPx": 0,
+      "actionHorizontalOverflowPx": 0,
+      "handHeight": 112,
+      "dockHeight": 132,
+      "panelHeight": 418,
+      "rack": {
+        "background": "none",
+        "border": "0px",
+        "shadow": "none"
+      }
+    }
+  ],
+  "themeChecks": [
+    {
+      "mode": "flower-3",
+      "role": "sweet",
+      "className": "own-player-area character-sweet",
+      "accent": "#edb8cd",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "sunny",
+      "className": "own-player-area character-sunny",
+      "accent": "#eed18f",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "elegant",
+      "className": "own-player-area character-elegant",
+      "accent": "#cdb8df",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "star",
+      "className": "own-player-area character-star",
+      "accent": "#b7ccdf",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "wealthy",
+      "className": "own-player-area character-wealthy",
+      "accent": "#d7cc9f",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "honest",
+      "className": "own-player-area character-honest",
+      "accent": "#b8cecc",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "flower-3",
+      "role": "landlord",
+      "className": "own-player-area character-landlord",
+      "accent": "#dcb18d",
+      "actionCount": 4,
+      "minimumWidth": 44,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "sweet",
+      "className": "own-player-area chengdu-own-area character-sweet",
+      "accent": "#edb8cd",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "sunny",
+      "className": "own-player-area chengdu-own-area character-sunny",
+      "accent": "#eed18f",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "elegant",
+      "className": "own-player-area chengdu-own-area character-elegant",
+      "accent": "#cdb8df",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "star",
+      "className": "own-player-area chengdu-own-area character-star",
+      "accent": "#b7ccdf",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "wealthy",
+      "className": "own-player-area chengdu-own-area character-wealthy",
+      "accent": "#d7cc9f",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "honest",
+      "className": "own-player-area chengdu-own-area character-honest",
+      "accent": "#b8cecc",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    },
+    {
+      "mode": "chengdu-4",
+      "role": "landlord",
+      "className": "own-player-area chengdu-own-area character-landlord",
+      "accent": "#dcb18d",
+      "actionCount": 4,
+      "minimumWidth": 50.515625,
+      "minimumHeight": 44
+    }
+  ],
+  "keyboard": {
+    "flowerHandStart": {
+      "client": 229,
+      "left": 0,
+      "width": 621
+    },
+    "flowerHandEnd": {
+      "client": 229,
+      "left": 392,
+      "width": 621
+    },
+    "flowerLastTile": {
+      "bottom": 404.21875,
+      "h": 56,
+      "right": 261,
+      "w": 39,
+      "x": 222,
+      "y": 348.21875
+    },
+    "flowerHandViewport": {
+      "bottom": 430.21875,
+      "h": 100,
+      "right": 267,
+      "w": 229,
+      "x": 38,
+      "y": 330.21875
+    },
+    "flowerActionLast": {
+      "bottom": 395.71875,
+      "h": 44,
+      "right": 263.0625,
+      "w": 106.515625,
+      "x": 156.546875,
+      "y": 351.71875
+    },
+    "flowerActionViewport": {
+      "bottom": 414.21875,
+      "h": 68,
+      "right": 267,
+      "w": 229,
+      "x": 38,
+      "y": 346.21875
+    },
+    "chengduHandStart": {
+      "client": 237,
+      "left": 0,
+      "width": 705
+    },
+    "chengduHandEnd": {
+      "client": 237,
+      "left": 468,
+      "width": 705
+    },
+    "chengduLastTile": {
+      "bottom": 399.8125,
+      "h": 64,
+      "right": 267,
+      "w": 47,
+      "x": 220,
+      "y": 335.8125
+    },
+    "chengduHandViewport": {
+      "bottom": 435.8125,
+      "h": 112,
+      "right": 271,
+      "w": 237,
+      "x": 34,
+      "y": 323.8125
+    }
+  },
+  "heightComparison": [
+    {
+      "mode": "flower",
+      "width": 1280,
+      "before": 456,
+      "after": 420,
+      "saved": 36
+    },
+    {
+      "mode": "flower",
+      "width": 390,
+      "before": 520,
+      "after": 502,
+      "saved": 18
+    },
+    {
+      "mode": "flower",
+      "width": 320,
+      "before": 540,
+      "after": 522,
+      "saved": 18
+    },
+    {
+      "mode": "chengdu",
+      "width": 1280,
+      "before": 386,
+      "after": 316,
+      "saved": 70
+    },
+    {
+      "mode": "chengdu",
+      "width": 390,
+      "before": 386,
+      "after": 356,
+      "saved": 30
+    },
+    {
+      "mode": "chengdu",
+      "width": 320,
+      "before": 386,
+      "after": 356,
+      "saved": 30
+    }
+  ],
+  "limitations": [
+    "Long hands and unusually many kong actions retain named native horizontal scrolling.",
+    "Persistent empty dock space remains by design to prevent turn-driven movement.",
+    "Visible focus outline remains for keyboard accessibility; it is not the removed decorative hand frame.",
+    "Interrupted HMR runs and the baseline cross-case v-memo fixture error are excluded. Final runs used frozen files and case-only fixture remounts; same-case transitions never remount."
+  ]
+}

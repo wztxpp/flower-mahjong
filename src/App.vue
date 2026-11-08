@@ -6,6 +6,8 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
 import ChengduTable from './ChengduTable.vue';
+import RoundSummary from './RoundSummary.vue';
+import { roundSummaryView } from './round-summary.js';
 import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
 import CharacterArtwork from './CharacterArtwork.vue';
 import PortraitMotionSettings from './PortraitMotionSettings.vue';
@@ -148,6 +150,9 @@ const showInvite = ref(false);
 // 下一局弹层只保存本页展示意图，不是开局请求，也不写房间设置或浏览器存储。
 // The next-round dialog holds page-local presentation intent, never a start request or saved room/browser setting.
 const showNextRound = ref(false);
+// 摘要只从已显示的终局权威字段读取；不从隐藏手牌、历史或当前占座人重算。
+// Read only the displayed terminal authority, never reconstruct concealed hands, history or occupant totals.
+const finishedRoundSummary = computed(() => roundSummaryView(state.value));
 const activeModal = computed(() => showRules.value ? 'rules' : showInvite.value ? 'invite' : showNextRound.value ? 'next-round' : null);
 let pendingNextRoundKey = null;
 const promptedRoundKeys = new Set();
@@ -3123,8 +3128,8 @@ onUnmounted(() => {
             aria-label="我的手牌与操作"
             :aria-description="postHu ? `胡后固定。${statusDetail}` : statusDetail"
           >
-            <!-- 重复标题与胡后说明不占一整行；手牌区保留可访问说明，轮到本人时在听牌行明确显示。
-                 Repeated titles/frozen-hand guidance no longer reserve a row; the hand keeps an accessible description and its turn badge lives beside waits. -->
+            <!-- 无重复手牌标题；私有说明保留在区域描述，公开牌仍有独立固定槽。
+                 No repeated hand title: private guidance stays in the region description, with a separate stable public-card slot. -->
             <div class="own-public-cards stable-scroll" tabindex="0" role="region" aria-label="我的胡牌、碰杠与萝卜，可滚动查看">
               <div v-if="!isLegacy" class="own-win-pile win-pile" aria-label="我的胡牌区"
                 ><span class="public-zone-label"
@@ -3180,28 +3185,9 @@ onUnmounted(() => {
                     :tile="tile"
                     small /></div></div
             ></div>
-            <!-- key 同时包含下标和牌种；点击仅选牌，disabled 同时检查胡后锁定、网络状态和服务端可出牌列表。 / Keys combine index and tile type; clicks only select, while disabled checks post-win locking, connectivity and server discard options. -->
-            <div class="hand-scroll character-hand-table stable-scroll" tabindex="0" role="region" aria-label="我的手牌，可横向滚动"
-              ><div class="my-hand"
-                ><MahjongTile
-                  v-for="(tile, tileIndex) in hand"
-                  :key="`${tileIndex}-${tile}`"
-                  :tile="tile"
-                  interactive
-                  :selected="selectedHandIndex === tileIndex && selectedTile === tile"
-                  :class="{ 'drawn-tile': game.drawnTile != null && tileIndex === hand.length - 1 }"
-                  :disabled="
-                    postHu ||
-                    busy ||
-                    offline ||
-                    syncing ||
-                    !discardOptions.some((action) => action.tile === tile)
-                  "
-                  @click="selectHand(tile, tileIndex)" /></div
-            ></div>
-            <!-- 接牌槽贴近手牌和动作；空闲时仍保留同高，不再占用共享萝卜前方的空白。
-                 Keep the fixed claim slot beside hand/actions rather than reserving empty space before the shared radishes. -->
-            <!-- 接牌阶段展示等待回应的牌；抢杠仍是待确认动作，不能显示成已成立副露。 / During claims, show the tile awaiting responses; a rob-kong proposal is not yet a completed meld. -->
+            <!-- 常驻无框动作带排在手牌上方；本人回合只控制提示，接炮/抢杠仍直接读取合法动作。
+                 The permanent frameless dock precedes the hand; own turn controls only the prompt, never claim/rob-kong actions. -->
+            <div class="hand-action-dock">
             <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
             <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
               ><MahjongTile :tile="game.claim.tile" small /><span
@@ -3211,20 +3197,12 @@ onUnmounted(() => {
               ></div
             >
             </div>
-            <!-- 听牌信息来自私有快照；动作按钮提交完整服务端动作，出牌按钮才构造选中的 discard。 / Wait tiles come from the private snapshot; action buttons submit server actions, while discard constructs the selected discard request. -->
-            <div class="hand-bottom-row"
-              ><div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
-                ><span v-if="isMyTurn" class="my-turn-pill">轮到你了</span
-                ><template v-if="game.waitTiles?.length"
-                  ><span class="wait-label">听牌</span
-                  ><span>{{ game.waitTiles.map(tileLabel).join('、') }}</span></template
-                ><span
-                  v-if="!isLatest && (me.huLockActive || game.huLockActive)"
-                  class="locked-waits"
-                  :title="`原听口：${(game.lockedWaits || []).map(tileLabel).join('、')}`"
-                  >本轮再胡需换尽原听口</span
-                ></div
-              ><div class="action-row" data-stable-scroll tabindex="0" role="region" aria-label="合法动作，可横向滚动"
+              <div class="hand-turn-prompt" role="status" aria-live="polite">
+                <span v-if="isMyTurn" class="my-turn-pill">轮到你了</span>
+              </div>
+              <!-- 每个按钮仍提交原服务端动作；出牌继续等待本人选牌确认。
+                   Each button submits its original server action; discard still requires an explicit tile selection. -->
+              <div class="action-row" data-stable-scroll tabindex="0" role="region" aria-label="合法动作，可横向滚动"
                 ><button
                   v-for="(action, actionIndex) in gangActions"
                   :key="`gang-${actionIndex}`"
@@ -3256,13 +3234,39 @@ onUnmounted(() => {
                   >{{ canDiscard ? `打出 ${tileLabel(selectedTile)}` : '选牌后打出'
                   }}<Icon name="arrow" :size="17" /></button
                 ><span v-if="busy" class="action-working"><span class="spinner"></span>同步中</span
+                ></div>
+            </div>
+            <!-- key 同时包含下标和牌种；点击仅选牌，disabled 同时检查胡后锁定、网络状态和服务端可出牌列表。 / Keys combine index and tile type; clicks only select, while disabled checks post-win locking, connectivity and server discard options. -->
+            <div class="hand-scroll character-hand-table stable-scroll" tabindex="0" role="region" aria-label="我的手牌，可横向滚动"
+              ><div class="my-hand"
+                ><MahjongTile
+                  v-for="(tile, tileIndex) in hand"
+                  :key="`${tileIndex}-${tile}`"
+                  :tile="tile"
+                  interactive
+                  :selected="selectedHandIndex === tileIndex && selectedTile === tile"
+                  :class="{ 'drawn-tile': game.drawnTile != null && tileIndex === hand.length - 1 }"
+                  :disabled="
+                    postHu ||
+                    busy ||
+                    offline ||
+                    syncing ||
+                    !discardOptions.some((action) => action.tile === tile)
+                  "
+                  @click="selectHand(tile, tileIndex)" /></div
+            ></div>
+            <!-- 听口留在手牌下方的固定窄行；长内容可滚动，不挤占右上方动作。
+                 Waits retain a slim fixed row below the hand; long text scrolls without crowding upper-right actions. -->
+            <div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
+                ><template v-if="game.waitTiles?.length"
+                  ><span class="wait-label">听牌</span
+                  ><span>{{ game.waitTiles.map(tileLabel).join('、') }}</span></template
                 ><span
-                  v-else-if="!legalActions.length && phase !== 'finished'"
-                  class="waiting-action"
-                  ><Icon name="clock" :size="15" />等待牌友</span
-                ></div
-              ></div
-            >
+                  v-if="!isLatest && (me.huLockActive || game.huLockActive)"
+                  class="locked-waits"
+                  :title="`原听口：${(game.lockedWaits || []).map(tileLabel).join('、')}`"
+                  >本轮再胡需换尽原听口</span
+                ></div>
             <!-- 私有诊断和上次结算共享固定视窗；保留原生 details，展开也不会推动手牌或立绘。
                  Private diagnostics and last settlement share a fixed viewport; native details can expand without moving cards or portraits. -->
             <div class="hand-feedback stable-scroll" tabindex="0" role="region" aria-label="我的胡牌判断与结算，可滚动查看">
@@ -3604,14 +3608,20 @@ onUnmounted(() => {
         <!-- 两个主选项只调用原开局/离桌流程；关闭即可继续查看桌面结算，不提供模式或参数编辑。
              Both primary choices use existing start/departure flows; closing reveals settlement without mode/settings editors. -->
         <template v-if="activeModal === 'next-round'">
-          <span class="eyebrow">本局已结束</span>
-          <h2 id="next-round-title">再来一局？</h2>
-          <p id="next-round-description">同桌继续沿用本桌玩法和累计积分。关闭弹框可查看本局结算。</p>
+          <header class="next-round-heading">
+            <span class="eyebrow">本局已结束</span>
+            <h2 id="next-round-title">本局结算</h2>
+            <p id="next-round-description">结束时手牌、胡牌与本局输赢</p>
+          </header>
+          <RoundSummary v-if="finishedRoundSummary" :summary="finishedRoundSummary" />
+          <p v-else class="next-round-missing" role="status">本局详细记录暂不可用。</p>
+          <div class="next-round-footer">
           <p v-if="nextRoundUnavailable" class="next-round-status" role="status">{{ nextRoundUnavailable }}</p>
           <p v-if="error" class="next-round-error" role="alert">{{ error }}</p>
           <div class="next-round-actions">
             <button v-if="isHost" class="button gold" :disabled="!!nextRoundUnavailable" @click="startNextRound">{{ busy ? '正在开局…' : '同桌再来一局' }}</button>
             <button class="button" :disabled="busy" @click="leaveFinishedTable">返回大厅</button>
+          </div>
           </div>
         </template>
         <template v-else-if="showRules && isChengduContext">
@@ -3622,7 +3632,7 @@ onUnmounted(() => {
             <section><h3>建房时选择</h3><p>首胡结束或血战到底、是否换三张、自摸加底或加番、4/5/6番封顶。选项在建房时保存，加入者不能改写。</p></section>
             <section><h3>准备与行牌</h3><p>开启换三张的局按顺时针、对家、逆时针循环，从顺时针开始；须选择同一花色三张。四家都定缺后开始逆时针摸打，必须先打缺门牌，不可吃牌。碰后先出一张，再能暗杠或补杠。</p></section>
             <section><h3>胡牌与结束</h3><p>支持一炮多响。胡过即退出本局；单人胡后由胡家下家摸，一炮多响由炮家摸。首胡模式处理完同一张牌的所有胡牌后结束，血战模式三家胡后结束。无人胡流局也查花猪、查叫、退杠。</p></section>
-            <section><h3>虚拟积分</h3><p>平胡1番，对对胡2番，七对、金钩钓、清一色3番；清一色叠加其他牌型加2番，每根加1番。4/5/6番封顶分别为8/16/32分。自摸加底在封顶后加1分，加番在封顶前加1番。暗杠每家2分、补杠每家1分、直杠向放杠者收2分。暗手不公开。</p></section>
+            <section><h3>虚拟积分</h3><p>平胡1番，对对胡2番，七对、金钩钓、清一色3番；清一色叠加其他牌型加2番，每根加1番。4/5/6番封顶分别为8/16/32分。自摸加底在封顶后加1分，加番在封顶前加1番。暗杠每家2分、补杠每家1分、直杠向放杠者收2分。行牌中暗手不公开。</p></section>
           </div>
           <button class="button primary modal-confirm" @click="showRules = false">了解，返回牌桌</button>
         </template>
@@ -3887,10 +3897,27 @@ onUnmounted(() => {
 <style scoped>
 /* 新样式仅限下一局弹层，不改牌桌的紧凑布局、原规则说明或邀请弹层。
    Scope new styles to next-round choices without changing compact tables or existing rules/invitations. */
-.next-round-dialog { overflow-y: auto; }
+.modal.next-round-dialog { width: min(100%, 760px); max-width: 760px; max-height: min(90svh, 900px); padding: 25px 28px 20px; overflow: hidden; }
+.next-round-heading { flex: none; padding-right: 28px; margin-bottom: 15px; }
+.next-round-dialog .next-round-heading h2 { margin: 7px 0 6px; font-size: 25px; }
+.next-round-heading .eyebrow { color: #6d624d; }
+.next-round-heading p { margin: 0; color: #6d624d; font-size: 12px; }
+.next-round-footer { flex: none; padding-top: 14px; }
+.next-round-footer p { margin: 0 0 8px; font-size: 12px; }
+.next-round-missing { color: #6d624d; padding-block: 24px; }
+.next-round-dialog .modal-close { min-width: 44px; min-height: 44px; top: 12px; right: 12px; }
+.next-round-dialog :deep(.round-summary) { flex: 1 1 auto; }
 .next-round-dialog p { line-height: 1.7; overflow-wrap: anywhere; }
 .next-round-status { color: #496252; }
 .next-round-error { color: #9b2929; }
-.next-round-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.next-round-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0; }
 .next-round-actions .button { min-height: 44px; flex: 1 1 160px; }
+@media (max-width: 600px) {
+  .modal.next-round-dialog { max-height: 92svh; padding: 20px 15px 16px; }
+  .next-round-dialog .next-round-heading h2 { font-size: 23px; }
+  .next-round-heading { margin-bottom: 12px; }
+  .next-round-heading p { font-size: 11px; }
+  .next-round-footer { padding-top: 12px; }
+  .next-round-actions .button { flex-basis: 120px; padding-inline: 12px; }
+}
 </style>

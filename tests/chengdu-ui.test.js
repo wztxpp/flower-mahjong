@@ -246,12 +246,40 @@ test('Chengdu footer preserves public-only claims and host finish controls', asy
       assert.ok(claim > footer);
       assert.doesNotMatch(html, /aria-label="我的手牌与操作"|aria-label="成都合法动作"/);
     } else {
-      assert.ok(claim > html.indexOf('aria-label="本人私有手牌"') && claim < html.indexOf('class="chengdu-action-bar'));
+      assert.ok(claim < html.indexOf('aria-label="本人私有手牌"') && claim < html.indexOf('class="chengdu-action-bar'));
+      assert.ok(claim > html.indexOf('class="hand-action-dock"'));
     }
     props.state.game.phase = 'finished'; props.state.game.claim = null; props.state.game.legalActions = [];
     props.canStart = !spectator;
     const finished = await render(scope);
     assert.ok(finished.indexOf('class="chengdu-finish"') > finished.indexOf('class="chengdu-table-footer"'));
     assert.equal(finished.includes('开始下一局</button>'), !spectator);
+  }
+});
+
+// 明确用他家currentSeat检查接炮/抢杠，准备阶段和已胡退出另验；不以本人回合包住整个动作带。
+// Explicit other-seat claim/rob-kong cases, preparation and retirement verify that own turn never gates the entire dock.
+test('Chengdu dock preserves all phases, answered claims, retirement and blocked buttons', async () => {
+  for (const stage of ['own', 'other', 'claim', 'robKong', 'answered', 'exchange', 'dingque', 'retired']) {
+    for (const blocked of [false, true]) {
+      const state = fixture(['claim', 'robKong', 'answered'].includes(stage) ? 'claim' : ['exchange', 'dingque'].includes(stage) ? stage : 'turn');
+      state.game.currentSeat = stage === 'own' ? 0 : 1;
+      state.game.legalActions = stage === 'own' ? [{ type: 'discard', tile: 0 }] : stage === 'claim'
+        ? [{ type: 'hu' }, { type: 'peng', tile: 0 }, { type: 'mingGang', tile: 0 }, { type: 'pass' }]
+        : stage === 'robKong' ? [{ type: 'hu' }, { type: 'pass' }]
+        : stage === 'exchange' ? [{ type: 'exchangeThree', tiles: [0, 0, 1] }]
+        : stage === 'dingque' ? ['bamboo', 'dots', 'characters'].map((suit) => ({ type: 'dingque', suit })) : [];
+      if (state.game.phase === 'claim') state.game.claim = { tile: 0, fromSeat: 1, source: stage === 'robKong' ? 'robKong' : 'discard', hasResponded: stage === 'answered' };
+      if (stage === 'retired') state.game.players[0].won = { source: 'discard', tile: 0, points: 2 };
+      const { scope, props, events } = setup(state); props.blocked = blocked;
+      const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+      const dock = html.slice(html.indexOf('class="hand-action-dock"'), html.indexOf('class="chengdu-hand character-hand-table'));
+      const buttons = [...dock.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
+      assert.equal(buttons.length, state.game.legalActions.length, `${stage}/${blocked}`);
+      assert.equal(dock.includes('轮到你了'), stage === 'own');
+      if (stage === 'robKong') assert.match(dock, /尝试补杠/);
+      if (blocked) assert.ok(buttons.every((button) => /\bdisabled\b/.test(button[1])));
+      assert.deepEqual(events, [], 'rendering never auto-submits a preparation or response');
+    }
   }
 });

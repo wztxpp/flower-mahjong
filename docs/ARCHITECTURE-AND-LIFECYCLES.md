@@ -202,3 +202,12 @@ Schema three derives locks from committed history instead of persisting a duplic
 
 终局选择只是本页展示层。当前房间/单局的现场结束转换登记一次待提示，在音画与规则/邀请弹层完成后打开；首次恢复已结束快照不登记。已提示的局键只留本页内存，不增加存储键、不持久化房间字段、不消费历史或创建游戏。换局/换桌清理待提示与打开状态；原 start CAS、模式固定配置、参与者归档与累计账本完全沿用。真正开局只能来自房主明确点击，观众与其他玩家不能因此开局。
 Next-round choices are page-local presentation. A live finish queues one prompt after media and existing modals; initial restoration of a finished snapshot does not. Prompted game keys stay only in page memory, without storage keys, room fields, history consumption or game creation. Game/navigation changes cancel pending/open state; original start CAS, fixed mode settings, participant archives and ledgers remain unchanged. Only explicit host action starts a game.
+
+
+无框手牌动作带沿用上述局内槽位生命周期：桌面/手机各有固定容量，空闲、轮到本人、他家回应与准备阶段只换内容，不重挂手牌。`hand-action-dock` 在真实DOM中先于手牌，提示不拥有动作权限，七角色CSS变量不进入服务端快照、存储或声音/计时流程。详细展示合同见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
+The frameless hand dock follows the same game-long slot lifetime: fixed desktop/phone capacity, with idle, own-turn, other-seat responses and preparation changing contents rather than remounting hands. The dock precedes tiles in real DOM order; its prompt owns no action authority, and role CSS variables never enter server snapshots, storage, audio or timers. See the stable-layout contract.
+
+## 终局摘要公开生命周期 / Finished-summary disclosure lifetime
+
+用户明确要求结束后查看每家最终手牌，新 `game.roundSummary` 仅存在于权威 finished 响应。其所有牌区与统计都白名单只读，角色、替补、观战、重连看到同一公开结果；行牌中及下一局都无此字段。当前结束局仍在现有累计账本中只算一次，原参与者身份不被新座位覆盖。该投影不入持久化/历史、不重算分、不增加展示或开局动作。详细合同见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
+The explicitly requested final reveal exists only in authoritative finished responses. Allowlisted zones/statistics are public to every viewer after finish, absent while live or in a subsequent game. The existing ledger counts this game once under original participant identities. The projection is not persisted/archived and creates no scoring, presentation or start action; see the detailed contract.

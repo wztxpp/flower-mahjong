@@ -1,10 +1,16 @@
 // 可见诊断控件只调用同源iframe中的纯视图API；不控制浏览器或执行真实游戏动作。
 // Visible diagnostics call the same-origin frame's view API only, never browser automation or real game actions.
 import { writeStableTableReport, clearStableTableReport } from '../helpers/stable-table-report.js';
-import { STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES } from '../helpers/stable-table-fixtures.js';
+import { STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES, STABLE_TABLE_CHARACTERS } from '../helpers/stable-table-fixtures.js';
 const frame = document.querySelector('#fixture-frame');
 const caseInput = document.querySelector('#fixture-case');
 const widthInput = document.querySelector('#fixture-width');
+const heightInput = document.querySelector('#fixture-height');
+const characterInput = document.querySelector('#fixture-character');
+const characterLabels = ['小桃 · 粉', '清岚 · 紫', '晴禾 · 金黄', '地主 · 棕金', '老实人 · 青灰', '富婆 · 绿金', '女明星 · 蓝'];
+STABLE_TABLE_CHARACTERS.forEach((id, index) => {
+  const option = document.createElement('option'); option.value = id; option.textContent = characterLabels[index]; characterInput.append(option);
+});
 const stageInput = document.querySelector('#fixture-stage');
 const status = document.querySelector('#fixture-status');
 const output = document.querySelector('#fixture-json');
@@ -27,8 +33,10 @@ async function ready() {
 }
 async function configure() {
   frame.width = widthInput.value;
+  frame.height = heightInput.value;
+  frame.style.height = `${heightInput.value}px`;
   const api = await ready();
-  await api.set(caseInput.value, stageInput.value);
+  await api.set(caseInput.value, stageInput.value, characterInput.value);
   return api;
 }
 // 每次操作保留可见状态/错误；审计期间禁用并发诊断输入，不能用重叠运行制造假基线。
@@ -43,6 +51,13 @@ async function run(label, operation) {
   finally { controls.forEach((control) => { control.disabled = false; }); }
 }
 document.querySelector('#fixture-apply').onclick = () => run('切换纯视图…', async () => { const api = await configure(); return api.measure(); });
+for (const action of ['load', 'finish', 'open', 'close', 'poll', 'new-game']) {
+  document.querySelector(`#fixture-summary-${action}`).onclick = () => run('切换本地终局总览…', async () => {
+    const api = await ready();
+    return api.summary(action, document.querySelector('#fixture-summary-variant').value);
+  });
+}
+document.querySelector('#fixture-summary-measure').onclick = () => run('量测终局弹层…', async () => (await ready()).summaryMeasure());
 document.querySelector('#fixture-measure').onclick = () => run('量测当前DOM…', async () => (await ready()).measure());
 document.querySelector('#fixture-audit').onclick = () => run('正在审计当前玩法/尺寸…', async () => (await ready()).audit());
 document.querySelector('#fixture-accessibility').onclick = () => run('量测内部滚动可达性…', async () => (await ready()).reachability());

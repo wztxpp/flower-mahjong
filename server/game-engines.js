@@ -22,6 +22,7 @@ import * as chengdu from '../shared/chengdu-engine.js';
 import { shuffledChengduWall } from './chengdu-shuffle.js';
 import { nameEvent } from '../shared/event-names.js';
 import { validateChengduRoomSettings } from '../shared/chengdu-room-settings.js';
+import { flowerRoundSummary, chengduRoundSummary } from './round-summary.js';
 
 // 适配层错误带稳定 HTTP 映射，但不依赖路由模块，避免 API 与规则互相循环导入。
 // Adapter errors carry a stable HTTP mapping without importing the router or creating an API/rules dependency cycle.
@@ -164,6 +165,7 @@ function flowerEngine(engine, schemaVersion) {
     formerParticipantView: (game, seat) => flowerFormerParticipantView(engine, game, seat),
     spectatorView: flowerSpectatorGameView,
     publicEvents: flowerPublicEvents,
+    roundSummary: (game) => flowerRoundSummary(game, schemaVersion),
     parseAction: parseFlowerAction,
     // 能力按适配器登记，而非“所有 schema 3 都是花麻将”；冻结旧版绝不借用新版续进。
     // Register capabilities, never assume every schema three means Flower; frozen engines never borrow current continuation.
@@ -219,6 +221,7 @@ const CHENGDU_ENGINE = Object.freeze({
   view: chengdu.getPlayerView,
   spectatorView: chengdu.getSpectatorView,
   formerParticipantView: chengdu.getFormerParticipantView,
+  roundSummary: chengduRoundSummary,
   publicEvents: (game, seat, names) => chengdu.publicEvents(game, seat).map((event) => nameEvent(event, names || [])),
   // 请求结构错误统一返回400；真实动作是否合法仍由 applyAction 返回422。
   // Malformed requests return 400; applyAction retains 422 for well-formed but illegal decisions.

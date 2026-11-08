@@ -1,0 +1,1789 @@
+{
+  "scope": "Isolated synthetic UI using actual Vue templates and CSS, no live rooms or network actions",
+  "measurements": [
+    {
+      "caseId": "flower-3",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 481.609375,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-3",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 516.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 481.609375,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 516.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 481.609375,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 516.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 481.609375,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 516.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 481.609375,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 516.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 453.21875,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 488.109375,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "width": 1280,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 38,
+        "width": 760,
+        "height": 684,
+        "bottom": 722,
+        "right": 1012.5
+      },
+      "bodyHeight": 453.21875,
+      "footerBottom": 701,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "width": 390,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 347,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 361
+      },
+      "bodyHeight": 488.109375,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 28,
+        "width": 760,
+        "height": 504,
+        "bottom": 532,
+        "right": 1012.5
+      },
+      "bodyHeight": 301.609375,
+      "footerBottom": 511,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 347,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 361
+      },
+      "bodyHeight": 332.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 28,
+        "width": 760,
+        "height": 504,
+        "bottom": 532,
+        "right": 1012.5
+      },
+      "bodyHeight": 301.609375,
+      "footerBottom": 511,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 390,
+      "height": 560,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 347,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 361
+      },
+      "bodyHeight": 332.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-3",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 462.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 462.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 462.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-1",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 462.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-legacy-2",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 3,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 462.5,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 488.109375,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "width": 320,
+      "height": 760,
+      "variant": "normal",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 30.40625,
+        "width": 277,
+        "height": 699.1875,
+        "bottom": 729.59375,
+        "right": 291
+      },
+      "bodyHeight": 488.109375,
+      "footerBottom": 712.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 16.796875,
+        "width": 277,
+        "height": 386.390625,
+        "bottom": 403.1875,
+        "right": 291
+      },
+      "bodyHeight": 149.703125,
+      "footerBottom": 386.1875,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "long",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 16.796875,
+        "width": 277,
+        "height": 386.390625,
+        "bottom": 403.1875,
+        "right": 291
+      },
+      "bodyHeight": 149.703125,
+      "footerBottom": 386.1875,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 28,
+        "width": 760,
+        "height": 504,
+        "bottom": 532,
+        "right": 1012.5
+      },
+      "bodyHeight": 301.609375,
+      "footerBottom": 511,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 390,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 347,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 361
+      },
+      "bodyHeight": 332.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 320,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 277,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 291
+      },
+      "bodyHeight": 278.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 1280,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 252.5,
+        "y": 28,
+        "width": 760,
+        "height": 504,
+        "bottom": 532,
+        "right": 1012.5
+      },
+      "bodyHeight": 301.609375,
+      "footerBottom": 511,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 390,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 347,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 361
+      },
+      "bodyHeight": 332.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 320,
+      "height": 560,
+      "variant": "missing",
+      "open": true,
+      "players": 4,
+      "dialog": {
+        "x": 14,
+        "y": 22.40625,
+        "width": 277,
+        "height": 515.1875,
+        "bottom": 537.59375,
+        "right": 291
+      },
+      "bodyHeight": 278.5,
+      "footerBottom": 520.59375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "flower-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "open": true,
+      "players": 0,
+      "dialog": {
+        "x": 14,
+        "y": 54.0625,
+        "width": 277,
+        "height": 311.875,
+        "bottom": 365.9375,
+        "right": 291
+      },
+      "footerBottom": 348.9375,
+      "horizontalOverflow": []
+    },
+    {
+      "caseId": "chengdu-4",
+      "width": 320,
+      "height": 420,
+      "variant": "absent",
+      "open": true,
+      "players": 0,
+      "dialog": {
+        "x": 14,
+        "y": 54.0625,
+        "width": 277,
+        "height": 311.875,
+        "bottom": 365.9375,
+        "right": 291
+      },
+      "footerBottom": 348.9375,
+      "horizontalOverflow": []
+    }
+  ],
+  "keyboard": [
+    {
+      "caseId": "flower-4",
+      "first": {
+        "inside": true,
+        "label": "关闭弹框，查看结算"
+      },
+      "last": {
+        "inside": true,
+        "text": "返回大厅"
+      },
+      "end": {
+        "lastSeat": "3",
+        "max": 711,
+        "scrollTop": 711
+      },
+      "restored": {
+        "closed": true,
+        "overflow": "",
+        "trigger": true
+      }
+    },
+    {
+      "caseId": "chengdu-4",
+      "first": {
+        "inside": true,
+        "label": "关闭弹框，查看结算"
+      },
+      "last": {
+        "inside": true,
+        "text": "返回大厅"
+      },
+      "end": {
+        "lastSeat": "3",
+        "max": 684,
+        "scrollTop": 684
+      },
+      "restored": {
+        "closed": true,
+        "overflow": "",
+        "trigger": true
+      }
+    }
+  ],
+  "lifecycle": [
+    {
+      "caseId": "flower-4",
+      "steps": [
+        {
+          "action": "close",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-flower-4-summary-0"
+        },
+        {
+          "action": "poll",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-flower-4-summary-0"
+        },
+        {
+          "action": "finish",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-flower-4-summary-1"
+        },
+        {
+          "action": "open",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-flower-4-summary-1"
+        },
+        {
+          "action": "poll",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-flower-4-summary-1"
+        },
+        {
+          "action": "new-game",
+          "open": false,
+          "phase": "playing",
+          "players": 0,
+          "gameId": "view-only-flower-4-summary-2"
+        }
+      ]
+    },
+    {
+      "caseId": "chengdu-4",
+      "steps": [
+        {
+          "action": "close",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-chengdu-4-summary-2"
+        },
+        {
+          "action": "poll",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-chengdu-4-summary-2"
+        },
+        {
+          "action": "finish",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-chengdu-4-summary-3"
+        },
+        {
+          "action": "open",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-chengdu-4-summary-3"
+        },
+        {
+          "action": "poll",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-chengdu-4-summary-3"
+        },
+        {
+          "action": "new-game",
+          "open": false,
+          "phase": "playing",
+          "players": 0,
+          "gameId": "view-only-chengdu-4-summary-4"
+        }
+      ]
+    },
+    {
+      "caseId": "flower-spectator",
+      "steps": [
+        {
+          "action": "close",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-flower-spectator-summary-4"
+        },
+        {
+          "action": "poll",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-flower-spectator-summary-4"
+        },
+        {
+          "action": "finish",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-flower-spectator-summary-5"
+        },
+        {
+          "action": "open",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-flower-spectator-summary-5"
+        },
+        {
+          "action": "poll",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-flower-spectator-summary-5"
+        },
+        {
+          "action": "new-game",
+          "open": false,
+          "phase": "playing",
+          "players": 0,
+          "gameId": "view-only-flower-spectator-summary-6"
+        }
+      ]
+    },
+    {
+      "caseId": "chengdu-spectator",
+      "steps": [
+        {
+          "action": "close",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-chengdu-spectator-summary-6"
+        },
+        {
+          "action": "poll",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-chengdu-spectator-summary-6"
+        },
+        {
+          "action": "finish",
+          "open": false,
+          "phase": "finished",
+          "players": 0,
+          "gameId": "view-only-chengdu-spectator-summary-7"
+        },
+        {
+          "action": "open",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-chengdu-spectator-summary-7"
+        },
+        {
+          "action": "poll",
+          "open": true,
+          "phase": "finished",
+          "players": 4,
+          "gameId": "view-only-chengdu-spectator-summary-7"
+        },
+        {
+          "action": "new-game",
+          "open": false,
+          "phase": "playing",
+          "players": 0,
+          "gameId": "view-only-chengdu-spectator-summary-8"
+        }
+      ]
+    }
+  ],
+  "narrowScoreCheck": [
+    {
+      "font": "14px",
+      "height": 19.59375,
+      "lineHeight": "19.6px",
+      "text": "24 次",
+      "width": 33.625
+    },
+    {
+      "font": "14px",
+      "height": 19.59375,
+      "lineHeight": "19.6px",
+      "text": "8 组",
+      "width": 33.640625
+    },
+    {
+      "font": "15px",
+      "height": 21,
+      "lineHeight": "21px",
+      "text": "+370368",
+      "width": 69.859375
+    },
+    {
+      "font": "14px",
+      "height": 19.59375,
+      "lineHeight": "19.6px",
+      "text": "+703701",
+      "width": 69.875
+    }
+  ],
+  "expandedLong": {
+    "bodyHeight": 150,
+    "bodyScrollHeight": 1894,
+    "footerBottom": 386.1875,
+    "horizontal": 0,
+    "open": true,
+    "winCount": 24
+  },
+  "endLong": {
+    "bodyBottom": 276.1875,
+    "lastBottom": 276.859375,
+    "lastSeat": "3",
+    "max": 1744,
+    "scrollTop": 1744
+  },
+  "stableLayout": {
+    "passed": true,
+    "reports": [
+      {
+        "caseId": "flower-3",
+        "viewport": {
+          "width": 1280,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 1785.52,
+            "bottom": 1897.52,
+            "left": 92,
+            "right": 901,
+            "width": 809,
+            "height": 112,
+            "documentTop": 1785.52
+          },
+          "handPanel": {
+            "top": 1601.52,
+            "bottom": 2021.52,
+            "left": 80,
+            "right": 913,
+            "width": 833,
+            "height": 420,
+            "documentTop": 1601.52
+          },
+          "table": {
+            "top": 652.27,
+            "bottom": 2710.23,
+            "left": 44,
+            "right": 949,
+            "width": 905,
+            "height": 2057.97,
+            "documentTop": 652.27
+          },
+          "action": {
+            "top": 1717.52,
+            "bottom": 1785.52,
+            "left": 367,
+            "right": 901,
+            "width": 534,
+            "height": 68,
+            "documentTop": 1717.52
+          },
+          "claim": {
+            "top": 1719.52,
+            "bottom": 1779.52,
+            "left": 92,
+            "right": 359,
+            "width": 267,
+            "height": 60,
+            "documentTop": 1719.52
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 62,
+                "after": 62,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 62,
+                "after": 62,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 62,
+                "after": 62,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 124,
+                "after": 124,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 124,
+                "after": 124,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 124,
+                "after": 124,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 11
+        }
+      },
+      {
+        "caseId": "flower-4",
+        "viewport": {
+          "width": 1280,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 1993.52,
+            "bottom": 2105.52,
+            "left": 92,
+            "right": 901,
+            "width": 809,
+            "height": 112,
+            "documentTop": 1993.52
+          },
+          "handPanel": {
+            "top": 1809.52,
+            "bottom": 2229.52,
+            "left": 80,
+            "right": 913,
+            "width": 833,
+            "height": 420,
+            "documentTop": 1809.52
+          },
+          "table": {
+            "top": 652.27,
+            "bottom": 2918.23,
+            "left": 44,
+            "right": 949,
+            "width": 905,
+            "height": 2265.97,
+            "documentTop": 652.27
+          },
+          "action": {
+            "top": 1925.52,
+            "bottom": 1993.52,
+            "left": 367,
+            "right": 901,
+            "width": 534,
+            "height": 68,
+            "documentTop": 1925.52
+          },
+          "claim": {
+            "top": 1927.52,
+            "bottom": 1987.52,
+            "left": 92,
+            "right": 359,
+            "width": 267,
+            "height": 60,
+            "documentTop": 1927.52
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 16,
+                "after": 16,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 16,
+                "after": 16,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 16,
+                "after": 16,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:3",
+                "before": 16,
+                "after": 16,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 32,
+                "after": 32,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 32,
+                "after": 32,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 32,
+                "after": 32,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:3",
+                "before": 32,
+                "after": 32,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 14
+        }
+      },
+      {
+        "caseId": "chengdu-4",
+        "viewport": {
+          "width": 1280,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 2670.91,
+            "bottom": 2782.91,
+            "left": 68,
+            "right": 1197,
+            "width": 1129,
+            "height": 112,
+            "documentTop": 2670.91
+          },
+          "handPanel": {
+            "top": 2520.91,
+            "bottom": 2836.91,
+            "left": 56,
+            "right": 1209,
+            "width": 1153,
+            "height": 316,
+            "documentTop": 2520.91
+          },
+          "table": {
+            "top": 556.41,
+            "bottom": 3322.63,
+            "left": 44,
+            "right": 1221,
+            "width": 1177,
+            "height": 2766.22,
+            "documentTop": 556.41
+          },
+          "action": {
+            "top": 2602.91,
+            "bottom": 2670.91,
+            "left": 449.66,
+            "right": 1197,
+            "width": 747.34,
+            "height": 68,
+            "documentTop": 2602.91
+          },
+          "claim": {
+            "top": 2600.91,
+            "bottom": 2664.91,
+            "left": 68,
+            "right": 441.66,
+            "width": 373.66,
+            "height": 64,
+            "documentTop": 2600.91
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".chengdu-river:0",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:1",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:2",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:3",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".chengdu-river:0",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:1",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:2",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:3",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 6
+        }
+      },
+      {
+        "caseId": "flower-3",
+        "viewport": {
+          "width": 390,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 1779.91,
+            "bottom": 1879.91,
+            "left": 38,
+            "right": 337,
+            "width": 299,
+            "height": 100,
+            "documentTop": 1779.91
+          },
+          "handPanel": {
+            "top": 1547.91,
+            "bottom": 2049.91,
+            "left": 26,
+            "right": 349,
+            "width": 323,
+            "height": 502,
+            "documentTop": 1547.91
+          },
+          "table": {
+            "top": 745.91,
+            "bottom": 2518.94,
+            "left": 10,
+            "right": 365,
+            "width": 355,
+            "height": 1773.03,
+            "documentTop": 745.91
+          },
+          "action": {
+            "top": 1711.91,
+            "bottom": 1779.91,
+            "left": 38,
+            "right": 337,
+            "width": 299,
+            "height": 68,
+            "documentTop": 1711.91
+          },
+          "claim": {
+            "top": 1647.91,
+            "bottom": 1707.91,
+            "left": 38,
+            "right": 321,
+            "width": 283,
+            "height": 60,
+            "documentTop": 1647.91
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 299,
+                "after": 299,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 299,
+                "after": 299,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 299,
+                "after": 299,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 599,
+                "after": 599,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 599,
+                "after": 599,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 599,
+                "after": 599,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 12
+        }
+      },
+      {
+        "caseId": "flower-4",
+        "viewport": {
+          "width": 390,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 2456.91,
+            "bottom": 2556.91,
+            "left": 38,
+            "right": 337,
+            "width": 299,
+            "height": 100,
+            "documentTop": 2456.91
+          },
+          "handPanel": {
+            "top": 2224.91,
+            "bottom": 2726.91,
+            "left": 26,
+            "right": 349,
+            "width": 323,
+            "height": 502,
+            "documentTop": 2224.91
+          },
+          "table": {
+            "top": 745.91,
+            "bottom": 3195.94,
+            "left": 10,
+            "right": 365,
+            "width": 355,
+            "height": 2450.03,
+            "documentTop": 745.91
+          },
+          "action": {
+            "top": 2388.91,
+            "bottom": 2456.91,
+            "left": 38,
+            "right": 337,
+            "width": 299,
+            "height": 68,
+            "documentTop": 2388.91
+          },
+          "claim": {
+            "top": 2324.91,
+            "bottom": 2384.91,
+            "left": 38,
+            "right": 321,
+            "width": 283,
+            "height": 60,
+            "documentTop": 2324.91
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 115,
+                "after": 115,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 115,
+                "after": 115,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 115,
+                "after": 115,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:3",
+                "before": 115,
+                "after": 115,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".discard-tiles:0",
+                "before": 230,
+                "after": 230,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:1",
+                "before": 230,
+                "after": 230,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:2",
+                "before": 230,
+                "after": 230,
+                "passed": true
+              },
+              {
+                "key": ".discard-tiles:3",
+                "before": 230,
+                "after": 230,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 15
+        }
+      },
+      {
+        "caseId": "chengdu-4",
+        "viewport": {
+          "width": 390,
+          "height": 760
+        },
+        "passed": true,
+        "resourcesReady": true,
+        "baseline": {
+          "hand": {
+            "top": 3296.72,
+            "bottom": 3408.72,
+            "left": 34,
+            "right": 341,
+            "width": 307,
+            "height": 112,
+            "documentTop": 3296.72
+          },
+          "handPanel": {
+            "top": 3106.72,
+            "bottom": 3462.72,
+            "left": 22,
+            "right": 353,
+            "width": 331,
+            "height": 356,
+            "documentTop": 3106.72
+          },
+          "table": {
+            "top": 686.72,
+            "bottom": 3759.44,
+            "left": 10,
+            "right": 365,
+            "width": 355,
+            "height": 3072.72,
+            "documentTop": 686.72
+          },
+          "action": {
+            "top": 3228.72,
+            "bottom": 3296.72,
+            "left": 34,
+            "right": 341,
+            "width": 307,
+            "height": 68,
+            "documentTop": 3228.72
+          },
+          "claim": {
+            "top": 3164.72,
+            "bottom": 3228.72,
+            "left": 34,
+            "right": 325,
+            "width": 291,
+            "height": 64,
+            "documentTop": 3164.72
+          }
+        },
+        "transitions": 13,
+        "stageIds": [
+          "one-row",
+          "many-rows",
+          "river-growth",
+          "discard",
+          "claim",
+          "public-growth",
+          "history-growth",
+          "long-names",
+          "hint",
+          "busy",
+          "syncing",
+          "offline",
+          "restored"
+        ],
+        "maxGeometryDelta": 0,
+        "scrollRetention": [
+          {
+            "position": "middle",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".chengdu-river:0",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:1",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:2",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:3",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              }
+            ]
+          },
+          {
+            "position": "bottom",
+            "passed": true,
+            "preserved": [
+              {
+                "key": ".chengdu-river:0",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:1",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:2",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              },
+              {
+                "key": ".chengdu-river:3",
+                "before": 0,
+                "after": 0,
+                "passed": true
+              }
+            ]
+          }
+        ],
+        "reachability": {
+          "passed": true,
+          "windowScrollUnchanged": true,
+          "regions": 7
+        }
+      }
+    ]
+  },
+  "excludedExploratoryRuns": [
+    "Initial preview server cached an older isolation transform; restarted before final checks.",
+    "App hot-reload while editing reset the synthetic session; final keyboard checks repeated after source freeze."
+  ],
+  "limitations": [
+    "Synthetic desktop Chromium viewports, not physical mobile devices.",
+    "No live room actions, real-player sessions, deployment, Safari or Firefox verification.",
+    "Long summaries intentionally use one vertical scroll region; 320px stacks the two main buttons."
+  ],
+  "sourceSha256": {
+    "src/App.vue": "4951bf97e4a5db12893bcce54bb0c6e8d271ac164d79f1c6a124101e8f16484f",
+    "src/RoundSummary.vue": "6c51493c7ba7c16db745e021937d97b5fb9bc6e83bd4ba88b10c316f17145164",
+    "src/round-summary.js": "32699cbddb158ac391a85d291d58ff97f3d5393bc7502da48e9ffc6efea808a7",
+    "src/ChengduTable.vue": "b86ea3726f20003be756cb3cd79ee53aa9c4d48e7c93214eea1bcbdbf4c20dd4",
+    "src/style.css": "533029a6bf28c055e8755282695ab5fb3723d9c0afd467c5bb38e5a157fbc5b6",
+    "src/tabletop.css": "62effc155818d103fde4abd26587ae8f50aebb981938a5d544568a69ab528d66",
+    "server/round-summary.js": "a932fb098e1d4b90e7ce6f06bea8a8c58eb44e04b37b51886bbfccd6c9fa308a",
+    "server/api.js": "35c81317ecc7505dd1cc34f1d7e5fb596053df92d6087502a615d144a3eadf2d",
+    "server/game-engines.js": "0c56d58a9415824b6db57a5594a7315a4c5a717f899e32048f6a525b59ca6d4c",
+    "server/history.js": "ee31833ed5df62cd355c81afd75e7d60d5a21613be7bd734ace455a48c49bb48"
+  }
+}

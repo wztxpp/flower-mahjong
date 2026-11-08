@@ -3221,3 +3221,144 @@ html { scrollbar-gutter: stable; }
      Give finish text and its icon one row, moving controls below instead of squeezing text into a narrow phone column. */
   .table-info-footer > .finished-banner > span:first-of-type { flex: 1 1 calc(100% - 38px); }
 }
+
+/* 无框手牌与右上动作：后置覆盖旧木框/桌毡托架，不改变牌面、角色原图或大厅身份卡。
+   Frameless hands and upper-right actions: final overrides remove the old rack without changing tile/art assets or lobby identity cards.
+   颜色只由既有七个character枚举类选择；未匹配角色使用中性兜底，不接受服务端自由CSS值。
+   Existing seven-character enum classes select colors; unmatched roles use a neutral fallback, never arbitrary server CSS values. */
+.own-player-area {
+  --hand-accent: #e4d5ae;
+  --hand-accent-light: #f7edd3;
+  --hand-accent-ink: #493e28;
+  --hand-action-surface: #303d32;
+}
+.own-player-area.character-sweet { --hand-accent: #edb8cd; --hand-accent-light: #f9e1eb; --hand-accent-ink: #593346; --hand-action-surface: #42323d; }
+.own-player-area.character-elegant { --hand-accent: #cdb8df; --hand-accent-light: #eee2f7; --hand-accent-ink: #4b355d; --hand-action-surface: #3d324b; }
+.own-player-area.character-sunny { --hand-accent: #eed18f; --hand-accent-light: #fff0c7; --hand-accent-ink: #59451f; --hand-action-surface: #46412b; }
+.own-player-area.character-landlord { --hand-accent: #dcb18d; --hand-accent-light: #f8dfc9; --hand-accent-ink: #563823; --hand-action-surface: #44372d; }
+.own-player-area.character-honest { --hand-accent: #b8cecc; --hand-accent-light: #e4eeed; --hand-accent-ink: #344b49; --hand-action-surface: #304140; }
+.own-player-area.character-wealthy { --hand-accent: #d7cc9f; --hand-accent-light: #f4edce; --hand-accent-ink: #354738; --hand-action-surface: #2f483b; }
+.own-player-area.character-star { --hand-accent: #b7ccdf; --hand-accent-light: #e1edf6; --hand-accent-ink: #2b435b; --hand-action-surface: #293d4b; }
+.own-player-area .character-hand-table {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+/* 宽度取实际牌组，左右auto边距仅吸收正的剩余空间；牌组过长时起点仍为零。
+   Size the actual tile list and let auto margins absorb positive space only; an overflowing list still starts at zero. */
+.own-player-area .my-hand {
+  width: max-content;
+  min-width: 0;
+  margin-inline: auto;
+  justify-content: flex-start;
+}
+.own-player-area .hand-scroll {
+  height: 112px;
+  margin: 0;
+  padding: 18px 4px 12px;
+}
+/* 空闲时同样保留92px动作带；左侧接牌、右侧提示与动作共用普通流，不盖住任何牌。
+   Keep the92px dock even while idle: left claims and right prompt/actions share normal flow and never overlay tiles. */
+.own-player-area .hand-action-dock {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-rows: 24px 68px;
+  height: 92px;
+  min-width: 0;
+  column-gap: 8px;
+  align-items: start;
+}
+.hand-action-dock > .claim-slot,
+.hand-action-dock > .chengdu-claim-slot {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  align-self: end;
+  margin: 0 0 6px;
+}
+.hand-action-dock .claim-strip,
+.hand-action-dock .chengdu-claim {
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  justify-content: flex-start;
+}
+.hand-action-dock > .hand-turn-prompt {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  padding-inline: 4px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.hand-action-dock .my-turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  color: var(--hand-accent-light);
+  font-size: 12px;
+  font-weight: 600;
+}
+.hand-action-dock .my-turn-pill::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--hand-accent);
+}
+.own-player-area .hand-action-dock > .action-row,
+.own-player-area .hand-action-dock > .chengdu-action-bar {
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: 0;
+  align-items: center;
+}
+/* 所有动作保持44px触控下限与原生焦点；主题只区分主要/次要动作，不计算合法性。
+   Preserve44px touch targets and native focus for every action; theme distinguishes emphasis, never legality. */
+.own-player-area .hand-action-dock .button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--hand-accent);
+  border-radius: 10px;
+  color: var(--hand-accent-light);
+  background: var(--hand-action-surface);
+  box-shadow: 0 2px 5px #071b1833;
+  white-space: nowrap;
+}
+.own-player-area .hand-action-dock .button:is(.primary, .hu-button, .gold) {
+  color: var(--hand-accent-ink);
+  background: linear-gradient(160deg, var(--hand-accent-light), var(--hand-accent));
+  border-color: var(--hand-accent-light);
+}
+.own-player-area .hand-action-dock .button:hover:not(:disabled) { filter: brightness(1.08); }
+.own-player-area .hand-action-dock .button:focus-visible {
+  outline: 3px solid var(--hand-accent-light);
+  outline-offset: 2px;
+}
+.own-player-area > .hand-panel > .waits-info { height: 28px; margin-top: 0; }
+@media (max-width: 640px) {
+  /* 手机回应需要整行；上方64px同时容纳原尺寸接牌和短回合提示，无内容时也不塌缩。
+     Phone responses need the full row;64px above holds original-size claims and the short turn prompt without idle collapse. */
+  .own-player-area .hand-action-dock {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 64px 68px;
+    height: 132px;
+  }
+  .hand-action-dock > .claim-slot,
+  .hand-action-dock > .chengdu-claim-slot { grid-row: 1; align-self: start; margin: 0; }
+  .hand-action-dock > .hand-turn-prompt { align-self: end; }
+  .own-player-area .hand-action-dock > .action-row,
+  .own-player-area .hand-action-dock > .chengdu-action-bar { grid-column: 1 / -1; }
+  .own-player-area .hand-scroll { height: 100px; padding-bottom: 8px; }
+}
+@media (max-width: 360px) {
+  /* 44px最小宽度让短回应更易点按；仅收长按钮侧边留白，普通四回应无需横滚。
+     Keep44px minimum widths for short responses; trim only longer-button side padding so four normal responses fit. */
+  .own-player-area .hand-action-dock > .action-row .button { padding-inline: 9px; }
+}
+/* 次要动作悬停仍沿用角色底色，覆盖早期木色hover皮肤；禁用态仍不产生可点击反馈。
+   Secondary-action hover retains its role color over the earlier wood skin; disabled controls receive no active feedback. */
+.own-player-area .hand-action-dock .button.secondary:hover:not(:disabled) { background: var(--hand-action-surface); }

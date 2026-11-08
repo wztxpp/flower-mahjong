@@ -217,3 +217,10 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 - 胡后锁手牌 / post-hu held-hand lock：补碰及已有杠加张只能消耗本次摸入同牌；只保证听口相同不足以证明未换牌。合法暗杠与未胡者补杠仍按原条件。
 
 - `showNextRound` / `activeModal`：下一局选择弹层与当前唯一模态内容，仅浏览器临时展示状态；不是 `start` 动作、开局参数或玩家准备状态。 / Page-local next-round choices and the single active modal, not a start action, settings snapshot or player-ready state.
+
+- `hand-action-dock` / 手牌上方动作带：常驻、无框、普通流布局容器，包含接牌上下文、回合提示和原合法动作；不是固定到屏幕的悬浮层，也不是本人回合的权限判断。 / Persistent frameless normal-flow container for claim context, turn prompt and original legal actions; neither a viewport overlay nor an own-turn permission gate.
+- `hand-turn-prompt` / 回合提示槽：仅提示当前本人回合的具名状态，不控制接炮/抢杠/准备动作可见性。`--hand-accent` 等为七角色枚举选择的本地CSS变量，不是协议字段。 / Status slot for own-turn guidance, never a claim/rob-kong/preparation visibility gate. Hand palette variables are enum-selected local CSS, not protocol fields.
+
+- `roundSummary`：服务端确认终局后公开的只读摘要，不是原引擎状态或历史存档。`finalHand` 是实际剩余手牌；`wins[].inHand` 表示胡牌引用是否已包含在该手牌中，不能再次拼牌。 / A server-finished-only public projection, not state/archive; finalHand is the actual remaining hand and inHand prevents duplicating winning references.
+- `roundScore` / `tableScore`：本局权威净分 / 本桌原参与者身份匹配的累计；当前局只计一次，未知旧累计为null，不按昵称或新座位继承。 / Authoritative game net / identity-matched table total, counting this game once, unknown as null and never inherited by nickname or replacement seat.
+- `dragons.status` / `pointsPerOpponent`：真实终局神龙结算的可用状态 / 向每位他家收取的金额，不是本席净神龙收入。旧花麻将缺明细为unavailable，成都为notApplicable。 / Actual dragon-record availability / amount charged per opponent, not net profit; unavailable for missing legacy details, notApplicable for Chengdu.

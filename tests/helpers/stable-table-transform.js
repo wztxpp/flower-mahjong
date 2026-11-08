@@ -42,7 +42,20 @@ export function transformStableTableApp(source) {
       selectedTile.value = null;
       selectedHandIndex.value = null;
       await nextTick();
-    }
-  });\nonUnmounted(() => { characterAudio.dispose(); delete window.__stableTableFixture; });\n`;
+    },
+    async openSummary() { openNextRound(); await nextTick(); },
+    async closeSummary() { closeModal(); await nextTick(); },
+    async pollSummary() { state.value = { ...state.value, revision: state.value.revision + 1 }; await nextTick(); },
+    getSummaryState() { return { open: showNextRound.value, phase: state.value?.phase, gameId: game.value?.id, busy: busy.value }; }
+  });
+  // 原挂载被隔离后仅注册真正的键盘处理器，卸载成对清理；不恢复任何联网生命周期。
+  // Register only the real keyboard handler after isolating mounted hooks; remove it without restoring network lifecycles.
+  window.addEventListener('keydown', onKey);
+  onUnmounted(() => {
+    window.removeEventListener('keydown', onKey);
+    document.body.style.overflow = '';
+    characterAudio.dispose();
+    delete window.__stableTableFixture;
+  });\n`;
   return source.slice(0, script.loc.start.offset) + content + source.slice(script.loc.end.offset);
 }

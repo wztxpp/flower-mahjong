@@ -134,3 +134,8 @@ The production entry uses separate schema two/rules/runtime identifiers and fixe
 
 `canDeclareKong`在听口试算前限制已胡者只能用当前摸牌补/加杠，暗杠路径不变。`hasSelfDiscardHuLock`逆扫本人事件到最近实际摸牌；`getAllowedHuWaits`和旧窗口白名单都检查，结构听口计算不受影响。结算对精确匹配的已接受旧回应保留窄例外，仍验牌型，见[完整边界](FLOWER-HAND-LOCK-CORRECTION.md)。
 Post-hu upgrades require the current draw before wait simulation. The history-based self-discard check guards new/saved claims without altering structural waits; a narrow exact-claim exception honors accepted old responses while still checking shape.
+
+## 终局摊牌只读投影 / Read-only final reveal
+
+本次用户要求的终局手牌、胡数、神龙和输赢由 `server/round-summary.js` 读取，三代花麻将及成都规则引擎不改。花麻将手牌与胡牌区分开，成都自摸胡牌仍在手中；v1/v2没有可靠神龙组数记录时显示未知，不重算。既有 `getPlayerView` 隐私不放宽，只有服务器确认 finished 后的新摘要公开最终牌区。见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
+The requested summary is read-only server projection, leaving all engines untouched. Flower hands and win references remain separate; Chengdu self-draw tiles stay in hand. Missing legacy dragon counts remain unknown. Existing private views stay unchanged; only the new authoritative-finish summary discloses final zones.

@@ -196,3 +196,8 @@ The mode boundary describes Chengdu integration: API keeps auth/CAS/characters/s
 
 `roomSeatCharacters` 只派生合法唯一公开角色；旧局参与者按凭证沿用旧局映射，替补者用自己的占座角色。`saveSeatCharacters` 只在已有 join/leave/start 写入候选里固定兼容结果；没有额外读取迁移或新 CAS。创建/加入用 `assignSeatCharacter` 选择未占用角色，开局只复制，旧引擎、规则、牌区、历史与身份权限不变。完整兼容合同见 [七角色](SEVEN-CHARACTERS.md)。
 `roomSeatCharacters` derives valid unique public roles, matching existing participants by credentials to the game map and replacements to their own occupancy. `saveSeatCharacters` freezes compatibility results only inside existing join/leave/start candidates, with no read migration or extra CAS. Create/join chooses unused roles; start only copies. Engines, rules, tiles, history and authorization stay unchanged. See the [character contract](SEVEN-CHARACTERS.md).
+
+## 终局摘要白名单 / Finished-round summary allowlist
+
+用户明确要求终局展示每家手牌；新增 `game.roundSummary` 只在服务端真实 `phase:finished` 时构造。`server/round-summary.js` 由引擎注册表分发，`history.roundSummaryForRoom` 加入本局原参与者名字和同身份累计；旧手牌/观战/回应投影不改，新局不带旧摘要。只读已记 huCount、score、牌区与实际神龙结算，不从终局牌面重算。完整字段、缺记录兼容和测试见 [终局摘要](FINISHED-ROUND-SUMMARY.md)。
+The requested final reveal uses a separate finished-only allowlist. Registry dispatch selects the projection; history adds original participant names and identity-matched totals. Old private views stay intact and new games omit the old summary. Read recorded counts, scores, zones and dragon settlements without rescoring; see the contract and tests.
