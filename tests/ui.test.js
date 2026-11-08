@@ -2198,7 +2198,7 @@ test("schema 3 renders one central shared pool and never repeats flip provenance
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
   assert.equal(
-    (html.match(/aria-labelledby="shared-radish-title"/g) || []).length,
+    (html.match(/aria-label="全桌共享萝卜，共 8 张，可滚动查看"/g) || []).length,
     1,
   );
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
@@ -2230,7 +2230,9 @@ test("schema 3 empty pool and first table hu are explicit, with no personal firs
   let html = await render(scope);
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
-  assert.match(html, /首胡才翻萝卜：6 张基础 \+ 0 张已成杠累计/);
+  assert.match(html, /aria-label="全桌共享萝卜，共 0 张，可滚动查看"/);
+  assert.match(html, />首胡待翻</);
+  assert.match(html, /aria-description="首胡翻六张基础萝卜/);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   state.game.sharedRadishes = [0, 1, 2, 3, 4, 5];
@@ -2599,7 +2601,7 @@ test("schema 2 preserves its personal pool, repeat-hu restriction, scoring and r
   assert.match(html, /本轮再胡需换尽原听口/);
   assert.doesNotMatch(
     html,
-    /aria-labelledby="shared-radish-title"|六张加 3 番|神龙留到局末，只结一次/,
+    /aria-label="全桌共享萝卜|六张加 3 番|神龙留到局末，只结一次/,
   );
   assert.match(
     scope.scoreSummary({
@@ -3348,7 +3350,10 @@ test("pre-first-win kong radishes show only pending count, not imaginary reveale
   // 核对渲染结果或源码结构；正则/字符串是匹配条件，不是一次真实浏览器操作。
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
   assert.match(html, /首胡待翻 \+5 张杠萝卜/);
-  assert.match(html, /6 张基础 \+ 5 张已成杠累计/);
+  assert.match(html, /aria-label="全桌共享萝卜，共 0 张，可滚动查看"/);
+  const pool = html.match(/<section class="shared-radish-pool"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(pool);
+  assert.equal((pool.match(/aria-label="\d+[条筒]"/g) || []).length, 0, 'pending radishes are not revealed tiles');
   assert.doesNotMatch(html, /每杠添 1 张；全桌第一次胡牌添 6 张/);
 });
 // 场景：庄家标记独立于房主，跟随服务端庄家信息
@@ -5767,7 +5772,8 @@ for (const viewerSeat of [0, 1, 2]) {
         columns.forEach((column, index) => {
           const seat = expectedSeats[index];
           assert.match(column[2], new RegExp(`data-discard-index="${seat}"`));
-          assert.ok(column[2].includes(index === 1 ? "我的牌河" : `牌友${seat + 1}的牌河`));
+          assert.ok(column[2].includes(`aria-label="${scope.seatLabel(seat)}的牌河，可滚动查看全部记录"`));
+          assert.doesNotMatch(column[2], /class="discard-label"|\d+ 条记录/);
         });
       }
       assert.deepEqual(state.game, before.game);
@@ -6529,7 +6535,7 @@ test('App routes Chengdu schema two to its own table without Flower compatibilit
   const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
   assert.match(html, /class="portrait-motion-settings"/);
   assert.doesNotMatch(html, /<canvas|character-artwork-background/);
-  assert.match(html, /aria-label="成都麻将牌桌"/); assert.match(html, /定缺万/); assert.match(html, /你的手牌/);
+  assert.match(html, /aria-label="成都麻将牌桌"/); assert.match(html, /定缺万/); assert.match(html, /aria-label="我的手牌与操作"/);
   assert.doesNotMatch(html, /本桌保留 v0|胡后自动打出|萝卜|神龙|大单吊/);
 });
 
@@ -6958,5 +6964,491 @@ test('integrated Flower spectator footer retains public claims without private l
   const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
   assert.ok(html.indexOf('class="claim-slot stable-scroll"') > html.indexOf('class="table-info-footer'));
   assert.doesNotMatch(html, /SELF_DISCARD_LOCK|下次自己摸牌前不能胡这张牌|我的手牌与操作|class="action-row"/);
+  scope.resetRoomContext();
+});
+
+// 下一局弹层测试只使用合成裁剪视图与模拟请求；不改规则、不连接真实牌桌。
+// Next-round dialog tests use synthetic filtered snapshots and mocked requests, never live tables or rule edits.
+function nextRoundFixture(mode = 'flower', phase = 'finished') {
+  const state = startFixture('finished');
+  state.phase = phase;
+  state.game.id = 'next-round-dialog-game';
+  state.game.phase = phase === 'finished' ? 'finished' : 'turn';
+  state.settings = { playerCount: 3, deckCount: 2, dragonStartCount: 6, autoDiscardAfterHu: false, bigSingleReadyPoints: 0 };
+  if (mode === 'chengdu') {
+    state.gameMode = 'chengdu';
+    state.rulesVersion = 2;
+    state.settings = { playerCount: 4, dingque: true, endCondition: 'bloodBattle', exchangeThree: false, selfDraw: 'addBase', fanCap: 4 };
+    state.seats = Array.from({ length: 4 }, (_, seat) => ({ seat, name: `合成${seat + 1}`, connected: true }));
+    state.game = { id: 'next-round-dialog-game', gameMode: 'chengdu', schemaVersion: 2, revision: 0,
+      mySeat: 0, phase: phase === 'finished' ? 'finished' : 'turn', dealerSeat: 0, currentSeat: 0, wallCount: 0,
+      rules: state.settings, players: state.seats.map((player) => ({ seat: player.seat, handCount: 13, score: 0, melds: [], won: null,
+        ...(player.seat === 0 ? { hand: [18, 19, 20] } : {}) })), legalActions: [], history: [], discards: [] };
+  }
+  return state;
+}
+
+for (const mode of ['flower', 'chengdu']) {
+  test(`next-round dialog ${mode}: live finish opens once, reload stays closed, and manual reopening is harmless`, async () => {
+    const scope = setup(nextRoundFixture(mode, 'playing'));
+    globalThis.fetch = () => assert.fail('opening a dialog must not make a request');
+    await settle();
+    scope.state.value.phase = 'finished';
+    scope.state.value.game.phase = 'finished';
+    await settle();
+    assert.equal(scope.showNextRound.value, true);
+    const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
+    const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+    assert.match(dialog, /role="dialog"/);
+    assert.match(dialog, /aria-labelledby="next-round-title"/);
+    assert.match(dialog, /aria-describedby="next-round-description"/);
+    assert.match(dialog, /同桌再来一局/);
+    assert.match(dialog, /返回大厅/);
+    assert.doesNotMatch(dialog, /<input|<select|查看结算<\/button>/);
+    scope.closeModal();
+    await settle();
+    scope.state.value = { ...scope.state.value, revision: scope.state.value.revision + 1 };
+    await settle();
+    assert.equal(scope.showNextRound.value, false);
+    scope.openNextRound();
+    await settle();
+    assert.equal(scope.showNextRound.value, true);
+    scope.resetRoomContext();
+    scope.session.value = credential();
+    scope.state.value = nextRoundFixture(mode);
+    await settle();
+    assert.equal(scope.showNextRound.value, false, 're-entry into a finished room is not a new finish');
+    scope.resetRoomContext();
+    const fresh = setup(nextRoundFixture(mode));
+    await settle();
+    assert.equal(fresh.showNextRound.value, false, 'a refreshed page does not auto-prompt an existing finish');
+    fresh.resetRoomContext();
+  });
+
+  test(`next-round dialog ${mode}: host starts once with saved choices and closes only after the new game arrives`, async () => {
+    const state = nextRoundFixture(mode);
+    const scope = setup(state);
+    await settle();
+    scope.openNextRound();
+    const requests = [];
+    let release;
+    globalThis.fetch = (url, options) => {
+      requests.push({ url, body: JSON.parse(options.body) });
+      return new Promise(resolve => { release = resolve; });
+    };
+    const pending = scope.startNextRound();
+    await settle();
+    await scope.startNextRound();
+    scope.closeModal();
+    await scope.leaveFinishedTable();
+    assert.equal(requests.length, 1);
+    assert.match(requests[0].url, /\/start$/);
+    assert.deepEqual(requests[0].body.options, {});
+    assert.equal(scope.showNextRound.value, true, 'in-flight outcome stays visible');
+    assert.equal(scope.busy.value, true);
+    const next = nextRoundFixture(mode, 'playing');
+    next.game.id = 'next-round-dialog-new-game';
+    next.revision++;
+    release(response({ state: next }));
+    await pending;
+    await settle();
+    assert.equal(scope.showNextRound.value, false);
+    assert.equal(scope.phase.value, 'playing');
+    assert.deepEqual(scope.state.value.settings, state.settings);
+    scope.resetRoomContext();
+  });
+}
+
+// 非房主/观众没有开局入口；满员、断线、同步、音画与旧金额守卫同样约束弹层处理器。
+// Non-hosts/viewers gain no start control; occupancy, offline, sync, media and legacy-amount guards also protect handlers.
+test('next-round dialog respects player, spectator and existing start restrictions', async () => {
+  const scope = setup(nextRoundFixture());
+  await settle();
+  scope.openNextRound();
+  globalThis.fetch = () => assert.fail('blocked starts must not request');
+  for (const role of ['player', 'spectator']) {
+    scope.state.value.you = role === 'player' ? 1 : null;
+    scope.state.value.viewerRole = role;
+    await settle();
+    scope.openNextRound();
+    await scope.startNextRound();
+    const html = await render(scope);
+    const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+    assert.doesNotMatch(dialog, /同桌再来一局<\/button>/);
+    assert.match(dialog, /等待房主/);
+    scope.closeModal();
+  }
+  scope.state.value.you = 0;
+  scope.state.value.viewerRole = 'player';
+  scope.openNextRound();
+  for (const key of ['busy', 'offline', 'syncing', 'localPresentationBusy']) {
+    scope[key].value = true;
+    assert.ok(scope.nextRoundUnavailable.value);
+    await scope.startNextRound();
+    scope[key].value = false;
+  }
+  scope.state.value.seats[2].detached = true;
+  assert.match(scope.nextRoundUnavailable.value, /所有玩家落座/);
+  await scope.startNextRound();
+  scope.state.value.seats[2] = null;
+  await scope.startNextRound();
+  scope.state.value.seats[2] = { seat: 2, name: '合成3', connected: true };
+  scope.state.value.settings = { autoDiscardAfterHu: false };
+  scope.bigSingleReadyPoints.value = -1;
+  assert.match(scope.nextRoundUnavailable.value, /喜钱金额/);
+  await scope.startNextRound();
+  scope.resetRoomContext();
+});
+
+test('next-round dialog defers behind existing modals and media, never prompts spectators, and cancels stale pending finishes', async () => {
+  const scope = setup(nextRoundFixture('flower', 'playing'));
+  await settle();
+  scope.showRules.value = true;
+  scope.localPresentationBusy.value = true;
+  scope.state.value.phase = 'finished';
+  scope.state.value.game.phase = 'finished';
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  scope.showRules.value = false;
+  scope.showInvite.value = true;
+  scope.localPresentationBusy.value = false;
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  scope.showInvite.value = false;
+  await settle();
+  assert.equal(scope.showNextRound.value, true);
+  assert.equal((await render(scope)).match(/role="dialog"/g).length, 1);
+  scope.closeModal();
+  scope.state.value = nextRoundFixture('flower', 'playing');
+  scope.state.value.game.id = 'next-pending-game';
+  await settle();
+  scope.showRules.value = true;
+  scope.state.value.phase = 'finished';
+  await settle();
+  scope.resetRoomContext();
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  scope.session.value = credential();
+  scope.state.value = nextRoundFixture('flower', 'playing');
+  scope.state.value.viewerRole = 'spectator';
+  await settle();
+  scope.state.value.phase = 'finished';
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  scope.resetRoomContext();
+});
+
+// 用可控DOM替身验证真实键盘处理器，包括禁用按钮过滤、全禁用、ESC和关闭后的焦点恢复。
+// Exercise the real keyboard handler with controlled DOM doubles: disabled filtering, all-disabled focus, Escape and restoration.
+test('next-round dialog traps keyboard focus, handles Escape and restores the triggering control', async () => {
+  const scope = setup(nextRoundFixture());
+  await settle();
+  const control = () => ({ isConnected: true, focus() { document.activeElement = this; } });
+  const trigger = control(), first = control(), last = control(), container = control();
+  let controls = [first, last];
+  scope.modalRef.value = { ...container,
+    querySelector: () => first,
+    querySelectorAll(selector) { assert.match(selector, /:not\(:disabled\)/); return controls; },
+    contains: (element) => element === scope.modalRef.value || controls.includes(element),
+  };
+  document.activeElement = trigger;
+  scope.openNextRound();
+  await settle();
+  assert.equal(document.activeElement, first);
+  let prevented = 0;
+  const key = (key, shiftKey = false) => scope.onKey({ key, shiftKey, preventDefault() { prevented++; } });
+  document.activeElement = last;
+  key('Tab');
+  assert.equal(document.activeElement, first);
+  key('Tab', true);
+  assert.equal(document.activeElement, last);
+  document.activeElement = trigger;
+  key('Tab');
+  assert.equal(document.activeElement, first);
+  scope.busy.value = true;
+  controls = [];
+  key('Tab');
+  assert.equal(document.activeElement, scope.modalRef.value);
+  key('Escape');
+  assert.equal(scope.showNextRound.value, true);
+  scope.busy.value = false;
+  // 开局失败后按钮恢复，但焦点仍可能在容器本身；真实DOM的contains(self)为true，仍须拦住双向Tab。
+  // A failed start restores controls while focus may stay on the container; real contains(self) is true, so both Tab directions must remain trapped.
+  controls = [first, last];
+  key('Tab', true);
+  assert.equal(document.activeElement, last);
+  document.activeElement = scope.modalRef.value;
+  key('Tab');
+  assert.equal(document.activeElement, first);
+  key('Escape');
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  assert.equal(document.activeElement, trigger);
+  assert.equal(document.body.style.overflow, '');
+  assert.equal(prevented, 8);
+  // 已失效的触发按钮不接收焦点；终局动作被禁用时回到常驻的下一局入口。
+  // Do not focus an obsolete trigger; disabled end-of-game actions fall back to the persistent next-round entry.
+  const fallback = control();
+  document.querySelector = () => fallback;
+  scope.openNextRound();
+  await settle();
+  trigger.disabled = true;
+  scope.closeModal();
+  await settle();
+  assert.equal(document.activeElement, fallback);
+  scope.resetRoomContext();
+});
+
+test('next-round dialog keeps failure feedback visible and returns to the lobby through normal departure', async () => {
+  const scope = setup(nextRoundFixture());
+  await settle();
+  scope.openNextRound();
+  let starts = 0;
+  globalThis.fetch = async (url) => {
+    assert.match(url, /\/start$/);
+    starts++;
+    return response({ error: '合成开局失败，请稍后再试。' }, 503);
+  };
+  await scope.startNextRound();
+  await settle();
+  assert.equal(starts, 1);
+  assert.equal(scope.showNextRound.value, true);
+  assert.equal(scope.busy.value, false);
+  assert.match(await render(scope), /class="next-round-error" role="alert">合成开局失败/);
+  const calls = [];
+  scope.playerToken.value = 'a'.repeat(64);
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    if (url.endsWith('/leave')) return response({ left: true, detached: false });
+    return response({ records: [], totals: [] });
+  };
+  await scope.leaveFinishedTable();
+  await settle();
+  assert.equal(calls.filter(url => url.endsWith('/leave')).length, 1);
+  assert.equal(calls.some(url => url.endsWith('/start')), false);
+  assert.equal(scope.inRoom.value, false);
+  assert.equal(scope.showNextRound.value, false);
+  assert.equal(window.location.search, '');
+});
+
+// 请求结果不明时沿用原同步流程；读到已开新局才撤下弹层，不能自动重复 start。
+// Uncertain starts use existing resynchronization; only an observed new game closes the dialog, never an automatic retry.
+test('next-round dialog reconciles an uncertain start without retry and retains unresolved connection feedback', async () => {
+  for (const recovered of [true, false]) {
+    const scope = setup(nextRoundFixture());
+    await settle();
+    scope.openNextRound();
+    let starts = 0, reads = 0;
+    globalThis.fetch = async (url) => {
+      if (url.endsWith('/start')) {
+        starts++;
+        throw new Error('synthetic lost response');
+      }
+      reads++;
+      if (!recovered) throw new Error('synthetic offline read');
+      const state = nextRoundFixture('flower', 'playing');
+      state.game.id = 'confirmed-new-game';
+      state.revision++;
+      return response({ state });
+    };
+    await scope.startNextRound();
+    await settle();
+    assert.equal(starts, 1);
+    assert.equal(reads, 1);
+    assert.equal(scope.showNextRound.value, !recovered);
+    if (!recovered) {
+      assert.equal(scope.offline.value, true);
+      assert.match(scope.nextRoundUnavailable.value, /连接中断/);
+      assert.match(await render(scope), /连接中断，操作结果需要同步确认/);
+      await scope.startNextRound();
+      assert.equal(starts, 1);
+    }
+    scope.resetRoomContext();
+  }
+});
+
+// 新局 ID 结束后可再次提示；换桌或离开会清掉旧待提示，不因迟到请求重新进入。
+// A distinct next game may prompt on finish; departure cancels old prompts and stale responses cannot re-enter the table.
+test('next-round dialog follows distinct game identities and ignores a late start after navigation', async () => {
+  const scope = setup(nextRoundFixture('flower', 'playing'));
+  await settle();
+  scope.state.value.phase = 'finished';
+  await settle();
+  assert.equal(scope.showNextRound.value, true);
+  const next = nextRoundFixture('flower', 'playing');
+  next.game.id = 'different-next-round';
+  scope.state.value = next;
+  await settle();
+  assert.equal(scope.showNextRound.value, false);
+  scope.state.value.phase = 'finished';
+  scope.state.value.game.phase = 'finished';
+  await settle();
+  assert.equal(scope.showNextRound.value, true);
+  let release;
+  globalThis.fetch = () => new Promise(resolve => { release = resolve; });
+  const pending = scope.startNextRound();
+  await settle();
+  scope.resetRoomContext();
+  release(response({ state: nextRoundFixture('flower', 'playing') }));
+  await pending;
+  await settle();
+  assert.equal(scope.inRoom.value, false);
+  assert.equal(scope.showNextRound.value, false);
+});
+
+// 完整快照会重新触发watch，即使只更新revision；观众手动打开的弹层不能被这种轮询撤掉。
+// Full snapshots retrigger the watcher even for revision-only updates; such polls must preserve a spectator's manual dialog.
+test('next-round dialog preserves spectator manual choices across full same-game polls without enabling starts or automatic prompts', async () => {
+  for (const mode of ['flower', 'chengdu']) {
+    const state = nextRoundFixture(mode, 'playing');
+    state.viewerRole = 'spectator';
+    state.you = null;
+    const scope = setup(state);
+    globalThis.fetch = () => assert.fail('spectator choices must never start a game');
+    await settle();
+    scope.state.value = { ...scope.state.value, phase: 'finished', game: { ...scope.state.value.game, phase: 'finished' } };
+    await settle();
+    assert.equal(scope.showNextRound.value, false, 'live spectator finishes do not auto-prompt');
+    scope.openNextRound();
+    await settle();
+    assert.equal(scope.showNextRound.value, true);
+    scope.state.value = { ...scope.state.value, revision: scope.state.value.revision + 1, game: { ...scope.state.value.game } };
+    await settle();
+    assert.equal(scope.showNextRound.value, true, 'full same-game polls preserve manual choices');
+    assert.equal(scope.canStart.value, false);
+    assert.match(scope.nextRoundUnavailable.value, /正在观战/);
+    await scope.startNextRound();
+    const html = await render(scope);
+    const dialog = html.match(/<section[^>]*aria-labelledby="next-round-title"[\s\S]*?<\/section>/)?.[0] || '';
+    assert.match(dialog, /返回大厅/);
+    assert.doesNotMatch(dialog, /同桌再来一局<\/button>/);
+    scope.closeModal();
+    scope.state.value = { ...scope.state.value, revision: scope.state.value.revision + 1 };
+    await settle();
+    assert.equal(scope.showNextRound.value, false, 'polls cannot reopen a dismissed spectator dialog');
+    scope.state.value = { ...scope.state.value, viewerRole: 'player', you: 0 };
+    await settle();
+    scope.openNextRound();
+    await settle();
+    assert.equal(scope.showNextRound.value, true);
+    scope.state.value = { ...scope.state.value, viewerRole: 'spectator', you: null };
+    await settle();
+    assert.equal(scope.showNextRound.value, false, 'an actual role change closes the previous role dialog');
+    scope.resetRoomContext();
+  }
+});
+
+// 用真实Vue渲染器调度原App watcher；宿主只模拟节点连接/禁用/焦点，不替代watch或nextTick。
+// Run the original App watcher with Vue's real renderer scheduler; the host models connection/disabled/focus only, never watch or nextTick.
+function mountNextRoundFocusHost(scope) {
+  const disabled = Vue.ref(false);
+  const nodes = {};
+  function connect(node, connected) {
+    node.isConnected = connected;
+    if (!connected && document.activeElement === node) document.activeElement = document.body;
+    for (const child of node.children) connect(child, connected);
+  }
+  function element(type) {
+    return Vue.markRaw({ type, parent: null, children: [], isConnected: false, disabled: false, focusCount: 0,
+      focus() {
+        this.focusCount++;
+        if (this.isConnected && !this.disabled) document.activeElement = this;
+      },
+      querySelector() { return this.children.find(child => child.type === 'button' && !child.disabled); },
+    });
+  }
+  const renderer = Vue.createRenderer({
+    createElement: element,
+    createText: () => element('text'),
+    createComment: () => element('comment'),
+    setText(node, text) { node.text = text; },
+    setElementText(node, text) { node.text = text; },
+    patchProp(node, key, previous, value) { node[key] = value; },
+    parentNode: node => node.parent,
+    nextSibling: node => node.parent?.children[node.parent.children.indexOf(node) + 1] || null,
+    insert(node, parent, anchor = null) {
+      const oldIndex = node.parent?.children.indexOf(node) ?? -1;
+      if (oldIndex >= 0) node.parent.children.splice(oldIndex, 1);
+      const index = anchor ? parent.children.indexOf(anchor) : -1;
+      parent.children.splice(index < 0 ? parent.children.length : index, 0, node);
+      node.parent = parent;
+      connect(node, parent.isConnected);
+    },
+    remove(node) {
+      const index = node.parent?.children.indexOf(node) ?? -1;
+      if (index >= 0) node.parent.children.splice(index, 1);
+      node.parent = null;
+      connect(node, false);
+    },
+  });
+  const root = element('root');
+  root.isConnected = true;
+  const app = renderer.createApp({
+    setup: () => () => Vue.h('main', [
+      scope.phase.value === 'finished' ? Vue.h('button', {
+        key: 'trigger', disabled: disabled.value, ref: node => { nodes.trigger = node; },
+      }, '下一局选择') : null,
+      Vue.h('button', { key: 'tool', ref: node => { nodes.tool = node; } }, '复制邀请'),
+      scope.activeModal.value ? Vue.h('section', {
+        key: scope.activeModal.value, ref: node => { scope.modalRef.value = node; },
+      }, [Vue.h('button', { ref: node => { nodes.modalButton = node; } }, '关闭')]) : null,
+    ]),
+  });
+  app.mount(root);
+  document.querySelector = () => [nodes.trigger, nodes.tool].find(node => node?.isConnected && !node.disabled);
+  return { disabled, nodes, unmount: () => app.unmount() };
+}
+
+for (const change of ['new game removes trigger', 'same tick disables trigger']) {
+  test(`next-round dialog restores focus after DOM commit when ${change}`, async () => {
+    const scope = setup(nextRoundFixture());
+    await settle();
+    const host = mountNextRoundFocusHost(scope);
+    const trigger = host.nodes.trigger;
+    trigger.focus();
+    scope.openNextRound();
+    await settle();
+    assert.equal(document.activeElement, host.nodes.modalButton);
+    if (change === 'new game removes trigger') {
+      const state = nextRoundFixture('flower', 'playing');
+      state.game.id = 'focus-after-new-game';
+      scope.state.value = state;
+    } else {
+      host.disabled.value = true;
+      scope.closeModal();
+    }
+    await settle();
+    assert.equal(scope.activeModal.value, null);
+    assert.equal(trigger.isConnected && !trigger.disabled, false);
+    assert.equal(trigger.focusCount, 1, 'the obsolete trigger must not receive even a transient restore');
+    assert.equal(document.activeElement, host.nodes.tool, 'persistent table tool receives focus after the DOM patch');
+    host.unmount();
+    scope.resetRoomContext();
+  });
+}
+
+// post watcher在关闭后的同一轮DOM提交中打开规则，旧关闭回调不能再抢回触发器或桌面工具。
+// A post-flush watcher opens rules during the close flush; the old closing callback must not steal focus from the new modal.
+test('next-round dialog closing restore yields to another modal taking over during the DOM flush', async () => {
+  const scope = setup(nextRoundFixture());
+  await settle();
+  const host = mountNextRoundFocusHost(scope);
+  const trigger = host.nodes.trigger;
+  trigger.focus();
+  scope.openNextRound();
+  await settle();
+  const stop = Vue.watch(scope.activeModal, (open) => {
+    if (open) return;
+    stop();
+    scope.showRules.value = true;
+  }, { flush: 'post' });
+  scope.closeModal();
+  await settle();
+  assert.equal(scope.activeModal.value, 'rules');
+  assert.equal(trigger.focusCount, 1, 'the closing dialog never steals focus back');
+  assert.equal(host.nodes.tool.focusCount, 0);
+  assert.equal(document.activeElement, host.nodes.modalButton);
+  assert.equal(document.body.style.overflow, 'hidden');
+  host.unmount();
   scope.resetRoomContext();
 });

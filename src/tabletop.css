@@ -3040,10 +3040,9 @@ html { scrollbar-gutter: stable; }
   padding: 4px;
 }
 .opponent-public-cards > :first-child { margin-top: 0; }
-/* 牌河从空牌到长局始终同高，滚动条预留宽度避免出现后重新换行；全部记录仍留在 DOM。
-   Rivers keep the same empty-to-long-game height and reserved scrollbar width, while every record remains in the DOM. */
+/* 移除牌河标题后仍保留原牌面容量；空牌到长局始终同高，全部记录和可访问座位名称不变。
+   Removing river headings keeps the original tile capacity, fixed empty-to-long-game height, every record and accessible seat names. */
 .table-surface .discard-group { min-height: 0; }
-.table-surface .discard-label { height: 34px; min-height: 34px; }
 .table-surface .discard-tiles {
   height: 156px;
   min-height: 156px;
@@ -3057,20 +3056,36 @@ html { scrollbar-gutter: stable; }
 .table-surface .game-status > div:first-child { min-width: 0; max-height: 100%; overflow: auto; align-items: safe center; }
 .claim-slot { height: 60px; margin-bottom: 8px; }
 .claim-slot .claim-strip { min-height: 56px; margin: 0; }
-/* 标题、十三张普通萝卜和说明行都计入固定容量；长局仍在原视窗内滚动。
-   Include the heading, thirteen ordinary radishes and note in the fixed capacity; longer games still scroll inside this viewport. */
-.table-surface .shared-radish-pool { height: 120px; }
-/* 本人区始终保留公开牌、状态、操作与说明的位置；内容多时在其自身视窗滚动。
-   Own public cards, status, actions and feedback retain their slots; larger content scrolls within its own viewport. */
-.own-player-area .hand-info-row {
-  height: 44px;
-  min-height: 44px;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  align-items: safe center;
+/* 去掉重复标题/教程和外框，保留十三张普通萝卜与动态来源的固定容量；超长池仍可滚动。
+   Remove repeated headings/tutorials and the box while reserving fixed capacity for thirteen ordinary radishes plus their changing source; longer pools still scroll. */
+.table-surface .shared-radish-pool {
+  height: 72px;
+  padding: 4px;
+  margin-bottom: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
-.own-player-area .hand-info-row > div:first-child { flex-shrink: 1; flex-wrap: wrap; }
-.own-player-area .hand-hint { min-width: 0; }
+.shared-radish-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  color: #c7d6b9;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.shared-radish-status .radish-increment { font-size: inherit; white-space: normal; }
+/* 本人区取消套在手牌托架外的第二层框；固定牌槽、反馈容量及原立绘样式不变。
+   Remove the second box around the hand rack; keep card/feedback slots and original portrait styles unchanged. */
+.table-surface:not(.lobby-table) > .own-player-area {
+  margin-top: 8px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.own-player-area > .hand-panel { padding: 10px 12px; }
 .own-player-area .own-public-cards {
   height: 80px;
   align-content: flex-start;
@@ -3099,12 +3114,9 @@ html { scrollbar-gutter: stable; }
   justify-content: flex-start;
 }
 .own-player-area .action-row > * { flex-shrink: 0; }
-/* 首尾元素平分剩余空间，让单按钮或整组动作居中；Vue条件注释不算元素。
-   溢出时flex自动外边距归零，保留flex-start的可达起点，不把首个动作推到负坐标。
-   First/last elements share spare space to center one action or the whole group; Vue conditional comments are not elements.
-   Flex auto margins resolve to zero on overflow, retaining the reachable flex-start origin instead of negative centering. */
+/* 只把剩余空间放在第一个动作之前，单按钮和整组按钮都靠右；溢出时自动外边距归零。
+   Put all spare space before the first action so one or many controls align right; auto margins become zero on overflow, preserving the reachable start. */
 .own-player-area .action-row > :first-child { margin-inline-start: auto; }
-.own-player-area .action-row > :last-child { margin-inline-end: auto; }
 /* 折叠诊断和普通结算同时出现时不应滚动；压缩旧组件外边距，并始终预留同样高度。
    窄屏额外容纳结算换行，展开或超长内容仍使用原生局部滚动，不推动手牌。
    Collapsed diagnostics plus normal settlement should fit: compact legacy spacing and always reserve the same height.
@@ -3120,10 +3132,8 @@ html { scrollbar-gutter: stable; }
   .table-surface:not(.lobby-table) .player-topline { height: 90px; }
   .table-surface:not(.lobby-table) .opponent-hand { height: 38px; min-height: 38px; }
   .opponent-public-cards { height: 98px; }
-  .table-surface .discard-label { height: 44px; min-height: 44px; }
   .table-surface .discard-tiles { height: 144px; min-height: 144px; max-height: 144px; }
-  .table-surface .shared-radish-pool { height: 152px; }
-  .own-player-area .hand-info-row { height: 52px; min-height: 52px; }
+  .table-surface .shared-radish-pool { height: 108px; }
   .own-player-area .own-public-cards { height: 80px; }
   .own-player-area .hand-bottom-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .own-player-area .waits-info { height: 28px; }

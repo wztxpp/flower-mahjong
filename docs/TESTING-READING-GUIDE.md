@@ -283,3 +283,18 @@ These three suites cover conserved hand-exchange counterexamples, real turns, ac
 
 联合分支在`ui.test.js`另将真实引擎视图送入已调整布局：非法胡后补/加杠只剩过，合法暗杠仍有按钮，自弃旧窗口在JSON恢复/重投影后不可胡，观众不能看到该私有诊断。参见[联合验收](TABLE-RULE-FEEDBACK-INTEGRATION.md)，不要将SSR当像素或联机实测。
 Integration UI cases feed real engine views into the revised layout, covering held-upgrade rejection, retained concealed-kong controls, restored self-discard locks and private diagnostic exclusion. See the report; SSR is not pixel or multiplayer acceptance.
+
+
+紧凑牌桌追加回归继续使用 `tests/stable-table-layout.test.js`、`tests/ui.test.js` 和 `tests/chengdu-ui.test.js`，不新增规则夹具。检查移除可见重复标题后仍有动态萝卜来源/待翻数、回合/缺门和可访问名称，两个动作行只有首元素auto起始边距，保留68px行高/44px目标/溢出起点。旧schema1/2、观战和终局断言继续运行。真实浏览器需另测320/390/1280px单/多/超长动作、十三张萝卜、普通公开牌、账本、十四阶段固定位置和手动回看；源码检查不代表这些像素已通过。
+Compact-table regressions continue in the existing stable-layout, UI and Chengdu UI suites without new rule fixtures. They verify dynamic radish provenance/pending counts, turn/missing suit and accessible names survive heading removal; both action bars have only a first-element auto start margin, preserving68px rows,44px targets and the overflow origin. Frozen schemas, spectators and finish checks remain. Real-browser QA separately measures320/390/1280px one/many/stress actions, thirteen radishes, ordinary public cards/ledgers, fourteen-stage geometry and retained browsing; source checks do not establish those pixel results.
+
+后续取消牌河标题/条数的回归将三种观察座位、旧schema1/2/3和终局断言转向精确 `aria-label` 与弃牌下标，保护归属而非已删除的可见标题。另检查花麻将156/144px、成都150px牌河容量不缩，成都手机gap/按钮内边距仅改变间隔，不碰字体和44px高度。
+Follow-up river-title/count regressions check exact accessible labels and discard indices across all three viewpoints, schemas1/2/3 and finish views, protecting ownership rather than removed visible headings. They also retain Flower156/144px and Chengdu150px river capacities and constrain phone action changes to gaps/inline padding, preserving fonts and44px height.
+
+## 下一局弹层交互 / Next-round dialog interaction
+
+`tests/ui.test.js` 的 `next-round dialog` 用例编译真实 App，覆盖两玩法现场结束/刷新/重连/手动重开、唯一模态层和音画等待、房主/玩家/观众及原开局守卫、单次提交/禁用、失败/未知结果同步、换局/离桌迟到响应、键盘焦点圈/ESC/恢复。请求使用合成响应，不连接生产。`tests/chengdu-ui.test.js` 继续覆盖成都页脚原开局权限。
+The named cases compile actual App code and cover both modes' finish/reload/re-entry/manual prompts, modal/media deferral, roles/start guards, single submission/disabled controls, failures/uncertain synchronization, stale responses and keyboard/Escape/focus restoration. Requests are synthetic, not production; existing Chengdu tests retain footer authorization coverage.
+
+`stable-table-preview` 的捕获层仍阻止 App 按钮提交，App 挂载事件仍被移除，因此该只读预览可验证自动弹层外观，但不能宣称通过真实浏览器的开局/离席/ESC/焦点交互。自动测试的模拟交互与浏览器视觉验收必须分别报告。
+The stable-table preview still blocks App button submission and removes App mount events. It supports automatic-dialog appearance checks, not claims of real-browser start/departure/Escape/focus validation. Report simulated interaction tests separately from visual browser checks.

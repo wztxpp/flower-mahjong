@@ -197,3 +197,8 @@ The main-table status/finish/identity footer is a DOM rearrangement only. Origin
 
 schema3从完整追加历史读取本人最近实际摸牌后的全部弃牌，不持久化第二份锁集合。所有真正弃牌（含手动点过与自动打出）建立限制，任何来源的本人实际摸牌解除之前的限制；碰、胡、抢杠申请和展示暂停不解除。读取旧窗口不回写；已接受回应在精确匹配本窗口时保留结算资格。缺失历史不从牌河猜测，详见[规则纠错](FLOWER-HAND-LOCK-CORRECTION.md)。
 Schema three derives locks from committed history instead of persisting a duplicate set. Every actual discard adds an identity, and every actual own draw clears prior identities; non-draw actions and presentation pauses do not. Saved-window reads never rewrite state, accepted responses retain narrow exact-window treatment, and absent history is never guessed from rivers.
+
+## 下一局选择弹层生命周期 / Next-round dialog lifetime
+
+终局选择只是本页展示层。当前房间/单局的现场结束转换登记一次待提示，在音画与规则/邀请弹层完成后打开；首次恢复已结束快照不登记。已提示的局键只留本页内存，不增加存储键、不持久化房间字段、不消费历史或创建游戏。换局/换桌清理待提示与打开状态；原 start CAS、模式固定配置、参与者归档与累计账本完全沿用。真正开局只能来自房主明确点击，观众与其他玩家不能因此开局。
+Next-round choices are page-local presentation. A live finish queues one prompt after media and existing modals; initial restoration of a finished snapshot does not. Prompted game keys stay only in page memory, without storage keys, room fields, history consumption or game creation. Game/navigation changes cancel pending/open state; original start CAS, fixed mode settings, participant archives and ledgers remain unchanged. Only explicit host action starts a game.

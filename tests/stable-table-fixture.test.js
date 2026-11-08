@@ -28,7 +28,10 @@ test('App isolation preserves the real template/styles and removes lifecycle/API
   const original = source('src/App.vue'); const transformed = transformStableTableApp(original);
   const before = parse(original).descriptor; const after = parse(transformed).descriptor;
   assert.equal(after.template.content, before.template.content);
-  assert.deepEqual(after.styles, before.styles);
+  // 预览替换脚本长度会移动样式的源码坐标；只比较真实内容和样式属性，不能把loc偏移当作CSS变更。
+  // Replacing the preview script shifts source locations; compare actual content/style attributes rather than treating loc offsets as CSS changes.
+  const styleContract = (styles) => styles.map(({ content, attrs, scoped }) => ({ content, attrs, scoped }));
+  assert.deepEqual(styleContract(after.styles), styleContract(before.styles));
   assert.doesNotMatch(after.scriptSetup.content, /onMounted\(\s*\(/);
   assert.match(after.scriptSetup.content, /async function api\([^)]*\) \{ throw new Error\("View-only fixture: API disabled"\); \}/);
   assert.match(after.scriptSetup.content, /window\.__stableTableFixture/);

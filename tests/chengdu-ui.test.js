@@ -143,7 +143,7 @@ test('spectators and finished replacements get no private hand or action control
     delete state.game.players[0].hand; state.game.legalActions = [];
     const { scope, events } = setup(state); scope.submit({ type: 'dingque', suit: 'bamboo' });
     const html = await render(scope);
-    assert.doesNotMatch(html, /id="chengdu-hand-title"|确认换三张|定缺条/);
+    assert.doesNotMatch(html, /aria-label="我的手牌与操作"|确认换三张|定缺条/);
     assert.deepEqual(events, []); assert.equal(scope.mySeat.value, null);
   }
 });
@@ -244,7 +244,7 @@ test('Chengdu footer preserves public-only claims and host finish controls', asy
     const claim = html.indexOf('class="chengdu-claim-slot stable-scroll"');
     if (spectator) {
       assert.ok(claim > footer);
-      assert.doesNotMatch(html, /id="chengdu-hand-title"|aria-label="成都合法动作"/);
+      assert.doesNotMatch(html, /aria-label="我的手牌与操作"|aria-label="成都合法动作"/);
     } else {
       assert.ok(claim > html.indexOf('aria-label="本人私有手牌"') && claim < html.indexOf('class="chengdu-action-bar'));
     }

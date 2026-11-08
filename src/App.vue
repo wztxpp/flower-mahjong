@@ -145,6 +145,12 @@ const error = ref('');
 const notice = ref('');
 const showRules = ref(false);
 const showInvite = ref(false);
+// 下一局弹层只保存本页展示意图，不是开局请求，也不写房间设置或浏览器存储。
+// The next-round dialog holds page-local presentation intent, never a start request or saved room/browser setting.
+const showNextRound = ref(false);
+const activeModal = computed(() => showRules.value ? 'rules' : showInvite.value ? 'invite' : showNextRound.value ? 'next-round' : null);
+let pendingNextRoundKey = null;
+const promptedRoundKeys = new Set();
 const selectedTile = ref(null);
 const selectedHandIndex = ref(null);
 const copyDone = ref(false);
@@ -311,6 +317,21 @@ const canConfigureStart = computed(() => !isChengduRoom.value && canStart.value 
 // 已固定的金额不受无关本地草稿影响；只有仍使用旧开局表单的房间需要校验草稿。
 // A fixed amount is independent of stale local drafts; validate drafts only for legacy editable rooms.
 const validStartOptions = computed(() => isChengduRoom.value || hasFixedReadyPoints.value || validReadyPoints.value);
+// 复用原开局守卫，并解释禁用原因；服务端仍独立检查房主、全员在座与版本，前端不代替验权。
+// Explain the existing start guards; the server still owns host, attached-occupancy and revision authorization.
+const nextRoundUnavailable = computed(() => {
+  if (isSpectator.value) return '你正在观战，等待房主开始下一局。';
+  if (!isHost.value) return '等待房主开始下一局，你可以留在本桌或返回大厅。';
+  if (!canStart.value) return '当前暂不能开始下一局。';
+  if (busy.value) return '正在开始下一局，请稍候。';
+  if (offline.value) return '连接中断，恢复同步后才能开始下一局。';
+  if (syncing.value) return '正在同步牌桌，请稍候。';
+  if (presentationWaiting.value) return '等待本机音画播放完成。';
+  if (filledSeats.value < tablePlayerCount.value || state.value?.seats?.some((person) => person?.detached))
+    return '等待所有玩家落座后再开始。';
+  if (!validStartOptions.value) return '请先关闭弹框，检查桌面上的下一局喜钱金额。';
+  return '';
+});
 // ?? 只为缺字段的旧数据补显示默认值，保留有效的 0；不能用 || 把“不收取”误改成 50。
 // ?? supplies a display default only for missing fields and preserves valid zero; || would incorrectly turn disabled payment into 50.
 const gameBigSingleReadyPoints = computed(
@@ -1561,6 +1582,8 @@ function resetRoomContext() {
   document.activeElement?.blur?.();
   showRules.value = false;
   showInvite.value = false;
+  showNextRound.value = false;
+  pendingNextRoundKey = null;
   document.body.style.overflow = '';
   connectingSession = null;
   state.value = null;
@@ -2060,19 +2083,82 @@ function newTable() {
   updateRoomUrl(null);
   return routeFromLocation();
 }
+// 只打开选择层，不自动开局；规则/邀请正在显示时保留待提示意图，不能叠加第二个模态层。
+// Open choices without starting a game; defer automatic prompts while rules/invitations own the single modal.
+function openNextRound() {
+  if (!inRoom.value || phase.value !== 'finished' || showRules.value || showInvite.value) return;
+  promptedRoundKeys.add(`${state.value.id}:${game.value?.id || 'legacy'}`);
+  pendingNextRoundKey = null;
+  showNextRound.value = true;
+}
+// 只消费当前房间/单局仍有效的待提示；音画未完时等待，既不清队列也不提交任何麻将动作。
+// Consume only a pending prompt for the current room/game; wait for media without clearing playback or submitting a move.
+function openPendingNextRound() {
+  if (!pendingNextRoundKey || isSpectator.value || presentationWaiting.value) return;
+  if (pendingNextRoundKey !== `${state.value?.id}:${game.value?.id || 'legacy'}`) return;
+  openNextRound();
+}
+// 只有本页已经看过的同一局现场结束才自动提示；首次加载已结束局、刷新和重新进房都保持结算可见。
+// Auto-prompt only a live finish of the same already displayed game; first loads, refreshes and room re-entry keep settlement visible.
+watch(
+  () => [state.value?.id, game.value?.id, phase.value, isSpectator.value],
+  ([roomId, gameId, currentPhase, spectator], [previousRoomId, previousGameId, previousPhase, previousSpectator]) => {
+    const sameGame = roomId && roomId === previousRoomId && gameId === previousGameId;
+    // 观众只禁止自动提示；手动打开的选择层应跨同局轮询保留，只有身份真的切换时才关闭。
+    // Spectators cannot auto-prompt, but manual choices survive same-game polling; close only when the viewer role actually changes.
+    if (!sameGame || currentPhase !== 'finished' || spectator !== previousSpectator) {
+      pendingNextRoundKey = null;
+      showNextRound.value = false;
+    }
+    const key = `${roomId}:${gameId || 'legacy'}`;
+    if (sameGame && currentPhase === 'finished' && previousPhase !== 'finished' && !spectator && !promptedRoundKeys.has(key))
+      pendingNextRoundKey = key;
+    openPendingNextRound();
+  },
+);
+watch(() => [showRules.value, showInvite.value, presentationWaiting.value], openPendingNextRound);
+// 开局处理中不关闭或离桌，避免把仍待确认的结果藏起来；失败留在层内，由原 mutate 同步/报错。
+// Keep uncertain starts visible while busy; failures stay in the dialog and use mutate's existing synchronization/error path.
+function closeModal() {
+  if (activeModal.value === 'next-round' && busy.value) return;
+  showRules.value = false;
+  showInvite.value = false;
+  showNextRound.value = false;
+}
+// 按钮和直接调用使用同一守卫，再委托现有 start 请求；不复制设置、修改牌局或自动重试。
+// Guard button/direct calls alike, then delegate to existing start transport without copying settings, editing games or retrying.
+function startNextRound() {
+  if (phase.value !== 'finished' || nextRoundUnavailable.value) return;
+  return mutate(null, true);
+}
+// 返回大厅明确走原离席路由；开局请求尚在途时暂不离开，防止丢失未知结果。
+// Return through the original departure route, waiting while a start request is in flight to retain its uncertain outcome.
+function leaveFinishedTable() {
+  if (phase.value !== 'finished' || busy.value) return;
+  return newTable();
+}
 // Escape 关闭弹窗；Tab 与 Shift+Tab 把焦点留在弹窗可操作控件内。
 // Escape closes dialogs; Tab and Shift+Tab trap focus within their interactive controls.
 function onKey(event) {
-  if (event.key === 'Escape') {
-    showRules.value = false;
-    showInvite.value = false;
+  if (event.key === 'Escape' && activeModal.value) {
+    event.preventDefault();
+    closeModal();
   }
-  if (event.key === 'Tab' && (showRules.value || showInvite.value)) {
-    const elements = modalRef.value?.querySelectorAll('button, input, [tabindex="0"]');
-    if (!elements?.length) return;
+  if (event.key === 'Tab' && activeModal.value) {
+    // 禁用按钮不属于焦点环；请求中全部禁用时聚焦容器，不能让 Tab 落回被遮挡的牌桌。
+    // Disabled controls are outside the focus loop; an all-disabled request focuses the dialog instead of the obscured table.
+    const elements = modalRef.value?.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex="0"]');
+    if (!elements?.length) {
+      event.preventDefault();
+      modalRef.value?.focus();
+      return;
+    }
     const first = elements[0],
       last = elements[elements.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
+    if (!modalRef.value?.contains(document.activeElement) || document.activeElement === modalRef.value) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    } else if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
     } else if (!event.shiftKey && document.activeElement === last) {
@@ -2084,23 +2170,33 @@ function onKey(event) {
 // watch 用于副作用：弹窗开关变化时管理焦点与滚动；nextTick 等待 Vue 真正更新 DOM。
 // watch runs side effects: manage focus and scrolling when dialogs change; nextTick waits for Vue’s DOM update.
 watch(
-  () => showRules.value || showInvite.value,
-  async (open) => {
+  activeModal,
+  async (open, previousModal) => {
     const currentEpoch = epoch;
     if (open) {
-      previousFocus = document.activeElement;
+      if (!previousModal) previousFocus = document.activeElement;
       document.body.style.overflow = 'hidden';
       await nextTick();
-      if (epoch === currentEpoch && (showRules.value || showInvite.value)) {
+      if (epoch === currentEpoch && activeModal.value === open) {
         if (showInvite.value && !showRules.value) {
           inviteInput.value?.focus();
           inviteInput.value?.select();
-        } else modalRef.value?.querySelector('button')?.focus();
+        } else modalRef.value?.querySelector('button:not(:disabled)')?.focus();
       }
     } else {
       document.body.style.overflow = '';
-      if (previousFocus?.isConnected !== false) previousFocus?.focus?.();
+      // 先取走本次关闭的焦点，再等DOM提交；新局可能在同一tick移除/禁用入口，另一个弹层也可能接管。
+      // Capture and clear this close's focus before the DOM flush: the same tick may remove/disable its trigger or open another modal.
+      const closingFocus = previousFocus;
       previousFocus = null;
+      await nextTick();
+      if (epoch !== currentEpoch || activeModal.value) return;
+      // 只恢复仍连接且可用的旧控件，否则回到当前选择入口或常驻桌面工具，不能聚焦即将消失的旧节点。
+      // Restore only a connected, enabled control; otherwise use current choices or persistent table tools, never an obsolete node.
+      const focusTarget = closingFocus && closingFocus !== document.body &&
+        closingFocus.isConnected !== false && !closingFocus.disabled
+        ? closingFocus : document.querySelector?.('[data-next-round-trigger]:not(:disabled), .room-heading button:not(:disabled)');
+      focusTarget?.focus?.();
     }
   },
 );
@@ -2746,7 +2842,7 @@ onUnmounted(() => {
         · 神龙 <template v-if="exponentialDragon">{{ tableDragonStartCount }}张起10分，每多一张翻倍</template>
         <template v-else>保留旧局6/7/8张分表</template>
       </p>
-      <ChengduTable v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" />
+      <ChengduTable v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" @next-round="openNextRound" />
       <div v-else class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
         <section class="table-column" :aria-label="`${tablePlayerCount}人麻将牌桌`">
           <div class="table-surface" :class="{ 'lobby-table': phase === 'lobby' }">
@@ -2944,14 +3040,23 @@ onUnmounted(() => {
                   >
                 </div>
               </div>
-              <!-- 新版只有一个全桌共享池；旧局的个人萝卜使用各自兼容区块。 / Newer games have one shared pool; older personal radishes remain in compatibility sections. -->
+              <!-- 共享池只展示牌与变化，不再重复玩法标题/教程；可访问名称仍说明归属、总数与首胡规则。
+                   Show shared tiles and changes without repeated headings/tutorials; the accessible name retains ownership/count and the description explains first-hu rules. -->
               <section
                 v-if="isLatest"
                 class="shared-radish-pool" data-stable-scroll tabindex="0"
-                aria-labelledby="shared-radish-title"
+                :aria-label="`全桌共享萝卜，共 ${sharedRadishes.length} 张，可滚动查看`"
+                aria-description="首胡翻六张基础萝卜，并加上已成杠累计。全桌共用这一池，后续胡牌不再加六张。"
               >
-                <div class="shared-radish-heading"
-                  ><h2 id="shared-radish-title">全桌共享萝卜</h2
+                <div class="radish-tiles shared-radish-tiles"
+                  ><MahjongTile
+                    v-for="(tile, tileIndex) in sharedRadishes"
+                    :key="tileIndex"
+                    :tile="tile"
+                    small
+                  /><span v-if="!sharedRadishes.length" class="public-zone-empty">首胡待翻</span></div
+                >
+                <div class="shared-radish-status"
                   ><span>共 {{ sharedRadishes.length }} 张</span
                   ><small
                     v-if="!game.firstHuRadishesRevealed && game.pendingKongRadishes"
@@ -2961,30 +3066,11 @@ onUnmounted(() => {
                     sharedRadishIncrementLabel(latestSharedRadishes)
                   }}</small></div
                 >
-                <div class="radish-tiles shared-radish-tiles"
-                  ><MahjongTile
-                    v-for="(tile, tileIndex) in sharedRadishes"
-                    :key="tileIndex"
-                    :tile="tile"
-                    small
-                  /><span v-if="!sharedRadishes.length" class="public-zone-empty"
-                    >首胡才翻萝卜：6 张基础 +
-                    {{ game.pendingKongRadishes || 0 }} 张已成杠累计。</span
-                  ></div
-                >
-                <p>全桌共用这一池，后续胡牌不再加六张。</p>
               </section>
               <!-- 牌河保留被碰杠或胡过的记录；v-memo 的依赖包含认领与高亮，防止缓存旧外观。 / The river retains claimed records; v-memo dependencies include claims and highlights so cached appearance stays current. -->
               <div class="discard-area"
                 ><div v-for="player in riverPlayers" :key="player.seat" class="discard-group"
                   :data-river-seat="player.seat"
-                  ><div class="discard-label"
-                    ><span>{{
-                      player.seat === mySeat && me.isCurrentParticipant !== false
-                        ? '我的牌河'
-                        : `${seatLabel(player.seat)}的牌河`
-                    }}</span
-                    ><small>{{ discardsFor(player.seat).length }} 条记录</small></div
                   ><div class="discard-tiles stable-scroll" tabindex="0" role="region"
                     :aria-label="`${seatLabel(player.seat)}的牌河，可滚动查看全部记录`"
                     ><template v-if="discardsFor(player.seat).length"
@@ -3035,14 +3121,10 @@ onUnmounted(() => {
             v-if="!isSpectator && game && me.isCurrentParticipant !== false"
             class="hand-panel"
             aria-label="我的手牌与操作"
+            :aria-description="postHu ? `胡后固定。${statusDetail}` : statusDetail"
           >
-            <div class="hand-info-row stable-scroll" tabindex="0" role="region" aria-label="手牌状态与提示"
-              ><div
-                ><span class="section-kicker">手牌区</span
-                ><span v-if="postHu" class="frozen-hand-pill">胡后固定</span
-                ><span v-if="isMyTurn" class="my-turn-pill">轮到你了</span></div
-              ><span class="hand-hint">{{ statusDetail }}</span></div
-            >
+            <!-- 重复标题与胡后说明不占一整行；手牌区保留可访问说明，轮到本人时在听牌行明确显示。
+                 Repeated titles/frozen-hand guidance no longer reserve a row; the hand keeps an accessible description and its turn badge lives beside waits. -->
             <div class="own-public-cards stable-scroll" tabindex="0" role="region" aria-label="我的胡牌、碰杠与萝卜，可滚动查看">
               <div v-if="!isLegacy" class="own-win-pile win-pile" aria-label="我的胡牌区"
                 ><span class="public-zone-label"
@@ -3132,10 +3214,10 @@ onUnmounted(() => {
             <!-- 听牌信息来自私有快照；动作按钮提交完整服务端动作，出牌按钮才构造选中的 discard。 / Wait tiles come from the private snapshot; action buttons submit server actions, while discard constructs the selected discard request. -->
             <div class="hand-bottom-row"
               ><div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
+                ><span v-if="isMyTurn" class="my-turn-pill">轮到你了</span
                 ><template v-if="game.waitTiles?.length"
                   ><span class="wait-label">听牌</span
                   ><span>{{ game.waitTiles.map(tileLabel).join('、') }}</span></template
-                ><span v-else class="muted-hand-caption">条筒之间，下一张也许正好。</span
                 ><span
                   v-if="!isLatest && (me.huLockActive || game.huLockActive)"
                   class="locked-waits"
@@ -3262,6 +3344,7 @@ onUnmounted(() => {
                 @click="mutate(null, true)"
                 >同桌再来一局<Icon name="arrow" :size="16" /></button
               ><span v-else>等待房主再开一局</span
+              ><button class="button" data-next-round-trigger @click="openNextRound">下一局选择</button
               ><button class="button" @click="newTable">返回大厅换桌</button></div
             >
             <!-- 自己的座位也使用绝对角色分配；房主与庄家分别标记，二者并不等价。 / The viewer uses the same absolute character assignment; host and dealer badges represent distinct roles. -->
@@ -3495,31 +3578,43 @@ onUnmounted(() => {
 
     <!-- 模态层只在点击遮罩本身时关闭（.self）；对话框内点击不会冒泡触发关闭。 / The modal closes only when the backdrop itself is clicked (.self), not when dialog content bubbles a click. -->
     <div
-      v-if="showRules || showInvite"
+      v-if="activeModal"
       class="modal-backdrop"
-      @click.self="
-        showRules = false;
-        showInvite = false;
-      "
+      @click.self="closeModal"
     >
       <section
         ref="modalRef"
         class="modal"
+        :class="{ 'next-round-dialog': activeModal === 'next-round' }"
         role="dialog"
         aria-modal="true"
-        :aria-labelledby="showRules ? 'rules-title' : 'invite-title'"
+        tabindex="-1"
+        :aria-labelledby="showRules ? 'rules-title' : showInvite ? 'invite-title' : 'next-round-title'"
+        :aria-describedby="activeModal === 'next-round' ? 'next-round-description' : undefined"
+        :aria-busy="activeModal === 'next-round' && busy ? 'true' : undefined"
       >
         <button
           class="icon-button modal-close"
-          aria-label="关闭弹窗"
-          @click="
-            showRules = false;
-            showInvite = false;
-          "
+          :aria-label="activeModal === 'next-round' ? '关闭弹框，查看结算' : '关闭弹窗'"
+          :disabled="activeModal === 'next-round' && busy"
+          @click="closeModal"
           ><Icon name="close" :size="21"
         /></button>
         <!-- 规则说明按本局版本分支展示；此处是文字说明，真正计分与合法动作在服务端。 / Rules text follows the current game version; scoring and legal actions are implemented on the server. -->
-        <template v-if="showRules && isChengduContext">
+        <!-- 两个主选项只调用原开局/离桌流程；关闭即可继续查看桌面结算，不提供模式或参数编辑。
+             Both primary choices use existing start/departure flows; closing reveals settlement without mode/settings editors. -->
+        <template v-if="activeModal === 'next-round'">
+          <span class="eyebrow">本局已结束</span>
+          <h2 id="next-round-title">再来一局？</h2>
+          <p id="next-round-description">同桌继续沿用本桌玩法和累计积分。关闭弹框可查看本局结算。</p>
+          <p v-if="nextRoundUnavailable" class="next-round-status" role="status">{{ nextRoundUnavailable }}</p>
+          <p v-if="error" class="next-round-error" role="alert">{{ error }}</p>
+          <div class="next-round-actions">
+            <button v-if="isHost" class="button gold" :disabled="!!nextRoundUnavailable" @click="startNextRound">{{ busy ? '正在开局…' : '同桌再来一局' }}</button>
+            <button class="button" :disabled="busy" @click="leaveFinishedTable">返回大厅</button>
+          </div>
+        </template>
+        <template v-else-if="showRules && isChengduContext">
           <span class="eyebrow">成都麻将 · 四人牌桌</span>
           <h2 id="rules-title">本桌成都玩法</h2>
           <div class="rules-modal-body">
@@ -3788,3 +3883,14 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 新样式仅限下一局弹层，不改牌桌的紧凑布局、原规则说明或邀请弹层。
+   Scope new styles to next-round choices without changing compact tables or existing rules/invitations. */
+.next-round-dialog { overflow-y: auto; }
+.next-round-dialog p { line-height: 1.7; overflow-wrap: anywhere; }
+.next-round-status { color: #496252; }
+.next-round-error { color: #9b2929; }
+.next-round-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.next-round-actions .button { min-height: 44px; flex: 1 1 160px; }
+</style>

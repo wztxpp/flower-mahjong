@@ -105,6 +105,53 @@ test('river records and private visibility bindings remain intact without docume
   for (const source of Object.values(sources)) assert.doesNotMatch(source, /(?:window|document)\.(?:scrollTo|scrollBy)|scrollIntoView\(/);
 });
 
+// 只去掉可见标题/数量，不能把牌河归属、座位映射、牌面容量或键盘入口一起删掉。
+// Remove visible river headings/counts only, never ownership, seat mapping, tile capacity or keyboard access.
+test('both modes keep named full-capacity rivers without visible headings or record counts', () => {
+  const flower = descriptors['App.vue'].template.ast;
+  const chengdu = descriptors['ChengduTable.vue'].template.ast;
+  assert.equal(elements(flower).some((node) => hasClass(node, 'discard-label')), false);
+  assert.match(binding(find(flower, 'discard-group'), 'data-river-seat').exp.content, /^player\.seat$/);
+  assert.match(binding(find(flower, 'discard-tiles'), 'aria-label').exp.content, /seatLabel\(player.seat\).*全部记录/);
+  const chengduRiver = find(chengdu, 'chengdu-river');
+  assert.match(binding(chengduRiver, 'aria-label').exp.content, /nameFor\(player.seat\).*全部记录/);
+  assert.ok(chengduRiver.children.filter((node) => node.type === 1).every((node) => node.tag === 'MahjongTile'));
+  for (const root of [flower, chengdu]) {
+    const river = find(root, root === flower ? 'discard-tiles' : 'chengdu-river');
+    assert.equal(attribute(river, 'tabindex').value.content, '0');
+    assert.doesNotMatch(river.loc.source, /条记录|<h[1-6]\b/);
+  }
+  const capacities = new Map();
+  for (const source of [readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8'), descriptors['ChengduTable.vue'].styles[0].content]) {
+    const compiled = compileStyle({ source, filename: 'river.css', id: 'river' });
+    assert.deepEqual(compiled.errors, []);
+    compiled.rawResult.root.walkRules((rule) => {
+      if (!['.table-surface .discard-tiles', '.chengdu-river'].includes(rule.selector)) return;
+      const height = rule.nodes.find((node) => node.prop === 'height')?.value;
+      if (height) capacities.set(`${rule.parent.type === 'atrule' ? rule.parent.params : 'base'}:${rule.selector}`, height);
+    });
+  }
+  assert.equal(capacities.get('base:.table-surface .discard-tiles'), '156px');
+  assert.equal(capacities.get('(max-width: 640px):.table-surface .discard-tiles'), '144px');
+  assert.equal(capacities.get('base:.chengdu-river'), '150px');
+});
+
+// 普通接牌仅显示来源和牌，冗长等待句保留在具名区域描述；不靠增高槽或缩牌来消除手机小滚条。
+// Ordinary claims show source/tile only, with waiting prose in the named region description; no taller slot or smaller tiles hide phone overflow.
+test('Chengdu player and spectator claims keep accessible waiting guidance without a repeated visible sentence', () => {
+  const slots = elements(descriptors['ChengduTable.vue'].template.ast).filter((node) => hasClass(node, 'chengdu-claim-slot'));
+  assert.equal(slots.length, 2);
+  for (const slot of slots) {
+    assert.match(binding(slot, 'aria-description').exp.content, /game.claim \? '等待所有有资格的牌友回应' : undefined/);
+    const claim = find(slot, 'chengdu-claim');
+    assert.doesNotMatch(claim.loc.source, /等待所有有资格/);
+    assert.match(claim.loc.source, /nameFor\(game.claim.fromSeat\)/);
+    assert.match(claim.loc.source, /game.claim.source === 'robKong'/);
+    assert.match(claim.loc.source, /:tile="game.claim.tile" small/);
+  }
+  assert.match(descriptors['ChengduTable.vue'].styles[0].content, /\.chengdu-claim-slot \{ height: 64px; \}/);
+});
+
 // 只给明确单行横向区取消竖沟槽，不能顺手去掉牌河/公开牌/历史的稳定滚动条占位。
 // Remove vertical gutters only from explicit single-row horizontal zones, preserving stable gutters for rivers, public cards and history.
 test('horizontal viewports avoid phantom end gutters without changing vertical scroll contracts', () => {
@@ -126,30 +173,82 @@ test('horizontal viewports avoid phantom end gutters without changing vertical s
   assert.match(source, /\.stable-scroll, \[data-stable-scroll\]\s*\{[^}]*overflow: auto;[^}]*scrollbar-gutter: stable;/);
 });
 
-// 首尾元素自动外边距仅使用正的剩余空间；禁用按钮和等待文字也要按整组居中。
-// Edge auto margins use only positive spare space; disabled buttons and waiting text also center as a group.
-test('Flower actions center with edge auto margins while preserving the overflow origin', () => {
-  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
-  const compiled = compileStyle({ source, filename: 'tabletop.css', id: 'stable' });
-  assert.deepEqual(compiled.errors, []);
-  const rules = new Map();
-  compiled.rawResult.root.walkRules((rule) => {
-    if (rule.selector.startsWith('.own-player-area .action-row') && rule.parent.type !== 'atrule') {
-      rules.set(rule.selector, Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+// 只让首元素吸收正的剩余空间；不能用尾部自动边距重新居中，也不能用end挤掉溢出的首按钮。
+// Only the first element absorbs positive spare space: a trailing auto margin would recenter, and end alignment would lose the overflow origin.
+for (const [file, prefix] of [['App.vue', '.own-player-area .action-row'], ['ChengduTable.vue', '.chengdu-action-bar']]) {
+  test(`${file} right-aligns fitting actions while preserving the overflow origin`, () => {
+    const source = file === 'App.vue' ? readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8') : descriptors[file].styles[0].content;
+    const compiled = compileStyle({ source, filename: 'actions.css', id: 'stable' });
+    assert.deepEqual(compiled.errors, []);
+    const rules = new Map();
+    compiled.rawResult.root.walkRules((rule) => {
+      if (rule.selector.startsWith(prefix) && rule.parent.type !== 'atrule') {
+        rules.set(rule.selector, Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value])));
+      }
+    });
+    const row = rules.get(prefix);
+    assert.equal(row['justify-content'], 'flex-start', 'overflow cannot align into negative/unreachable coordinates');
+    assert.equal(row['flex-wrap'], 'nowrap');
+    assert.equal(row.height, '68px');
+    assert.equal(rules.get(`${prefix} > ${file === 'App.vue' ? '*' : 'button'}`)['flex-shrink'], '0');
+    assert.deepEqual(rules.get(`${prefix} > :first-child`), { 'margin-inline-start': 'auto' });
+    assert.equal(rules.get(`${prefix} > :last-child`), undefined, 'no trailing auto margin can recenter the group');
+    const actionRow = find(descriptors[file].template.ast, file === 'App.vue' ? 'action-row' : 'chengdu-action-bar');
+    assert.ok(actionRow.children.filter((node) => node.type === 1).every((node) => ['button', 'span'].includes(node.tag)), 'edge selectors address actions/status, not a wrapper');
+    if (file === 'App.vue') {
+      assert.match(actionRow.loc.source, /:disabled="!canDiscard \|\| busy \|\| offline \|\| syncing"/);
+      assert.match(actionRow.loc.source, /v-if="busy"/);
+      assert.match(actionRow.loc.source, /等待牌友/);
     }
   });
-  const row = rules.get('.own-player-area .action-row');
-  assert.equal(row['justify-content'], 'flex-start', 'overflow cannot center into negative/unreachable coordinates');
-  assert.equal(row['flex-wrap'], 'nowrap');
-  assert.equal(row.height, '68px');
-  assert.equal(rules.get('.own-player-area .action-row > *')['flex-shrink'], '0');
-  assert.deepEqual(rules.get('.own-player-area .action-row > :first-child'), { 'margin-inline-start': 'auto' });
-  assert.deepEqual(rules.get('.own-player-area .action-row > :last-child'), { 'margin-inline-end': 'auto' });
-  const actionRow = find(descriptors['App.vue'].template.ast, 'action-row');
-  assert.ok(actionRow.children.filter((node) => node.type === 1).every((node) => ['button', 'span'].includes(node.tag)), 'edge selectors address actual actions/status, not a wrapper');
-  assert.match(actionRow.loc.source, /:disabled="!canDiscard \|\| busy \|\| offline \|\| syncing"/);
-  assert.match(actionRow.loc.source, /v-if="busy"/);
-  assert.match(actionRow.loc.source, /等待牌友/);
+}
+
+// 减少的是重复标题/教程与套框，不是状态、牌、动作、可访问名称或信息页脚。
+// Remove repeated headings/tutorials and nested boxes, never states, tiles, actions, accessible names or the information footer.
+test('compact play areas remove repeated titles while preserving meaningful state and shared tiles', () => {
+  const flower = descriptors['App.vue'].template.ast;
+  const chengdu = descriptors['ChengduTable.vue'].template.ast;
+  assert.equal(elements(flower).some((node) => hasClass(node, 'hand-info-row')), false);
+  assert.equal(elements(flower).some((node) => hasClass(node, 'shared-radish-heading')), false);
+  const hand = find(flower, 'hand-panel');
+  assert.match(binding(hand, 'aria-description').exp.content, /postHu.*statusDetail/);
+  assert.match(find(flower, 'waits-info').loc.source, /v-if="isMyTurn"[\s\S]*轮到你了/);
+  assert.doesNotMatch(hand.loc.source, /class="(?:frozen-hand-pill|section-kicker|muted-hand-caption)"/);
+  const pool = find(flower, 'shared-radish-pool');
+  assert.match(binding(pool, 'aria-label').exp.content, /全桌共享萝卜.*sharedRadishes.length/);
+  assert.ok(attribute(pool, 'aria-description'));
+  assert.ok(!elements(pool).some((node) => /^h[1-6]$/.test(node.tag) || node.tag === 'p'));
+  assert.match(find(pool, 'shared-radish-tiles').loc.source, /v-for="\(tile, tileIndex\) in sharedRadishes"/);
+  assert.match(find(pool, 'shared-radish-status').loc.source, /game.pendingKongRadishes/);
+  assert.match(find(pool, 'shared-radish-status').loc.source, /sharedRadishIncrementLabel\(latestSharedRadishes\)/);
+  assert.ok(!elements(find(chengdu, 'chengdu-play-heading')).some((node) => /^h[1-6]$/.test(node.tag)));
+  assert.equal(elements(chengdu).some((node) => hasClass(node, 'chengdu-turn-note')), false);
+  const chengduHand = find(chengdu, 'chengdu-hand-panel');
+  assert.ok(attribute(chengduHand, 'aria-label'));
+  assert.ok(!elements(chengduHand).some((node) => /^h[1-6]$/.test(node.tag)));
+  assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /selectedIndices.length/);
+  assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /me.dingqueSuit/);
+  assert.match(find(chengduHand, 'chengdu-hand-note').loc.source, /game.currentSeat === mySeat/);
+  assert.ok(find(flower, 'table-info-footer'));
+  assert.ok(find(chengdu, 'chengdu-table-footer'));
+});
+
+// 大厅页脚复用own-player-area身份卡，紧凑的无框外观只能命中已开局的牌区。
+// The lobby footer reuses own-player-area for its identity card; compact borderless decoration must affect active table areas only.
+test('compact own-area decoration excludes the lobby identity card', () => {
+  const source = readFileSync(new URL('../src/tabletop.css', import.meta.url), 'utf8');
+  const compiled = compileStyle({ source, filename: 'compact-scope.css', id: 'compact-scope' });
+  assert.deepEqual(compiled.errors, []);
+  let activeRule;
+  compiled.rawResult.root.walkRules((rule) => {
+    assert.notEqual(rule.selector, '.table-surface > .own-player-area', 'a broad selector would also restyle the lobby footer');
+    if (rule.selector === '.table-surface:not(.lobby-table) > .own-player-area') activeRule = rule;
+  });
+  assert.ok(activeRule, 'borderless own-area styling explicitly excludes lobby tables');
+  const declarations = Object.fromEntries(activeRule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
+  assert.equal(declarations['border-color'], 'transparent');
+  const footer = find(descriptors['App.vue'].template.ast, 'table-info-footer');
+  assert.match(binding(footer, 'class').exp.content, /'own-player-area': !game/);
 });
 
 // 为常规折叠内容保留响应式高度并缩小重复留白；不能改为随内容增长或隐藏溢出。
@@ -194,11 +293,11 @@ test('ordinary ledgers and Chengdu phone text reserve sufficient fixed capacity'
   assert.equal(capacities.get('base:.room-sidebar .table-ledger'), '288px');
   assert.equal(capacities.get('base:.opponent-public-cards'), '96px');
   assert.equal(capacities.get('(max-width: 640px):.opponent-public-cards'), '98px');
-  assert.equal(capacities.get('base:.table-surface .shared-radish-pool'), '120px');
-  assert.equal(capacities.get('(max-width: 640px):.table-surface .shared-radish-pool'), '152px');
-  assert.equal(capacities.get('base:.chengdu-play-heading'), '88px');
+  assert.equal(capacities.get('base:.table-surface .shared-radish-pool'), '72px');
+  assert.equal(capacities.get('(max-width: 640px):.table-surface .shared-radish-pool'), '108px');
+  assert.equal(capacities.get('base:.chengdu-play-heading'), '48px');
   assert.equal(capacities.get('base:.chengdu-status'), '66px');
-  assert.equal(capacities.get('(max-width: 560px):.chengdu-play-heading'), '104px');
+  assert.equal(capacities.get('(max-width: 560px):.chengdu-play-heading'), '72px');
   assert.equal(capacities.get('(max-width: 560px):.chengdu-status'), '88px');
 });
 
@@ -237,23 +336,26 @@ test('tiny Flower action rows compact only gaps so four ordinary responses fit',
   assert.equal(attribute(actionRow, 'tabindex').value.content, '0');
 });
 
-// 只缩小最窄成都按钮的行内留白，不能为了消除滚动而缩小字或44px触控高度。
-// Compact only inline padding on the narrowest Chengdu buttons, not text size or the44px touch height.
-test('tiny Chengdu action rows compact side padding while preserving touch height and overflow', () => {
+// 只收手机成都动作的间距/行内留白，不能为了消除常规四回应滚动而缩小字或44px触控高度。
+// Compact phone Chengdu gaps/inline padding only, not text size or44px touch height, so ordinary four-response groups fit.
+test('phone Chengdu action rows compact gaps and side padding while preserving touch height and overflow', () => {
   const compiled = compileStyle({ source: descriptors['ChengduTable.vue'].styles[0].content, filename: 'chengdu-actions.css', id: 'chengdu-actions' });
   assert.deepEqual(compiled.errors, []);
   const compact = [];
+  const gaps = [];
   let minimumHeight;
   compiled.rawResult.root.walkRules((rule) => {
     const declarations = Object.fromEntries(rule.nodes.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]));
     if (rule.selector === '.chengdu-action-bar button') minimumHeight = declarations['min-height'];
+    if (rule.selector === '.chengdu-action-bar' && rule.parent.type === 'atrule') gaps.push([rule.parent.params, declarations]);
     if (rule.selector === '.chengdu-action-bar > button' && rule.parent.type === 'atrule') {
       assert.equal(rule.parent.params, '(max-width: 360px)');
       compact.push(declarations);
     }
   });
   assert.equal(minimumHeight, '44px');
-  assert.deepEqual(compact, [{ 'padding-inline': '12px' }]);
+  assert.deepEqual(compact, [{ 'padding-inline': '10px' }]);
+  assert.deepEqual(gaps, [['(max-width: 560px)', { gap: '6px' }], ['(max-width: 360px)', { gap: '5px' }]]);
   assert.ok(hasClass(find(descriptors['ChengduTable.vue'].template.ast, 'chengdu-action-bar'), 'stable-scroll'));
 });
 

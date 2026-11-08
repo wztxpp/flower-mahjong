@@ -215,3 +215,5 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 
 - 自弃同牌限制 / self-discard hu lock：本人最近一次实际`draw`后所有`discard`牌种暂时不能接胡/抢杠胡；不等同旧`huLockActive`、整套听口锁或永久禁止。私有诊断码为`SELF_DISCARD_LOCK`，没有新增持久字段。
 - 胡后锁手牌 / post-hu held-hand lock：补碰及已有杠加张只能消耗本次摸入同牌；只保证听口相同不足以证明未换牌。合法暗杠与未胡者补杠仍按原条件。
+
+- `showNextRound` / `activeModal`：下一局选择弹层与当前唯一模态内容，仅浏览器临时展示状态；不是 `start` 动作、开局参数或玩家准备状态。 / Page-local next-round choices and the single active modal, not a start action, settings snapshot or player-ready state.

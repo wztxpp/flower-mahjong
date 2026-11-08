@@ -279,3 +279,23 @@ See [stable table layout](STABLE-TABLE-LAYOUT.md): conditional content lives ins
 
 主牌桌底部信息由 `table-info-footer` / `chengdu-table-footer` 承载：状态、终局控制及花麻将本人身份在真实DOM中排到手牌/立绘后；成都还排在账本/动态后。玩家接牌槽紧邻手牌动作，观众公开提示在页脚。大厅身份保持原位置；不要把该移动误解为身份、私有手牌或合法动作权限变化。细节和回归见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
 Main-table footers place status, finish controls and Flower own identity after hand/art in real DOM order; Chengdu additionally follows its ledger/history. Player claims stay by hand actions, while spectator claims live in the footer. Lobby identity stays in place. These moves change no identity, private-hand or action permissions; see the layout guide and regressions.
+
+
+### 紧凑牌区与动作靠右 / Compact play areas and right-aligned actions
+
+两玩法不再显示重复手牌框标题；花麻将完整状态仍在手牌可访问描述和原页脚，当前回合徽章在听牌行。共享萝卜是无标题的牌优先条，读屏名称保留归属/总数，动态增加和待翻仍可见。成都简化顶部玩法条与手牌说明，但保留换牌选中数量、定缺、回合和接牌。`tabletop.css`及成都组件样式用首个动作的单侧auto边距靠右，溢出时回到可达起点；不要恢复旧尾部auto边距。固定槽、原SFC脚本、服务端动作与立绘不变，详见[布局契约](STABLE-TABLE-LAYOUT.md)。
+Both modes remove repeated hand-box titles. Flower retains complete status in the hand's accessible description and existing footer, with its turn badge beside waits. Shared radishes use a tile-first strip with accessible ownership/count and visible changes/pending information. Chengdu simplifies its top strip and hand guidance while retaining exchange progress, missing suit, turn and claims. A start-only auto margin on the first action right-aligns controls and resolves to a reachable overflow origin; do not restore the old trailing auto margin. Fixed slots, SFC scripts, server actions and portraits remain unchanged; see the layout contract.
+
+牌河标题和记录数量也不再可见；花麻将 `discard-label` 整块删除，成都原本无此标题。牌河容量、座位key/排列和每张弃牌保留，归属通过原具名可访问区域读取。手机成都动作只收紧gap/左右内边距以容纳普通四回应，不缩小字、44px按钮高度或删除长动作的滚动入口。
+River headings/counts are also no longer visible: Flower removes `discard-label`, while Chengdu already had none. River capacity, seat keys/order and every discard remain, with ownership in the original named accessible regions. Phone Chengdu actions compact gaps/inline padding to fit four ordinary responses without shrinking text,44px height or removing long-group scrolling.
+
+## 终局后的下一局选择 / Next-round choices after settlement
+
+`App.vue` 的 `showNextRound` 和 `activeModal` 共用规则/邀请的唯一弹层。玩家在本页看到同一局由进行中变为 `finished` 后，等本机音画及已有弹层结束再自动提示一次。首次读到已结束局（刷新、重连、重新进房）不自动提示；花麻将/成都页脚的“下一局选择”可手动打开。观众不自动弹，手动打开也没有开局权限。关闭/X/ESC返回结算，两个主选项为“同桌再来一局”和“返回大厅”。
+`showNextRound` and `activeModal` reuse the single rules/invitation modal. A live same-game finish prompts players once after local media and existing dialogs finish. Loading an already finished game after refresh/re-entry does not prompt; both modes expose a manual footer trigger. Viewers never auto-prompt or gain start authority. Close/Escape reveals settlement; the two primary choices restart the same table or return to the lobby.
+
+`startNextRound` 仍调用 `mutate(null, true)`，房主、满员、断线、同步、音画和旧房金额守卫不变；`leaveFinishedTable` 走原 `newTable` 离席路由。没有玩法/参数编辑，没有全员准备或投票。开局请求中暂不能关闭/离桌，错误留在层内，未知结果先同步，不重发。新局/换桌会清掉旧弹层，普通轮询不重复弹。键盘圈跳过禁用控件，全禁用时聚焦容器；关闭恢复原控件，原控件已移除/禁用则回到选择入口或牌桌工具。
+`startNextRound` delegates to the original start request and guards; `leaveFinishedTable` uses original departure. There are no rule editors, ready votes or new permissions. In-flight starts retain the dialog and errors; uncertain outcomes synchronize without retrying. New games/navigation clear it; polling never reopens it. Focus skips disabled controls, falls back to the container while all are disabled, and restores to the trigger/table tools when the former control no longer works.
+
+关闭分支先捕获并清空 `previousFocus`，然后 `await nextTick()` 等实际DOM提交，再校验 `epoch` 和 `activeModal`。新局可能在同一tick删除入口或禁用按钮；若另一弹层接管，旧回调不能抢焦点。只有连接且启用的旧控件可恢复，否则查询当前启用的选择入口/桌面工具。
+The close branch captures and clears `previousFocus`, then awaits the actual DOM flush before checking `epoch` and `activeModal`. A new game can remove or disable the trigger in that tick, and a replacement modal must keep focus. Restore only a connected, enabled old control; otherwise query a current enabled choice trigger or table tool.
