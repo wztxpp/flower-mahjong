@@ -2,241 +2,48 @@
   "sweet": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/sweet/front-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "sweet",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/sweet/front-base.png",
-        "sourceSha256": "f953754428fb32ceb1b96d8f78ed511ddd73ed3d3b93760a596d057e53a882b5",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/sweet/front-motion-atlas-00.png",
-            "sha256": "4e1499d1ea7ebcc380f24560acf94de01a7dbb38bbd1cb0824efa84a36b80e04",
-            "width": 406,
-            "height": 72
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/sweet/front-motion-atlas-00.png",
-            "sha256": "4e1499d1ea7ebcc380f24560acf94de01a7dbb38bbd1cb0824efa84a36b80e04",
-            "width": 406,
-            "height": 72
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              579,
-              278,
-              101,
-              67
-            ],
-            "maskPolygon": [
-              [
-                581,
-                310.15999999999997
-              ],
-              [
-                599.2,
-                280
-              ],
-              [
-                659.8,
-                280
-              ],
-              [
-                678,
-                310.15999999999997
-              ],
-              [
-                659.8,
-                343
-              ],
-              [
-                599.2,
-                343
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                206,
-                2,
-                101,
-                67
-              ],
-              "closed": [
-                2,
-                2,
-                101,
-                67
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              738,
-              272,
-              91,
-              68
-            ],
-            "maskPolygon": [
-              [
-                740,
-                304.64
-              ],
-              [
-                756.2,
-                274
-              ],
-              [
-                810.8,
-                274
-              ],
-              [
-                827,
-                304.64
-              ],
-              [
-                810.8,
-                338
-              ],
-              [
-                756.2,
-                338
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                313,
-                2,
-                91,
-                68
-              ],
-              "closed": [
-                109,
-                2,
-                91,
-                68
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              443,
-              230,
-              93,
-              235
-            ],
-            "maskPolygon": [
-              [
-                445,
-                342.8
-              ],
-              [
-                461.6,
-                232
-              ],
-              [
-                517.4,
-                232
-              ],
-              [
-                534,
-                342.8
-              ],
-              [
-                517.4,
-                463
-              ],
-              [
-                461.6,
-                463
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/sweet/front-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2066
-        ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
-        ],
-        "lowerBodyUrl": "/characters/realistic/sweet/front-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/sweet/front-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          790,
-          1024,
-          746
+        "contentBounds": [
+          170,
+          10,
+          598,
+          1512
         ],
-        "lowerRect": [
-          0,
-          1005,
-          1371,
-          999
-        ],
-        "seatAnchor": [
-          690,
-          1260
-        ],
-        "footAnchors": [
-          [
-            605,
-            1983
+        "handContacts": {
+          "right": [
+            445,
+            777
           ],
-          [
-            760,
-            1982
+          "left": [
+            609,
+            777
           ]
-        ]
+        },
+        "seatAnchor": [
+          510,
+          880
+        ],
+        "footBounds": [
+          410,
+          1343,
+          204,
+          179
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "01ec1d8874adeabbc5091fd559b51d0f9160cb8a5a9feeaf856e9273fb1ad30d",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -257,721 +64,142 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/sweet/left-base.png",
-      "width": 1214,
-      "height": 1295,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "sweet",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/sweet/left-base.png",
-        "sourceSha256": "302a0cbd6528fa89b20024642a4ce2fd1aeb8e18829a44c1a1882e9e6fb3080f",
-        "width": 1214,
-        "height": 1295,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/sweet/left-motion-atlas-00.png",
-            "sha256": "db10eb2b05e4b49613c6ed7e12f0c7d82e498af2786f7ffef357e0a44939c119",
-            "width": 370,
-            "height": 78
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/sweet/left-motion-atlas-00.png",
-            "sha256": "db10eb2b05e4b49613c6ed7e12f0c7d82e498af2786f7ffef357e0a44939c119",
-            "width": 370,
-            "height": 78
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              551,
-              334,
-              116,
-              74
-            ],
-            "maskPolygon": [
-              [
-                553,
-                369.52
-              ],
-              [
-                574.2,
-                336
-              ],
-              [
-                643.8,
-                336
-              ],
-              [
-                665,
-                369.52
-              ],
-              [
-                643.8,
-                406
-              ],
-              [
-                574.2,
-                406
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                188,
-                2,
-                116,
-                74
-              ],
-              "closed": [
-                2,
-                2,
-                116,
-                74
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              734,
-              326,
-              58,
-              72
-            ],
-            "maskPolygon": [
-              [
-                736,
-                360.56
-              ],
-              [
-                745.6,
-                328
-              ],
-              [
-                780.4,
-                328
-              ],
-              [
-                790,
-                360.56
-              ],
-              [
-                780.4,
-                396
-              ],
-              [
-                745.6,
-                396
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                310,
-                2,
-                58,
-                72
-              ],
-              "closed": [
-                124,
-                2,
-                58,
-                72
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              298,
-              275,
-              142,
-              310
-            ],
-            "maskPolygon": [
-              [
-                300,
-                423.79999999999995
-              ],
-              [
-                326.4,
-                277
-              ],
-              [
-                411.6,
-                277
-              ],
-              [
-                438,
-                423.79999999999995
-              ],
-              [
-                411.6,
-                583
-              ],
-              [
-                326.4,
-                583
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/sweet/left-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1485,
-          2331
-        ],
-        "upperRect": [
-          100,
-          0,
-          1214,
-          1295
-        ],
-        "lowerBodyUrl": "/characters/realistic/sweet/left-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/sweet/left-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          860,
-          1024,
-          676
+        "contentBounds": [
+          116,
+          4,
+          750,
+          1521
         ],
-        "lowerRect": [
-          0,
-          1260,
-          1485,
-          980
-        ],
-        "seatAnchor": [
-          646,
-          1518
-        ],
-        "footAnchors": [
-          [
-            920,
-            2221
+        "handContacts": {
+          "right": [
+            614,
+            779
           ],
-          [
-            1116,
-            2202
+          "left": [
+            788,
+            765
           ]
-        ]
+        },
+        "seatAnchor": [
+          429,
+          1001
+        ],
+        "footBounds": [
+          545,
+          1355,
+          279,
+          170
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "e17cb8cdbd28cde4178202a54d0bd752f8051760c469f32c0cddedde5fab4e70",
+        "frontOfTablePolygons": []
       }
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/sweet/right-base.png",
-      "width": 1199,
-      "height": 1312,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "sweet",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/sweet/right-base.png",
-        "sourceSha256": "1366bfadb314cd396eaa034dbc726ef6780b9bf34afb1f79152a21e819c2fbe9",
-        "width": 1199,
-        "height": 1312,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/sweet/right-motion-atlas-00.png",
-            "sha256": "401b2666eba3aa0bf963e4f9fb5d6267bd29b927b9a8dbe5f0308d0854a2b325",
-            "width": 342,
-            "height": 76
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/sweet/right-motion-atlas-00.png",
-            "sha256": "401b2666eba3aa0bf963e4f9fb5d6267bd29b927b9a8dbe5f0308d0854a2b325",
-            "width": 342,
-            "height": 76
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              501,
-              331,
-              50,
-              64
-            ],
-            "maskPolygon": [
-              [
-                503,
-                361.72
-              ],
-              [
-                511,
-                333
-              ],
-              [
-                541,
-                333
-              ],
-              [
-                549,
-                361.72
-              ],
-              [
-                541,
-                393
-              ],
-              [
-                511,
-                393
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                174,
-                2,
-                50,
-                64
-              ],
-              "closed": [
-                2,
-                2,
-                50,
-                64
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              596,
-              319,
-              110,
-              72
-            ],
-            "maskPolygon": [
-              [
-                598,
-                353.56
-              ],
-              [
-                618,
-                321
-              ],
-              [
-                684,
-                321
-              ],
-              [
-                704,
-                353.56
-              ],
-              [
-                684,
-                389
-              ],
-              [
-                618,
-                389
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                230,
-                2,
-                110,
-                72
-              ],
-              "closed": [
-                58,
-                2,
-                110,
-                72
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              887,
-              290,
-              92,
-              260
-            ],
-            "maskPolygon": [
-              [
-                889,
-                414.8
-              ],
-              [
-                905.4,
-                292
-              ],
-              [
-                960.6,
-                292
-              ],
-              [
-                977,
-                414.8
-              ],
-              [
-                960.6,
-                548
-              ],
-              [
-                905.4,
-                548
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/sweet/right-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1536,
-          2362
-        ],
-        "upperRect": [
-          150,
-          0,
-          1199,
-          1312
-        ],
-        "lowerBodyUrl": "/characters/realistic/sweet/right-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/sweet/right-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          850,
-          1024,
-          686
+        "contentBounds": [
+          224,
+          6,
+          595,
+          1523
         ],
-        "lowerRect": [
-          0,
-          1220,
-          1536,
-          1029
-        ],
-        "seatAnchor": [
-          900,
-          1470
-        ],
-        "footAnchors": [
-          [
-            390,
-            2215
+        "handContacts": {
+          "right": [
+            357,
+            855
           ],
-          [
-            630,
-            2232
+          "left": [
+            465,
+            866
           ]
-        ]
+        },
+        "seatAnchor": [
+          632,
+          996
+        ],
+        "footBounds": [
+          222,
+          1370,
+          255,
+          159
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "14ef93616f46990d4b373b89439f71f45ff382cb83fcf0a3e6526a4ad90e1489",
+        "frontOfTablePolygons": []
       }
     }
   },
   "elegant": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/elegant/front-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "elegant",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/elegant/front-base.png",
-        "sourceSha256": "ad055bc6f23803f76c6bb2008109d022c826f42a569e7c7bbd4ab351bce91cf8",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/elegant/front-motion-atlas-00.png",
-            "sha256": "97ae0deb3235d33e986536331f85b9e2d606509647ab588fdee1ec5ab9bbb80b",
-            "width": 406,
-            "height": 50
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/elegant/front-motion-atlas-00.png",
-            "sha256": "97ae0deb3235d33e986536331f85b9e2d606509647ab588fdee1ec5ab9bbb80b",
-            "width": 406,
-            "height": 50
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              582,
-              250,
-              103,
-              46
-            ],
-            "maskPolygon": [
-              [
-                584,
-                272.08
-              ],
-              [
-                602.6,
-                252
-              ],
-              [
-                664.4,
-                252
-              ],
-              [
-                683,
-                272.08
-              ],
-              [
-                664.4,
-                294
-              ],
-              [
-                602.6,
-                294
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                206,
-                2,
-                103,
-                46
-              ],
-              "closed": [
-                2,
-                2,
-                103,
-                46
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              737,
-              249,
-              89,
-              46
-            ],
-            "maskPolygon": [
-              [
-                739,
-                271.08
-              ],
-              [
-                754.8,
-                251
-              ],
-              [
-                808.2,
-                251
-              ],
-              [
-                824,
-                271.08
-              ],
-              [
-                808.2,
-                293
-              ],
-              [
-                754.8,
-                293
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                315,
-                2,
-                89,
-                46
-              ],
-              "closed": [
-                111,
-                2,
-                89,
-                46
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              451,
-              220,
-              77,
-              260
-            ],
-            "maskPolygon": [
-              [
-                453,
-                344.8
-              ],
-              [
-                466.4,
-                222
-              ],
-              [
-                512.6,
-                222
-              ],
-              [
-                526,
-                344.8
-              ],
-              [
-                512.6,
-                478
-              ],
-              [
-                466.4,
-                478
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/elegant/front-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2066
-        ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
-        ],
-        "lowerBodyUrl": "/characters/realistic/elegant/front-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/elegant/front-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          785,
-          1024,
-          751
+        "contentBounds": [
+          176,
+          8,
+          670,
+          1519
         ],
-        "lowerRect": [
-          0,
-          1050,
-          1371,
-          1005
-        ],
-        "seatAnchor": [
-          690,
-          1350
-        ],
-        "footAnchors": [
-          [
-            600,
-            2043
+        "handContacts": {
+          "right": [
+            377,
+            709
           ],
-          [
-            790,
-            2044
+          "left": [
+            652,
+            708
           ]
-        ]
+        },
+        "seatAnchor": [
+          512,
+          820
+        ],
+        "footBounds": [
+          380,
+          1330,
+          290,
+          197
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "a87876e940ce3fc986d99770e690e01fe4a7445c22828c82de471a9156a27dba",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -991,478 +219,191 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/elegant/left-base.png",
-      "width": 1315,
-      "height": 1196,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "elegant",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/elegant/left-base.png",
-        "sourceSha256": "fa9c9981f33bd83020bdbe32b971f2ca2095ee400bae2c9fabe47eef9dfceecb",
-        "width": 1315,
-        "height": 1196,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/elegant/left-motion-atlas-00.png",
-            "sha256": "e58486e9a1525f706cb6462fdf3727946ea37cd4673403022574b714b9b5a7a7",
-            "width": 352,
-            "height": 53
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/elegant/left-motion-atlas-00.png",
-            "sha256": "e58486e9a1525f706cb6462fdf3727946ea37cd4673403022574b714b9b5a7a7",
-            "width": 352,
-            "height": 53
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              568,
-              258,
-              111,
-              49
-            ],
-            "maskPolygon": [
-              [
-                570,
-                281.52
-              ],
-              [
-                590.2,
-                260
-              ],
-              [
-                656.8,
-                260
-              ],
-              [
-                677,
-                281.52
-              ],
-              [
-                656.8,
-                305
-              ],
-              [
-                590.2,
-                305
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                179,
-                2,
-                111,
-                49
-              ],
-              "closed": [
-                2,
-                2,
-                111,
-                49
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              724,
-              266,
-              54,
-              45
-            ],
-            "maskPolygon": [
-              [
-                726,
-                287.6
-              ],
-              [
-                734.8,
-                268
-              ],
-              [
-                767.2,
-                268
-              ],
-              [
-                776,
-                287.6
-              ],
-              [
-                767.2,
-                309
-              ],
-              [
-                734.8,
-                309
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                296,
-                2,
-                54,
-                45
-              ],
-              "closed": [
-                119,
-                2,
-                54,
-                45
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              353,
-              220,
-              100,
-              285
-            ],
-            "maskPolygon": [
-              [
-                355,
-                356.79999999999995
-              ],
-              [
-                373,
-                222
-              ],
-              [
-                433,
-                222
-              ],
-              [
-                451,
-                356.79999999999995
-              ],
-              [
-                433,
-                503
-              ],
-              [
-                373,
-                503
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/elegant/left-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1331,
-          2153
-        ],
-        "upperRect": [
-          0,
-          0,
-          1315,
-          1196
-        ],
-        "lowerBodyUrl": "/characters/realistic/elegant/left-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/elegant/left-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          810,
-          1024,
-          726
+        "contentBounds": [
+          55,
+          4,
+          902,
+          1525
         ],
-        "lowerRect": [
-          0,
-          1160,
-          1331,
-          944
-        ],
-        "seatAnchor": [
-          493,
-          1381
-        ],
-        "footAnchors": [
-          [
-            855,
-            2084
+        "handContacts": {
+          "right": [
+            533,
+            765
           ],
-          [
-            1118,
-            2067
+          "left": [
+            793,
+            761
           ]
-        ]
+        },
+        "seatAnchor": [
+          385,
+          951
+        ],
+        "footBounds": [
+          606,
+          1345,
+          351,
+          184
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "4215f30ea48b2eb925b68eb73730ea14cd849b02eafcb72e892339dec524773d",
+        "frontOfTablePolygons": []
       }
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/elegant/right-base.png",
-      "width": 1200,
-      "height": 1310,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "elegant",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/elegant/right-base.png",
-        "sourceSha256": "f6a485da92cc7f30637affb69c12d51f2befe8e40ff37744e0fb0712e0fce645",
-        "width": 1200,
-        "height": 1310,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/elegant/right-motion-atlas-00.png",
-            "sha256": "7429c08fca716b9831eaa2bac1821e5b45c34f6b53a8dbcd51357518354f497d",
-            "width": 358,
-            "height": 52
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/elegant/right-motion-atlas-00.png",
-            "sha256": "7429c08fca716b9831eaa2bac1821e5b45c34f6b53a8dbcd51357518354f497d",
-            "width": 358,
-            "height": 52
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              522,
-              288,
-              57,
-              44
-            ],
-            "maskPolygon": [
-              [
-                524,
-                309.12
-              ],
-              [
-                533.4,
-                290
-              ],
-              [
-                567.6,
-                290
-              ],
-              [
-                577,
-                309.12
-              ],
-              [
-                567.6,
-                330
-              ],
-              [
-                533.4,
-                330
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                182,
-                2,
-                57,
-                44
-              ],
-              "closed": [
-                2,
-                2,
-                57,
-                44
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              631,
-              278,
-              111,
-              48
-            ],
-            "maskPolygon": [
-              [
-                633,
-                301.04
-              ],
-              [
-                653.2,
-                280
-              ],
-              [
-                719.8,
-                280
-              ],
-              [
-                740,
-                301.04
-              ],
-              [
-                719.8,
-                324
-              ],
-              [
-                653.2,
-                324
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                245,
-                2,
-                111,
-                48
-              ],
-              "closed": [
-                65,
-                2,
-                111,
-                48
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "rect": [
-              866,
-              285,
-              108,
-              285
-            ],
-            "maskPolygon": [
-              [
-                868,
-                421.79999999999995
-              ],
-              [
-                887.6,
-                287
-              ],
-              [
-                952.4,
-                287
-              ],
-              [
-                972,
-                421.79999999999995
-              ],
-              [
-                952.4,
-                568
-              ],
-              [
-                887.6,
-                568
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 4,
-              "envelope": "vertical",
-              "motionScale": 0.5
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/elegant/right-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1434,
-          2358
-        ],
-        "upperRect": [
-          90,
-          0,
-          1200,
-          1310
-        ],
-        "lowerBodyUrl": "/characters/realistic/elegant/right-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/elegant/right-full-body.png",
+        "sourceSize": [
           1024,
           1536
         ],
-        "lowerSourceRect": [
-          0,
-          780,
-          1024,
-          756
+        "contentBounds": [
+          88,
+          8,
+          865,
+          1519
         ],
-        "lowerRect": [
-          0,
-          1170,
-          1434,
-          1058
-        ],
-        "seatAnchor": [
-          870,
-          1470
-        ],
-        "footAnchors": [
-          [
-            390,
-            2216
+        "handContacts": {
+          "right": [
+            247,
+            710
           ],
+          "left": [
+            507,
+            725
+          ]
+        },
+        "seatAnchor": [
+          639,
+          937
+        ],
+        "footBounds": [
+          88,
+          1342,
+          253,
+          185
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "27a24c0533bd4c05d91eb25afad1b0ea6afce8215b80614dc524dacdc1283557",
+        "frontOfTablePolygons": [
           [
-            570,
-            2210
+            [
+              410,
+              739
+            ],
+            [
+              429,
+              720
+            ],
+            [
+              451,
+              703
+            ],
+            [
+              477,
+              687
+            ],
+            [
+              498,
+              685
+            ],
+            [
+              526,
+              697
+            ],
+            [
+              554,
+              700
+            ],
+            [
+              583,
+              704
+            ],
+            [
+              598,
+              716
+            ],
+            [
+              599,
+              737
+            ],
+            [
+              583,
+              746
+            ],
+            [
+              559,
+              745
+            ],
+            [
+              530,
+              734
+            ],
+            [
+              507,
+              734
+            ],
+            [
+              485,
+              746
+            ],
+            [
+              471,
+              753
+            ],
+            [
+              460,
+              753
+            ],
+            [
+              473,
+              737
+            ],
+            [
+              452,
+              752
+            ],
+            [
+              438,
+              755
+            ],
+            [
+              450,
+              738
+            ],
+            [
+              427,
+              752
+            ],
+            [
+              416,
+              750
+            ],
+            [
+              428,
+              734
+            ]
           ]
         ]
       }
@@ -1471,240 +412,48 @@
   "honest": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/honest/front-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "honest",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/honest/front-base.png",
-        "sourceSha256": "e3460493fb041afde095400fea0f9c9f4e090df2014ea40ee9b229d4362557d2",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/honest/front-motion-atlas-00.png",
-            "sha256": "9e53f7dd3f9f692c2473a65f105b522cc7ccf0f5526e119e29c8147e95ce3c25",
-            "width": 352,
-            "height": 49
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/honest/front-motion-atlas-00.png",
-            "sha256": "9e53f7dd3f9f692c2473a65f105b522cc7ccf0f5526e119e29c8147e95ce3c25",
-            "width": 352,
-            "height": 49
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              584,
-              264,
-              83,
-              43
-            ],
-            "maskPolygon": [
-              [
-                586,
-                285.5
-              ],
-              [
-                600.6,
-                266
-              ],
-              [
-                650.4,
-                266
-              ],
-              [
-                665,
-                285.5
-              ],
-              [
-                650.4,
-                305
-              ],
-              [
-                600.6,
-                305
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                179,
-                2,
-                83,
-                43
-              ],
-              "closed": [
-                2,
-                2,
-                83,
-                43
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              716,
-              254,
-              82,
-              45
-            ],
-            "maskPolygon": [
-              [
-                718,
-                276.5
-              ],
-              [
-                732.4,
-                256
-              ],
-              [
-                781.6,
-                256
-              ],
-              [
-                796,
-                276.5
-              ],
-              [
-                781.6,
-                297
-              ],
-              [
-                732.4,
-                297
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                268,
-                2,
-                82,
-                45
-              ],
-              "closed": [
-                91,
-                2,
-                82,
-                45
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-hair-tip",
-            "rect": [
-              525,
-              48,
-              84,
-              40
-            ],
-            "maskPolygon": [
-              [
-                528,
-                51
-              ],
-              [
-                570,
-                55
-              ],
-              [
-                606,
-                70
-              ],
-              [
-                579,
-                85
-              ],
-              [
-                549,
-                71
-              ]
-            ],
-            "featherPx": 2,
-            "geometry": {
-              "amplitudeX": 1.5,
-              "envelope": "vertical",
-              "motionScale": 0.5,
-              "pinStart": 48,
-              "pinEnd": 88
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/honest/front-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2066
+      "figure": {
+        "url": "/characters/realistic/honest/front-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
+        "contentBounds": [
+          214,
+          7,
+          620,
+          1522
         ],
-        "lowerBodyUrl": "/characters/realistic/honest/front-lower-body.png",
-        "lowerSourceSize": [
-          1022,
-          1538
-        ],
-        "lowerSourceRect": [
-          0,
-          770,
-          1022,
-          768
-        ],
-        "lowerRect": [
-          0,
-          1033,
-          1371,
-          1030
-        ],
-        "seatAnchor": [
-          684,
-          1382
-        ],
-        "footAnchors": [
-          [
-            443,
-            2053
+        "handContacts": {
+          "left": [
+            680,
+            835
           ],
-          [
-            912,
-            2053
+          "right": [
+            340,
+            835
           ]
-        ]
+        },
+        "seatAnchor": [
+          510,
+          970
+        ],
+        "footBounds": [
+          270,
+          1370,
+          470,
+          160
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "78cd64ede5d49fe3289f6ea3a8f40c4610445bbe9044b330dfbbcb640efab4f8",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -1724,476 +473,326 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/honest/left-base.png",
-      "width": 1254,
-      "height": 1254,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "honest",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/honest/left-base.png",
-        "sourceSha256": "629ce892f81df3151c6a37f43ca6b0cf94f5e13dcdc41b42e3a4605819d3e5c3",
-        "width": 1254,
-        "height": 1254,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/honest/left-motion-atlas-00.png",
-            "sha256": "655c53dd38dd54c4f0a8eb476dbfabd1d24df8af9d6f364d6dcd2360d1d17b04",
-            "width": 318,
-            "height": 51
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/honest/left-motion-atlas-00.png",
-            "sha256": "655c53dd38dd54c4f0a8eb476dbfabd1d24df8af9d6f364d6dcd2360d1d17b04",
-            "width": 318,
-            "height": 51
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              555,
-              300,
-              94,
-              46
-            ],
-            "maskPolygon": [
-              [
-                557,
-                323
-              ],
-              [
-                573.8,
-                302
-              ],
-              [
-                630.2,
-                302
-              ],
-              [
-                647,
-                323
-              ],
-              [
-                630.2,
-                344
-              ],
-              [
-                573.8,
-                344
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                162,
-                2,
-                94,
-                46
-              ],
-              "closed": [
-                2,
-                2,
-                94,
-                46
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              687,
-              296,
-              54,
-              47
-            ],
-            "maskPolygon": [
-              [
-                689,
-                319.5
-              ],
-              [
-                697.8,
-                298
-              ],
-              [
-                730.2,
-                298
-              ],
-              [
-                739,
-                319.5
-              ],
-              [
-                730.2,
-                341
-              ],
-              [
-                697.8,
-                341
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                262,
-                2,
-                54,
-                47
-              ],
-              "closed": [
-                102,
-                2,
-                54,
-                47
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-hair-tip",
-            "rect": [
-              422,
-              27,
-              79,
-              52
-            ],
-            "maskPolygon": [
-              [
-                425,
-                30
-              ],
-              [
-                470,
-                49
-              ],
-              [
-                498,
-                57
-              ],
-              [
-                474,
-                76
-              ],
-              [
-                445,
-                62
-              ]
-            ],
-            "featherPx": 2,
-            "geometry": {
-              "amplitudeX": 1.5,
-              "envelope": "vertical",
-              "motionScale": 0.5,
-              "pinStart": 27,
-              "pinEnd": 79
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/honest/left-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1254,
-          2257
+      "figure": {
+        "url": "/characters/realistic/honest/left-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1254,
-          1254
-        ],
-        "lowerBodyUrl": "/characters/realistic/honest/left-lower-body.png",
-        "lowerSourceSize": [
-          845,
-          1862
-        ],
-        "lowerSourceRect": [
-          0,
-          940,
-          845,
-          922
-        ],
-        "lowerRect": [
+        "contentBounds": [
           160,
-          1130,
-          972,
-          1060
+          8,
+          746,
+          1521
         ],
-        "seatAnchor": [
-          390,
-          1452
-        ],
-        "footAnchors": [
-          [
-            701,
-            2173
+        "handContacts": {
+          "left": [
+            803,
+            740
           ],
+          "right": [
+            615,
+            765
+          ]
+        },
+        "seatAnchor": [
+          360,
+          990
+        ],
+        "footBounds": [
+          460,
+          1330,
+          450,
+          200
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "c96930ea38d39e21993427cdbc9a9b36f00bca4e658bd82992b65f544dd3e539",
+        "frontOfTablePolygons": [
           [
-            936,
-            2050
+            [
+              300,
+              742
+            ],
+            [
+              309,
+              709
+            ],
+            [
+              333,
+              681
+            ],
+            [
+              353,
+              673
+            ],
+            [
+              389,
+              689
+            ],
+            [
+              423,
+              708
+            ],
+            [
+              473,
+              722
+            ],
+            [
+              514,
+              729
+            ],
+            [
+              556,
+              718
+            ],
+            [
+              594,
+              714
+            ],
+            [
+              627,
+              730
+            ],
+            [
+              653,
+              751
+            ],
+            [
+              682,
+              779
+            ],
+            [
+              672,
+              787
+            ],
+            [
+              653,
+              790
+            ],
+            [
+              634,
+              784
+            ],
+            [
+              623,
+              798
+            ],
+            [
+              609,
+              796
+            ],
+            [
+              582,
+              779
+            ],
+            [
+              556,
+              778
+            ],
+            [
+              526,
+              784
+            ],
+            [
+              498,
+              778
+            ],
+            [
+              448,
+              775
+            ],
+            [
+              403,
+              773
+            ],
+            [
+              356,
+              765
+            ],
+            [
+              322,
+              756
+            ]
           ]
         ]
       }
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/honest/right-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "honest",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/honest/right-base.png",
-        "sourceSha256": "e4e1b99252c414440aa26dbb9402cb36d8be43ad32528bb64e888571e8bb2636",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/honest/right-motion-atlas-00.png",
-            "sha256": "6bcef1c249e944ce1dbed4970a62b1820fe13bc4160e1336fa385769ff2a536a",
-            "width": 298,
-            "height": 49
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/honest/right-motion-atlas-00.png",
-            "sha256": "6bcef1c249e944ce1dbed4970a62b1820fe13bc4160e1336fa385769ff2a536a",
-            "width": 298,
-            "height": 49
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              539,
-              266,
-              51,
-              45
-            ],
-            "maskPolygon": [
-              [
-                541,
-                288.5
-              ],
-              [
-                549.2,
-                268
-              ],
-              [
-                579.8,
-                268
-              ],
-              [
-                588,
-                288.5
-              ],
-              [
-                579.8,
-                309
-              ],
-              [
-                549.2,
-                309
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                152,
-                2,
-                51,
-                45
-              ],
-              "closed": [
-                2,
-                2,
-                51,
-                45
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              625,
-              263,
-              87,
-              45
-            ],
-            "maskPolygon": [
-              [
-                627,
-                285.5
-              ],
-              [
-                642.4,
-                265
-              ],
-              [
-                694.6,
-                265
-              ],
-              [
-                710,
-                285.5
-              ],
-              [
-                694.6,
-                306
-              ],
-              [
-                642.4,
-                306
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                209,
-                2,
-                87,
-                45
-              ],
-              "closed": [
-                59,
-                2,
-                87,
-                45
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-hair-tip",
-            "rect": [
-              565,
-              5,
-              81,
-              59
-            ],
-            "maskPolygon": [
-              [
-                568,
-                8
-              ],
-              [
-                604,
-                35
-              ],
-              [
-                643,
-                42
-              ],
-              [
-                615,
-                61
-              ],
-              [
-                583,
-                39
-              ]
-            ],
-            "featherPx": 2,
-            "geometry": {
-              "amplitudeX": 1.5,
-              "envelope": "vertical",
-              "motionScale": 0.5,
-              "pinStart": 5,
-              "pinEnd": 64
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/honest/right-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2066
+      "figure": {
+        "url": "/characters/realistic/honest/right-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
+        "contentBounds": [
+          126,
+          7,
+          813,
+          1525
         ],
-        "lowerBodyUrl": "/characters/realistic/honest/right-lower-body.png",
-        "lowerSourceSize": [
-          883,
-          1781
-        ],
-        "lowerSourceRect": [
-          0,
-          890,
-          883,
-          891
-        ],
-        "lowerRect": [
-          145,
-          1060,
-          971,
-          980
-        ],
-        "seatAnchor": [
-          733,
-          1329
-        ],
-        "footAnchors": [
-          [
-            304,
-            2000
+        "handContacts": {
+          "left": [
+            540,
+            770
           ],
+          "right": [
+            265,
+            745
+          ]
+        },
+        "seatAnchor": [
+          590,
+          985
+        ],
+        "footBounds": [
+          125,
+          1360,
+          395,
+          170
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "81e13f679d08e4018a7167960af776c20dbf5d9a6beb3a2f7a0257a2034c22ae",
+        "frontOfTablePolygons": [
           [
-            552,
-            2028
+            [
+              465,
+              783
+            ],
+            [
+              479,
+              761
+            ],
+            [
+              498,
+              741
+            ],
+            [
+              525,
+              723
+            ],
+            [
+              550,
+              720
+            ],
+            [
+              580,
+              727
+            ],
+            [
+              601,
+              733
+            ],
+            [
+              628,
+              727
+            ],
+            [
+              671,
+              716
+            ],
+            [
+              704,
+              706
+            ],
+            [
+              729,
+              687
+            ],
+            [
+              746,
+              684
+            ],
+            [
+              765,
+              694
+            ],
+            [
+              782,
+              710
+            ],
+            [
+              792,
+              733
+            ],
+            [
+              795,
+              752
+            ],
+            [
+              790,
+              765
+            ],
+            [
+              768,
+              772
+            ],
+            [
+              735,
+              779
+            ],
+            [
+              695,
+              782
+            ],
+            [
+              655,
+              789
+            ],
+            [
+              624,
+              798
+            ],
+            [
+              601,
+              807
+            ],
+            [
+              575,
+              803
+            ],
+            [
+              557,
+              802
+            ],
+            [
+              537,
+              813
+            ],
+            [
+              521,
+              817
+            ],
+            [
+              510,
+              811
+            ],
+            [
+              492,
+              816
+            ],
+            [
+              478,
+              811
+            ],
+            [
+              465,
+              806
+            ]
           ]
         ]
       }
@@ -2202,237 +801,48 @@
   "landlord": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/landlord/front-base.png",
-      "width": 1388,
-      "height": 1133,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "landlord",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/landlord/front-base.png",
-        "sourceSha256": "2391383f9d16c3ee701e98dd5187b58b797ab236318f6ba429888b8de9727824",
-        "width": 1388,
-        "height": 1133,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/landlord/front-motion-atlas-00.png",
-            "sha256": "cc7fe7cd0e9b2e914076cf76054fca5d18ed095871cc22b39a87cde8dc916ea5",
-            "width": 350,
-            "height": 46
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/landlord/front-motion-atlas-00.png",
-            "sha256": "cc7fe7cd0e9b2e914076cf76054fca5d18ed095871cc22b39a87cde8dc916ea5",
-            "width": 350,
-            "height": 46
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              605,
-              238,
-              85,
-              42
-            ],
-            "maskPolygon": [
-              [
-                607,
-                259
-              ],
-              [
-                622,
-                240
-              ],
-              [
-                673,
-                240
-              ],
-              [
-                688,
-                259
-              ],
-              [
-                673,
-                278
-              ],
-              [
-                622,
-                278
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                178,
-                2,
-                85,
-                42
-              ],
-              "closed": [
-                2,
-                2,
-                85,
-                42
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              730,
-              238,
-              79,
-              42
-            ],
-            "maskPolygon": [
-              [
-                732,
-                259
-              ],
-              [
-                745.8,
-                240
-              ],
-              [
-                793.2,
-                240
-              ],
-              [
-                807,
-                259
-              ],
-              [
-                793.2,
-                278
-              ],
-              [
-                745.8,
-                278
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                269,
-                2,
-                79,
-                42
-              ],
-              "closed": [
-                93,
-                2,
-                79,
-                42
-              ]
-            }
-          }
-        ],
-        "hairRegions": [],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/landlord/front-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1388,
-          2039
+      "figure": {
+        "url": "/characters/realistic/landlord/front-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1388,
-          1133
+        "contentBounds": [
+          92,
+          6,
+          842,
+          1525
         ],
-        "lowerBodyUrl": "/characters/realistic/landlord/front-lower-body.png",
-        "lowerSourceSize": [
-          933,
-          1686
-        ],
-        "lowerSourceRect": [
-          0,
-          780,
-          933,
-          906
-        ],
-        "lowerRect": [
-          181,
-          1030,
-          1026,
-          997
-        ],
+        "handContacts": {
+          "left": [
+            700,
+            760
+          ],
+          "right": [
+            330,
+            760
+          ]
+        },
         "seatAnchor": [
-          692,
-          1234
+          510,
+          920
         ],
-        "footAnchors": [
-          [
-            390,
-            1970
-          ],
-          [
-            990,
-            1970
-          ]
+        "footBounds": [
+          190,
+          1430,
+          650,
+          100
         ],
-        "sleevePatches": {
-          "sourceUrl": "/characters/realistic/landlord/front-sleeve-donor.png",
-          "sourceSize": [
-            1460,
-            1077
-          ],
-          "patches": [
-            {
-              "sourceRect": [
-                100,
-                990,
-                230,
-                87
-              ],
-              "targetRect": [
-                42,
-                1030,
-                230,
-                87
-              ]
-            },
-            {
-              "sourceRect": [
-                1220,
-                990,
-                180,
-                87
-              ],
-              "targetRect": [
-                1180,
-                1030,
-                180,
-                87
-              ]
-            }
-          ]
-        }
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "9b034a4ce682d67a463c018fe22d74473e1db2a848b0c5e42ead2b511bb19210",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -2452,396 +862,274 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/landlord/left-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "landlord",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/landlord/left-base.png",
-        "sourceSha256": "c25c83647a97b7ef0414603bd8313692e4d0962c5a91a481f8ebd797532c081b",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/landlord/left-motion-atlas-00.png",
-            "sha256": "aad7ae991279f2e1842c16998e060708868ca38355437b4f5f865686a08b5c1f",
-            "width": 288,
-            "height": 47
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/landlord/left-motion-atlas-00.png",
-            "sha256": "aad7ae991279f2e1842c16998e060708868ca38355437b4f5f865686a08b5c1f",
-            "width": 288,
-            "height": 47
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              568,
-              241,
-              84,
-              43
-            ],
-            "maskPolygon": [
-              [
-                570,
-                262.5
-              ],
-              [
-                584.8,
-                243
-              ],
-              [
-                635.2,
-                243
-              ],
-              [
-                650,
-                262.5
-              ],
-              [
-                635.2,
-                282
-              ],
-              [
-                584.8,
-                282
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                147,
-                2,
-                84,
-                43
-              ],
-              "closed": [
-                2,
-                2,
-                84,
-                43
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              688,
-              240,
-              49,
-              42
-            ],
-            "maskPolygon": [
-              [
-                690,
-                261
-              ],
-              [
-                697.8,
-                242
-              ],
-              [
-                727.2,
-                242
-              ],
-              [
-                735,
-                261
-              ],
-              [
-                727.2,
-                280
-              ],
-              [
-                697.8,
-                280
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                237,
-                2,
-                49,
-                42
-              ],
-              "closed": [
-                92,
-                2,
-                49,
-                42
-              ]
-            }
-          }
-        ],
-        "hairRegions": [],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/landlord/left-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2066
+      "figure": {
+        "url": "/characters/realistic/landlord/left-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
+        "contentBounds": [
+          92,
+          15,
+          852,
+          1511
         ],
-        "lowerBodyUrl": "/characters/realistic/landlord/left-lower-body.png",
-        "lowerSourceSize": [
-          935,
-          1682
-        ],
-        "lowerSourceRect": [
-          0,
-          890,
-          935,
-          792
-        ],
-        "lowerRect": [
-          90,
-          1090,
-          1122,
-          950
-        ],
-        "seatAnchor": [
-          510,
-          1318
-        ],
-        "footAnchors": [
-          [
-            462,
-            1990
+        "handContacts": {
+          "left": [
+            865,
+            740
           ],
+          "right": [
+            500,
+            745
+          ]
+        },
+        "seatAnchor": [
+          330,
+          1000
+        ],
+        "footBounds": [
+          280,
+          1375,
+          630,
+          155
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "3008ca4992c547c4ad3ce67a675acbe2064d7bb6e220820d57695f5e0d5af259",
+        "frontOfTablePolygons": [
           [
-            984,
-            1966
+            [
+              354,
+              748
+            ],
+            [
+              364,
+              724
+            ],
+            [
+              380,
+              705
+            ],
+            [
+              402,
+              691
+            ],
+            [
+              438,
+              686
+            ],
+            [
+              474,
+              686
+            ],
+            [
+              493,
+              689
+            ],
+            [
+              528,
+              707
+            ],
+            [
+              555,
+              729
+            ],
+            [
+              582,
+              752
+            ],
+            [
+              583,
+              763
+            ],
+            [
+              574,
+              772
+            ],
+            [
+              560,
+              771
+            ],
+            [
+              551,
+              777
+            ],
+            [
+              535,
+              775
+            ],
+            [
+              521,
+              765
+            ],
+            [
+              513,
+              777
+            ],
+            [
+              499,
+              778
+            ],
+            [
+              477,
+              768
+            ],
+            [
+              448,
+              761
+            ],
+            [
+              410,
+              764
+            ],
+            [
+              380,
+              760
+            ]
           ]
         ]
       }
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/landlord/right-base.png",
-      "width": 1315,
-      "height": 1196,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "landlord",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/landlord/right-base.png",
-        "sourceSha256": "af171d416adfd5813d9493cc57cc01af098b0b163e31d32e03cd071374ca5815",
-        "width": 1315,
-        "height": 1196,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/landlord/right-motion-atlas-00.png",
-            "sha256": "903967d620662648b2a02be3057824bc22af59ffd86790717ae16c932d934ceb",
-            "width": 322,
-            "height": 47
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/landlord/right-motion-atlas-00.png",
-            "sha256": "903967d620662648b2a02be3057824bc22af59ffd86790717ae16c932d934ceb",
-            "width": 322,
-            "height": 47
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              600,
-              249,
-              61,
-              43
-            ],
-            "maskPolygon": [
-              [
-                602,
-                270.5
-              ],
-              [
-                612.2,
-                251
-              ],
-              [
-                648.8,
-                251
-              ],
-              [
-                659,
-                270.5
-              ],
-              [
-                648.8,
-                290
-              ],
-              [
-                612.2,
-                290
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                164,
-                2,
-                61,
-                43
-              ],
-              "closed": [
-                2,
-                2,
-                61,
-                43
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              691,
-              246,
-              89,
-              43
-            ],
-            "maskPolygon": [
-              [
-                693,
-                267.5
-              ],
-              [
-                708.8,
-                248
-              ],
-              [
-                762.2,
-                248
-              ],
-              [
-                778,
-                267.5
-              ],
-              [
-                762.2,
-                287
-              ],
-              [
-                708.8,
-                287
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                231,
-                2,
-                89,
-                43
-              ],
-              "closed": [
-                69,
-                2,
-                89,
-                43
-              ]
-            }
-          }
-        ],
-        "hairRegions": [],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/landlord/right-full-body.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1315,
-          2153
+      "figure": {
+        "url": "/characters/realistic/landlord/right-full-body.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1315,
-          1196
+        "contentBounds": [
+          58,
+          16,
+          911,
+          1510
         ],
-        "lowerBodyUrl": "/characters/realistic/landlord/right-lower-body.png",
-        "lowerSourceSize": [
-          935,
-          1683
-        ],
-        "lowerSourceRect": [
-          0,
-          865,
-          935,
-          818
-        ],
-        "lowerRect": [
-          50,
-          1048,
-          1169,
-          1022
-        ],
-        "seatAnchor": [
-          756,
-          1386
-        ],
-        "footAnchors": [
-          [
-            275,
-            2004
+        "handContacts": {
+          "left": [
+            580,
+            790
           ],
+          "right": [
+            170,
+            790
+          ]
+        },
+        "seatAnchor": [
+          650,
+          1000
+        ],
+        "footBounds": [
+          100,
+          1420,
+          560,
+          110
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "1f5ea5d910a69295a91d745863e540fa53f434b98e762519c1dcf9ddb1707b28",
+        "frontOfTablePolygons": [
           [
-            738,
-            2029
+            [
+              512,
+              800
+            ],
+            [
+              527,
+              782
+            ],
+            [
+              548,
+              762
+            ],
+            [
+              575,
+              744
+            ],
+            [
+              600,
+              732
+            ],
+            [
+              630,
+              729
+            ],
+            [
+              660,
+              730
+            ],
+            [
+              688,
+              743
+            ],
+            [
+              709,
+              763
+            ],
+            [
+              722,
+              786
+            ],
+            [
+              720,
+              799
+            ],
+            [
+              696,
+              807
+            ],
+            [
+              675,
+              806
+            ],
+            [
+              648,
+              804
+            ],
+            [
+              623,
+              802
+            ],
+            [
+              605,
+              813
+            ],
+            [
+              584,
+              823
+            ],
+            [
+              568,
+              828
+            ],
+            [
+              552,
+              825
+            ],
+            [
+              538,
+              831
+            ],
+            [
+              524,
+              827
+            ],
+            [
+              512,
+              820
+            ]
           ]
         ]
       }
@@ -2850,280 +1138,48 @@
   "wealthy": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/wealthy/front-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "wealthy",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/wealthy/front-base.png",
-        "sourceSha256": "5a54bdffd5c206541d1313d4a90e315a8d35a7abe24a215ba7d7d6dd78c2716b",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/wealthy/front-motion-atlas-00.png",
-            "sha256": "9ac3e2997a740b169031ba5d4fdeb0b7b1847860da8781693fe3d8b34d8b5e28",
-            "width": 368,
-            "height": 52
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/wealthy/front-motion-atlas-00.png",
-            "sha256": "9ac3e2997a740b169031ba5d4fdeb0b7b1847860da8781693fe3d8b34d8b5e28",
-            "width": 368,
-            "height": 52
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              597,
-              232,
-              86,
-              46
-            ],
-            "maskPolygon": [
-              [
-                599,
-                252.7
-              ],
-              [
-                614.2,
-                234
-              ],
-              [
-                665.8,
-                234
-              ],
-              [
-                681,
-                252.7
-              ],
-              [
-                670.1,
-                276
-              ],
-              [
-                618.5,
-                276
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                187,
-                2,
-                86,
-                46
-              ],
-              "closed": [
-                2,
-                2,
-                86,
-                46
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              735,
-              227,
-              87,
-              48
-            ],
-            "maskPolygon": [
-              [
-                737,
-                248.6
-              ],
-              [
-                752.4,
-                229
-              ],
-              [
-                804.6,
-                229
-              ],
-              [
-                820,
-                248.6
-              ],
-              [
-                808.95,
-                273
-              ],
-              [
-                756.75,
-                273
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                279,
-                2,
-                87,
-                48
-              ],
-              "closed": [
-                94,
-                2,
-                87,
-                48
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              820,
-              309,
-              62,
-              177
-            ],
-            "maskPolygon": [
-              [
-                846,
-                310
-              ],
-              [
-                875,
-                333
-              ],
-              [
-                880,
-                364
-              ],
-              [
-                868,
-                400
-              ],
-              [
-                844,
-                426
-              ],
-              [
-                830,
-                447
-              ],
-              [
-                835,
-                466
-              ],
-              [
-                855,
-                480
-              ],
-              [
-                840,
-                485
-              ],
-              [
-                826,
-                470
-              ],
-              [
-                821,
-                445
-              ],
-              [
-                832,
-                421
-              ],
-              [
-                853,
-                396
-              ],
-              [
-                863,
-                364
-              ],
-              [
-                850,
-                340
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 309,
-              "pinEnd": 486
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/wealthy/front-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1584,
-          2369
+      "figure": {
+        "url": "/characters/realistic/wealthy/front-unified-seated.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          100,
-          0,
-          1371,
-          1148
+        "contentBounds": [
+          79,
+          12,
+          865,
+          1513
         ],
-        "lowerBodyUrl": "/characters/realistic/wealthy/front-lower-body.png",
-        "lowerSourceSize": [
-          1022,
-          841
-        ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1022,
-          841
-        ],
-        "lowerRect": [
-          0,
-          1035,
-          1584,
-          1304
-        ],
-        "seatAnchor": [
-          786,
-          1050
-        ],
-        "footAnchors": [
-          [
-            728,
-            2278
+        "handContacts": {
+          "left": [
+            638,
+            729
           ],
-          [
-            876,
-            2278
+          "right": [
+            413,
+            723
           ]
-        ]
+        },
+        "seatAnchor": [
+          520,
+          900
+        ],
+        "footBounds": [
+          410,
+          1370,
+          205,
+          157
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "e3c3c774fba09592088fb9af6491d20bc1cdf72ab411b515c3d244142675155d",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -3143,1158 +1199,142 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/wealthy/left-base.png",
-      "width": 1199,
-      "height": 1312,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "wealthy",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/wealthy/left-base.png",
-        "sourceSha256": "dc1524cb1cac82c27f4290dc93096b9595e403f032a1c2d0135870c8dbbe7847",
-        "width": 1199,
-        "height": 1312,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/wealthy/left-motion-atlas-00.png",
-            "sha256": "4aba3b6cd22ea9ac2d1f239889c7d5426edc6ee073b2bb95abafb6bac2a196a5",
-            "width": 324,
-            "height": 51
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/wealthy/left-motion-atlas-00.png",
-            "sha256": "4aba3b6cd22ea9ac2d1f239889c7d5426edc6ee073b2bb95abafb6bac2a196a5",
-            "width": 324,
-            "height": 51
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              457,
-              246,
-              96,
-              47
-            ],
-            "maskPolygon": [
-              [
-                459,
-                267.15
-              ],
-              [
-                476.2,
-                248
-              ],
-              [
-                533.8,
-                248
-              ],
-              [
-                551,
-                267.15
-              ],
-              [
-                538.6,
-                291
-              ],
-              [
-                481,
-                291
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                165,
-                2,
-                96,
-                47
-              ],
-              "closed": [
-                2,
-                2,
-                96,
-                47
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              594,
-              245,
-              55,
-              47
-            ],
-            "maskPolygon": [
-              [
-                596,
-                266.15
-              ],
-              [
-                605,
-                247
-              ],
-              [
-                638,
-                247
-              ],
-              [
-                647,
-                266.15
-              ],
-              [
-                640.75,
-                290
-              ],
-              [
-                607.75,
-                290
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                267,
-                2,
-                55,
-                47
-              ],
-              "closed": [
-                104,
-                2,
-                55,
-                47
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              610,
-              310,
-              79,
-              210
-            ],
-            "maskPolygon": [
-              [
-                658,
-                312
-              ],
-              [
-                680,
-                334
-              ],
-              [
-                680,
-                378
-              ],
-              [
-                648,
-                420
-              ],
-              [
-                623,
-                451
-              ],
-              [
-                624,
-                483
-              ],
-              [
-                647,
-                514
-              ],
-              [
-                632,
-                519
-              ],
-              [
-                614,
-                487
-              ],
-              [
-                614,
-                450
-              ],
-              [
-                641,
-                407
-              ],
-              [
-                660,
-                372
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 310,
-              "pinEnd": 520
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/wealthy/left-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1858,
-          2362
+      "figure": {
+        "url": "/characters/realistic/wealthy/left-unified-seated.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          270,
-          0,
-          1199,
-          1312
+        "contentBounds": [
+          29,
+          6,
+          952,
+          1521
         ],
-        "lowerBodyUrl": "/characters/realistic/wealthy/left-lower-body.png",
-        "lowerSourceSize": [
-          1199,
-          662
-        ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1199,
-          662
-        ],
-        "lowerRect": [
-          0,
-          1104,
-          1858,
-          1026
-        ],
+        "handContacts": {
+          "left": [
+            747,
+            780
+          ],
+          "right": [
+            558,
+            782
+          ]
+        },
         "seatAnchor": [
-          870,
-          1150
+          400,
+          950
         ],
-        "footAnchors": [
-          [
-            1317,
-            2065
-          ],
-          [
-            1534,
-            2049
-          ]
+        "footBounds": [
+          666,
+          1360,
+          254,
+          167
         ],
-        "upperClipPolygons": [
-          [
-            [
-              0,
-              0
-            ],
-            [
-              1199,
-              0
-            ],
-            [
-              1199,
-              1195
-            ],
-            [
-              900,
-              1195
-            ],
-            [
-              800,
-              1180
-            ],
-            [
-              700,
-              1190
-            ],
-            [
-              500,
-              1200
-            ],
-            [
-              300,
-              1230
-            ],
-            [
-              200,
-              1270
-            ],
-            [
-              0,
-              1270
-            ]
-          ],
-          [
-            [
-              180,
-              1000
-            ],
-            [
-              350,
-              1010
-            ],
-            [
-              490,
-              1100
-            ],
-            [
-              600,
-              1090
-            ],
-            [
-              680,
-              1110
-            ],
-            [
-              745,
-              1170
-            ],
-            [
-              745,
-              1195
-            ],
-            [
-              705,
-              1190
-            ],
-            [
-              715,
-              1240
-            ],
-            [
-              680,
-              1245
-            ],
-            [
-              620,
-              1230
-            ],
-            [
-              570,
-              1210
-            ],
-            [
-              500,
-              1205
-            ],
-            [
-              400,
-              1195
-            ],
-            [
-              290,
-              1220
-            ],
-            [
-              180,
-              1190
-            ]
-          ],
-          [
-            [
-              790,
-              990
-            ],
-            [
-              970,
-              1000
-            ],
-            [
-              1015,
-              1070
-            ],
-            [
-              1060,
-              1130
-            ],
-            [
-              1050,
-              1190
-            ],
-            [
-              1020,
-              1230
-            ],
-            [
-              970,
-              1270
-            ],
-            [
-              920,
-              1270
-            ],
-            [
-              900,
-              1240
-            ],
-            [
-              900,
-              1200
-            ],
-            [
-              900,
-              1130
-            ],
-            [
-              800,
-              1120
-            ]
-          ]
-        ]
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "567a201d3d4ff9efe04ed033261a51d8b2d2e6ae1a58af02f2271f3b1605083b",
+        "frontOfTablePolygons": []
       }
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/wealthy/right-base.png",
-      "width": 1305,
-      "height": 1206,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "wealthy",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/wealthy/right-base.png",
-        "sourceSha256": "7b3d85f1af898ac90ee4182b1c7a70625b6c885e53d6a4657bfaae007fd13a95",
-        "width": 1305,
-        "height": 1206,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/wealthy/right-motion-atlas-00.png",
-            "sha256": "07a9b042f556b34f9123bc1bd11105fc61e5cf20970b978acdbdafe6e96ffaca",
-            "width": 330,
-            "height": 53
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/wealthy/right-motion-atlas-00.png",
-            "sha256": "07a9b042f556b34f9123bc1bd11105fc61e5cf20970b978acdbdafe6e96ffaca",
-            "width": 330,
-            "height": 53
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              650,
-              227,
-              63,
-              47
-            ],
-            "maskPolygon": [
-              [
-                652,
-                248.15
-              ],
-              [
-                662.6,
-                229
-              ],
-              [
-                700.4,
-                229
-              ],
-              [
-                711,
-                248.15
-              ],
-              [
-                703.55,
-                272
-              ],
-              [
-                665.75,
-                272
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                168,
-                2,
-                63,
-                47
-              ],
-              "closed": [
-                2,
-                2,
-                63,
-                47
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              751,
-              225,
-              91,
-              49
-            ],
-            "maskPolygon": [
-              [
-                753,
-                247.05
-              ],
-              [
-                769.2,
-                227
-              ],
-              [
-                823.8,
-                227
-              ],
-              [
-                840,
-                247.05
-              ],
-              [
-                828.35,
-                272
-              ],
-              [
-                773.75,
-                272
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                237,
-                2,
-                91,
-                49
-              ],
-              "closed": [
-                71,
-                2,
-                91,
-                49
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              620,
-              338,
-              65,
-              134
-            ],
-            "maskPolygon": [
-              [
-                646,
-                338
-              ],
-              [
-                664,
-                365
-              ],
-              [
-                683,
-                399
-              ],
-              [
-                678,
-                430
-              ],
-              [
-                653,
-                459
-              ],
-              [
-                628,
-                470
-              ],
-              [
-                620,
-                456
-              ],
-              [
-                643,
-                450
-              ],
-              [
-                661,
-                425
-              ],
-              [
-                662,
-                404
-              ],
-              [
-                641,
-                375
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 338,
-              "pinEnd": 472
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/wealthy/right-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1858,
-          2171
+      "figure": {
+        "url": "/characters/realistic/wealthy/right-unified-seated.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          350,
-          0,
-          1305,
-          1206
+        "contentBounds": [
+          28,
+          14,
+          966,
+          1514
         ],
-        "lowerBodyUrl": "/characters/realistic/wealthy/right-lower-body.png",
-        "lowerSourceSize": [
-          1199,
-          662
-        ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1199,
-          662
-        ],
-        "lowerRect": [
-          0,
-          1034,
-          1858,
-          1026
-        ],
+        "handContacts": {
+          "left": [
+            456,
+            791
+          ],
+          "right": [
+            320,
+            789
+          ]
+        },
         "seatAnchor": [
-          1002,
-          1150
+          650,
+          950
         ],
-        "footAnchors": [
-          [
-            356,
-            1979
-          ],
-          [
-            535,
-            1979
-          ]
+        "footBounds": [
+          96,
+          1370,
+          246,
+          157
         ],
-        "upperClipPolygons": [
-          [
-            [
-              0,
-              0
-            ],
-            [
-              1305,
-              0
-            ],
-            [
-              1305,
-              1034
-            ],
-            [
-              1080,
-              1034
-            ],
-            [
-              1040,
-              1070
-            ],
-            [
-              1000,
-              1095
-            ],
-            [
-              930,
-              1105
-            ],
-            [
-              850,
-              1115
-            ],
-            [
-              750,
-              1105
-            ],
-            [
-              700,
-              1060
-            ],
-            [
-              600,
-              1040
-            ],
-            [
-              500,
-              1034
-            ],
-            [
-              400,
-              1034
-            ],
-            [
-              300,
-              1034
-            ],
-            [
-              0,
-              1034
-            ]
-          ],
-          [
-            [
-              360,
-              970
-            ],
-            [
-              490,
-              970
-            ],
-            [
-              540,
-              1010
-            ],
-            [
-              570,
-              1050
-            ],
-            [
-              650,
-              1040
-            ],
-            [
-              720,
-              1035
-            ],
-            [
-              740,
-              1100
-            ],
-            [
-              650,
-              1115
-            ],
-            [
-              570,
-              1130
-            ],
-            [
-              520,
-              1145
-            ],
-            [
-              490,
-              1145
-            ],
-            [
-              465,
-              1135
-            ],
-            [
-              460,
-              1120
-            ],
-            [
-              490,
-              1080
-            ],
-            [
-              450,
-              1060
-            ],
-            [
-              390,
-              1030
-            ]
-          ],
-          [
-            [
-              1030,
-              850
-            ],
-            [
-              1305,
-              850
-            ],
-            [
-              1305,
-              1206
-            ],
-            [
-              1100,
-              1206
-            ],
-            [
-              1000,
-              1140
-            ]
-          ]
-        ]
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "60ef68586523ffa77d3d873b5a32ba6469079a426e8fb09df073adf5789ce88e",
+        "frontOfTablePolygons": []
       }
     }
   },
   "star": {
     "front": {
       "approved": true,
-      "baseUrl": "/characters/realistic/star/front-base.png",
-      "width": 1371,
-      "height": 1148,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "star",
-        "realisticView": "front",
-        "sourceUrl": "/characters/realistic/star/front-base.png",
-        "sourceSha256": "2c6b3d151bf10ed12c2a2a2c947aa15b47020310fca9cc0d06718cca87233a7d",
-        "width": 1371,
-        "height": 1148,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/star/front-motion-atlas-00.png",
-            "sha256": "7d051a31bca6c0fa99b361f0e5902f505d3789fc70f7969dce66db9b2d34304e",
-            "width": 378,
-            "height": 55
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/star/front-motion-atlas-00.png",
-            "sha256": "7d051a31bca6c0fa99b361f0e5902f505d3789fc70f7969dce66db9b2d34304e",
-            "width": 378,
-            "height": 55
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              589,
-              249,
-              90,
-              50
-            ],
-            "maskPolygon": [
-              [
-                591,
-                271.5
-              ],
-              [
-                607,
-                251
-              ],
-              [
-                661,
-                251
-              ],
-              [
-                677,
-                271.5
-              ],
-              [
-                665.5,
-                297
-              ],
-              [
-                611.5,
-                297
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                192,
-                2,
-                90,
-                50
-              ],
-              "closed": [
-                2,
-                2,
-                90,
-                50
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              734,
-              242,
-              88,
-              51
-            ],
-            "maskPolygon": [
-              [
-                736,
-                264.95
-              ],
-              [
-                751.6,
-                244
-              ],
-              [
-                804.4,
-                244
-              ],
-              [
-                820,
-                264.95
-              ],
-              [
-                808.8,
-                291
-              ],
-              [
-                756,
-                291
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                288,
-                2,
-                88,
-                51
-              ],
-              "closed": [
-                98,
-                2,
-                88,
-                51
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              790,
-              315,
-              91,
-              236
-            ],
-            "maskPolygon": [
-              [
-                824,
-                316
-              ],
-              [
-                852,
-                337
-              ],
-              [
-                875,
-                358
-              ],
-              [
-                878,
-                386
-              ],
-              [
-                862,
-                413
-              ],
-              [
-                833,
-                432
-              ],
-              [
-                816,
-                454
-              ],
-              [
-                820,
-                473
-              ],
-              [
-                849,
-                500
-              ],
-              [
-                852,
-                526
-              ],
-              [
-                837,
-                544
-              ],
-              [
-                814,
-                550
-              ],
-              [
-                801,
-                546
-              ],
-              [
-                816,
-                539
-              ],
-              [
-                835,
-                525
-              ],
-              [
-                834,
-                508
-              ],
-              [
-                809,
-                486
-              ],
-              [
-                794,
-                463
-              ],
-              [
-                791,
-                439
-              ],
-              [
-                812,
-                416
-              ],
-              [
-                845,
-                395
-              ],
-              [
-                858,
-                376
-              ],
-              [
-                850,
-                359
-              ],
-              [
-                826,
-                344
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 315,
-              "pinEnd": 551
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/star/front-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1371,
-          2071
+      "figure": {
+        "url": "/characters/realistic/star/front-unified-seated.png",
+        "sourceSize": [
+          1024,
+          1536
         ],
-        "upperRect": [
-          0,
-          0,
-          1371,
-          1148
+        "contentBounds": [
+          52,
+          9,
+          918,
+          1517
         ],
-        "lowerBodyUrl": "/characters/realistic/star/front-lower-body.png",
-        "lowerSourceSize": [
-          1021,
-          815
-        ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1021,
-          815
-        ],
-        "lowerRect": [
-          55,
-          1035,
-          1260,
-          1006
-        ],
-        "seatAnchor": [
-          690,
-          1100
-        ],
-        "footAnchors": [
-          [
-            629,
-            1992
+        "handContacts": {
+          "left": [
+            666,
+            735
           ],
-          [
-            757,
-            1992
+          "right": [
+            375,
+            735
           ]
-        ]
+        },
+        "seatAnchor": [
+          510,
+          850
+        ],
+        "footBounds": [
+          426,
+          1280,
+          180,
+          247
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "c1f942d9c32db22ef55b6cf1c7100e2f310f6969cc1c5b3e81bff5eddfbffbc4",
+        "frontOfTablePolygons": []
       },
       "pov": {
         "approved": true,
@@ -4314,505 +1354,1074 @@
     },
     "left": {
       "approved": true,
-      "baseUrl": "/characters/realistic/star/left-base.png",
-      "width": 1158,
-      "height": 1359,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "star",
-        "realisticView": "left",
-        "sourceUrl": "/characters/realistic/star/left-base.png",
-        "sourceSha256": "834615d83e76ca90d4b4dce548068b11f0475d6daa4db75cdbbcff432ce7dccc",
-        "width": 1158,
-        "height": 1359,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/star/left-motion-atlas-00.png",
-            "sha256": "0f409cd487a9e7de659e13b5ae48db46e1046ebd29e532da45818a40c958e7ef",
-            "width": 350,
-            "height": 55
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/star/left-motion-atlas-00.png",
-            "sha256": "0f409cd487a9e7de659e13b5ae48db46e1046ebd29e532da45818a40c958e7ef",
-            "width": 350,
-            "height": 55
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              389,
-              263,
-              94,
-              51
-            ],
-            "maskPolygon": [
-              [
-                391,
-                285.95
-              ],
-              [
-                407.8,
-                265
-              ],
-              [
-                464.2,
-                265
-              ],
-              [
-                481,
-                285.95
-              ],
-              [
-                468.9,
-                312
-              ],
-              [
-                412.5,
-                312
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                178,
-                2,
-                94,
-                51
-              ],
-              "closed": [
-                2,
-                2,
-                94,
-                51
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              526,
-              258,
-              70,
-              49
-            ],
-            "maskPolygon": [
-              [
-                528,
-                280.05
-              ],
-              [
-                540,
-                260
-              ],
-              [
-                582,
-                260
-              ],
-              [
-                594,
-                280.05
-              ],
-              [
-                585.5,
-                305
-              ],
-              [
-                543.5,
-                305
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                278,
-                2,
-                70,
-                49
-              ],
-              "closed": [
-                102,
-                2,
-                70,
-                49
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              545,
-              339,
-              96,
-              254
-            ],
-            "maskPolygon": [
-              [
-                606,
-                339
-              ],
-              [
-                632,
-                370
-              ],
-              [
-                640,
-                411
-              ],
-              [
-                624,
-                442
-              ],
-              [
-                590,
-                469
-              ],
-              [
-                568,
-                495
-              ],
-              [
-                576,
-                519
-              ],
-              [
-                608,
-                544
-              ],
-              [
-                609,
-                567
-              ],
-              [
-                584,
-                592
-              ],
-              [
-                558,
-                590
-              ],
-              [
-                555,
-                580
-              ],
-              [
-                579,
-                578
-              ],
-              [
-                594,
-                562
-              ],
-              [
-                587,
-                548
-              ],
-              [
-                560,
-                525
-              ],
-              [
-                546,
-                500
-              ],
-              [
-                551,
-                474
-              ],
-              [
-                575,
-                445
-              ],
-              [
-                609,
-                418
-              ],
-              [
-                617,
-                394
-              ],
-              [
-                602,
-                367
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 339,
-              "pinEnd": 593
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/star/left-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1485,
-          2446
-        ],
-        "upperRect": [
-          90,
-          0,
-          1158,
-          1359
-        ],
-        "lowerBodyUrl": "/characters/realistic/star/left-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/star/left-unified-seated.png",
+        "sourceSize": [
           1024,
-          756
+          1536
         ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1024,
-          756
+        "contentBounds": [
+          71,
+          14,
+          919,
+          1496
         ],
-        "lowerRect": [
-          0,
-          1125,
-          1485,
-          1096
-        ],
-        "seatAnchor": [
-          590,
-          1200
-        ],
-        "footAnchors": [
-          [
-            873,
-            2162
+        "handContacts": {
+          "left": [
+            822,
+            711
           ],
-          [
-            1122,
-            2157
+          "right": [
+            565,
+            719
           ]
+        },
+        "seatAnchor": [
+          403,
+          886
         ],
-        "upperClipPolygons": [
+        "footBounds": [
+          606,
+          1275,
+          222,
+          232
+        ],
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "6ecae4ec61e4be6ad913f79d9e4804516390d0e501c4ae3bb6dcbe1d0134dbf3",
+        "frontOfTablePolygons": [
           [
             [
-              0,
-              0
+              374,
+              642
             ],
             [
-              1158,
-              0
+              380,
+              642
             ],
             [
-              1158,
-              1145
+              383,
+              645
             ],
             [
-              1100,
-              1145
+              390,
+              648
             ],
             [
-              1040,
-              1230
+              391,
+              650
             ],
             [
-              980,
-              1235
+              393,
+              650
             ],
             [
-              900,
-              1210
+              395,
+              653
             ],
             [
-              810,
-              1170
+              398,
+              653
             ],
             [
-              760,
-              1140
+              399,
+              656
             ],
             [
-              700,
-              1175
+              403,
+              656
             ],
             [
-              660,
-              1190
+              415,
+              661
             ],
             [
-              620,
-              1180
+              417,
+              663
             ],
             [
-              550,
-              1190
+              417,
+              666
+            ],
+            [
+              423,
+              666
+            ],
+            [
+              432,
+              673
+            ],
+            [
+              434,
+              671
+            ],
+            [
+              437,
+              672
+            ],
+            [
+              438,
+              676
+            ],
+            [
+              442,
+              674
+            ],
+            [
+              449,
+              678
+            ],
+            [
+              453,
+              678
+            ],
+            [
+              458,
+              682
+            ],
+            [
+              460,
+              681
+            ],
+            [
+              464,
+              684
+            ],
+            [
+              471,
+              684
+            ],
+            [
+              476,
+              689
+            ],
+            [
+              484,
+              689
+            ],
+            [
+              487,
+              687
+            ],
+            [
+              488,
+              684
+            ],
+            [
+              494,
+              685
             ],
             [
               500,
-              1230
+              683
             ],
             [
-              350,
-              1250
+              503,
+              686
             ],
             [
-              250,
-              1250
+              503,
+              681
             ],
             [
-              160,
-              1230
+              508,
+              681
             ],
             [
-              60,
-              1220
+              510,
+              678
             ],
             [
-              0,
-              1200
-            ]
-          ],
-          [
-            [
-              200,
-              1030
+              514,
+              676
             ],
             [
-              340,
-              1030
+              517,
+              676
             ],
             [
-              440,
-              1165
+              521,
+              673
             ],
             [
-              525,
-              1170
+              523,
+              674
+            ],
+            [
+              530,
+              670
+            ],
+            [
+              536,
+              664
+            ],
+            [
+              538,
+              665
+            ],
+            [
+              539,
+              663
+            ],
+            [
+              555,
+              663
+            ],
+            [
+              561,
+              667
+            ],
+            [
+              573,
+              671
+            ],
+            [
+              575,
+              670
+            ],
+            [
+              575,
+              668
+            ],
+            [
+              577,
+              668
+            ],
+            [
+              579,
+              669
+            ],
+            [
+              577,
+              671
+            ],
+            [
+              578,
+              674
+            ],
+            [
+              581,
+              673
+            ],
+            [
+              584,
+              675
+            ],
+            [
+              590,
+              675
+            ],
+            [
+              591,
+              677
+            ],
+            [
+              595,
+              678
+            ],
+            [
+              605,
+              688
+            ],
+            [
+              605,
+              690
+            ],
+            [
+              613,
+              699
+            ],
+            [
+              615,
+              697
+            ],
+            [
+              619,
+              698
+            ],
+            [
+              615,
+              703
+            ],
+            [
+              618,
+              706
+            ],
+            [
+              619,
+              712
+            ],
+            [
+              623,
+              716
+            ],
+            [
+              623,
+              720
             ],
             [
               620,
-              1210
+              721
             ],
             [
-              625,
-              1245
+              615,
+              728
             ],
             [
-              700,
-              1240
+              609,
+              728
             ],
             [
-              710,
-              1280
+              604,
+              726
             ],
             [
-              635,
-              1310
+              601,
+              730
+            ],
+            [
+              596,
+              730
+            ],
+            [
+              590,
+              727
+            ],
+            [
+              581,
+              722
+            ],
+            [
+              577,
+              728
+            ],
+            [
+              571,
+              728
+            ],
+            [
+              564,
+              726
             ],
             [
               560,
-              1320
+              722
+            ],
+            [
+              546,
+              716
+            ],
+            [
+              530,
+              723
+            ],
+            [
+              515,
+              723
+            ],
+            [
+              508,
+              724
+            ],
+            [
+              492,
+              730
             ],
             [
               480,
-              1290
+              730
             ],
             [
-              400,
-              1245
+              472,
+              726
             ],
             [
-              300,
-              1195
+              468,
+              726
             ],
             [
-              220,
-              1145
+              464,
+              723
+            ],
+            [
+              464,
+              719
+            ],
+            [
+              462,
+              717
+            ],
+            [
+              463,
+              707
+            ],
+            [
+              461,
+              705
+            ],
+            [
+              459,
+              705
+            ],
+            [
+              456,
+              709
+            ],
+            [
+              456,
+              714
+            ],
+            [
+              458,
+              715
+            ],
+            [
+              459,
+              719
+            ],
+            [
+              458,
+              722
+            ],
+            [
+              455,
+              724
+            ],
+            [
+              454,
+              722
+            ],
+            [
+              440,
+              721
+            ],
+            [
+              424,
+              717
+            ],
+            [
+              420,
+              717
+            ],
+            [
+              416,
+              721
+            ],
+            [
+              416,
+              717
+            ],
+            [
+              413,
+              715
+            ],
+            [
+              405,
+              715
+            ],
+            [
+              401,
+              713
+            ],
+            [
+              377,
+              710
+            ],
+            [
+              332,
+              697
+            ],
+            [
+              331,
+              678
+            ],
+            [
+              334,
+              676
+            ],
+            [
+              335,
+              669
+            ],
+            [
+              337,
+              668
+            ],
+            [
+              337,
+              666
+            ],
+            [
+              339,
+              665
+            ],
+            [
+              341,
+              667
+            ],
+            [
+              341,
+              662
+            ],
+            [
+              344,
+              659
+            ],
+            [
+              348,
+              658
+            ],
+            [
+              352,
+              653
+            ],
+            [
+              355,
+              654
+            ],
+            [
+              356,
+              651
+            ],
+            [
+              359,
+              650
+            ],
+            [
+              362,
+              645
             ]
           ],
           [
             [
-              670,
-              1020
+              675,
+              631
             ],
             [
-              785,
-              1040
+              680,
+              631
             ],
             [
-              860,
-              1110
+              681,
+              633
             ],
             [
-              945,
-              1130
+              683,
+              633
             ],
             [
-              1010,
-              1130
+              686,
+              637
             ],
             [
-              1056,
-              1160
+              689,
+              638
             ],
             [
-              1060,
-              1190
+              688,
+              640
             ],
             [
-              1105,
-              1180
+              697,
+              647
             ],
             [
-              1105,
-              1210
+              702,
+              643
             ],
             [
-              1070,
-              1250
+              707,
+              649
             ],
             [
-              1020,
-              1270
+              714,
+              652
             ],
             [
-              950,
-              1265
+              723,
+              659
             ],
             [
-              850,
-              1205
+              737,
+              665
+            ],
+            [
+              738,
+              667
+            ],
+            [
+              741,
+              667
+            ],
+            [
+              743,
+              669
             ],
             [
               760,
-              1170
+              675
+            ],
+            [
+              768,
+              675
+            ],
+            [
+              783,
+              670
+            ],
+            [
+              805,
+              659
+            ],
+            [
+              810,
+              659
+            ],
+            [
+              813,
+              661
+            ],
+            [
+              825,
+              659
+            ],
+            [
+              835,
+              665
+            ],
+            [
+              865,
+              672
+            ],
+            [
+              869,
+              674
+            ],
+            [
+              870,
+              677
+            ],
+            [
+              873,
+              678
+            ],
+            [
+              886,
+              691
+            ],
+            [
+              888,
+              696
+            ],
+            [
+              896,
+              703
+            ],
+            [
+              896,
+              708
+            ],
+            [
+              893,
+              711
+            ],
+            [
+              893,
+              715
+            ],
+            [
+              890,
+              718
+            ],
+            [
+              884,
+              719
+            ],
+            [
+              882,
+              721
+            ],
+            [
+              874,
+              720
+            ],
+            [
+              870,
+              716
+            ],
+            [
+              866,
+              720
+            ],
+            [
+              862,
+              721
+            ],
+            [
+              856,
+              720
+            ],
+            [
+              853,
+              717
+            ],
+            [
+              849,
+              715
+            ],
+            [
+              842,
+              706
+            ],
+            [
+              838,
+              706
+            ],
+            [
+              830,
+              709
+            ],
+            [
+              827,
+              713
+            ],
+            [
+              821,
+              715
+            ],
+            [
+              788,
+              714
+            ],
+            [
+              787,
+              716
+            ],
+            [
+              778,
+              719
+            ],
+            [
+              761,
+              719
+            ],
+            [
+              754,
+              715
+            ],
+            [
+              743,
+              713
+            ],
+            [
+              742,
+              711
+            ],
+            [
+              734,
+              711
+            ],
+            [
+              733,
+              709
+            ],
+            [
+              729,
+              710
+            ],
+            [
+              728,
+              708
+            ],
+            [
+              724,
+              709
+            ],
+            [
+              719,
+              707
+            ],
+            [
+              713,
+              707
+            ],
+            [
+              712,
+              705
+            ],
+            [
+              707,
+              706
+            ],
+            [
+              702,
+              704
+            ],
+            [
+              680,
+              701
+            ],
+            [
+              676,
+              699
+            ],
+            [
+              674,
+              700
+            ],
+            [
+              672,
+              697
+            ],
+            [
+              662,
+              696
+            ],
+            [
+              659,
+              694
+            ],
+            [
+              648,
+              692
+            ],
+            [
+              646,
+              690
+            ],
+            [
+              634,
+              687
+            ],
+            [
+              631,
+              684
+            ],
+            [
+              627,
+              687
+            ],
+            [
+              626,
+              681
+            ],
+            [
+              634,
+              671
+            ],
+            [
+              636,
+              664
+            ],
+            [
+              641,
+              660
+            ],
+            [
+              640,
+              656
+            ],
+            [
+              644,
+              652
+            ],
+            [
+              646,
+              653
+            ],
+            [
+              649,
+              649
+            ],
+            [
+              651,
+              649
+            ],
+            [
+              653,
+              643
+            ],
+            [
+              656,
+              642
+            ],
+            [
+              659,
+              638
+            ],
+            [
+              661,
+              639
             ],
             [
               665,
-              1110
+              633
+            ],
+            [
+              672,
+              633
+            ]
+          ],
+          [
+            [
+              275,
+              605
+            ],
+            [
+              300,
+              584
+            ],
+            [
+              325,
+              590
+            ],
+            [
+              345,
+              612
+            ],
+            [
+              368,
+              627
+            ],
+            [
+              391,
+              650
+            ],
+            [
+              373,
+              666
+            ],
+            [
+              347,
+              690
+            ],
+            [
+              326,
+              705
+            ],
+            [
+              295,
+              725
+            ],
+            [
+              261,
+              731
+            ],
+            [
+              250,
+              709
+            ],
+            [
+              260,
+              681
+            ],
+            [
+              270,
+              650
+            ]
+          ],
+          [
+            [
+              585,
+              447
+            ],
+            [
+              615,
+              449
+            ],
+            [
+              632,
+              462
+            ],
+            [
+              634,
+              476
+            ],
+            [
+              649,
+              490
+            ],
+            [
+              645,
+              515
+            ],
+            [
+              654,
+              540
+            ],
+            [
+              646,
+              565
+            ],
+            [
+              663,
+              591
+            ],
+            [
+              675,
+              615
+            ],
+            [
+              696,
+              644
+            ],
+            [
+              679,
+              666
+            ],
+            [
+              656,
+              691
+            ],
+            [
+              633,
+              707
+            ],
+            [
+              606,
+              720
+            ],
+            [
+              580,
+              704
+            ],
+            [
+              552,
+              690
+            ],
+            [
+              550,
+              660
+            ],
+            [
+              544,
+              633
+            ],
+            [
+              551,
+              602
+            ],
+            [
+              559,
+              571
+            ],
+            [
+              575,
+              537
+            ],
+            [
+              582,
+              510
+            ],
+            [
+              580,
+              478
             ]
           ]
         ]
@@ -4820,492 +2429,48 @@
     },
     "right": {
       "approved": true,
-      "baseUrl": "/characters/realistic/star/right-base.png",
-      "width": 1140,
-      "height": 1380,
-      "motion": {
-        "schemaVersion": 2,
-        "id": "star",
-        "realisticView": "right",
-        "sourceUrl": "/characters/realistic/star/right-base.png",
-        "sourceSha256": "2bcc18eefd9cfb7fab0cf3437f931aca498b0ce066796e89a09df7dba3481b50",
-        "width": 1140,
-        "height": 1380,
-        "frames": [
-          {
-            "id": "half",
-            "url": "/characters/realistic/star/right-motion-atlas-00.png",
-            "sha256": "a3253a599ef63b3d423ac4fd92c687c320ccb83c5561cb921030dba5a860361c",
-            "width": 372,
-            "height": 53
-          },
-          {
-            "id": "closed",
-            "url": "/characters/realistic/star/right-motion-atlas-00.png",
-            "sha256": "a3253a599ef63b3d423ac4fd92c687c320ccb83c5561cb921030dba5a860361c",
-            "width": 372,
-            "height": 53
-          }
-        ],
-        "eyes": [
-          {
-            "targetRect": [
-              517,
-              275,
-              76,
-              48
-            ],
-            "maskPolygon": [
-              [
-                519,
-                296.6
-              ],
-              [
-                532.2,
-                277
-              ],
-              [
-                577.8,
-                277
-              ],
-              [
-                591,
-                296.6
-              ],
-              [
-                581.6,
-                321
-              ],
-              [
-                536,
-                321
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                189,
-                2,
-                76,
-                48
-              ],
-              "closed": [
-                2,
-                2,
-                76,
-                48
-              ]
-            }
-          },
-          {
-            "targetRect": [
-              635,
-              260,
-              99,
-              49
-            ],
-            "maskPolygon": [
-              [
-                637,
-                282.05
-              ],
-              [
-                654.8,
-                262
-              ],
-              [
-                714.2,
-                262
-              ],
-              [
-                732,
-                282.05
-              ],
-              [
-                719.15,
-                307
-              ],
-              [
-                659.75,
-                307
-              ]
-            ],
-            "sourceRects": {
-              "half": [
-                271,
-                2,
-                99,
-                49
-              ],
-              "closed": [
-                84,
-                2,
-                99,
-                49
-              ]
-            }
-          }
-        ],
-        "hairRegions": [
-          {
-            "name": "outer-free-curl",
-            "rect": [
-              485,
-              330,
-              94,
-              270
-            ],
-            "maskPolygon": [
-              [
-                509,
-                331
-              ],
-              [
-                529,
-                352
-              ],
-              [
-                516,
-                382
-              ],
-              [
-                523,
-                407
-              ],
-              [
-                550,
-                437
-              ],
-              [
-                570,
-                463
-              ],
-              [
-                578,
-                493
-              ],
-              [
-                562,
-                519
-              ],
-              [
-                544,
-                538
-              ],
-              [
-                542,
-                558
-              ],
-              [
-                556,
-                580
-              ],
-              [
-                554,
-                599
-              ],
-              [
-                540,
-                597
-              ],
-              [
-                540,
-                581
-              ],
-              [
-                526,
-                560
-              ],
-              [
-                527,
-                537
-              ],
-              [
-                545,
-                513
-              ],
-              [
-                560,
-                492
-              ],
-              [
-                555,
-                472
-              ],
-              [
-                533,
-                452
-              ],
-              [
-                508,
-                426
-              ],
-              [
-                488,
-                402
-              ],
-              [
-                486,
-                377
-              ],
-              [
-                496,
-                353
-              ]
-            ],
-            "featherPx": 3,
-            "geometry": {
-              "amplitudeX": 6,
-              "envelope": "vertical",
-              "motionScale": 0.7,
-              "pinStart": 330,
-              "pinEnd": 600
-            }
-          }
-        ],
-        "hairMode": "geometry",
-        "blinkSequence": [
-          {
-            "frameId": null,
-            "durationMs": 35
-          },
-          {
-            "frameId": "half",
-            "durationMs": 70
-          },
-          {
-            "frameId": "closed",
-            "durationMs": 70
-          },
-          {
-            "frameId": "half",
-            "durationMs": 90
-          },
-          {
-            "frameId": null,
-            "durationMs": 35
-          }
-        ]
-      },
+      "baseUrl": "/characters/realistic/star/right-unified-seated.png",
+      "width": 1024,
+      "height": 1536,
+      "motion": null,
       "action": null,
-      "body": {
-        "approved": true,
-        "canvasSize": [
-          1516,
-          2484
-        ],
-        "upperRect": [
-          250,
-          0,
-          1140,
-          1380
-        ],
-        "lowerBodyUrl": "/characters/realistic/star/right-lower-body.png",
-        "lowerSourceSize": [
+      "figure": {
+        "url": "/characters/realistic/star/right-unified-seated.png",
+        "sourceSize": [
           1024,
-          766
+          1536
         ],
-        "lowerSourceRect": [
-          0,
-          0,
-          1024,
-          766
+        "contentBounds": [
+          39,
+          10,
+          946,
+          1514
         ],
-        "lowerRect": [
-          0,
-          1138,
-          1516,
-          1134
-        ],
+        "handContacts": {
+          "left": [
+            498,
+            860
+          ],
+          "right": [
+            285,
+            845
+          ]
+        },
         "seatAnchor": [
-          850,
-          1200
+          650,
+          900
         ],
-        "footAnchors": [
-          [
-            343,
-            2204
-          ],
-          [
-            459,
-            2211
-          ]
+        "footBounds": [
+          99,
+          1290,
+          215,
+          233
         ],
-        "upperClipPolygons": [
-          [
-            [
-              0,
-              0
-            ],
-            [
-              1140,
-              0
-            ],
-            [
-              1140,
-              1250
-            ],
-            [
-              1000,
-              1250
-            ],
-            [
-              925,
-              1210
-            ],
-            [
-              850,
-              1170
-            ],
-            [
-              760,
-              1150
-            ],
-            [
-              680,
-              1170
-            ],
-            [
-              600,
-              1190
-            ],
-            [
-              500,
-              1190
-            ],
-            [
-              400,
-              1210
-            ],
-            [
-              300,
-              1240
-            ],
-            [
-              180,
-              1260
-            ],
-            [
-              0,
-              1260
-            ]
-          ],
-          [
-            [
-              300,
-              1020
-            ],
-            [
-              400,
-              1070
-            ],
-            [
-              400,
-              1120
-            ],
-            [
-              320,
-              1175
-            ],
-            [
-              285,
-              1210
-            ],
-            [
-              275,
-              1250
-            ],
-            [
-              220,
-              1300
-            ],
-            [
-              165,
-              1330
-            ],
-            [
-              105,
-              1330
-            ],
-            [
-              100,
-              1290
-            ],
-            [
-              125,
-              1225
-            ],
-            [
-              175,
-              1180
-            ],
-            [
-              235,
-              1150
-            ]
-          ],
-          [
-            [
-              700,
-              1070
-            ],
-            [
-              825,
-              1090
-            ],
-            [
-              860,
-              1135
-            ],
-            [
-              800,
-              1180
-            ],
-            [
-              690,
-              1250
-            ],
-            [
-              610,
-              1290
-            ],
-            [
-              555,
-              1290
-            ],
-            [
-              500,
-              1310
-            ],
-            [
-              455,
-              1340
-            ],
-            [
-              410,
-              1340
-            ],
-            [
-              415,
-              1300
-            ],
-            [
-              440,
-              1250
-            ],
-            [
-              500,
-              1220
-            ],
-            [
-              590,
-              1220
-            ],
-            [
-              650,
-              1170
-            ]
-          ]
-        ]
+        "approved": true,
+        "schemaVersion": 2,
+        "sourceMode": "singleFullBody",
+        "sourceSha256": "47f9309e545059a22f25a4d3332c839ed6d0d19450f4157cd47201a6615447a6",
+        "frontOfTablePolygons": []
       }
     }
   }

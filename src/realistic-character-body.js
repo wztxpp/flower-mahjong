@@ -1,3 +1,5 @@
+// 旧版分层兼容与独立本人近景；当前完整坐姿由realistic-character-figure.js负责。
+// Legacy layered compatibility and independent self POV; current whole-source figures belong to realistic-character-figure.js.
 // 全身坐姿只接纳已审查的透明下半身及显式坐标；缺资料保持半身，不补画、不拉伸原图。
 // Accept only reviewed transparent lower-body art with explicit coordinates; missing data stays half-body without inventing or stretching pixels.
 // 上身框维持原图尺寸比例，使既有眼发画布继续在原坐标中工作，外层再整体等比缩放。

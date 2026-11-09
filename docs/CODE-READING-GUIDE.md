@@ -1,3 +1,5 @@
+当前完整整图与AI桌椅维护入口：[REALISTIC-SOLID-SCENE.md](REALISTIC-SOLID-SCENE.md)。新来源由 `realistic-character-figure.js` 和 `RealisticTableTile.vue` 明确隔离旧拼接，家具角点统一注册；历史v39验收不代表新版本像素验收。Current full-source scene contract and new-file inventory are documented there.
+
 # 从这里开始读代码 / Start reading here
 
 当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。

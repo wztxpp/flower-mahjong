@@ -87,7 +87,7 @@
 .realistic-zone { position: absolute; }
 .realistic-zone > small { position: absolute; left: 0; top: -20px; color: #d2dec28a; font-size: 12px; letter-spacing: 2px; }
 .realistic-tiles, .realistic-melds { align-content: start; justify-content: center; }
-.realistic-scene .mahjong-tile { width: var(--realistic-tile-width,30px) !important; height: var(--realistic-tile-height,42px) !important; min-width: 0 !important; flex: none; margin: 0; border-radius: 4px; box-shadow: 0 3px 0 #d6ccb0,0 5px 4px #07160e77; }
+.realistic-scene .mahjong-tile { width: var(--realistic-tile-width,36px) !important; height: var(--realistic-tile-height,50px) !important; min-width: 0 !important; flex: none; margin: 0; border-radius: 4px; box-shadow: 0 3px 0 #d6ccb0,0 5px 4px #07160e77; }
 .realistic-river-zone { border-top: 1px solid #bfd2ae20; padding-top: 0; }
 .realistic-wall-zone > small { top: -21px; }
 .realistic-wall-stacks { height: 100%; align-content: center; justify-content: center; }
@@ -178,7 +178,7 @@
 .realistic-player-south .realistic-character { height: 160px; }
 .realistic-player-label { position: relative; z-index: 4; font-size: 17px; padding: 10px; }
 .realistic-player-label small { font-size: 12px; }
-.realistic-private-controls { transform: none; transition: left 480ms cubic-bezier(.2,.85,.25,1),bottom 480ms cubic-bezier(.2,.85,.25,1),width 480ms cubic-bezier(.2,.85,.25,1); }
+.realistic-private-controls { transform: none; transition: left 480ms cubic-bezier(.2,.85,.25,1),top 480ms cubic-bezier(.2,.85,.25,1),bottom 480ms cubic-bezier(.2,.85,.25,1),width 480ms cubic-bezier(.2,.85,.25,1); }
 .realistic-scene { touch-action: none; }
 .realistic-viewport.dragging .realistic-private-controls { transition: none; }
 @media (prefers-reduced-motion: reduce) { .realistic-private-controls { transition: none; } }
@@ -191,7 +191,7 @@
 .realistic-player-south { left: 50px; top: 875px; width: 240px; }
 .realistic-player-left .realistic-player-label, .realistic-player-right .realistic-player-label { position: absolute; top: -80px; left: 60px; width: 280px; }
 .realistic-player-north .realistic-player-label { position: absolute; left: 325px; top: 105px; width: 230px; }
-.realistic-player-north .realistic-body-lower, .realistic-player-north .realistic-character-chair { transform: translateY(600px); }
+
 .realistic-self-pov { position: absolute; left: 270px; top: 1240px; width: 820px; height: auto; z-index: 4; pointer-events: none; }
 /* 无人物/牌桌的独立室内底图与互动图层分离；木地板覆盖可拖出的完整房间。
    The empty room background is separate from interactive players and tiles, with wooden floor throughout the pannable room. */
@@ -206,3 +206,41 @@
 .realistic-player-left .realistic-character.has-full-body, .realistic-player-right .realistic-character.has-full-body { width: calc(470px * var(--body-width-per-upper-height)) !important; margin-left: calc((100% - 470px * var(--upper-width-per-upper-height)) / 2 - 470px * var(--upper-left-per-upper-height)) !important; }
 .realistic-self-pov { top: auto; bottom: 0; }
 .realistic-room-pattern { top: 850px; bottom: auto; height: 350px; box-shadow: none; border-radius: 50%; background: radial-gradient(ellipse,#130d0877,transparent 68%); }
+
+/* 完整AI桌的同源画面与透明牌区严格共用角点；不在PNG上叠另一套CSS木框。
+   One complete generated table and the transparent play plane share measured corners, with no second CSS frame. */
+.realistic-table-art { position: absolute; z-index: 2; pointer-events: none; }
+.realistic-felt { background: transparent; border: 0; border-radius: 0; box-shadow: none; z-index: 3; }
+.realistic-felt::after, .realistic-felt-inlay { display: none; }
+/* 中间层不能opacity/filter/overflow裁平：真实牌壳的四面需要保留相同的高度方向。
+   Never flatten intermediate ancestors with opacity/filter/overflow: all tile shells share the same elevation axis. */
+.realistic-felt, .realistic-seat-plane, .realistic-zone, .realistic-tiles, .realistic-melds,
+.realistic-win-tile, .realistic-personal-radishes, .realistic-radishes, .realistic-center { transform-style: preserve-3d; }
+.realistic-river-zone { border: 0; }
+.realistic-empty-zone { visibility: hidden; }
+.realistic-zone > small { visibility: hidden; }
+.realistic-center { border: 2px solid #e9d29466; border-radius: 12px; background: #122d43; padding: 9px; box-shadow: 0 5px 0 #081622, 0 8px 8px #0005; }
+.realistic-solid-tile .mahjong-tile { box-shadow: inset 0 0 0 1px #fffbed; }
+.realistic-player:has(.has-unified-figure) { z-index: auto; }
+.realistic-player:has(.has-unified-figure) .realistic-player-label { position: absolute; left: 20%; top: -55px; width: 230px; }
+.realistic-player-north:has(.has-unified-figure) .realistic-player-label { left: 90%; top: 80px; }
+/* 牌面尺寸随相机比例，不再在相同桌面放大后保持一排微小屏幕像素。
+   Faces follow the camera scale instead of remaining a tiny fixed-pixel rack on an enlarged table. */
+.is-realistic-table .realistic-private-controls .hand-scroll .mahjong-tile,
+.is-realistic-table .realistic-private-controls .chengdu-hand .mahjong-tile { width: var(--private-tile-width); height: var(--private-tile-height); flex: 0 0 var(--private-tile-width); }
+.is-realistic-table .realistic-private-controls :is(.hand-scroll,.chengdu-hand) { height: calc(var(--private-tile-height) + 20px) !important; min-height: 44px; padding: 5px 8px 15px !important; }
+.is-realistic-table .realistic-private-controls .my-hand,
+.is-realistic-table .realistic-private-controls .chengdu-hand-tiles { gap: max(2px,calc(var(--private-tile-width) * .06)); }
+.realistic-private-controls { max-height: 80%; }
+
+/* 皮肤只给实测桌布平面叠色，不给木框/椅子整体变色；该叶子不裁平牌壳。
+   Skins tint only the calibrated felt, not wood/chairs; this leaf does not flatten solid tile ancestors. */
+.realistic-felt-tint { position: absolute; inset: 2px; border-radius: 18px; pointer-events: none; }
+.realistic-skin-jade .realistic-felt-tint { background: #3d9b5970; }
+.realistic-skin-clay .realistic-felt-tint { background: #c67b5290; }
+
+/* 已验收的飞牌保留原二维路径和淡入淡出节奏；静态落牌改实体壳，不借opacity强制压平它。
+   Keep the accepted 2D flight path/fade timing; settled tiles use solids without an opacity-flattened shell. */
+.realistic-tile-flight { --realistic-tile-width: 30px; --realistic-tile-height: 42px; }
+
+.is-realistic-table .realistic-private-controls .hand-panel { padding: 0 !important; }

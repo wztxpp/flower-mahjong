@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { REALISTIC_CHARACTER_IDS, realisticCharacterView } from '../src/realistic-character-catalog.js';
-import { realisticBodyModel, realisticPovModel } from '../src/realistic-character-body.js';
-const audit = JSON.parse(readFileSync(new URL('../public/characters/realistic/full-body-audit.json', import.meta.url)));
+import { realisticPovModel } from '../src/realistic-character-body.js';
+import { realisticFigureModel } from '../src/realistic-character-figure.js';
 function png(url, size, sha) {
   assert.doesNotMatch(url, /body-review|candidate|inspection|green|\.\./);
   const bytes = readFileSync(new URL(`../public${url}`, import.meta.url));
@@ -15,20 +15,18 @@ function png(url, size, sha) {
   assert.equal(bytes[25], 6, 'Character layers retain real PNG alpha');
   if (sha) assert.equal(createHash('sha256').update(bytes).digest('hex'), sha);
 }
-test('all eighteen approved seated layers match PNG provenance and preserve upper motion coordinates', () => {
-  let count = 0;
+test('all eighteen production figures use complete independently registered PNGs', () => {
+  const hashes = new Set();
   for (const id of REALISTIC_CHARACTER_IDS) for (const position of ['front', 'left', 'right']) {
     const view = realisticCharacterView(id, position);
-    const body = realisticBodyModel(view);
-    assert.ok(body, `${id}/${position}`);
-    assert.equal(audit[id][position].approved, true);
-    assert.deepEqual(view.body.upperRect.slice(2), [view.width, view.height]);
-    assert.equal(view.motion.sourceUrl, view.baseUrl);
-    png(body.lowerBodyUrl, body.lowerSourceSize, audit[id][position].lowerSha256);
-    for (const patch of body.sleevePatches) png(patch.url, patch.sourceSize);
-    count += 1;
+    const figure = realisticFigureModel(view);
+    assert.ok(figure, `${id}/${position}`);
+    assert.equal(view.body, undefined, 'Old upper/lower combinations are no longer active');
+    assert.equal(view.motion, null); assert.equal(view.action, null);
+    png(figure.url, figure.sourceSize, figure.sourceSha256);
+    hashes.add(figure.sourceSha256);
   }
-  assert.equal(count, 18);
+  assert.equal(hashes.size, 18);
 });
 test('six independently approved identities have correctly scoped first-person layers', () => {
   const available = [];

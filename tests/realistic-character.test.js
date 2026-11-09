@@ -4,7 +4,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { validateMotionDescriptor } from '../src/portrait-motion/renderer.js';
 import { REALISTIC_CHARACTER_IDS, REALISTIC_CHARACTERS, realisticCharacterView,
   realisticViewForPosition } from '../src/realistic-character-catalog.js';
 
@@ -39,27 +38,19 @@ test('seat views are independent and unapproved or unknown assets fail closed', 
   }
 });
 
-test('all eighteen approved bases and local donor atlases match their exact provenance', () => {
+test('all eighteen approved complete sources have independent bytes and disable stale donors', () => {
   const sourceHashes = new Set();
-  for (const id of REALISTIC_CHARACTER_IDS) {
-    for (const position of ['front', 'left', 'right']) {
-      const view = realisticCharacterView(id, position);
-      assert.ok(view, `${id}/${position}`);
-      assert.equal(validateMotionDescriptor(view.motion), true);
-      const files = [{ url: view.baseUrl, sha256: view.motion.sourceSha256, width: view.width, height: view.height }, ...view.motion.frames];
-      for (const file of files) {
-        const bytes = readFileSync(new URL(`../public${file.url}`, import.meta.url));
-        assert.equal(createHash('sha256').update(bytes).digest('hex'), file.sha256);
-        assert.equal(bytes.readUInt32BE(16), file.width);
-        assert.equal(bytes.readUInt32BE(20), file.height);
-      }
-      sourceHashes.add(view.motion.sourceSha256);
-      assert.equal(view.motion.realisticView, position);
-      assert.deepEqual(view.motion.frames.map((frame) => frame.id).sort(), ['closed', 'half']);
-    }
+  for (const id of REALISTIC_CHARACTER_IDS) for (const position of ['front', 'left', 'right']) {
+    const view = realisticCharacterView(id, position);
+    const figure = view.figure;
+    assert.ok(figure, `${id}/${position}`);
+    assert.equal(figure.sourceMode, 'singleFullBody');
+    const bytes = readFileSync(new URL(`../public${figure.url}`, import.meta.url));
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), figure.sourceSha256);
+    assert.deepEqual([bytes.readUInt32BE(16), bytes.readUInt32BE(20)], figure.sourceSize);
+    assert.equal(view.motion, null); assert.equal(view.action, null);
+    sourceHashes.add(figure.sourceSha256);
   }
-  // 三视角必须是独立源文件；字节差异不代替人工左右饰物审查。
-  // Views must use independent source files; distinct bytes do not replace human accessory-side review.
   assert.equal(sourceHashes.size, 18);
 });
 
@@ -72,7 +63,7 @@ test('component has explicit fallback and cleanup, not mirroring or floating CSS
   assert.match(artwork, /observer\?\.disconnect/);
   assert.match(artwork, /prefers-reduced-motion/);
   assert.doesNotMatch(source, /scaleX\s*\(\s*-1|rotateY\s*\(\s*180|@keyframes/);
-  assert.match(source, /v-if="view"/);
-  assert.match(source, /v-else-if="included"/);
+  assert.match(source, /v-if="view && !view.figure"/);
+  assert.match(source, /v-else-if="included && !view\?\.figure"/);
   assert.doesNotMatch(source, /reaction !== 'base'/);
 });

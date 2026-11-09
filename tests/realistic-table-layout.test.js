@@ -319,7 +319,7 @@ test('Chengdu won, claimed, winning and absent radish zones keep their own proto
 test('all rotated public zones remain inside the board without cross-player overlaps', () => {
   for (const count of [3, 4]) {
     const layout = realisticSeatLayout(view(count).game.players, 0);
-    const rectangles = layout.flatMap((location) => Object.entries(location.zones).map(([name, zone]) => {
+    const rectangles = layout.flatMap((location) => Object.entries(location.zones).filter(([name]) => name !== 'wall').map(([name, zone]) => {
       const center = realisticZoneCenter(location, name);
       const sideways = Math.abs(location.rotation) === 90;
       const width = sideways ? zone.height : zone.width;

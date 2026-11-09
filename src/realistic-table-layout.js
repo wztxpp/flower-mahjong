@@ -23,11 +23,11 @@ const ABSOLUTE_POSITIONS_BY_COUNT = {
 // Copy zones per invocation to prevent shared mutations; melds belong at local lower-left and wins at local lower-right.
 function localZones() {
   return {
-    hand: { x: 240, y: 910, width: 520, height: 60 },
+    hand: { x: 200, y: 930, width: 600, height: 60 },
     wall: { x: 260, y: 750, width: 480, height: 60 },
-    river: { x: 390, y: 620, width: 220, height: 120 },
-    melds: { x: 180, y: 825, width: 230, height: 75 },
-    wins: { x: 590, y: 825, width: 230, height: 75 },
+    river: { x: 340, y: 670, width: 320, height: 170 },
+    melds: { x: 180, y: 845, width: 230, height: 70 },
+    wins: { x: 590, y: 845, width: 230, height: 70 },
   };
 }
 

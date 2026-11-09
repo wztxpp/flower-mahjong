@@ -183,6 +183,39 @@ export async function mountRealistic(t, state = realisticFixture(), extraProps =
   return { props, root, app, get instance() { return instance; }, get scope() { return instance?.$?.setupState; } };
 }
 
+test('solid shells preserve canonical hidden-face privacy and have four connected sides', async () => {
+  const component = await loadRealisticComponent('RealisticTableTile.vue');
+  const root = hostNode('root');
+  const app = renderer.createApp(component, { tile: 17, back: true, small: true });
+  app.mount(root); await Vue.nextTick();
+  assert.equal(realisticNodes(root, (node) => String(node.props.class).includes('realistic-tile-side')).length, 4);
+  assert.equal(realisticNodes(root, (node) => node.props['aria-label'] === '背面牌').length, 1);
+  assert.equal(realisticNodes(root, (node) => node.props.class === 'tile-photo-face').length, 0);
+  assert.equal(realisticNodes(root, (node) => node.tag === 'button').length, 0);
+  app.unmount();
+});
+test('hidden walls free scene space while remaining count and rules stay untouched', async (t) => {
+  realisticBrowser(t);
+  const state = realisticFixture(4); const before = JSON.stringify(state);
+  const mounted = await mountRealistic(t, state);
+  assert.equal(realisticNodes(mounted.root, (node) => /realistic-wall-(zone|stack)/.test(String(node.props.class))).length, 0);
+  const total = realisticNodes(mounted.root, (node) => node.props.class === 'realistic-wall-total')[0];
+  assert.ok(total);
+  assert.match(JSON.stringify(total.children.map((node) => node.text)), /104/);
+  assert.equal(JSON.stringify(state), before);
+});
+test('private hand anchor follows rack geometry rather than variable panel height', async (t) => {
+  const browser = realisticBrowser(t);
+  const mounted = await mountRealistic(t, realisticFixture(), { hasPrivateControls: true });
+  const controls = realisticNodes(mounted.root, (node) => node.props.id === 'realistic-private-controls')[0];
+  const initial = parseFloat(controls.props.style.top);
+  mounted.scope.handBottomOffset += 40;
+  await Vue.nextTick();
+  assert.equal(parseFloat(controls.props.style.top), initial - 40, 'More content above the hand does not move the rack off the rim');
+  mounted.app.unmount();
+  assert.ok(browser.observers.every((observer) => observer.disconnected));
+});
+
 // 在组件尚未交付时也可先验证测试宿主；后续测试全部装载真实SFC。
 // Validate the host independently while components are being completed; subsequent tests load actual SFCs.
 test('realistic test host preserves move order and pointer capture', () => {
@@ -212,7 +245,7 @@ test('real actor retains approved art, emits no actions and removes lifecycle li
   app.mount(root);
   await Vue.nextTick();
   const frame = realisticNodes(root, (node) => String(node.props.class || '').split(/\s+/).includes('realistic-character'))[0];
-  assert.equal(frame.props['data-art-status'], 'approved-base');
+  assert.equal(frame.props['data-art-status'], 'approved-single-source');
   assert.equal(frame.props['data-view'], 'left');
   assert.equal(realisticNodes(root, (node) => node.props.class === 'realistic-character-loader').length, 0);
   assert.equal(browser.frames.size, 0);
@@ -222,55 +255,36 @@ test('real actor retains approved art, emits no actions and removes lifecycle li
   assert.equal(browser.media.listeners.get('change')?.size || 0, 0);
 });
 
-// 接入真实目录全身后，上身原画与眼发描述符仍属于原坐标，不随腿画布扩展而改写。
-// With production full bodies, original upper art and motion descriptors retain their coordinates rather than adopting the leg canvas.
-test('production full bodies retain original upper artwork and motion coordinate descriptors', async (t) => {
-  const browser = realisticBrowser(t, true);
+// 每一视角只能引用一张完整源；前景是同源遮挡，不请求旧上身/下身/眼发/动作供体。
+// Each view has one complete source. Foreground is same-source occlusion, never old body/motion donors.
+test('eighteen whole-source figures share their source between occlusion layers and never load old motion', async (t) => {
+  const browser = realisticBrowser(t, false);
   const component = await loadRealisticComponent('RealisticCharacter.vue');
   const { REALISTIC_CHARACTER_IDS, realisticCharacterView } = await import('../src/realistic-character-catalog.js');
-  const { realisticBodyModel } = await import('../src/realistic-character-body.js');
-  const artworkComponent = await loadRealisticComponent('RealisticCharacterArtwork.vue');
-  const findComponent = (vnode) => {
-    if (!vnode) return null;
-    if (vnode.type === artworkComponent) return vnode.component;
-    if (vnode.component) return findComponent(vnode.component.subTree);
-    return Array.isArray(vnode.children) ? vnode.children.map(findComponent).find(Boolean) : null;
-  };
-  let checked = 0;
-  for (const id of REALISTIC_CHARACTER_IDS) {
-    for (const position of ['north', 'left', 'right']) {
-      const view = realisticCharacterView(id, position);
-      const body = realisticBodyModel(view);
-      if (!body) continue;
-      const root = hostNode('root');
-      const app = renderer.createApp(component, { character: { id, name: id }, position, enabled: true });
-      browser.cleanups.push(() => { if (root.children.length) app.unmount(); });
-      const instance = app.mount(root);
-      await Vue.nextTick();
-      const actor = realisticNodes(root, (node) => node.props['data-character'] === id)[0];
-      assert.equal(actor.props['data-body-status'], 'approved-full-body');
-      const upper = realisticNodes(actor, (node) => node.props.class === 'realistic-body-upper')[0];
-      for (const key of ['left', 'top', 'width', 'height']) assert.equal(upper.props.style[key], body.upperStyle[key]);
-      // 从百分比框还原源像素：必须仍与目录上身尺寸一致，不是完整腿画布尺寸。
-      // Restore source pixels from percentage bounds: match upper art dimensions, never the full leg canvas.
-      assert.ok(Math.abs(parseFloat(upper.props.style.width) / 100 * body.canvasSize[0] - view.width) < 1e-8);
-      assert.ok(Math.abs(parseFloat(upper.props.style.height) / 100 * body.canvasSize[1] - view.height) < 1e-8);
-      const artwork = findComponent(instance.$.subTree);
-      assert.ok(artwork);
-      assert.equal(Vue.toRaw(artwork.props.motionDescriptor), view.motion || null);
-      assert.equal(Vue.toRaw(artwork.props.actionDescriptor), view.action || null);
-      assert.equal(artwork.props.character.portrait, view.baseUrl);
-      const original = realisticNodes(upper, (node) => node.props.class === 'realistic-character-artwork-original');
-      assert.equal(original.length, 1);
-      assert.equal(original[0].props.src, view.baseUrl);
-      assert.equal(realisticNodes(upper, (node) => node.props.class === 'realistic-character-artwork-canvas').length, view.motion ? 1 : 0);
-      assert.equal(realisticNodes(upper, (node) => node.props.class === 'realistic-body-lower').length, 0);
-      assert.equal(browser.frames.size, 0);
-      app.unmount();
-      checked += 1;
-    }
+  const { realisticFigureModel } = await import('../src/realistic-character-figure.js');
+  const clipIds = new Set();
+  let count = 0;
+  for (const id of REALISTIC_CHARACTER_IDS) for (const position of ['north', 'left', 'right']) {
+    const figure = realisticFigureModel(realisticCharacterView(id, position));
+    assert.ok(figure, `${id}/${position}`);
+    const root = hostNode('root');
+    const app = renderer.createApp(component, { character: { id, name: id }, position, enabled: true,
+      action: { type: 'discard', eventKey: 'must-not-reuse-old-arm' } });
+    browser.cleanups.push(() => { if (root.children.length) app.unmount(); });
+    app.mount(root); await Vue.nextTick();
+    const back = realisticNodes(root, (node) => node.props.class === 'realistic-figure-back');
+    const front = realisticNodes(root, (node) => node.props.class === 'realistic-figure-front');
+    assert.equal(back.length, 1); assert.equal(back[0].props.src, figure.url);
+    assert.equal(front.length, figure.clipPolygons.length ? 1 : 0);
+    if (front.length) assert.equal(front[0].props.src, back[0].props.src);
+    assert.equal(realisticNodes(root, (node) => /realistic-body-(lower|upper|sleeve)|realistic-character-artwork/.test(String(node.props.class))).length, 0);
+    const clip = realisticNodes(root, (node) => node.tag === 'clipPath')[0];
+    assert.ok(clip); clipIds.add(clip.props.id);
+    if (front.length) assert.ok(front[0].props.style.clipPath.includes(clip.props.id));
+    assert.equal(browser.frames.size, 0);
+    app.unmount(); count += 1;
   }
-  assert.equal(checked, 18, 'all eighteen production views must exercise approved body metadata');
+  assert.equal(count, 18); assert.ok(clipIds.size > 0);
 });
 
 // 模式开关只选展示，不包裹/替换原手牌组件；此结构断言补充稍后的真实patch交互测试。

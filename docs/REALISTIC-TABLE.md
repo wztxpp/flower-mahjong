@@ -1,3 +1,5 @@
+当前完整整图与AI桌椅维护入口：[REALISTIC-SOLID-SCENE.md](REALISTIC-SOLID-SCENE.md)。新来源由 `realistic-character-figure.js` 和 `RealisticTableTile.vue` 明确隔离旧拼接，家具角点统一注册；历史v39验收不代表新版本像素验收。Current full-source scene contract and new-file inventory are documented there.
+
 # 二维真实牌桌 / Realistic two-dimensional table
 
 ## 展示边界 / Presentation boundary
