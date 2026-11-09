@@ -6,6 +6,8 @@ import App from './App.vue';
 // Load base styles before the physical-table skin; later declarations win at equal specificity, so preserve this order.
 import './style.css';
 import './tabletop.css';
+// 仅 .is-realistic-table 内覆盖，经典桌不受影响。 / Scope new skin overrides to the optional realistic view.
+import './realistic-table.css';
 
 // 挂载点来自 index.html 的 #app；mount 之后 Vue 才开始管理这块 DOM。
 // index.html provides #app; Vue manages that DOM subtree after mount.

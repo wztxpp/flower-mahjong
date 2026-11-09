@@ -22,6 +22,7 @@ export const STABLE_TABLE_MANUAL_STAGES = [
   ['chengdu-exchange', '换三张普通说明（成都手动）'],
   ['chengdu-dingque', '定缺与收到三张牌（成都手动）'],
   ['finished', '本局结束与下一局入口（手动）'],
+  ['legacy-config', '旧桌结束与可编辑配置（手动）'],
   ['ordinary-public', '普通碰杠、胡牌与十三张萝卜（手动）'],
   ['short-hand', '短手牌居中（手动）'],
   ['rob-kong', '他家补杠回应（手动）'],
@@ -44,7 +45,8 @@ export function stableTableSnapshot(caseId, stageId, characterId = 'sweet') {
   const feedback = ['normal-feedback', 'long-feedback'].includes(stageId);
   const chengduPreparation = ['chengdu-exchange', 'chengdu-dingque'].includes(stageId);
   const exchange = stageId === 'chengdu-exchange';
-  const finished = stageId === 'finished';
+  const finished = stageId === 'finished' || stageId === 'legacy-config';
+  if (stageId === 'legacy-config' && !caseId.startsWith('flower-legacy')) throw new Error('Configuration fixture requires legacy Flower');
   const ordinaryPublic = stageId === 'ordinary-public';
   const manual = manyActions || feedback || chengduPreparation || finished || ordinaryPublic || shortHand || robKong;
   if (chengduPreparation && caseId !== 'chengdu-4') throw new Error('Manual preparation fixture requires current Chengdu player view');
@@ -101,6 +103,12 @@ export function stableTableSnapshot(caseId, stageId, characterId = 'sweet') {
     settledScore: historyGrowth ? index % 2 ? -123456 : 123456 : 0, provisionalScore: 0,
     totalScore: historyGrowth ? index % 2 ? -123456 : 123456 : 0,
   }));
+  // 仅此手动样例模拟没有固定开局字段的旧桌；只读预览仍阻断真实准备/开局提交。
+  // Only this manual fixture represents a legacy room without fixed start fields; the preview still blocks actual start submissions.
+  if (stageId === 'legacy-config') {
+    delete settings.autoDiscardAfterHu;
+    delete settings.bigSingleReadyPoints;
+  }
   const snapshot = {
     label: stages[stageIndex][1], caseId, stageId,
     ui: { busy: stageId === 'busy', syncing: stageId === 'syncing', offline: stageId === 'offline' },

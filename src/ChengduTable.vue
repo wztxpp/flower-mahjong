@@ -7,6 +7,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import CharacterArtwork from './CharacterArtwork.vue';
 import { chengduEventText } from './chengdu-event-text.js';
+import { chengduTableStatus } from './chengdu-table-status.js';
 import { tilePresentation } from './mahjong-tile-presentation.js';
 import { roundSummaryView, roundSummaryHandsBySeat } from './round-summary.js';
 
@@ -110,20 +111,9 @@ function submit(action) {
   // Actions are plain JSON; serialization also unwraps Vue proxies that structuredClone cannot copy.
   if (current) emit('action', JSON.parse(JSON.stringify(current)));
 }
-const status = computed(() => {
-  if (props.blocked) return '正在同步或处理操作，请稍等';
-  if (isFinished.value) return game.value.finishReason === 'wallExhausted' ? '牌墙已尽，本局流局结算完成' : '本局结束';
-  if (mySeat.value == null) return game.value.phase === 'exchange' ? '等待四家选择换牌' :
-    game.value.phase === 'dingque' ? '等待四家定缺' : game.value.phase === 'claim' ? '等待牌友回应' : `等待${nameFor(game.value.currentSeat)}出牌`;
-  if (game.value.phase === 'exchange') return game.value.preparation?.myExchange
-    ? '换牌已提交，等待其他牌友' : '换三张：选择同一花色的三张牌';
-  if (game.value.phase === 'dingque') return me.value?.dingqueSubmitted ? '定缺已提交，等待其他牌友' : '定缺：选择本局要打缺的花色';
-  if (me.value?.won) return '你已胡牌，本局不再摸打或胡牌';
-  if (game.value.phase === 'claim') return game.value.claim?.hasResponded ? '回应已提交，等待其他牌友' :
-    legalActions.value.length ? '这张牌，等你回应' : '等待牌友回应';
-  if (game.value.currentSeat === mySeat.value) return '轮到你：选择一张合法手牌，再确认出牌';
-  return `等待${nameFor(game.value.currentSeat)}出牌`;
-});
+// 两种显示模式共享原有状态合同；函数只生成文字，不提交动作或补充服务器规则。
+// Both presentations share the original status contract; this only produces text, never actions or inferred rules.
+const status = computed(() => chengduTableStatus(props.state, props.blocked));
 // 日志只使用投影中的白名单字段；隐藏牌不拼接名称，也不显示任意服务端 text。
 // Logs use projected allowlist fields only; never name a hidden tile or render arbitrary server text.
 function eventText(event) {

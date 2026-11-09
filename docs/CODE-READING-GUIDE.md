@@ -1,5 +1,14 @@
 # 从这里开始读代码 / Start reading here
 
+真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
+Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
+
+二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
+Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
+
+人物身份与配音目录的独立映射见 [人物声线对应](REALISTIC-VOICE-MAPPING.md)：维护入口为 `character-audio.js` 及既有 audio/voice-assets/ui 测试。正式原图、存档ID与录音来源不改；按设定推断不代表试听认证。
+See [character/voice mapping](REALISTIC-VOICE-MAPPING.md) for the audio module and existing audio/assets/UI suites. Original art, saved IDs and recording provenance stay fixed; persona inference is not listening certification.
+
 按需操作浮层当前合同：[OVERLAY-HAND-ACTIONS.md](OVERLAY-HAND-ACTIONS.md)。维护路径为 `App.vue / ChengduTable.vue → tabletop.css`，专项仍在 `hand-action-dock`、`ui`、`chengdu-ui`、`invitation-copy`、`stable-table-layout/fixture`；该合同替代旧常驻92/132px动作槽说明。
 The current overlay contract owns the existing component/style/test path, superseding the former permanent92/132px action reservation.
 

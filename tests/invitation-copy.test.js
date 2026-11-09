@@ -4,6 +4,7 @@ import * as MotionLoader from '../src/portrait-motion/loader.js';
 import * as MotionSettings from '../src/portrait-motion/settings.js';
 import * as MotionController from '../src/portrait-motion/controller.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
+import * as ChengduTableStatusModule from '../src/chengdu-table-status.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptionsModule from "../shared/start-options.js";
@@ -20,6 +21,8 @@ import * as Live2DConsent from "../src/live2d/consent.js";
 import * as CharacterAudioModule from "../src/character-audio.js";
 import * as CharacterPortraitModule from "../src/character-portraits.js";
 import * as SharedPlaybackModule from "../src/shared-playback.js";
+import * as RealisticPopoverModule from '../src/realistic-popover.js';
+import * as RealisticPresentationModule from '../src/realistic-presentation.js';
 // 测试装载器跟随真实组件的媒体目录依赖，不在复制邀请测试里另造牌面映射。
 // Follow the real component's media dependency rather than duplicating its mapping in invitation tests.
 import * as MahjongPresentationModule from "../src/mahjong-tile-presentation.js";
@@ -96,6 +99,7 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./CharacterArtwork.vue": CharacterArtwork,
   "./round-summary.js": RoundSummaryModule,
   "./chengdu-event-text.js": ChengduEventTextModule,
+  "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
@@ -117,6 +121,8 @@ const App = compileComponent("App.vue", {
   "./character-audio.js": CharacterAudioModule,
   "./character-portraits.js": CharacterPortraitModule,
   "./shared-playback.js": SharedPlaybackModule,
+  "./realistic-presentation.js": RealisticPresentationModule,
+  "./realistic-popover.js": RealisticPopoverModule,
   "../shared/start-options.js": StartOptionsModule,
   "../shared/chengdu-room-settings.js": ChengduRoomSettingsModule,
 });

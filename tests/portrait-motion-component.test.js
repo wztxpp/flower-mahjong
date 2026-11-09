@@ -29,6 +29,7 @@ tableCode = tableCode.replaceAll(/from ['"]vue['"]/g, `from ${JSON.stringify(imp
   .replace("'./CharacterArtwork.vue'", JSON.stringify(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`))
   .replace("'./round-summary.js'", JSON.stringify(new URL('../src/round-summary.js', import.meta.url).href))
   .replace("'./chengdu-event-text.js'", JSON.stringify(new URL('../src/chengdu-event-text.js', import.meta.url).href))
+  .replace("'./chengdu-table-status.js'", JSON.stringify(new URL('../src/chengdu-table-status.js', import.meta.url).href))
   .replace("'./mahjong-tile-presentation.js'", JSON.stringify(new URL('../src/mahjong-tile-presentation.js', import.meta.url).href));
 const { default: ChengduTable } = await import(`data:text/javascript;base64,${Buffer.from(tableCode).toString('base64')}`);
 

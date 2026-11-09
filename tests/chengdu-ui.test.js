@@ -1,5 +1,6 @@
 import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
+import * as ChengduTableStatusModule from '../src/chengdu-table-status.js';
 // 编译真实成都组件验证选牌、合法动作、隐私与终局；不复制规则，不用浏览器替代后台测试。
 // Compile the real Chengdu component to verify selection, allowlists, privacy and finish views; never duplicate rules or replace backend tests.
 import test from 'node:test';
@@ -36,7 +37,7 @@ const CharacterArtwork = compile('CharacterArtwork.vue', {
   './portrait-motion/loader.js': MotionLoader,
   './portrait-motion/controller.js': MotionController,
 });
-const Table = compile('ChengduTable.vue', { './round-summary.js': RoundSummaryModule, './CharacterArtwork.vue': CharacterArtwork, './chengdu-event-text.js': ChengduEventTextModule, './MahjongTile.vue': Tile, './mahjong-tile-presentation.js': TilePresentation });
+const Table = compile('ChengduTable.vue', { './round-summary.js': RoundSummaryModule, './CharacterArtwork.vue': CharacterArtwork, './chengdu-event-text.js': ChengduEventTextModule, './chengdu-table-status.js': ChengduTableStatusModule, './MahjongTile.vue': Tile, './mahjong-tile-presentation.js': TilePresentation });
 
 // 合成“已裁剪视图”不是权威牌墙；各测试只改变显示/动作字段，不拿夹具作算分证据。
 // This synthetic filtered view is not an authoritative wall; tests vary display/actions and never claim scoring evidence from it.

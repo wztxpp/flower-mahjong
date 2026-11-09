@@ -1,0 +1,189 @@
+{
+  "date": "2026-11-09",
+  "scope": "Original scene-art identity audit; no audio-perception verdict.",
+  "visualRoles": {
+    "sweet": "Pink neighbor, brown bob, pink cardigan",
+    "sunny": "Yellow twin-tail girl; excluded from realistic six-role roster",
+    "elegant": "Purple-haired elegant woman",
+    "landlord": "Older man in embroidered cap and jacket",
+    "honest": "Brown-haired man, blue shirt and diagonal shoulder strap",
+    "wealthy": "Woman in dark green suit, asymmetric bun and brooch",
+    "star": "Woman in pale blue evening dress, asymmetric hair jewelry"
+  },
+  "sources": {
+    "sweet": {
+      "url": "/characters/sweet-scene-base.png",
+      "sha256": "dd2bace8bebcf28269ff0e542f27ba6179a1b985826e4d2ae815f30056e7e161"
+    },
+    "sunny": {
+      "url": "/characters/sunny-scene-base.png",
+      "sha256": "5488b63d16b9833575921c5a85085ea9b4877282f2bd10c4eba41df418e79d46"
+    },
+    "elegant": {
+      "url": "/characters/elegant-scene-base.png",
+      "sha256": "76f7fb16cdfc1943f3f4abc25cc606767c816798360b7e2052d7e4c5d570619d"
+    },
+    "landlord": {
+      "url": "/characters/landlord-scene-base.png",
+      "sha256": "2814c3f381473f333507a0aa85e6d46a85aa7ce1327af4a7b0ea6dd28f907867"
+    },
+    "honest": {
+      "url": "/characters/honest-scene-base.png",
+      "sha256": "0bd2e05148ee014e4936468a9b836c130a24da88a117168a9ede22635d24ac21"
+    },
+    "wealthy": {
+      "url": "/characters/wealthy-scene-base.png",
+      "sha256": "7522116a00170189abefaaf4871d0044bcd9f1b33a32bd8a8b8cd45c108acfad"
+    },
+    "star": {
+      "url": "/characters/star-scene-base.png",
+      "sha256": "957ef044bf1bd77ff8694c6b92dc67fc74d7566cd12e5b16f40840c4f8056ef7"
+    }
+  },
+  "approvedIndependentViews": [
+    {
+      "id": "sweet",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "sweet",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "sweet",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "elegant",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "elegant",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "elegant",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "landlord",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "landlord",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "landlord",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "honest",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "honest",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "honest",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "wealthy",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "wealthy",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "wealthy",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "star",
+      "view": "front",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "star",
+      "view": "left",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    },
+    {
+      "id": "star",
+      "view": "right",
+      "base": "reviewed",
+      "blink": "real half/closed local donors; browser review separate",
+      "handAction": "not accepted"
+    }
+  ],
+  "pendingWork": [
+    "Real-browser review of all18 views and natural eye/hair timing",
+    "Right-hand source registration, sleeve seams and body-cleanplate continuity",
+    "Four or more actually distinct accepted right-hand phases for each of18views"
+  ],
+  "audioEvidence": {
+    "sweet": {
+      "manifestLabel": "萝莉音",
+      "originalSceneSource": "01-pink-neighbor-normal.png",
+      "preCorrectionAudioDirectory": "/voices/sweet/"
+    },
+    "sunny": {
+      "manifestLabel": "阳光少女音",
+      "originalSceneSource": "02-yellow-girl-normal.png",
+      "preCorrectionAudioDirectory": "/voices/sunny/"
+    },
+    "conclusion": "Before correction, visual identities differed from historical voice-label pairing while same-ID file lookup was internally consistent. Integration now uses explicit voiceId without renaming saved identities or media. This audit does not certify subjective listening; see docs/REALISTIC-VOICE-MAPPING.md."
+  }
+}

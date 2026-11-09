@@ -1172,3 +1172,13 @@ test('joining a legacy lobby freezes previously visible roles before resolving t
   assert.deepEqual(joined.state.seats.slice(0, 2).map((person) => person.characterId), ['sweet', 'elegant']);
   assertDistinct(joined.state.seats.map((person) => person.characterId));
 });
+
+// 新随机落座只用当前六角色；旧明确偏好与保存映射保持原身份，避免临时停用变成存档迁移。
+// New random occupants use six active roles while explicit legacy requests and saved maps retain identity without migration.
+test('new random seating omits paused sunny but preserves explicit legacy identity', () => {
+  const choices = new Set();
+  for (let index = 0; index < 6; index++) choices.add(assignSeatCharacter(null, [], () => index));
+  assert.deepEqual([...choices].sort(), ['elegant', 'honest', 'landlord', 'star', 'sweet', 'wealthy']);
+  assert.equal(assignSeatCharacter('sunny', []), 'sunny');
+  assert.deepEqual(gameCharacters(['sunny', 'sweet', 'elegant']), ['sunny', 'sweet', 'elegant']);
+});

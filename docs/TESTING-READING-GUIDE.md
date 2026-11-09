@@ -1,5 +1,11 @@
 # 测试阅读指南 / Test reading guide
 
+真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
+Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
+
+二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
+Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
+
 当前动作布局以 [按需操作浮层](OVERLAY-HAND-ACTIONS.md) 为准，替代本文历史68px行/92或132px常驻动作槽的结构要求。原稳定牌河/记录/手牌契约不变。新增同实例撤层焦点回归与可见浏览器focus/选牌诊断，不把内存DOM的disabled行为冒充原生浏览器。
 The current overlay contract supersedes historical permanent action-row/dock reservations below while preserving river/record/hand stability. Mounted focus regressions and visible browser focus/selection diagnostics remain separate evidence, especially for native disabled-button blur.
 

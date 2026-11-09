@@ -8,6 +8,7 @@ import {
   CHARACTERS,
   ActionVoiceCursor,
   CharacterAudio,
+  characterForSeat,
   clipForEvent,
   clipsForEvent,
 } from "../src/character-audio.js";
@@ -20,8 +21,32 @@ const state = (history, revision = history.length, id = "game-1") => ({
     characters: ["sunny", "sweet", "elegant"],
   },
 });
-// 七种角色都沿用明确绝对座位映射；万牌1–9必须逐一映射，而不改旧条/筒路径。
-// All seven personas retain absolute-seat assignment; wan 1–9 map individually without changing old paths.
+// 人物ID/原图/旧座位回退保持原样，仅配音目录按新原画设定交叉；不以自检代码推导期望。
+// Character IDs/art/legacy-seat fallback remain fixed; assert the intended crossed voices independently of production lookup.
+test("scene personas use separate voice IDs without rewriting character identity", () => {
+  const pinkNeighbor = CHARACTERS.find((character) => character.id === "sweet");
+  const yellowGirl = CHARACTERS.find((character) => character.id === "sunny");
+  assert.deepEqual(
+    [pinkNeighbor.id, pinkNeighbor.voiceId, pinkNeighbor.name, pinkNeighbor.style, pinkNeighbor.portrait],
+    ["sweet", "sunny", "小桃", "阳光少女音", "/characters/sweet-scene-base.png"],
+  );
+  assert.deepEqual(
+    [yellowGirl.id, yellowGirl.voiceId, yellowGirl.name, yellowGirl.style, yellowGirl.portrait],
+    ["sunny", "sweet", "晴禾", "萝莉音", "/characters/sunny-scene-base.png"],
+  );
+  for (const character of CHARACTERS.filter((entry) => !["sweet", "sunny"].includes(entry.id))) {
+    assert.equal(character.voiceId, character.id);
+  }
+  const savedCharacters = Object.freeze(["sunny", "sweet", "elegant"]);
+  assert.equal(clipForEvent({ type: "peng", seat: 0 }, savedCharacters), "/voices/sweet/peng.mp3");
+  assert.equal(clipForEvent({ type: "peng", seat: 1 }, savedCharacters), "/voices/sunny/peng.mp3");
+  assert.deepEqual(savedCharacters, ["sunny", "sweet", "elegant"]);
+  assert.deepEqual([0, 1, 2].map((seat) => characterForSeat(seat).id), ["sweet", "elegant", "sunny"]);
+  assert.equal(clipForEvent({ type: "peng", seat: 0 }), "/voices/sunny/peng.mp3");
+  assert.equal(clipForEvent({ type: "peng", seat: 2 }, ["bad", "bad", "bad"]), "/voices/sweet/peng.mp3");
+});
+// 七种角色沿用绝对座位身份，三种花色均按独立声线ID选择已有文件，不重命名资源。
+// Seven characters retain absolute-seat identity; all suits select existing files by voice ID without renaming assets.
 test("every persona maps all nine wan discards at each four-player seat", () => {
   for (const character of CHARACTERS) {
     for (let seat = 0; seat < 4; seat++) {
@@ -29,7 +54,7 @@ test("every persona maps all nine wan discards at each four-player seat", () => 
       characters[seat] = character.id;
       for (let tile = 0; tile < 27; tile++) {
         const prefix = ["tiao", "tong", "wan"][Math.floor(tile / 9)];
-        const expected = `/voices/${character.id}/${prefix}-${tile % 9 + 1}.mp3`;
+        const expected = `/voices/${character.voiceId}/${prefix}-${tile % 9 + 1}.mp3`;
         assert.equal(clipForEvent({ type: "discard", seat, tile }, characters), expected);
         assert.deepEqual(clipsForEvent({ type: "discard", seat, tile }, characters), [expected]);
       }
@@ -59,7 +84,7 @@ test("wan calls retain the committed-event cursor and reconnect baseline", () =>
   const first = { type: "discard", seat: 0, tile: 18 };
   const second = { type: "discard", seat: 1, tile: 26 };
   assert.deepEqual(cursor.consume(state([first])), []);
-  assert.deepEqual(cursor.consume(state([first, second])), ["/voices/sweet/wan-9.mp3"]);
+  assert.deepEqual(cursor.consume(state([first, second])), ["/voices/sunny/wan-9.mp3"]);
   assert.deepEqual(cursor.consume(state([first, second])), []);
   cursor.reset();
   assert.deepEqual(cursor.consume(state([first, second])), []);
@@ -105,7 +130,7 @@ test("23 correct clips per character, only confirmed discard/peng/hu/kong", () =
     assert.equal(clips.size, 23);
     assert.ok(
       [...clips].every((url) =>
-        url.startsWith(`/voices/${CHARACTERS[seat].id}/`),
+        url.startsWith(`/voices/${CHARACTERS[seat].voiceId}/`),
       ),
     );
   }
@@ -133,7 +158,7 @@ test("23 correct clips per character, only confirmed discard/peng/hu/kong", () =
       seat: 0,
       tile: 0,
     }),
-    "/voices/sweet/tiao-1.mp3",
+    "/voices/sunny/tiao-1.mp3",
   );
   assert.equal(
     clipForEvent({
@@ -141,7 +166,7 @@ test("23 correct clips per character, only confirmed discard/peng/hu/kong", () =
       seat: 0,
       tile: 17,
     }),
-    "/voices/sweet/tong-9.mp3",
+    "/voices/sunny/tong-9.mp3",
   );
   assert.equal(
     clipForEvent({
@@ -159,7 +184,7 @@ test("23 correct clips per character, only confirmed discard/peng/hu/kong", () =
         type,
         seat: 2,
       }),
-      "/voices/sunny/gang.mp3",
+      "/voices/sweet/gang.mp3",
     );
 });
 // 场景：每个座位和观察者均使用胡牌角色的声音播报已提交的实际胡牌来源
@@ -185,7 +210,8 @@ test("wins announce their committed source in the winning character, for every s
         source,
         from: (seat + 1) % 3,
       };
-      const expected = [`/voices/${characters[seat]}/${prefix}.mp3`];
+      const voiceId = CHARACTERS.find((character) => character.id === characters[seat]).voiceId;
+      const expected = [`/voices/${voiceId}/${prefix}.mp3`];
       assert.deepEqual(clipsForEvent(event, characters), expected);
       assert.equal(clipForEvent(event, characters), expected[0]);
       assert.equal(
@@ -245,7 +271,7 @@ test("wins announce their committed source in the winning character, for every s
         },
         ["invalid"],
       ),
-      [`/voices/${CHARACTERS[seat].id}/zimo.mp3`],
+      [`/voices/${CHARACTERS[seat].voiceId}/zimo.mp3`],
     );
   }
   // 逐项覆盖 [undefined,null,-1,3,1.5,'1']；同一组检查用于每个样本，顺序以代码列出的集合为准。
@@ -276,7 +302,7 @@ test("wins announce their committed source in the winning character, for every s
       seat: 0,
       source: "selfDraw",
     }),
-    ["/voices/sweet/peng.mp3"],
+    ["/voices/sunny/peng.mp3"],
   );
 });
 // 场景：播放游标不重播首次载入、重连、新局的历史或重复更新
@@ -297,7 +323,7 @@ test("cursor never replays initial/reconnected/new-game history or duplicate upd
   // 核对事件消费或播放顺序；未提交、过期与已消费事件不应重复播报。
   // Check event consumption/playback order; uncommitted, expired or consumed events must not replay.
   assert.deepEqual(cursor.consume(state([a])), []);
-  assert.deepEqual(cursor.consume(state([a, b])), ["/voices/sweet/peng.mp3"]);
+  assert.deepEqual(cursor.consume(state([a, b])), ["/voices/sunny/peng.mp3"]);
   assert.deepEqual(cursor.consume(state([a, b])), []);
   assert.deepEqual(cursor.consume(state([a], 1)), []);
   assert.deepEqual(
@@ -394,9 +420,9 @@ test("same-revision batch events all played once in order, including automatic d
   // 核对分数、付款来源或番数；断言中的精确数值属于当前场景的规则契约。
   // Check scores, payers or fan; exact asserted numbers are this scenario’s rule contract.
   assert.deepEqual(c.consume(state(events, 2)), [
-    "/voices/sweet/fangpao.mp3",
+    "/voices/sunny/fangpao.mp3",
     "/voices/elegant/fangpao.mp3",
-    "/voices/sunny/tong-1.mp3",
+    "/voices/sweet/tong-1.mp3",
   ]);
   assert.deepEqual(c.consume(state(events, 2)), []);
 });
@@ -620,7 +646,7 @@ test("simultaneous wins stay serial and adjacent, with duplicate updates ignored
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const expected = [
-    "/voices/sweet/fangpao.mp3",
+    "/voices/sunny/fangpao.mp3",
     "/voices/elegant/fangpao.mp3",
     "/voices/sunny/tong-1.mp3",
   ];
@@ -1090,8 +1116,8 @@ test("a live win interrupts an old discard and drops automatic discards in the s
   assert.equal(stopped, true);
   assert.deepEqual(played, [
     "silent",
-    "/voices/sweet/tiao-2.mp3",
-    "/voices/sunny/fangpao.mp3",
+    "/voices/sunny/tiao-2.mp3",
+    "/voices/sweet/fangpao.mp3",
   ]);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
@@ -1146,7 +1172,7 @@ test("live simultaneous wins remain adjacent and serial; a newer win replaces ob
   await tick();
   // 核对分数、付款来源或番数；断言中的精确数值属于当前场景的规则契约。
   // Check scores, payers or fan; exact asserted numbers are this scenario’s rule contract.
-  assert.equal(played.at(-1), "/voices/sweet/fangpao.mp3");
+  assert.equal(played.at(-1), "/voices/sunny/fangpao.mp3");
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   engine.enqueueLive(
@@ -1181,7 +1207,7 @@ test("live simultaneous wins remain adjacent and serial; a newer win replaces ob
   await tick();
   // 核对事件消费或播放顺序；未提交、过期与已消费事件不应重复播报。
   // Check event consumption/playback order; uncommitted, expired or consumed events must not replay.
-  assert.equal(played.at(-1), "/voices/sunny/zimo.mp3");
+  assert.equal(played.at(-1), "/voices/sweet/zimo.mp3");
   assert.equal(engine.queue.length, 0);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
@@ -1270,7 +1296,7 @@ test("interrupting an in-flight load can retry the same asset immediately withou
   await tick();
   // 核对事件消费或播放顺序；未提交、过期与已消费事件不应重复播报。
   // Check event consumption/playback order; uncommitted, expired or consumed events must not replay.
-  assert.deepEqual(played, ["silent", "/voices/sweet/tiao-3.mp3"]);
+  assert.deepEqual(played, ["silent", "/voices/sunny/tiao-3.mp3"]);
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   engine.dispose();
@@ -1524,9 +1550,9 @@ test("playback watchdog stops audible source before completing", async (t) => {
   }
 });
 
-// 场景：七个角色在任意真实座位都对应自身23条路径；角色列表下标不能变成座位。
-// Scenario: every character resolves 23 own clips at any actual seat; roster indexes never become seats.
-test("all seven characters use their own clips at each of three seats", () => {
+// 场景：七个角色在任意真实座位都对应所配声线23条路径；角色列表下标不能变成座位。
+// Scenario: every character resolves 23 assigned-voice clips at actual seats; roster indexes never become seats.
+test("all seven characters use their assigned voice clips at each of three seats", () => {
   assert.equal(CHARACTERS.length, 7);
   for (const character of CHARACTERS) {
     for (let seat = 0; seat < 3; seat++) {
@@ -1539,7 +1565,7 @@ test("all seven characters use their own clips at each of three seats", () => {
       ];
       const paths = new Set(events.map((event) => clipForEvent(event, mapping)));
       assert.equal(paths.size, 23);
-      assert.ok([...paths].every((path) => path.startsWith(`/voices/${character.id}/`)));
+      assert.ok([...paths].every((path) => path.startsWith(`/voices/${character.voiceId}/`)));
     }
   }
   for (const seat of [-1, 3, 4, 5, 6, "1", 0.5, null]) {
@@ -1562,6 +1588,27 @@ test("new-character warming fetches only assigned voices", async () => {
   assert.ok(urls.every((url) => /^\/voices\/(landlord|wealthy|star)\//.test(url)));
   assert.deepEqual(played, ["silent"]);
   engine.dispose();
+});
+
+// 每次只放入配对中的一个人物，避免两套声音同时出现掩盖预热仍按人物ID取文件的错误。
+// Include only one paired character per case so warming both directories cannot hide an incorrect identity-based lookup.
+test("crossed scene voices warm the same original recordings used by playback", async () => {
+  for (const [characterId, voiceId] of [["sweet", "sunny"], ["sunny", "sweet"]]) {
+    const { engine, played } = audioFixture();
+    const urls = [];
+    engine.fetchAudio = async (url) => {
+      urls.push(url);
+      return { ok: true, headers: { get: () => "audio/mpeg" }, arrayBuffer: async () => url };
+    };
+    await engine.unlock();
+    await engine.warmWins([characterId, "elegant", "landlord"]);
+    const expected = [voiceId, "elegant", "landlord"].flatMap((id) =>
+      ["zimo", "fangpao", "qianggang"].map((call) => `/voices/${id}/${call}.mp3`),
+    );
+    assert.deepEqual([...urls].sort(), expected.sort());
+    assert.deepEqual(played, ["silent"]);
+    engine.dispose();
+  }
 });
 
 // 场景：仅四项公开角色映射允许第四座位报牌，预热仍限制三个并行请求。

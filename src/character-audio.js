@@ -5,16 +5,19 @@ import { gameCharacters, SEAT_COUNT } from '../shared/character-assignment.js';
 import { tilePresentation } from './mahjong-tile-presentation.js';
 import { CHARACTER_PORTRAITS } from './character-portraits.js';
 /* 固定绝对座位，不随观察者变化：所有客户端听到相同角色。 / Fixed absolute seats, never viewer-relative: all clients hear the same character. */
-// 角色 ID 与资源路径是客户端与服务端共享契约。座位是绝对座位，不随观察者旋转。
-// Character IDs and asset paths are shared client/server contracts. Seats are absolute, not viewer-relative.
+// id 保留人物/存档身份；voiceId 单独选择原始录音目录，不能拿来替换人物或立绘 ID。
+// id preserves character/save identity; voiceId selects an original recording directory, never a character/art ID.
+// 粉色邻家与黄色萌系按正式原图设定配对旧声线；这是设定推断，未完成人工试听认证。
+// Pink-neighbor/yellow-cute voices follow the supplied art's personas; this is an inference, not a listening certification.
+// 对照和兼容边界见 docs/REALISTIC-VOICE-MAPPING.md。 / See docs/REALISTIC-VOICE-MAPPING.md for evidence and boundaries.
 export const CHARACTERS = Object.freeze([
-  { id: 'sweet', name: '小桃', style: '萝莉音', portrait: CHARACTER_PORTRAITS.sweet.base },
-  { id: 'elegant', name: '清岚', style: '御姐音', portrait: CHARACTER_PORTRAITS.elegant.base },
-  { id: 'sunny', name: '晴禾', style: '阳光少女音', portrait: CHARACTER_PORTRAITS.sunny.base },
-  { id: 'landlord', name: '地主', style: '豪爽男声', portrait: CHARACTER_PORTRAITS.landlord.base },
-  { id: 'honest', name: '老实人', style: '温厚男声', portrait: CHARACTER_PORTRAITS.honest.base },
-  { id: 'wealthy', name: '富婆', style: '雍容女声', portrait: CHARACTER_PORTRAITS.wealthy.base },
-  { id: 'star', name: '女明星', style: '明亮女声', portrait: CHARACTER_PORTRAITS.star.base },
+  { id: 'sweet', voiceId: 'sunny', name: '小桃', style: '阳光少女音', portrait: CHARACTER_PORTRAITS.sweet.base },
+  { id: 'elegant', voiceId: 'elegant', name: '清岚', style: '御姐音', portrait: CHARACTER_PORTRAITS.elegant.base },
+  { id: 'sunny', voiceId: 'sweet', name: '晴禾', style: '萝莉音', portrait: CHARACTER_PORTRAITS.sunny.base },
+  { id: 'landlord', voiceId: 'landlord', name: '地主', style: '豪爽男声', portrait: CHARACTER_PORTRAITS.landlord.base },
+  { id: 'honest', voiceId: 'honest', name: '老实人', style: '温厚男声', portrait: CHARACTER_PORTRAITS.honest.base },
+  { id: 'wealthy', voiceId: 'wealthy', name: '富婆', style: '雍容女声', portrait: CHARACTER_PORTRAITS.wealthy.base },
+  { id: 'star', voiceId: 'star', name: '女明星', style: '明亮女声', portrait: CHARACTER_PORTRAITS.star.base },
 ]);
 // 旧局没有角色分配时按绝对座位兜底；非法下标使用第一个角色。
 // For older games without assignments, fall back by absolute seat; invalid indices use the first character.
@@ -58,11 +61,12 @@ export function clipForEvent(event, characters) {
             ? 'qianggang'
             : null;
   else if (['mingGang', 'anGang', 'buGang', 'addGang'].includes(event.type)) clip = 'gang';
-  // 优先使用服务端本局角色 ID，缺失或未知 ID 才用兼容映射。
-  // Prefer the server game’s character ID; fall back only for missing or unknown IDs.
-  return clip
-    ? `/voices/${(CHARACTERS.find((character) => character.id === characters?.[event.seat]) || characterForSeat(event.seat, seatCount)).id}/${clip}.mp3`
-    : null;
+  if (!clip) return null;
+  // 先按服务端人物 ID 或旧局绝对座位回退确定人物，再取其独立声线，不改传入的存档数组。
+  // Resolve the server character ID or legacy absolute-seat fallback first, then its voice, without mutating saved arrays.
+  const character = CHARACTERS.find((entry) => entry.id === characters?.[event.seat]) ||
+    characterForSeat(event.seat, seatCount);
+  return `/voices/${character.voiceId}/${clip}.mp3`;
 }
 
 /* 仅根据已提交的来源分类胡牌，并使用赢家的角色。 / Only classify a win from the committed source, using the winner's character. */
@@ -349,6 +353,8 @@ export class CharacterAudio {
     // Ignore while muted or locked rather than enqueueing speech that might unexpectedly play later.
     if (this.muted || !this.unlocked || this.context?.state !== 'running') return;
     const generation = this.generation;
+    // 预热与实际播放共用人物→声线解析，避免修正映射后仍下载旧人物同名目录。
+    // Warming shares playback's character-to-voice resolution rather than using a stale same-name directory.
     const urls = [
       ...new Set(
         Array.from({ length: audioSeatCount(characters) }, (_, seat) => seat).flatMap((seat) =>

@@ -1,5 +1,8 @@
 # 架构与生命周期 / Architecture and lifecycles
 
+二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
+Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
+
 当前角色画框使用 [原图局部Canvas2D](PORTRAIT-MOTION.md)：原img永远可见，新普通开关默认静态。可见/前台/基础表情/非减少动态才加载和绘制；反应暂停复用，关开/换角/卸载失效旧代次。旧SDK许可不迁移，旧模型不执行或公开分发。装饰不拥有游戏、三秒表情计时或声音。
 Current frames use original-preserving local Canvas2D: original img always remains visible and a new ordinary setting defaults static. Visibility, foreground, base reaction and motion allowance govern load/draw. Reactions pause/reuse; toggling, role changes and unmount revoke generations. Old SDK assent is not migrated, old models are neither executed nor redistributed, and decoration owns no game/reaction/audio authority.
 

@@ -1,5 +1,8 @@
 import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
+import * as ChengduTableStatusModule from '../src/chengdu-table-status.js';
+import * as RealisticPopoverModule from '../src/realistic-popover.js';
+import * as RealisticPresentationModule from '../src/realistic-presentation.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptionsModule from "../shared/start-options.js";
@@ -100,6 +103,7 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./round-summary.js": RoundSummaryModule,
   './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
+  "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
   "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
@@ -114,12 +118,15 @@ const App = compileComponent("App.vue", {
   "./PortraitMotionSettings.vue": PortraitMotionSettings,
   './CharacterArtwork.vue': CharacterArtwork,
   "./chengdu-event-text.js": ChengduEventTextModule,
+  "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
   "./ChengduTable.vue": ChengduTable,
   "./character-audio.js": CharacterAudioModule,
   "./character-portraits.js": CharacterPortraitModule,
   "./shared-playback.js": SharedPlaybackModule,
+  "./realistic-presentation.js": RealisticPresentationModule,
+  "./realistic-popover.js": RealisticPopoverModule,
   "../shared/start-options.js": StartOptionsModule,
   "../shared/chengdu-room-settings.js": ChengduRoomSettingsModule,
 });
@@ -2781,9 +2788,9 @@ test("entry exposes optional character preference and submits selected value", a
   // Check rendered output or source structure; regex/string matches are not real browser interactions.
   assert.match(html, /id="preferred-character"/);
   assert.match(html, /随机分配/);
-  assert.match(html, /小桃 · 萝莉音/);
+  assert.match(html, /小桃 · 阳光少女音/);
   assert.match(html, /清岚 · 御姐音/);
-  assert.match(html, /晴禾 · 阳光少女音/);
+  assert.doesNotMatch(html, /option value="sunny"/);
   // 执行：调用被测入口或推进异步步骤；后续断言检查实际返回的状态。
   // Act: invoke the tested entry point or advance asynchronous work; subsequent assertions check the resulting state.
   scope.name.value = "测试角色";
@@ -2964,7 +2971,7 @@ test("foreground resume establishes a full silent baseline after hidden polling"
         ],
       },
     }),
-    ["/voices/sweet/tiao-3.mp3"],
+    ["/voices/sunny/tiao-3.mp3"],
   );
 });
 // 场景：延迟的后台请求不能消费前台音频基线
@@ -5843,15 +5850,15 @@ test('hidden self-draw renders a back and win cue, then reveals on finish withou
   assert.equal(scope.state.value.game.players[1].hand, undefined);
 });
 
-// 场景：大厅显示七个可选角色；每个新角色的预览、请求与绝对座位展示一致。
-// Scenario: the lobby lists seven options, and each new preview/request agrees with absolute-seat portraits.
-test("seven-character lobby and assigned portraits cover every viewer", async () => {
+// 场景：大厅暂提供六个角色，旧七身份仍可读取；预览和绝对座位身份不能随声线映射改变。
+// Scenario: six active choices preserve all seven legacy identities, previews and absolute-seat portraits independently of voice mappings.
+test("six active lobby choices and seven saved portraits cover every viewer", async () => {
   browser();
   const entry = lobby();
   const html = await render(entry);
-  assert.match(html, /七位角色，支持三人或四人同桌/);
+  assert.match(html, /六位角色，支持三人或四人同桌/);
   for (const character of CharacterAudioModule.CHARACTERS) {
-    assert.ok(html.includes(`value="${character.id}"`));
+    assert.equal(html.includes(`value="${character.id}"`), character.id !== "sunny");
     entry.preferredCharacter.value = character.id;
     const preview = await render(entry);
     assert.ok(preview.includes(character.portrait));
@@ -7720,5 +7727,159 @@ test('return-to-table restores focus through the existing close watcher', async 
   assert.equal(document.activeElement, host.nodes.trigger);
   assert.equal(host.nodes.trigger.isConnected, true);
   host.unmount();
+  scope.resetRoomContext();
+});
+
+// 同一完整快照包含未来事件时，场景只能跟当前声音组；两条媒体任一未完都不能启动下一组或无声尾部。
+// A complete snapshot can contain future events, but scenes follow the current audio group and wait for both paths before later/tail events.
+for (const firstCompletion of ['audio', 'visual']) {
+  test(`realistic frames follow FIFO and retain hidden draws when ${firstCompletion} finishes first`, async () => {
+    const scope = setup(fixture({ schemaVersion: 3 }));
+    const next = localPlaybackFixture(scope);
+    scope.chooseTablePresentation('realistic');
+    next.game.history.push({ type: 'draw', seat: 1, tile: 17 }, { type: 'discard', seat: 1, tile: 1 }, { type: 'draw', seat: 2, tile: 16 });
+    const calls = [], finishes = [];
+    scope.characterAudio.enqueueOrdered = (events) => {
+      calls.push(events.map(({ type }) => type));
+      return new Promise((resolve) => finishes.push(() => resolve(successfulAudio(events))));
+    };
+    const fire = (delay) => scheduled.filter((timer) => timer.delay === delay && !timer.cancelled).forEach((timer) => timer.callback());
+    scope.applyState(next);
+    await settlePlayback();
+    assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type }) => type), ['discard']);
+    const firstSequence = scope.realisticPresentationFrame.value.sequence;
+    scope.applyState(structuredClone(next));
+    assert.equal(scope.realisticPresentationFrame.value.sequence, firstSequence, 'identical polls cannot replay');
+    fire(350);
+    if (firstCompletion === 'audio') finishes.shift()();
+    else fire(650);
+    await settlePlayback();
+    assert.equal(scope.realisticPresentationFrame.value.sequence, firstSequence, 'one finished path is insufficient');
+    if (firstCompletion === 'audio') fire(650);
+    else finishes.shift()();
+    await settlePlayback();
+    assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type }) => type), ['draw', 'discard']);
+    assert.equal(scope.realisticPresentationFrame.value.events[0].tile, null);
+    assert.equal(scope.realisticPresentationFrame.value.events[0].hidden, true);
+    assert.deepEqual(calls, [['discard'], ['discard']], 'draw never changes the audio grouping');
+    fire(350); fire(770);
+    await settlePlayback();
+    assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type }) => type), ['draw', 'discard'], 'tail cannot precede audio');
+    finishes.shift()();
+    await settlePlayback();
+    assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type }) => type), ['draw']);
+    assert.equal(scope.realisticPresentationFrame.value.events[0].seat, 2);
+    assert.equal(scope.localPresentationBusy.value, true);
+    fire(650);
+    await settlePlayback();
+    assert.equal(scope.localPresentationBusy.value, false);
+    scope.resetRoomContext();
+  });
+}
+
+// 无声摸牌不能因音频过滤消失，也不算语音积压；经典与减少动态不得新增350/650毫秒延时。
+// Silent draws survive audio filtering without inflating voice backlog; classic/reduced motion add neither caption nor flight waits.
+for (const mode of ['classic', 'realistic', 'reduced']) {
+  test(`realistic visual-only draw preserves ${mode} pacing and audio backlog`, async () => {
+    const scope = setup(fixture({ schemaVersion: 3 }));
+    const next = localPlaybackFixture(scope, 'draw');
+    if (mode !== 'classic') scope.chooseTablePresentation('realistic');
+    if (mode === 'reduced') window.matchMedia = () => ({ matches: true });
+    const start = scheduled.length;
+    let audioCalls = 0;
+    scope.characterAudio.enqueueOrdered = () => { audioCalls++; return Promise.resolve(); };
+    scope.applyState(next);
+    await settlePlayback();
+    assert.equal(audioCalls, 0);
+    assert.equal(scope.pendingPresentationCount.value, 0);
+    assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type, tile }) => [type, tile]), [['draw', null]]);
+    assert.equal(scheduled.slice(start).some((timer) => timer.delay === 350), false);
+    const flightTimers = scheduled.slice(start).filter((timer) => timer.delay === 650 && !timer.cancelled);
+    assert.equal(flightTimers.length, mode === 'realistic' ? 1 : 0);
+    flightTimers.forEach((timer) => timer.callback());
+    await settlePlayback();
+    assert.equal(scope.localPresentationBusy.value, false);
+    scope.resetRoomContext();
+  });
+}
+
+// 取消边界发布reset且释放视觉Promise，旧音频稍后完成不能恢复已略过的尾部摸牌。
+// Cancellation publishes reset and releases visual promises; late audio completion cannot revive skipped trailing draws.
+for (const interruption of ['skip', 'background', 'new-round', 'leave']) {
+  test(`realistic ${interruption} clears frame waits without reviving trailing draws`, async () => {
+    const scope = setup(fixture({ schemaVersion: 3 }));
+    const next = localPlaybackFixture(scope);
+    scope.chooseTablePresentation('realistic');
+    next.game.history.push({ type: 'draw', seat: 2, tile: 17 });
+    let finishAudio;
+    scope.characterAudio.enqueueOrdered = (events) => new Promise((resolve) => { finishAudio = () => resolve(successfulAudio(events)); });
+    scope.applyState(next);
+    await settlePlayback();
+    assert.equal(scope.realisticPresentationFinishes.size, 1);
+    if (interruption === 'skip') scope.skipLocalPlayback();
+    if (interruption === 'background') { document.hidden = true; scope.visibilityChanged(); }
+    if (interruption === 'new-round') {
+      const replacement = structuredClone(next);
+      replacement.revision++; replacement.game.id = 'another-game'; replacement.game.history = [];
+      scope.applyState(replacement);
+    }
+    if (interruption === 'leave') scope.resetRoomContext();
+    const resetSequence = scope.realisticPresentationFrame.value.sequence;
+    assert.equal(scope.realisticPresentationFrame.value.reset, true);
+    assert.equal(scope.realisticPresentationFinishes.size, 0);
+    finishAudio();
+    for (const timer of scheduled.filter((entry) => [350, 650].includes(entry.delay))) timer.callback();
+    await settlePlayback();
+    assert.equal(scope.realisticPresentationFrame.value.sequence, resetSequence);
+    assert.deepEqual(scope.realisticPresentationFrame.value.events, []);
+    scope.resetRoomContext();
+  });
+}
+
+// 显示切换不取消原声音、不动选牌或权威对象；内部胡牌清理与新的真实场景等待相互独立。
+// Switching views spares audio, selection and authority; ordinary win cleanup stays independent of realistic scene waits.
+test('realistic mode switches cancel only its finite visual branch and never replay its current frame', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  scope.chooseTablePresentation('realistic');
+  const snapshot = scope.state.value;
+  scope.selectedTile.value = 3;
+  let audioCleared = false;
+  scope.characterAudio.clear = () => { audioCleared = true; };
+  const displayed = scope.presentRealisticEvents([{ eventKey: 'x:y:1', type: 'discard', seat: 0, tile: 3 }], snapshot);
+  scope.clearPresentation();
+  assert.equal(scope.realisticPresentationFrame.value.reset, false);
+  assert.equal(scope.realisticPresentationFinishes.size, 1);
+  scope.chooseTablePresentation('classic');
+  await displayed;
+  assert.equal(scope.realisticPresentationFrame.value.reset, true);
+  assert.equal(scope.realisticPresentationFinishes.size, 0);
+  scope.chooseTablePresentation('realistic');
+  assert.deepEqual(scope.realisticPresentationFrame.value.events, []);
+  assert.equal(scope.selectedTile.value, 3);
+  assert.equal(scope.state.value, snapshot);
+  assert.equal(audioCleared, false);
+  scope.resetRoomContext();
+});
+
+// 旧版无屏障也通过原playTurnPresentation接线；首次恢复和静默重连不会给新组件额外的历史后缀。
+// Ungated legacy playback uses its existing start path; restoration and silent reconnects never publish historical suffixes to the scene.
+test('realistic legacy frames use accepted playback and respect initial and silent reconnect baselines', async () => {
+  const initial = fixture({ legacy: true, schemaVersion: 1 });
+  initial.game.id = 'legacy-realistic';
+  const scope = setup(initial);
+  scope.chooseTablePresentation('realistic');
+  scope.characterAudio.enqueueLive = () => Promise.resolve();
+  scope.applyState(initial);
+  assert.deepEqual(scope.realisticPresentationFrame.value.events, []);
+  const next = structuredClone(initial);
+  next.revision++;
+  next.game.history.push({ type: 'draw', seat: 0, tile: 15 });
+  scope.applyState(next);
+  assert.deepEqual(scope.realisticPresentationFrame.value.events.map(({ type, tile }) => [type, tile]), [['draw', null]]);
+  scope.offline.value = true;
+  next.revision++; next.game.history.push({ type: 'discard', seat: 1, tile: 3 });
+  scope.applyState(next);
+  assert.equal(scope.realisticPresentationFrame.value.reset, true);
+  assert.deepEqual(scope.realisticPresentationFrame.value.events, []);
   scope.resetRoomContext();
 });

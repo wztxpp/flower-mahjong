@@ -13,6 +13,9 @@ export const CHARACTER_IDS = Object.freeze([
   'wealthy',
   'star',
 ]);
+// 新界面暂不提供当前原画为黄色双马尾的sunny；稳定七ID仍用于旧占座、旧局和旧客户端明确偏好。
+// Temporarily omit the current yellow twin-tail sunny art from new UI/random seats; retain all seven IDs for saved identities and explicit legacy requests.
+export const ACTIVE_CHARACTER_IDS = Object.freeze(CHARACTER_IDS.filter((id) => id !== 'sunny'));
 // 四人桌必须由调用方显式指定；旧调用缺参数仍只有三人，不根据角色数猜测。
 // Four-seat tables require an explicit caller setting; omitted arguments keep three, never infer from roster size.
 function validateSeatCount(seatCount) {
@@ -85,7 +88,10 @@ export function assignCharacters(preferences, chooseIndex = randomIndex, seatCou
 // Occupied IDs come from the server; return an ID without mutation, with RNG injection for deterministic tests only.
 export function assignSeatCharacter(preference, occupiedCharacters, chooseIndex = randomIndex) {
   const requested = preferredCharacter(preference);
-  const available = CHARACTER_IDS.filter((character) => !occupiedCharacters.includes(character));
+  // 明确旧客户端偏好仍兼容；新随机落座只从六个当前角色中挑选，绝不重抽已坐好的身份。
+  // Preserve explicit legacy preferences; random new seats use the six active roles without rerolling existing occupants.
+  if (requested && !occupiedCharacters.includes(requested)) return requested;
+  const available = ACTIVE_CHARACTER_IDS.filter((character) => !occupiedCharacters.includes(character));
   if (!available.length) throw new RangeError('No characters available');
   if (available.includes(requested)) return requested;
   const index = available.length === 1 ? 0 : chooseIndex(available.length);

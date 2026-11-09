@@ -4,6 +4,7 @@ import { createApp } from 'vue';
 import App from '/src/App.vue';
 import '/src/style.css';
 import '/src/tabletop.css';
+import '/src/realistic-table.css';
 import { terminalSummaryFixture } from '../helpers/round-summary-fixtures.js';
 import { stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_STAGES } from '../helpers/stable-table-fixtures.js';
 import { measureStableTable, auditStableTable, auditReachability, setRiverReviewPosition, compareStableTable, settleStableTable } from '../helpers/stable-table-browser-audit.js';
@@ -11,8 +12,19 @@ import { measureStableTable, auditStableTable, auditReachability, setRiverReview
 // 本地按钮是只读陈列，阻止生产动作、导航、剪贴板和设置事件；滚动/Tab/原生summary仍可用。
 // Game buttons are read-only exhibits: block action/navigation/clipboard/settings events; scrolling, Tab, and native summaries remain usable.
 document.addEventListener('click', (event) => {
+  // 写实邀请入口复用真实剪贴板逻辑，隔离验收只检查可见性，不让fixture改系统剪贴板。
+  // The invite control uses real clipboard code; the isolated fixture checks visibility without writing the system clipboard.
+  if (event.target.closest('#app [data-realistic-invite]')) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  if (event.target.closest('#app [popovertargetaction="hide"]')) return;
   // 仅放行本地选牌与原下一局入口/关闭；选牌不提交，出牌/准备确认/开局/离桌继续阻断。
   // Allow only local tile selection and existing modal controls; selection never submits, while discard/preparation/start/departure remain blocked.
+  // 仅放行写实桌本地显示工具；不放行任何出牌、回应或开局按钮。
+  // Allow realistic local display tools only, never discard, claim or start controls.
+  if (event.target.closest('#app .table-presentation-switch button, #app .realistic-view-tools button, #app .realistic-view-tools input, #app .realistic-view-tools select, #app .realistic-details button')) return;
   if (event.target.closest('#app .character-hand-table button.tile-interactive:not(:disabled)')) return;
   if (event.target.closest('#app [data-next-round-trigger], #app .next-round-dialog .modal-close, #app .next-round-dialog [data-next-round-return]')) return;
   if (event.target.closest('#app button, #app a, #app input, #app select')) {

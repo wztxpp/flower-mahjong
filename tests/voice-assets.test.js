@@ -9,6 +9,23 @@ import { createHash } from "node:crypto";
 import { LEGACY_CHARACTER_IDS } from "../shared/character-assignment.js";
 import { CHARACTERS, clipsForEvent } from "../src/character-audio.js";
 const root = new URL("../public/", import.meta.url);
+// 运行时声线绑定与原始来源清单分开：人物可以换配音，但清单不改名、不冒充重新生成或试听认证。
+// Runtime voice assignment is separate from original provenance: recasting never renames sources or claims regeneration/listening.
+test("runtime voice IDs resolve original manifest entries and preserve provenance labels", () => {
+  const manifest = JSON.parse(readFileSync(new URL("voices/manifest.json", root), "utf8"));
+  assert.equal(manifest.voices.sweet.label, "萝莉音");
+  assert.equal(manifest.voices.sunny.label, "阳光少女音");
+  assert.equal(manifest.quality.subjectiveListeningCompleted, false);
+  assert.equal(new Set(CHARACTERS.map((character) => character.voiceId)).size, 7);
+  for (const character of CHARACTERS) {
+    const voice = manifest.voices[character.voiceId];
+    assert.ok(voice, character.voiceId);
+    assert.deepEqual(
+      clipsForEvent({ type: "hu", source: "selfDraw", seat: 0 }, [character.id, "elegant", "landlord"]),
+      [voice.clips.zimo.src],
+    );
+  }
+});
 // 场景：花牌仍使用原161条各不相同的叫牌音频；成麻新增63条不替换这些资源
 // Scenario: flower calls retain 161 distinct generated calls alongside the wan extension
 test("flower calls retain 161 distinct generated calls alongside the wan extension", () => {
@@ -44,10 +61,10 @@ test("flower calls retain 161 distinct generated calls alongside the wan extensi
     const paths = new Set(events.flatMap((event) => clipsForEvent(event, mapping)));
     assert.equal(paths.size, 23);
     assert.equal(
-      readdirSync(new URL(`voices/${character.id}/`, root)).filter(
+      readdirSync(new URL(`voices/${character.voiceId}/`, root)).filter(
         (file) => file.endsWith(".mp3"),
       ).length,
-      LEGACY_CHARACTER_IDS.includes(character.id) ? 33 : 32,
+      LEGACY_CHARACTER_IDS.includes(character.voiceId) ? 33 : 32,
     );
     // 逐项覆盖 paths；同一组检查用于每个样本，顺序以代码列出的集合为准。
     // Exercise each entry in paths with the same checks, preserving the listed order.

@@ -1,0 +1,148 @@
+/* 可选实桌的独立皮肤。所有老布局覆盖都以.is-realistic-table为根，关闭即恢复经典桌。
+   Isolated optional table skin. Every legacy override is rooted in .is-realistic-table; switching off restores classic layouts. */
+.table-presentation-switch { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid #8d9d8a66; border-radius: 20px; }
+.table-presentation-switch .text-button { padding: 6px 10px; white-space: nowrap; }
+.table-presentation-switch button[aria-pressed="true"] { color: #fff9e8; background: #305d4b; border-radius: 16px; }
+.is-realistic-table { --realistic-hud-height: 158px; position: fixed; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; background: #111e1b; color: #e6e4d9; overflow: hidden; }
+.is-realistic-table .site-header { position: absolute; inset: 0 0 auto; height: 58px; padding: 0 24px; margin: 0; border: 0; z-index: 34; background: #13241fec; }
+/* 成都保留换三张计数、定缺说明与本人收到牌，不能为缩小HUD隐藏必需玩法信息。
+   Preserve Chengdu exchange counts, missing-suit instructions and private receipts rather than hiding required play information. */
+.is-realistic-table:has(.chengdu-own-area) { --realistic-hud-height: 182px; }
+.is-realistic-table:has(.chengdu-receipt-slot) { --realistic-hud-height: 212px; }
+.is-realistic-table:has(.spectator-banner) { --realistic-hud-height: 0px; }
+.is-realistic-table .brand { flex-shrink: 0; }
+.is-realistic-table .brand-name, .is-realistic-table .text-button { color: #e4e3d7; }
+.is-realistic-table .brand-name span, .is-realistic-table .prototype-pill { display: none; }
+.is-realistic-table .header-actions { height: 58px; gap: 12px; min-width: 0; }
+.is-realistic-table .portrait-motion-settings { position: absolute; left: 16px; top: 62px; margin: 0; z-index: 36; font-size: 11px; color: #d5dcd0; }
+.is-realistic-table .portrait-motion-settings:not([open]) { opacity: .75; }
+.is-realistic-table .portrait-motion-settings[open] { max-width: min(420px, calc(100vw - 32px)); background: #f4f0e3; color: #193f31; }
+.is-realistic-table .room-layout { padding: 0; margin: 0; max-width: none; }
+.is-realistic-table .room-layout > :not(.realistic-table):not(.play-layout):not(.chengdu-play):not(.room-notices):not(.start-options) { display: none; }
+/* 原通知和重连按钮继续可见，独立浮层不推动牌桌；空容器才隐藏。
+   Preserve original errors and reconnect controls in an independent overlay; hide only an empty notice container. */
+.is-realistic-table .room-notices { position: fixed; z-index: 38; left: 50%; top: 126px; transform: translateX(-50%); width: min(720px,calc(100% - 24px)); height: auto; max-height: 140px; margin: 0; overflow: auto; }
+.is-realistic-table .room-notices:not(:has(.connection-banner,.room-error)) { display: none; }
+.is-realistic-table .room-notices .connection-banner,.is-realistic-table .room-notices .room-error { background: #173c31f5; color: #fff2d1; border-color: #a68b56; }
+/* 复用原配置和私有诊断DOM，原生popover置顶，关闭时不占HUD；经典桌不带popover属性。
+   Reuse original configuration/private-diagnostic DOM in native top-layer popovers; classic mode has no popover attribute. */
+.is-realistic-table :is(.start-options,.hand-feedback)[popover]:popover-open,
+.is-realistic-table :is(.start-options,.hand-feedback)[data-realistic-popover-open] { display: block; position: fixed; z-index: 80; inset: 12vh auto auto 50%; transform: translateX(-50%); width: min(680px,calc(100vw - 28px)); height: auto; min-height: 100px; max-height: 75vh; margin: 0; padding: 20px; overflow: auto; background: #15362e; color: #f4e9ca; border: 1px solid #b99e67; border-radius: 12px; box-shadow: 0 18px 60px #0008; }
+.is-realistic-table :is(.start-options,.hand-feedback)[popover]::backdrop { background: #07130d88; }
+.is-realistic-table .play-layout, .is-realistic-table .table-column, .is-realistic-table .table-surface { display: block; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; height: auto; min-height: 0; }
+.is-realistic-table .table-surface > :not(.own-player-area), .is-realistic-table .room-sidebar, .is-realistic-table .table-footnote,
+.is-realistic-table .own-character-display, .is-realistic-table .own-public-slot,
+.is-realistic-table .chengdu-play > :not(.chengdu-board), .is-realistic-table .chengdu-board > :not(.chengdu-own-area) { display: none; }
+.is-realistic-table .chengdu-play, .is-realistic-table .chengdu-board { margin: 0; padding: 0; border: 0; background: none; display: block; }
+/* 私有控件使用原DOM与原权限，只把外壳固定在屏幕；它不属于可平移场景，也不随场景缩小。
+   Reuse the original private-control DOM/guards, fixing only its shell to the screen; it neither pans nor scales with the scene. */
+.is-realistic-table .table-surface > .own-player-area, .is-realistic-table .chengdu-own-area { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; margin: 0; min-height: var(--realistic-hud-height); height: var(--realistic-hud-height); border: 0; border-radius: 0; padding: 8px 16px 0; background: linear-gradient(0deg,#101e1cf7,#182d27ed 75%,#18322900); box-shadow: none; overflow: visible; }
+.is-realistic-table .hand-panel, .is-realistic-table .chengdu-hand-panel { width: min(100%,1000px); height: auto; min-height: 0; padding: 0; border: 0; background: none; margin: 0 auto; }
+/* 成都SFC的局部属性选择器优先级更高，这两个限定覆盖移除其原有padding/114px手牌高度。
+   Chengdu's scoped attribute selectors outrank generic skins; narrowly override its old padding/114px hand height here. */
+.is-realistic-table .chengdu-own-area .chengdu-hand-panel { padding: 0 !important; }
+.is-realistic-table .chengdu-own-area .chengdu-hand { height: 83px !important; padding: 5px 8px 10px !important; }
+.is-realistic-table .hand-interaction-area { padding-top: 38px; }
+.is-realistic-table .hand-action-dock { top: 0; bottom: auto; right: 0; max-width: 100%; }
+.is-realistic-table .hand-scroll, .is-realistic-table .chengdu-hand { height: 83px; min-height: 83px; padding: 5px 8px 10px; margin: 0; background: transparent; border: 0; box-shadow: none; }
+.is-realistic-table .my-hand, .is-realistic-table .chengdu-hand-tiles { margin: 0 auto; width: max-content; gap: 4px; }
+.is-realistic-table .hand-scroll .mahjong-tile, .is-realistic-table .chengdu-hand .mahjong-tile { width: 45px; height: 63px; flex: 0 0 45px; }
+.is-realistic-table .waits-info, .is-realistic-table .chengdu-waits { height: 25px; min-height: 25px; margin: 0; font-size: 11px; color: #c6d7cc; }
+.is-realistic-table .chengdu-waits p { margin: 0; font-size: 11px; }
+.is-realistic-table .chengdu-hand-note { height: 24px; color: #c6d7cc; }
+.is-realistic-table .chengdu-receipt-slot { height: 30px; }
+.is-realistic-table .chengdu-exchange-receipt { margin: 0; font-size: 11px; gap: 5px; }
+.is-realistic-table .chengdu-exchange-receipt .mahjong-tile { width: 18px; height: 25px; }
+.is-realistic-table .toast { z-index: 100; }
+/* 新场景自带真实位置飞牌，旧布局的屏幕坐标覆盖层不重复绘制。 / The new scene owns local flights; suppress duplicate old-layout screen overlays. */
+.is-realistic-table > .winning-flight { display: none; }
+.realistic-table { --felt: #285d4a; --felt-dark: #1b4138; --felt-line: #92a98c66; --room: #192a25; --trim: #9e8156; position: absolute; inset: 58px 0 var(--realistic-hud-height); overflow: hidden; background: radial-gradient(ellipse at 50% 44%,#3c5040,var(--room) 72%); }
+.realistic-skin-night { --felt: #304f66; --felt-dark: #203647; --felt-line: #a4b2c366; --room: #14232e; --trim: #9a9b9c; }
+.realistic-skin-clay { --felt: #805d4d; --felt-dark: #543d36; --felt-line: #cab49766; --room: #332620; --trim: #bb9564; }
+.realistic-toolbar { position: relative; z-index: 6; height: 66px; padding: 23px 22px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #efead9; background: linear-gradient(#14231b70,transparent); }
+.realistic-heading { display: flex; gap: 9px; align-items: center; white-space: nowrap; }
+.realistic-heading strong { font-size: 15px; letter-spacing: 2px; font-weight: 500; }
+.realistic-heading small { opacity: .65; font-size: 10px; }
+.realistic-live-dot { width: 6px; height: 6px; border-radius: 100%; background: #a3c78d; box-shadow: 0 0 12px #a4d08b70; }
+.realistic-live-dot.blocked { background: #d3b782; }
+.realistic-view-tools { display: flex; gap: 12px; align-items: center; font-size: 11px; }
+.realistic-view-tools label { display: flex; align-items: center; gap: 5px; }
+.realistic-view-tools select, .realistic-view-tools button, .realistic-details button { border: 1px solid #d8e4c22a; background: #11251d88; color: #e6e2cb; padding: 6px 10px; border-radius: 5px; font-size: 11px; }
+.realistic-view-tools input { width: 70px; accent-color: #c9b482; }
+/* 窄屏横向工具仍可触摸/键盘滚动，只隐藏占据内容高度的系统滚条。 / Keep touch/keyboard horizontal scrolling while hiding bulky scrollbar chrome. */
+.is-realistic-table .header-actions, .realistic-view-tools { scrollbar-width: none; }
+.is-realistic-table .header-actions::-webkit-scrollbar, .realistic-view-tools::-webkit-scrollbar { display: none; }
+.realistic-viewport { position: absolute; inset: 64px 12px 30px; overflow: hidden; touch-action: none; cursor: grab; outline-offset: -3px; }
+.realistic-viewport.dragging { cursor: grabbing; }
+.realistic-scene { position: absolute; left: 0; top: 0; transform-origin: 0 0; transition: transform 480ms cubic-bezier(.2,.85,.25,1); }
+.realistic-viewport.dragging .realistic-scene { transition: none; }
+.realistic-room-pattern { position: absolute; inset: 55px 70px; border: 1px solid #d7c49c16; border-radius: 50%; box-shadow: 0 0 0 30px #d7c49c05,0 0 0 70px #d7c49c04; }
+.realistic-felt { position: absolute; left: var(--realistic-table-x); top: var(--realistic-table-y); width: 1000px; height: 1000px; border-radius: 56px; background: radial-gradient(ellipse at 40% 30%,var(--felt),var(--felt-dark)); box-shadow: 0 0 0 9px #463f30,0 0 0 12px var(--trim),0 0 0 29px #302d25,0 28px 55px #0007,inset 0 0 70px #0005; }
+.realistic-felt::after { content: ''; position: absolute; inset: 18px; pointer-events: none; border: 1px solid var(--felt-line); border-radius: 42px; }
+.realistic-felt-inlay { position: absolute; inset: 58px; border: 1px solid #d9caa426; border-radius: 20px; }
+.realistic-seat-plane { position: absolute; width: 1000px; height: 1000px; left: 0; top: 0; transform-origin: 500px 500px; pointer-events: none; }
+.realistic-zone { position: absolute; }
+.realistic-zone > small { position: absolute; left: 0; top: -20px; color: #d2dec28a; font-size: 12px; letter-spacing: 2px; }
+.realistic-tiles, .realistic-melds { align-content: start; justify-content: center; }
+.realistic-scene .mahjong-tile { width: var(--realistic-tile-width,30px) !important; height: var(--realistic-tile-height,42px) !important; min-width: 0 !important; flex: none; margin: 0; border-radius: 4px; box-shadow: 0 3px 0 #d6ccb0,0 5px 4px #07160e77; }
+.realistic-river-zone { border-top: 1px solid #bfd2ae20; padding-top: 0; }
+.realistic-wall-zone > small { top: -21px; }
+.realistic-wall-stacks { height: 100%; align-content: center; justify-content: center; }
+.realistic-wall-stack { display: block; position: relative; min-height: 1px; justify-self: center; }
+.realistic-wall-stack.double::before { content: ''; position: absolute; inset: 7px 0 -7px; border-radius: 4px; background: #163729; border: 1px solid #84a281; box-shadow: 0 2px 2px #0006; }
+.realistic-wall-stack .mahjong-tile { box-shadow: 2px 1px 0 #d0ccab,3px 3px 2px #0005; }
+.realistic-wall-stack .back-pattern { background: #456f59; }
+.realistic-empty-zone { display: block; width: 100%; height: 100%; border: 1px dashed #c7d1b329; border-radius: 5px; font-size: 14px; color: #c8d2bd55; text-align: center; line-height: 65px; letter-spacing: 2px; }
+.realistic-meld-first { outline: 1px solid #d5bb77; outline-offset: 1px; }
+.realistic-win-tile { position: relative; display: inline-block; }
+.realistic-personal-radishes { position: absolute; left: 0; right: 0; top: 40px; height: 35px; }
+.realistic-win-tile i { position: absolute; bottom: -5px; right: -3px; font-size: 9px; font-style: normal; background: #b9995a; color: #fff8dc; border-radius: 2px; padding: 1px 2px; }
+.realistic-latest-discard { outline: 2px solid #ecd195; outline-offset: 3px; }
+.realistic-center { position: absolute; left: 400px; top: 390px; width: 200px; height: 200px; text-align: center; color: #d9cfaa; pointer-events: none; }
+.realistic-compass { display: grid; grid-template-columns: 1fr 2fr 1fr; grid-template-rows: 15px 28px 15px; align-items: center; width: 130px; margin: 0 auto; opacity: .55; font-family: var(--serif); font-size: 14px; }
+.realistic-compass span:first-child { grid-column: 2; }.realistic-compass span:last-child { grid-column: 2; }.realistic-compass b { font-size: 26px; font-weight: 400; letter-spacing: 3px; }
+.realistic-wall-total { display: flex; justify-content: center; gap: 10px; align-items: baseline; font-size: 22px; font-weight: 400; margin: 4px 0 8px; }
+.realistic-wall-total small { font-size: 10px; letter-spacing: 2px; }
+.realistic-radishes > span { display: block; font-size: 12px; margin-bottom: 6px; letter-spacing: 3px; }
+.realistic-radishes .realistic-tiles { margin: 0 auto; width: 200px; }
+.realistic-radishes small { font-size: 10px; }
+.realistic-chengdu-rules { font-size: 15px; line-height: 2; color: #d2d9c3; }
+/* 人物在独立二维边栏中，不镜像图像或旋转身体。画框只消费批准的视角目录。
+   Characters occupy separate 2D gutters; never mirror pixels or rotate bodies. Artwork consumes approved view catalogs only. */
+.realistic-player { position: absolute; width: 148px; z-index: 3; }
+.realistic-player-left { left: 8px; top: var(--realistic-side-player-y); }
+.realistic-player-right { right: 8px; top: var(--realistic-side-player-y); }
+.realistic-player-north { left: 580px; top: 8px; width: 200px; }
+.realistic-player-south { left: 8px; top: var(--realistic-south-player-y); }
+.realistic-player .realistic-character { height: 230px; width: 100%; }
+.realistic-player-north .realistic-character { height: 120px; }
+.realistic-player-south .realistic-character { height: 140px; }
+.realistic-player-label { border: 1px solid #d1c39b38; border-radius: 8px; background: #17271ce8; color: #ece8d5; padding: 12px; display: grid; grid-template-columns: 1fr auto; gap: 4px; font-size: 17px; box-shadow: 0 6px 15px #0003; }
+.realistic-player.current .realistic-player-label { border-color: #d5ba75; box-shadow: 0 0 22px #d4ae5130; }
+.realistic-player-label > span { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.realistic-player-label b { font-size: 16px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.realistic-player-label strong { color: #e8ce90; font-weight: 500; }
+.realistic-player-label small { grid-column: 1 / -1; color: #a4baaa; font-size: 12px; }
+.realistic-player-label i { font-style: normal; color: #d7bf8d; font-size: 11px; border: 1px solid #8d805744; padding: 2px; border-radius: 2px; }
+.realistic-bottomline { position: absolute; left: 22px; right: 22px; bottom: 3px; display: flex; align-items: center; justify-content: space-between; gap: 15px; font-size: 11px; color: #d8d6bd; }
+.realistic-bottomline small { font-size: 10px; opacity: .55; }
+.realistic-details { position: absolute; right: 20px; top: 72px; bottom: 28px; width: min(320px,calc(100% - 40px)); z-index: 10; background: #12291ef5; border: 1px solid #c7b88a55; padding: 20px; overflow: auto; border-radius: 12px; box-shadow: 0 10px 50px #0006; }
+.realistic-details button { float: right; }.realistic-details h3 { font-size: 16px; margin: 0 0 24px; }.realistic-details p { display: flex; justify-content: space-between; font-size: 13px; gap: 10px; }.realistic-details small { color: #a2b5a6; font-size: 11px; line-height: 1.8; }.realistic-details hr { border: 0; border-top: 1px solid #c9bfa422; margin: 20px 0; }
+.realistic-tile-flight { position: absolute; width: 30px; height: 42px; z-index: 8; pointer-events: none; animation: realistic-flight 650ms cubic-bezier(.2,.7,.3,1) both; }
+.realistic-tile-flight b { position: absolute; left: 40px; top: 0; color: #fff0be; font-size: 22px; white-space: nowrap; text-shadow: 0 2px 8px #000; }
+@keyframes realistic-flight { 0% { transform: translate(-15px,-21px) scale(.85); opacity: 0; } 15% { opacity: 1; } 60% { transform: translate(calc(var(--flight-x) * .6 - 15px),calc(var(--flight-y) * .6 - 40px)) scale(1.14); } 90% { opacity: 1; } 100% { transform: translate(calc(var(--flight-x) - 15px),calc(var(--flight-y) - 21px)) scale(1); opacity: 0; } }
+@media (max-width: 700px) {
+  .is-realistic-table { --realistic-hud-height: 155px; }
+  .is-realistic-table .site-header { padding: 0 10px; }.is-realistic-table .brand { display: none; }.is-realistic-table .header-actions { width: 100%; gap: 8px; overflow-x: auto; flex-wrap: nowrap; }.is-realistic-table .text-button { font-size: 11px; white-space: nowrap; }.table-presentation-switch .text-button { padding: 5px 7px; }
+  .realistic-toolbar { height: 92px; padding: 24px 12px 0; align-items: flex-start; flex-direction: column; gap: 4px; justify-content: center; }
+  .realistic-view-tools { width: 100%; gap: 8px; overflow-x: auto; white-space: nowrap; }.realistic-zoom { display: flex; }.realistic-view-tools button,.realistic-view-tools select { font-size: 10px; padding: 6px 7px; }
+  .realistic-viewport { inset: 94px 3px 36px; }.realistic-bottomline { left: 12px; right: 12px; flex-direction: column; gap: 2px; align-items: flex-start; }
+  .is-realistic-table .room-notices { top: 156px; max-height: 120px; }
+  .is-realistic-table .table-surface > .own-player-area,.is-realistic-table .chengdu-own-area { padding-left: 3px; padding-right: 3px; }
+  .is-realistic-table .hand-scroll .mahjong-tile,.is-realistic-table .chengdu-hand .mahjong-tile { width: 35px; height: 50px; flex-basis: 35px; }
+  .is-realistic-table .hand-scroll,.is-realistic-table .chengdu-hand { height: 70px; min-height: 70px; }
+  .is-realistic-table .chengdu-own-area .chengdu-hand { height: 70px !important; }
+  .is-realistic-table .action-row .button,.is-realistic-table .chengdu-action-bar .button { min-height: 44px; height: 44px; font-size: 11px; padding: 5px 10px; }
+}
+@media (max-height: 620px) and (min-width: 701px) { .is-realistic-table { --realistic-hud-height: 128px; }.is-realistic-table .hand-scroll,.is-realistic-table .chengdu-hand { height: 62px; min-height: 62px; }.is-realistic-table .hand-scroll .mahjong-tile,.is-realistic-table .chengdu-hand .mahjong-tile { width: 34px; height: 48px; flex-basis: 34px; }.realistic-toolbar { height: 42px; padding-top: 5px; }.realistic-viewport { top: 44px; } }
+@media (prefers-reduced-motion: reduce) { .realistic-scene { transition: none; }.realistic-tile-flight { display: none; } }

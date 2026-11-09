@@ -14,6 +14,8 @@ import * as Audio from "../../src/character-audio.js";
 // 当前App还依赖共享播放协调器；旧基准缺少此依赖会在编译阶段失败。
 // Current App also imports shared playback; omitting it makes the old harness fail during compilation.
 import * as SharedPlayback from "../../src/shared-playback.js";
+import * as RealisticPresentation from '../../src/realistic-presentation.js';
+import * as RealisticPopover from '../../src/realistic-popover.js';
 // 注入与真实 App 相同的开局配置模块，保证测试装载器不会漏掉新增依赖。
 // Inject the same start-options module as the actual App so the test loader includes its new dependency.
 import * as StartOptions from "../../shared/start-options.js";
@@ -111,6 +113,8 @@ const deps = {
   "./Icon.vue": icon,
   "./character-audio.js": Audio,
   "./shared-playback.js": SharedPlayback,
+  "./realistic-presentation.js": RealisticPresentation,
+  "./realistic-popover.js": RealisticPopover,
   "../shared/start-options.js": StartOptions,
 };
 // 旧版与当前版共用当前牌组件等依赖；比较的是 App 差异，不是整站历史资产差异。

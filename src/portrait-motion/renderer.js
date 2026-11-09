@@ -11,6 +11,20 @@ export const MOTION_MAX_PIXELS = 350000;
 export const MOTION_MAX_PATCH_PIXELS = 4000000;
 const CHARACTER_IDS = new Set(['sweet', 'sunny', 'landlord', 'honest', 'wealthy', 'star', 'elegant']);
 
+// 新桌独立视角使用显式来源标记；缺标记时仍严格只接收旧原图路径。
+// Independent table views require an explicit provenance marker; absent markers retain the strict original source path.
+// 角色、视角与目录必须同时吻合，不能借新功能允许任意URL或跨角色供体。
+// Role, view and directory must all agree; this does not allow arbitrary URLs or cross-role donors.
+function validSourcePath(descriptor) {
+  if (descriptor.realisticView === undefined) return descriptor.sourceUrl === `/characters/${descriptor.id}-scene-base.png`;
+  return ['front', 'left', 'right'].includes(descriptor.realisticView) && descriptor.id !== 'sunny' &&
+    descriptor.sourceUrl === `/characters/realistic/${descriptor.id}/${descriptor.realisticView}-base.png`;
+}
+function validFramePath(descriptor, url) {
+  if (descriptor.realisticView === undefined) return new RegExp(`^/portrait-motion/${descriptor.id}/[a-z0-9-]+\\.png$`).test(url);
+  return new RegExp(`^/characters/realistic/${descriptor.id}/${descriptor.realisticView}-[a-z0-9-]+\\.png$`).test(url);
+}
+
 // 无效参数不能扩张蒙版或产生NaN；异常控制值回到静止原图。
 // Invalid controls never expand masks or produce NaN; invalid values return to still-original art.
 const clamp = (value, low, high) => Number.isFinite(value) ? Math.min(high, Math.max(low, value)) : 0;
@@ -87,7 +101,7 @@ function validateLegacyDescriptor(descriptor) {
 // V2 allows logical frames to share an atlas, but a shared URL must have identical dimensions/hash to avoid repeated decoding or contradictory donors.
 function validateMultiFrameDescriptor(descriptor) {
   const geometryMode = descriptor.hairMode === 'geometry';
-  if (!CHARACTER_IDS.has(descriptor.id) || descriptor.sourceUrl !== `/characters/${descriptor.id}-scene-base.png` ||
+  if (!CHARACTER_IDS.has(descriptor.id) || !validSourcePath(descriptor) ||
     !/^[a-f0-9]{64}$/.test(descriptor.sourceSha256) || !Number.isInteger(descriptor.width) || !Number.isInteger(descriptor.height) ||
     descriptor.width < 1 || descriptor.height < 1 || descriptor.width * descriptor.height > 4000000 ||
     !Array.isArray(descriptor.frames) || descriptor.frames.length < 2 || descriptor.frames.length > 16 ||
@@ -106,7 +120,7 @@ function validateMultiFrameDescriptor(descriptor) {
   const urls = new Map();
   for (const frame of descriptor.frames) {
     if (!frame || typeof frame.id !== 'string' || !/^[a-zA-Z][a-zA-Z0-9-]{0,31}$/.test(frame.id) || frames.has(frame.id) ||
-      !new RegExp(`^/portrait-motion/${descriptor.id}/[a-z0-9-]+\\.png$`).test(frame.url) || !/^[a-f0-9]{64}$/.test(frame.sha256) ||
+      !validFramePath(descriptor, frame.url) || !/^[a-f0-9]{64}$/.test(frame.sha256) ||
       !Number.isInteger(frame.width) || !Number.isInteger(frame.height) || frame.width < 1 || frame.height < 1 ||
       frame.width * frame.height > 4000000) return false;
     const previous = urls.get(frame.url);

@@ -6,6 +6,9 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import Icon from './Icon.vue';
 import ChengduTable from './ChengduTable.vue';
+import RealisticTable from './RealisticTable.vue';
+import { closeRealisticPopover } from './realistic-popover.js';
+import { attachRealisticVisualBatches, realisticVisualEvents, REALISTIC_FLIGHT_DURATION_MS, REALISTIC_FLIGHT_STAGGER_MS } from './realistic-presentation.js';
 import RoundSummary from './RoundSummary.vue';
 import { roundSummaryView, roundSummaryHandsBySeat } from './round-summary.js';
 import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortraits } from './character-portraits.js';
@@ -37,6 +40,15 @@ const STORAGE_KEY = 'huajian-mahjong-session-v1';
 const ROOMS_KEY = 'huajian-mahjong-rooms-v2';
 const PROFILE_KEY = 'huajian-mahjong-player-v1';
 const DEPARTURES_KEY = 'huajian-mahjong-departures-v1';
+// 真实桌只是本机展示偏好，不写入房间规则；切换不重建会话、不清空已选手牌。
+// Realistic mode is a local view preference, never a room rule; switching preserves sessions and selected tiles.
+const tablePresentation = ref('classic');
+function chooseTablePresentation(value) {
+  if (!['classic', 'realistic'].includes(value)) return;
+  if (tablePresentation.value !== value) resetRealisticPresentation();
+  tablePresentation.value = value;
+  try { localStorage.setItem('huajian-table-presentation-v1', value); } catch { /* 本页仍生效 / Keep the page-local choice. */ }
+}
 // ref 保存会改变的值：脚本中用 .value，模板中 Vue 自动解包。以下状态仅控制声音和临时动画。
 // ref stores mutable state: use .value in script; Vue unwraps it in templates. These values control audio and transient animation only.
 const voiceStatus = ref('locked');
@@ -65,6 +77,12 @@ let receivedState = null;
 let localPresentationGeneration = 0;
 let localPresentationQueue = [];
 let localPresentationRunning = false;
+let localPresentationVoicedRunning = false;
+// 场景帧属于本页播放生命周期，不是权威快照。切换展示只取消这条装饰支路，不取消声音或动作。
+// Scene frames belong to page playback, not authority. View switches cancel this decorative branch, never audio or game actions.
+const realisticPresentationFrame = ref(null);
+let realisticPresentationSequence = 0;
+const realisticPresentationFinishes = new Set();
 const localAnnouncement = ref('');
 const localPendingPresentationCount = ref(0);
 const sharedPendingPrefixCount = ref(0);
@@ -119,6 +137,8 @@ const dragonStartCountDraft = ref(DEFAULT_DRAGON_START_COUNT);
 const deckChoices = Array.from({ length: 9 }, (_, index) => 1 + index * 0.5);
 const validTableSettings = computed(() => isPlayerCount(playerCountDraft.value) &&
   isDeckCount(deckCountDraft.value) && isDragonStartCount(dragonStartCountDraft.value));
+// 当前六人选择器不改变旧七ID的读取/存档兼容。 / Six active choices preserve legacy seven-ID reads and saves.
+const selectableCharacters = CHARACTERS.filter((character) => character.id !== 'sunny');
 const preferredCharacter = ref('');
 const autoDiscardAfterHu = ref(true);
 // 建房（或旧桌下一局）草稿独立于保存的房间和本局规则；0 明确表示不收取。
@@ -938,6 +958,33 @@ function clearPresentation() {
   finishWinningPresentation?.();
   finishWinningPresentation = null;
 }
+// 明确取消时使旧场景帧失效并释放全部有限等待；普通胡牌反馈内部清理不能误清新场景帧。
+// Explicit cancellation invalidates scene frames and resolves finite waits; ordinary win-feedback cleanup cannot clear a new scene frame.
+function resetRealisticPresentation() {
+  for (const finish of [...realisticPresentationFinishes]) finish();
+  realisticPresentationFrame.value = { roomId: state.value?.id, gameId: state.value?.game?.id,
+    sequence: ++realisticPresentationSequence, events: [], reset: true };
+}
+// 只在既有播放器实际开始该批次时发布；新挂载组件把当前帧当基线，不从history补演未来事件。
+// Publish only when the existing player starts this batch; newly mounted scenes baseline the current frame instead of replaying future history.
+// 经典桌与减少动态不加延时；真实桌只等650ms飞牌及同组错开，不写回服务器或增加全桌屏障。
+// Classic/reduced-motion views add no delay; realistic mode waits only for finite flights/stagger, never writing authority or adding a table barrier.
+function presentRealisticEvents(events, snapshot) {
+  const visualEvents = realisticVisualEvents(events);
+  if (!visualEvents.length || document.hidden) return Promise.resolve();
+  realisticPresentationFrame.value = { roomId: snapshot.id, gameId: snapshot.game?.id,
+    sequence: ++realisticPresentationSequence, events: visualEvents, reset: false };
+  if (tablePresentation.value !== 'realistic' || window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return Promise.resolve();
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timer);
+      realisticPresentationFinishes.delete(finish);
+      resolve();
+    };
+    const timer = setTimeout(finish, REALISTIC_FLIGHT_DURATION_MS + Math.max(0, visualEvents.length - 1) * REALISTIC_FLIGHT_STAGGER_MS);
+    realisticPresentationFinishes.add(finish);
+  });
+}
 // 从已提交事件构建短暂胡牌反馈；最多展示最近两次，并等待 DOM 更新后测量飞牌坐标。
 // Build transient feedback from committed wins; keep the latest two and measure flight coordinates after the DOM update.
 // 成都组件直接显示权威赢家；花麻将旧飞牌定位与等待不应用到另一模式。
@@ -1045,6 +1092,8 @@ function cancelTurnPresentation() {
   localPresentationQueue = [];
   localPendingPresentationCount.value = 0;
   localPresentationRunning = false;
+  localPresentationVoicedRunning = false;
+  resetRealisticPresentation();
   localAnnouncement.value = '';
   for (const finish of localCaptionFinishes) finish();
   const previous = turnPresentation;
@@ -1253,10 +1302,12 @@ function syncTurnPresentation(events, snapshot) {
 function playTurnPresentation(pending, events, snapshot) {
   const gate = snapshot.presentation;
   pending.started = true;
-  localPresentationBusy.value = events.some((event) => event.urls?.length || event.type === 'hu');
+  localPresentationBusy.value = events.some((event) => event.urls?.length || event.type === 'hu') ||
+    (tablePresentation.value === 'realistic' && realisticVisualEvents(events).length > 0);
   const completion = Promise.all([
     presentWins(events, snapshot),
     characterAudio.enqueueLive(events),
+    presentRealisticEvents(events, snapshot),
   ]);
   if (gate) {
     // 服务端返回剩余时间避免客户端时钟偏差；超时先停止音画再确认，不能一边播一边放行。
@@ -1266,6 +1317,7 @@ function playTurnPresentation(pending, events, snapshot) {
       if (turnPresentation !== pending) return;
       characterAudio.clear();
       clearPresentation();
+      resetRealisticPresentation();
     }, Math.min(40000, remaining));
   }
   completion.finally(() => {
@@ -1305,20 +1357,22 @@ function queueLocalPresentation(events, snapshot, receipt = null) {
   }
   // 声音资格在接收时固定，不能等轮到播放时再把用户静音期间的事件变成可发声。
   // Capture audio eligibility on receipt, never promote muted-period events when they later reach the head.
-  for (const group of groups) localPresentationQueue.push({ events: group, snapshot, receipt, audioEligible });
-  localPendingPresentationCount.value = localPresentationQueue.length + Number(localPresentationRunning);
+  for (const batch of attachRealisticVisualBatches(events, groups)) {
+    localPresentationQueue.push({ ...batch, snapshot, receipt, audioEligible });
+  }
+  localPendingPresentationCount.value = localPresentationQueue.filter((batch) => batch.events.length).length + Number(localPresentationVoicedRunning);
   if (!localPresentationRunning && !localPresentationQueue.length) state.value = snapshot;
   drainLocalPresentation();
 }
 
 // 普通动作即使静音或音频失败也至少显示350毫秒；取消会同时撤下字幕并释放等待。
 // Ordinary calls remain visible for at least 350ms even when silent/failed; cancellation releases the caption wait.
-function presentLocalAction(events, snapshot) {
+function presentLocalAction(events, snapshot, visualEvents = events) {
   state.value = snapshot;
   localAnnouncement.value = events.map((event) => event.message ||
     `${snapshot.game.players?.find((player) => player.seat === event.seat)?.name || '牌友'}${event.type === 'discard' ? `打出${tileLabel(event.tile)}` : event.type === 'hu' ? '胡牌' : '完成动作'}`).join(' ');
-  if (events.some((event) => event.type === 'hu')) return presentWins(events, snapshot);
-  return new Promise((resolve) => {
+  const originalPresentation = events.some((event) => event.type === 'hu') ? presentWins(events, snapshot)
+    : !events.length ? Promise.resolve() : new Promise((resolve) => {
     const finish = () => {
       clearTimeout(timer);
       localCaptionFinishes.delete(finish);
@@ -1327,16 +1381,22 @@ function presentLocalAction(events, snapshot) {
     const timer = setTimeout(finish, 350);
     localCaptionFinishes.add(finish);
   });
+  return Promise.all([originalPresentation, presentRealisticEvents(visualEvents, snapshot)]);
 }
 
 // 每页保留完整画面；声音委托共享顺序协调器，只有真实成功才完成，失败给可发声副页一次接力机会。
 // Preserve every page's visuals; the coordinator orders shared audio, records real success and permits bounded sibling recovery.
 async function playLocalPresentationBatch(batch, generation) {
   if (generation !== localPresentationGeneration || document.hidden) return;
-  const audio = batch.audioEligible
+  const audio = batch.audioEligible && batch.events.length
     ? sharedPlayback.playThrough(batch.receipt, batch.events)
     : Promise.resolve();
-  await Promise.allSettled([presentLocalAction(batch.events, batch.snapshot), audio]);
+  await Promise.allSettled([presentLocalAction(batch.events, batch.snapshot, batch.visualEvents), audio]);
+  // 尾部摸牌在当前声音和飞牌都完成后才能开始；取消/后台不能借迟到完成复活它。
+  // Trailing draws start only after current audio/flights finish; cancellation/backgrounding cannot revive them through a late completion.
+  if (generation === localPresentationGeneration && !document.hidden) {
+    await presentRealisticEvents(batch.trailingVisualEvents, batch.snapshot);
+  }
 }
 
 // 长网络缺口不静默删掉队列；只有玩家明确点击此按钮才略过当前待播，牌局和账本不变。
@@ -1362,7 +1422,8 @@ async function drainLocalPresentation() {
   try {
     while (localPresentationQueue.length && generation === localPresentationGeneration) {
       const batch = localPresentationQueue.shift();
-      localPendingPresentationCount.value = localPresentationQueue.length + 1;
+      localPresentationVoicedRunning = batch.events.length > 0;
+      localPendingPresentationCount.value = localPresentationQueue.filter((entry) => entry.events.length).length + Number(localPresentationVoicedRunning);
       try {
         await playLocalPresentationBatch(batch, generation);
       } catch {
@@ -1373,6 +1434,7 @@ async function drainLocalPresentation() {
   } finally {
     if (generation === localPresentationGeneration) {
       localPresentationRunning = false;
+      localPresentationVoicedRunning = false;
       localPendingPresentationCount.value = 0;
       localPresentationBusy.value = false;
       localAnnouncement.value = '';
@@ -1409,6 +1471,7 @@ function applyState(next, voiceEpoch = voiceVisibilityEpoch) {
     if (turnPresentation) turnPresentation.events = [];
     characterAudio.clear();
     clearPresentation();
+    resetRealisticPresentation();
   }
   // 可见性代数防止切后台前发出的请求把旧事件当成现场语音。
   // The visibility epoch prevents pre-visibility-change requests from becoming live audio.
@@ -1878,6 +1941,7 @@ function visibilityChanged() {
   if (turnPresentation) turnPresentation.events = [];
   characterAudio.clear();
   clearPresentation();
+  resetRealisticPresentation();
   lastVoiceSync = 0;
   voiceNeedsBaseline = true;
   voiceCursor.reset();
@@ -2252,6 +2316,7 @@ async function initialize() {
 onMounted(() => {
   try {
     voiceMuted.value = localStorage.getItem('huajian-voice-muted') === 'true';
+    if (localStorage.getItem('huajian-table-presentation-v1') === 'realistic') tablePresentation.value = 'realistic';
   } catch {
     /* 可选偏好保存失败不影响牌局。 / optional preference */
   }
@@ -2290,6 +2355,7 @@ onUnmounted(() => {
       'in-game': inRoom && phase !== 'lobby',
       'in-room': inRoom,
       'has-room-route': !!roomCode || restoring || busy,
+      'is-realistic-table': inRoom && game && tablePresentation === 'realistic',
     }"
   >
     <!-- 全局页眉提供声音、换桌和规则入口；按钮事件只调用上面的处理函数。 / The global header exposes audio, room navigation and rules; button events call the handlers above. -->
@@ -2304,6 +2370,10 @@ onUnmounted(() => {
         <div class="brand-name">花间 <span>{{ isChengduContext ? '成都麻将' : '自贡花麻将' }}</span></div>
       </div>
       <div class="header-actions" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="group" aria-label="声音与牌桌工具">
+        <div v-if="game" class="table-presentation-switch" role="group" aria-label="牌桌显示模式">
+          <button class="text-button" :aria-pressed="tablePresentation === 'classic'" @click="chooseTablePresentation('classic')">经典桌</button>
+          <button class="text-button" :aria-pressed="tablePresentation === 'realistic'" @click="chooseTablePresentation('realistic')">真实桌</button>
+        </div>
         <button
           class="text-button voice-toggle"
           :aria-pressed="voiceStatus === 'ready' && !voiceMuted"
@@ -2452,7 +2522,7 @@ onUnmounted(() => {
             @change="preferredCharacter = $event.target.value"
             :disabled="busy || restoring"
             ><option value="">随机分配</option
-            ><option v-for="character in CHARACTERS" :key="character.id" :value="character.id"
+            ><option v-for="character in selectableCharacters" :key="character.id" :value="character.id"
               >{{ character.name }} · {{ character.style }}</option
             ></select
           >
@@ -2471,7 +2541,7 @@ onUnmounted(() => {
             ></div
           >
           <p class="character-preference-note"
-            >七位角色，{{ isChengduContext ? '成都固定四人同桌' : '支持三人或四人同桌' }}。落座时确定角色，开局保持不变；偏好已被占用时，从剩余角色中分配。</p
+            >六位角色，{{ isChengduContext ? '成都固定四人同桌' : '支持三人或四人同桌' }}。落座时确定角色，开局保持不变；偏好已被占用时，从剩余角色中分配。</p
           >
           <!-- 固定四人/定缺无需可切换控件，四个未确认默认值的选择使用必填原生下拉框。
                Four seats/dingque are fixed; native required selects collect the four choices without assuming defaults. -->
@@ -2786,7 +2856,8 @@ onUnmounted(() => {
       </div>
 
       <!-- 只有缺少建房快照字段的旧桌保留开局草稿；新桌在这里仅展示已保存规则。 / Only legacy rooms missing creation fields retain editable start drafts; new rooms show saved choices. -->
-      <section v-if="canConfigureStart" class="start-options" aria-labelledby="start-options-title">
+      <section v-if="canConfigureStart" id="realistic-start-options" :popover="tablePresentation === 'realistic' ? 'auto' : undefined" class="start-options" aria-labelledby="start-options-title">
+        <button v-if="tablePresentation === 'realistic'" class="text-button" popovertarget="realistic-start-options" popovertargetaction="hide" @click.prevent="closeRealisticPopover('realistic-start-options')">关闭</button>
         <strong id="start-options-title">{{
           phase === 'finished' ? '下一局选项' : '开局选项'
         }}</strong>
@@ -2882,6 +2953,12 @@ onUnmounted(() => {
         · 神龙 <template v-if="exponentialDragon">{{ tableDragonStartCount }}张起10分，每多一张翻倍</template>
         <template v-else>保留旧局6/7/8张分表</template>
       </p>
+      <!-- 新桌只替换公开场景；下方原手牌/动作组件保持挂载，权限和选择路径不变。
+           Replace only the public scene; original hand/action components remain mounted with their existing authority and selection paths. -->
+      <RealisticTable v-if="game && tablePresentation === 'realistic'" :state="state"
+        :presentation-frame="realisticPresentationFrame" :can-configure-start="canConfigureStart" :has-private-feedback="!isChengduRoom && !isSpectator" @copy-invite="copyInvite"
+        :character-for-player="characterForPlayer" :status="statusTitle" :blocked="busy || offline || syncing || presentationWaiting"
+        @next-round="openNextRound" />
       <ChengduTable v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" @next-round="openNextRound" />
       <div v-else class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
         <section class="table-column" :aria-label="`${tablePlayerCount}人麻将牌桌`">
@@ -3308,7 +3385,8 @@ onUnmounted(() => {
                 ></div>
             <!-- 私有诊断和上次结算共享固定视窗；保留原生 details，展开也不会推动手牌或立绘。
                  Private diagnostics and last settlement share a fixed viewport; native details can expand without moving cards or portraits. -->
-            <div class="hand-feedback stable-scroll" tabindex="0" role="region" aria-label="我的胡牌判断与结算，可滚动查看">
+            <div id="realistic-hand-feedback" :popover="tablePresentation === 'realistic' ? 'auto' : undefined" class="hand-feedback stable-scroll" tabindex="0" role="region" aria-label="我的胡牌判断与结算，可滚动查看">
+            <button v-if="tablePresentation === 'realistic'" class="text-button" popovertarget="realistic-hand-feedback" popovertargetaction="hide" @click.prevent="closeRealisticPopover('realistic-hand-feedback')">关闭</button>
             <p v-if="game.specialHuPattern?.kind === 'sevenPairs'" class="special-hand-note"
               >{{ game.specialHuPattern.pureSuit ? '清七对' : '七对' }}特殊听牌 · 固定
               {{ game.specialHuPattern.fixedFan }}

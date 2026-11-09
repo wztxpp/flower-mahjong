@@ -1,5 +1,11 @@
 # 前端阅读指南 / Frontend reading guide
 
+真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
+Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
+
+二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
+Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
+
 全局 `PortraitMotionSettings` 提供普通本地显示开关，`portrait-motion/settings.js` 默认静态且不迁移旧SDK许可。`CharacterArtwork` 在两玩法/独立挂载始终显示原img，仅用透明Canvas2D叠审查过的眼睑和发区。见 [原图局部动效](PORTRAIT-MOTION.md)。
 Global ordinary settings default static without migrating old SDK assent. Both modes/standalone frames always retain the original img, overlaying only reviewed eyelids and hair regions through Canvas2D.
 
@@ -127,6 +133,9 @@ HTTP 409 indicates a conflict; inspect the error code to distinguish stale revis
 `queueLeave` persists departure intent before notifying and shares one in-flight promise per room. `scope: 'leave'` survives navigation cancellation; failed intent remains in this tab for recovery after refresh. The root without `room` always opens the lobby; auto-resume requires an explicit room link and matching credentials. See [Room lifecycle](ROOM-LIFECYCLE.md).
 
 ## 8. 音频为何不直接写在按钮事件里 / Why audio is not attached directly to actions
+
+人物ID与声线ID已分离：`CHARACTERS[].id` 保留原图、名字和存档身份，`voiceId` 只选择现成MP3目录；`clipForEvent` 和 `warmWins` 共用解析。粉色邻家/黄色萌系的配对依据及未试听边界见 [人物声线对应](REALISTIC-VOICE-MAPPING.md)。
+Character id keeps artwork, names and saved identity; voiceId selects existing recordings through shared event/preload resolution. See [voice mapping](REALISTIC-VOICE-MAPPING.md) for the persona-based pairing and unverified listening boundary.
 
 点击“胡”只表示申请，不能证明最终已胡。`ActionVoiceCursor` 读取服务端已提交历史，以房间 ID、局 ID、历史长度和版本建立游标。第一次进入、刷新、换局或静默同步只建立基线，不把旧历史补播出来。
 

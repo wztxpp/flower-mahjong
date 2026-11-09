@@ -1,5 +1,7 @@
 # 项目术语与命名 / Project terminology and naming
 
+- `voiceId`：`CHARACTERS` 中选择原始录音目录的本地声线键，区别于人物/立绘/存档 `id`；不写入服务器。当前 `sweet → sunny`、`sunny → sweet` 为按原画设定的配音推断，不是听感认证。 / Local recording-directory key, distinct from character/art/save identity and never persisted to the server; the crossed pair is a persona inference, not listening certification.
+
 - `PORTRAIT_MOTION_VERSION`：普通本地Canvas2D显示选择版本，不是法律同意或规则版本。 / Local Canvas2D display preference version, not legal assent or game rules.
 - `canAnimate`：新本地开关与宿主开关同时启用；实际播放还需可见、前台、基础表情和非减少动态。 / Local/host enablement; playback additionally requires visibility, foreground, base reaction and allowed motion.
 - `maskPolygon` / `targetRect` / `sourceRect`：原图全局像素蒙版、原图目标矩形、生成供体矩形；后者可为小数。v2的sourceRects按frameId映射供体/图集。 / Original-image mask/target coordinates and fractional donor crops; v2 sourceRects maps frame IDs to donor/atlas regions.
@@ -239,3 +241,10 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 
 完整合同见 [按需操作浮层](OVERLAY-HAND-ACTIONS.md)，旧常驻操作槽属于被替代的展示设计。
 See the full overlay contract; permanent action slots are the superseded presentation design.
+
+## 二维真实桌 / Realistic 2D table
+
+- `tablePresentation`：本机经典/真实显示偏好，不是gameMode或规则版本。 / Local classic/realistic view preference, not a rules family/version.
+- `wallDistribution`：公开数量推导的固定四墙展示或明确降级；开墙口仅展示约定，始终不是暗墙身份。 / Public-count fixed-wall presentation or explicit fallback; the break is a visual convention, never concealed identities.
+- `ACTIVE_CHARACTER_IDS`：新选择器/随机落座的六个可用身份；`CHARACTER_IDS`仍包含七个稳定ID供旧局与旧客户端兼容。 / Six active new-selection/random roles; all seven stable IDs remain valid for legacy saves/clients.
+- `realisticView`：角色的独立front/left/right原画视角，不允许由水平镜像代替。 / An independently authored perspective, never a horizontally mirrored substitute.
