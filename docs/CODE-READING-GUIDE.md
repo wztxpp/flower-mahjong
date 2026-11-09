@@ -1,5 +1,9 @@
 # 从这里开始读代码 / Start reading here
 
+当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
+Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
+
+
 真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
 Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
 
@@ -280,3 +284,5 @@ Existing UI/invitation harnesses load the real component; fixture/browser helper
 
 终局牌桌回看新增维护测试 `tests/finished-table-hands.test.js`，接线为 `src/round-summary.js → App.vue / ChengduTable.vue`，终局尺寸覆盖位于 `src/tabletop.css`。既有ui/invitation-copy套件验证返回牌桌不离席、原参与者归属与同实例牌面撤销，详见[终局合同](FINISHED-ROUND-SUMMARY.md#牌桌回看与按钮纠正--table-review-and-return-button)。
 Final table review adds the maintained helper-boundary suite, table wiring and terminal-only CSS. Existing UI/mounted-component tests cover no-departure returns, original attribution and reactive reveal withdrawal; see the contract.
+
+本次斜视/腿部组合证据见[REALISTIC-SEATED-VIEW-QA.md](REALISTIC-SEATED-VIEW-QA.md)；`tests/realistic-character-body-assets.test.js`核对18坐姿与6个身份本人近景的实物PNG及范围，`public/characters/realistic/full-body-audit.json`保存下层hash。The seated-view QA and body-asset build gate record actual PNG coverage separately from layout/model tests.

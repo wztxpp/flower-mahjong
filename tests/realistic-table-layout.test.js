@@ -27,16 +27,28 @@ function freezeDeep(value) {
   return value;
 }
 
-// 穷举每个本人座位，固定原桌左右；三人桌不能伪造北家，四人桌保留对家。
-// Enumerate every own seat, preserving original left/right; three players never invent north and four retain the opposite seat.
+// 穷举本人视角：座位先固定四边，再连同空位旋转；不能只验证每人都在南侧而漏掉相互位置矛盾。
+// Enumerate viewpoints by rotating fixed physical seats and the vacancy, catching inconsistent relationships beyond merely placing self south.
+const expectedSeatsByView = {
+  3: [
+    [[0, 'south'], [2, 'right'], [1, 'left']],
+    [[1, 'south'], [0, 'right'], [2, 'north']],
+    [[2, 'south'], [1, 'north'], [0, 'left']],
+  ],
+  4: [
+    [[0, 'south'], [3, 'right'], [2, 'north'], [1, 'left']],
+    [[1, 'south'], [0, 'right'], [3, 'north'], [2, 'left']],
+    [[2, 'south'], [1, 'right'], [0, 'north'], [3, 'left']],
+    [[3, 'south'], [2, 'right'], [1, 'north'], [0, 'left']],
+  ],
+};
 for (const count of [3, 4]) {
   for (let mySeat = 0; mySeat < count; mySeat++) {
     test(`${count} seats, self ${mySeat}: stable physical order`, () => {
       const state = view(count, mySeat);
       state.game.players.reverse();
       const layout = realisticSeatLayout(state.game.players, mySeat);
-      assert.deepEqual(layout.map(({ position }) => position), count === 3 ? ['south', 'right', 'left'] : ['south', 'right', 'north', 'left']);
-      assert.deepEqual(layout.map(({ seat }) => seat), Array.from({ length: count }, (_, index) => (mySeat - index + count) % count));
+      assert.deepEqual(layout.map(({ seat, position }) => [seat, position]), expectedSeatsByView[count][mySeat]);
       assert.equal(layout.filter(({ isSelf }) => isSelf).length, 1);
       assert.equal(layout[0].isSelf, true);
       assert.equal(layout[0].zones.melds.x < layout[0].zones.wins.x, true);
@@ -45,6 +57,62 @@ for (const count of [3, 4]) {
     });
   }
 }
+
+// 用户报告的关系是三人真桌的基本互易性：本人左右两家互相对坐，而左家看本人在右。
+// Regress the reported three-player reciprocity: the original left/right opponents face each other, and the left player sees the original viewer at right.
+test('three-player opposite relation survives changing from the south player to the left player', () => {
+  const players = view(3).game.players;
+  const southView = new Map(realisticSeatLayout(players, 0).map(({ seat, position }) => [seat, position]));
+  const leftView = new Map(realisticSeatLayout(players, 1).map(({ seat, position }) => [seat, position]));
+  assert.equal(southView.get(1), 'left');
+  assert.equal(southView.get(2), 'right');
+  assert.equal(leftView.get(2), 'north');
+  assert.equal(leftView.get(0), 'right');
+  assert.equal([...leftView.values()].includes('left'), false);
+});
+
+// 玩家两两夹角在全部观察角度中必须不变；同步验证牌区中心和四面墙都经过同一次刚性旋转。
+// Every pairwise angle stays constant across viewers; zone centers and all wall sides must follow the same rigid rotation.
+test('all player pairs, zone centers and wall depletion keep one physical table across viewpoints', () => {
+  const sides = ['south', 'right', 'north', 'left'];
+  const rotatePoint = (point, angle) => {
+    const radians = angle * Math.PI / 180;
+    const x = point.x - 500, y = point.y - 500;
+    return { x: 500 + x * Math.cos(radians) - y * Math.sin(radians), y: 500 + x * Math.sin(radians) + y * Math.cos(radians) };
+  };
+  for (const count of [3, 4]) {
+    const state = view(count);
+    state.game.dealerSeat = 1;
+    state.game.sharedRadishes = [2, 3];
+    const baseline = buildRealisticTableModel(state);
+    for (let mySeat = 0; mySeat < count; mySeat++) {
+      state.you = state.game.mySeat = mySeat;
+      const model = buildRealisticTableModel(state);
+      const originalSelf = baseline.seats.find(({ seat }) => seat === mySeat);
+      const cameraRotation = -originalSelf.rotation;
+      for (const original of baseline.seats) {
+        const rotated = model.seats.find(({ seat }) => seat === original.seat);
+        for (const other of baseline.seats) {
+          const rotatedOther = model.seats.find(({ seat }) => seat === other.seat);
+          const gap = (sides.indexOf(original.position) - sides.indexOf(other.position) + 4) % 4;
+          assert.equal((sides.indexOf(rotated.position) - sides.indexOf(rotatedOther.position) + 4) % 4, gap);
+        }
+        for (const zone of Object.keys(original.zones)) {
+          const expected = rotatePoint(realisticZoneCenter(original, zone), cameraRotation);
+          const actual = realisticZoneCenter(rotated, zone);
+          assert.ok(Math.abs(actual.x - expected.x) < 0.000001);
+          assert.ok(Math.abs(actual.y - expected.y) < 0.000001);
+        }
+      }
+      for (const wall of baseline.walls) {
+        const rotatedSide = sides[(sides.indexOf(wall.position) - sides.indexOf(originalSelf.position) + 4) % 4];
+        const rotatedWall = model.walls.find(({ position }) => position === rotatedSide);
+        assert.deepEqual(rotatedWall.slots, wall.slots);
+        assert.equal(rotatedWall.wallCount, wall.wallCount);
+      }
+    }
+  }
+});
 
 test('spectators have no self and invalid seat arrays fail closed', () => {
   assert.equal(realisticSeatLayout(view().game.players).some(({ isSelf }) => isSelf), false);

@@ -1,0 +1,140 @@
+{
+  "honest": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/honest/front-base.png",
+      "lowerUrl": "/characters/realistic/honest/front-lower-body.png",
+      "lowerSha256": "99b8a35cd55363d809215ca8ba522c9d868d8690926a34c504692ad934059dcc",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/honest/left-base.png",
+      "lowerUrl": "/characters/realistic/honest/left-lower-body.png",
+      "lowerSha256": "3bc75bfefbae517862bbd75a47cf4eebb12cfb4f6c3e50c0629404f25abb103d",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/honest/right-base.png",
+      "lowerUrl": "/characters/realistic/honest/right-lower-body.png",
+      "lowerSha256": "5da744b52284043c6f63bc77b88a97dd45012daed02f3475eda966874875a4b3",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  },
+  "sweet": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/sweet/front-base.png",
+      "lowerUrl": "/characters/realistic/sweet/front-lower-body.png",
+      "lowerSha256": "2be16ab76db7738f2ba2a4b2517da1f492c95c90917ad15f227b91d34b49dbaa",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/sweet/left-base.png",
+      "lowerUrl": "/characters/realistic/sweet/left-lower-body.png",
+      "lowerSha256": "1fbda592cbcf099141fc98dd923c5dad9295100dc0466952d4856f440bd8625e",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/sweet/right-base.png",
+      "lowerUrl": "/characters/realistic/sweet/right-lower-body.png",
+      "lowerSha256": "c1345441413a40e70a98d31a0ec2c383524efec1ff558139bafb4855dbadc474",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  },
+  "elegant": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/elegant/front-base.png",
+      "lowerUrl": "/characters/realistic/elegant/front-lower-body.png",
+      "lowerSha256": "f1341220462bf9057f08a16a8c665c8caa2e4c72fcc7668754cfdb4a63c582ec",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/elegant/left-base.png",
+      "lowerUrl": "/characters/realistic/elegant/left-lower-body.png",
+      "lowerSha256": "ce798cbf3da6c9cff8349ed119b9d288b050a8b3a840ac87e9a33d459fc32592",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/elegant/right-base.png",
+      "lowerUrl": "/characters/realistic/elegant/right-lower-body.png",
+      "lowerSha256": "0c272ba238b8b0b5b14f7e35ef35fbb21bbde17e631333429f739333013ac2f3",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  },
+  "star": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/star/front-base.png",
+      "lowerUrl": "/characters/realistic/star/front-lower-body.png",
+      "lowerSha256": "dd8dafa8a71e3e55b1ffeac6be4ca73d414a9481acb75b7035458c679a0925d9",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/star/left-base.png",
+      "lowerUrl": "/characters/realistic/star/left-lower-body.png",
+      "lowerSha256": "7c068c9d874bf66ccc2ecc5920efc9ddc89d4ace24a3240586982b35026c20af",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/star/right-base.png",
+      "lowerUrl": "/characters/realistic/star/right-lower-body.png",
+      "lowerSha256": "5d509a7c0038e5d82141060ad6059a42b4a89177c7b6154405f4df04b3ed1bcb",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  },
+  "wealthy": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/wealthy/front-base.png",
+      "lowerUrl": "/characters/realistic/wealthy/front-lower-body.png",
+      "lowerSha256": "1243471b5aca57be0d0d29716d46cc5550bd544e552ef5bbb429f44affb7c053",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/wealthy/left-base.png",
+      "lowerUrl": "/characters/realistic/wealthy/left-lower-body.png",
+      "lowerSha256": "439759600991820a8cb07ea75d15a336838849037a8d6e56ca4170f73df7c763",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/wealthy/right-base.png",
+      "lowerUrl": "/characters/realistic/wealthy/right-lower-body.png",
+      "lowerSha256": "dd2e77bd4b4de2a1fc937d564115ffadd47dc3daf08019f9a72577c4eb567776",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  },
+  "landlord": {
+    "front": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/landlord/front-base.png",
+      "lowerUrl": "/characters/realistic/landlord/front-lower-body.png",
+      "lowerSha256": "6f28293a2cee1141d865d1d3da998ddb30c3ef0801f8759d16647bae8ae7e5d7",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "left": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/landlord/left-base.png",
+      "lowerUrl": "/characters/realistic/landlord/left-lower-body.png",
+      "lowerSha256": "c0eaee4e127b9d82322236eee1f67f539920de346c3e316fa302b4588fef78b4",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    },
+    "right": {
+      "approved": true,
+      "upperUrl": "/characters/realistic/landlord/right-base.png",
+      "lowerUrl": "/characters/realistic/landlord/right-lower-body.png",
+      "lowerSha256": "3c99a0ff3d1d8d342d3b6206353905c975929acf5f171dbbdcbb66cceeda1d8e",
+      "review": "Original upper identity and motion coordinates preserved; independent lower-body layer, uniform scaling, seated table/chair/feet and near-apron occlusion checked in the actual four-player UI. No mirrored side view."
+    }
+  }
+}

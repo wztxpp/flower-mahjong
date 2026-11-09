@@ -11,6 +11,13 @@ const POSITIONS = {
   north: 180,
   left: 90,
 };
+// 四个物理方向按顺时针序号排列；座位号的方向表在整局内固定，空位也占据其中一边。
+// Clockwise physical sides have stable indices; absolute seats and vacant sides never move between viewers.
+const POSITION_ORDER = ['south', 'right', 'north', 'left'];
+const ABSOLUTE_POSITIONS_BY_COUNT = {
+  3: ['south', 'left', 'right'],
+  4: ['south', 'left', 'north', 'right'],
+};
 
 // 每次复制各区以防调用者污染之后的布局；碰杠在本人左下，胡牌在本人右下。
 // Copy zones per invocation to prevent shared mutations; melds belong at local lower-left and wins at local lower-right.
@@ -24,10 +31,12 @@ function localZones() {
   };
 }
 
-// 绝对座位排序后从本人旋转；三人桌跳过北面，观众锚定最小座位但绝不标记为本人。
-// Sort actual absolute seats and rotate from self; three players omit north, spectators anchor the lowest seat without owning it.
-// 沿用原牌桌：seat+1在左，seat-1在右；turnDirection只改变行牌顺序，不交换玩家的物理座位。
-// Preserve the existing table: seat+1 is left, seat-1 right; turnDirection changes play order, never physical seating.
+// 先把绝对座位固定到四边，再旋转整桌让本人朝南；观众锚定0号位，但不获得本人身份。
+// Fix absolute seats to four physical sides before rotating the whole table to self at south; spectators anchor seat zero without owning it.
+// 三人桌0号视角为南0/左1/右2/北空。空位随观察角度旋转，不能每次把它重新塞回北面。
+// Three-player seat zero sees south0/left1/right2/north vacant. Rotate the vacancy too, rather than forcing it back north for every viewer.
+// 这使左、右两家始终对坐；turnDirection只改变行牌顺序，不交换物理座位或牌区归属。
+// This keeps the original left/right pair opposite each other; turnDirection changes play order, never physical seats or zone ownership.
 // 非法/重复座位拒绝整组，避免两个玩家共享位置；输入与返回对象互不共享可写数据。
 // Reject invalid/duplicate seats as a group so two players never share a position; input and output share no mutable state.
 export function realisticSeatLayout(players, mySeat = null) {
@@ -36,13 +45,16 @@ export function realisticSeatLayout(players, mySeat = null) {
   if (seatNumbers.some((seat) => !Number.isInteger(seat) || seat < 0 || seat >= players.length)) return [];
   if (new Set(seatNumbers).size !== seatNumbers.length) return [];
   seatNumbers.sort((a, b) => a - b);
-  const ownIndex = seatNumbers.indexOf(mySeat);
-  const anchorIndex = Math.max(0, ownIndex);
-  const positions = players.length === 3 ? ['south', 'right', 'left'] : ['south', 'right', 'north', 'left'];
-  return positions.map((position, index) => {
-    const seat = seatNumbers[(anchorIndex - index + seatNumbers.length) % seatNumbers.length];
-    return { seat, position, rotation: POSITIONS[position], isSelf: ownIndex >= 0 && seat === mySeat, zones: localZones() };
-  });
+  const hasOwnSeat = seatNumbers.includes(mySeat);
+  const anchorSeat = hasOwnSeat ? mySeat : seatNumbers[0];
+  const absolutePositions = ABSOLUTE_POSITIONS_BY_COUNT[players.length];
+  const anchorSideIndex = POSITION_ORDER.indexOf(absolutePositions[anchorSeat]);
+  return seatNumbers.map((seat) => {
+    const absoluteSideIndex = POSITION_ORDER.indexOf(absolutePositions[seat]);
+    const relativeSideIndex = (absoluteSideIndex - anchorSideIndex + POSITION_ORDER.length) % POSITION_ORDER.length;
+    const position = POSITION_ORDER[relativeSideIndex];
+    return { seat, position, rotation: POSITIONS[position], isSelf: hasOwnSeat && seat === mySeat, zones: localZones() };
+  }).sort((first, second) => POSITION_ORDER.indexOf(first.position) - POSITION_ORDER.indexOf(second.position));
 }
 
 // 缺数量保持未知(null)，不能把缺失响应显示为确知的零；不接受字符串、负数或小数。

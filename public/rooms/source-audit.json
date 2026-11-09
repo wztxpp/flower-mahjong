@@ -1,0 +1,12 @@
+{
+  "id": "warm-tea-room-v1",
+  "file": "warm-tea-room.png",
+  "generatedWith": "Built-in image generation",
+  "source": "User-provided overall room-composition reference, transformed into an empty background. Original six character identities are not part of this file.",
+  "approvedAsBackgroundAsset": true,
+  "layoutReviewRequired": false,
+  "review": "Visually inspected the full output. No people, body parts, game table, tiles, chairs, text or UI. Warm lantern-lit lattice-window room, clear central floor for separate interactive scene layers. Fully opaque. Actual projected table, actors, foreground and mobile room composition reviewed before release.",
+  "usage": "Optional room skin behind the live table and characters. Do not bake game information into this image. Keep table, seats, player legs and interactions independent.",
+  "prompt": "Edit the user's reference into an empty warm wooden tea-room background. Preserve lanterns, lattice windows with quiet blue night outside, subtle edge plants, polished wooden floor and low seated-player oblique perspective. Remove all people and body parts, table, tiles, chairs, stools, UI and text. Reconstruct the empty room naturally. Keep central and foreground playing space empty for separate interactive layers. Place decor near top and side edges, with unobstructed wooden floor in the lower roughly two-thirds. Polished anime background painting, portrait 2:3, opaque full frame, no watermark.",
+  "sha256": "d917db31ff02ae44882d77ac366c4a0480f757a98dc3ef16d2e8f72dc49baee0"
+}

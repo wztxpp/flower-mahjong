@@ -6,7 +6,7 @@ import '/src/style.css';
 import '/src/tabletop.css';
 import '/src/realistic-table.css';
 import { terminalSummaryFixture } from '../helpers/round-summary-fixtures.js';
-import { stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_STAGES } from '../helpers/stable-table-fixtures.js';
+import { stableTableSeatSnapshot, stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_STAGES } from '../helpers/stable-table-fixtures.js';
 import { measureStableTable, auditStableTable, auditReachability, setRiverReviewPosition, compareStableTable, settleStableTable } from '../helpers/stable-table-browser-audit.js';
 
 // 本地按钮是只读陈列，阻止生产动作、导航、剪贴板和设置事件；滚动/Tab/原生summary仍可用。
@@ -49,8 +49,8 @@ let summaryGameNumber = 0;
 await window.__stableTableFixture.setSnapshot(stableTableSnapshot(currentCase, 'empty'));
 window.stableTablePreview = Object.freeze({
   cases: STABLE_TABLE_CASES, stages: STABLE_TABLE_STAGES,
-  async set(caseId, stageId, characterId) {
-    const snapshot = stableTableSnapshot(caseId, stageId, characterId);
+  async set(caseId, stageId, characterId, viewerSeat = 0) {
+    const snapshot = stableTableSeatSnapshot(stableTableSnapshot(caseId, stageId, characterId), viewerSeat);
     // 切玩法是新验收页，不是被测局内变化；显式卸载避免跨模板v-memo缓存混用。
     // A case switch starts a fresh acceptance page, not an in-game transition; unmount to avoid cross-template v-memo reuse.
     if (caseId !== currentCase) { app.unmount(); app = createApp(App); app.mount('#app'); }

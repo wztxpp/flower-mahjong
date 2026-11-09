@@ -42,3 +42,9 @@ Current descriptors provide the fields above. motion uses the existing schema-tw
 - `src/RealisticCharacterArtwork.vue`: 复用眼发渲染器的生命周期；右手渲染独立，已错过事件不补播。 / Reuse the local eye/hair lifecycle; independently manage hands without missed-event replay.
 - `src/realistic-character-actions.js`: 有界右手供体/去臂底板合成准备层，当前无批准素材。 / Bounded right-arm/clean-plate preparation, currently without approved assets.
 - `tests/realistic-character*.test.js`: 来源、角色、侧向路径、动作别名、校验与帧时间专项；不等于视觉验收。 / Provenance, identities, perspective paths, action aliases, validation and frame timing, not visual certification.
+
+## Seated full-body layers / 完整坐姿层
+
+All six supported identities now have three reviewed lower-body layers. The original upper PNG and eye/hair coordinates remain unchanged. `body.upperRect` places that original source 1:1 into a possibly wider transparent canvas, while `lowerSourceRect` maps uniformly into `lowerRect`. Optional union `upperClipPolygons` hide only an old incorrect lap, and bounded `sleevePatches` repair cropped sleeve bottoms behind the original upper artwork. `full-body-audit.json` records exact shipped lower-layer hashes. The runtime rejects missing approval, unsafe paths, invalid crops and nonuniform scaling.
+
+六个角色均有独立三视角坐姿下层，保留原头脸、眼发与衣饰身份，不镜像、不拉伸。桌面/桌裙负责遮挡，下层不是一张烘焙桌面背景。本人使用另外制作的第一人称膝腿素材，不把正面坐姿翻转。本人视角覆盖全部六个角色；老实人、清岚、地主、富婆、女明星有坐姿膝腿/裙与鞋，小桃明确仅显示小腿、白袜与穿着的粉鞋，不称膝以上全身。她的该层采用较小等比取景，不借用其他角色或把空鞋当成穿着。六个角色在其他玩家视角的三张完整坐姿照常显示。

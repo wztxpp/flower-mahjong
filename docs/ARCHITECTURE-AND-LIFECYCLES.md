@@ -1,5 +1,9 @@
 # 架构与生命周期 / Architecture and lifecycles
 
+当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
+Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
+
+
 二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
 Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
 

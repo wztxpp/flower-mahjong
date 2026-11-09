@@ -14,6 +14,10 @@ import { roundSummaryView, roundSummaryHandsBySeat } from './round-summary.js';
 const props = defineProps({
   state: { type: Object, required: true },
   blocked: Boolean,
+  // 仅改变原控件的DOM目标，私有选择和服务端白名单仍由本组件拥有。
+  // Changes only the original control DOM destination; this component retains selection and server allowlists.
+  realistic: Boolean,
+  controlsTarget: { default: null },
   canStart: Boolean,
   characterForPlayer: { type: Function, required: true },
 });
@@ -169,6 +173,7 @@ function eventText(event) {
       <div class="chengdu-table-center"><strong>{{ game.phase === 'exchange' ? '换三张' : game.phase === 'dingque' ? '定缺' : isFinished ? '终局' : '成都' }}</strong><span v-if="game.preparation?.exchangeDirection">本局换牌：{{ directionLabels[game.preparation.exchangeDirection] }}</span><span>{{ game.rules.fanCap }}番封顶 · 自摸{{ game.rules.selfDraw === 'addBase' ? '加底' : '加番' }}</span></div>
     <!-- 本人手牌留在桌面；下方独立立绘与操作区不重叠，私有内容仍受me.hand守卫。
          Keep own cards on the table; the separate art below never overlaps controls, and me.hand still guards private content. -->
+    <Teleport :to="controlsTarget" :disabled="!realistic || !controlsTarget">
     <div v-if="me?.hand" class="own-player-area chengdu-own-area"
       :class="`character-${characterForPlayer(mySeat).id}`">
     <section class="chengdu-hand-panel" aria-label="我的手牌与操作">
@@ -211,6 +216,7 @@ function eventText(event) {
         :character="characterForPlayer(mySeat)" /></div>
     </figure>
     </div>
+    </Teleport>
     </div>
     <div class="chengdu-details">
       <section aria-labelledby="chengdu-ledger-title"><h3 id="chengdu-ledger-title">本桌累计 · 虚拟积分</h3><ul class="chengdu-ledger stable-scroll" tabindex="0" aria-label="本桌累计积分，可滚动查看"><li v-for="(row, index) in state.tableScores || []" :key="row.id || index"><span>{{ row.name }}</span><strong>{{ row.totalScore > 0 ? '+' : '' }}{{ row.totalScore }}</strong></li></ul></section>

@@ -193,7 +193,67 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2066
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/sweet/front-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          790,
+          1024,
+          746
+        ],
+        "lowerRect": [
+          0,
+          1005,
+          1371,
+          999
+        ],
+        "seatAnchor": [
+          690,
+          1260
+        ],
+        "footAnchors": [
+          [
+            605,
+            1983
+          ],
+          [
+            760,
+            1982
+          ]
+        ]
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/sweet/self-pov.png",
+        "sourceSize": [
+          1199,
+          1312
+        ],
+        "contentRect": [
+          103,
+          95,
+          991,
+          1217
+        ],
+        "coverage": "lower-shins-and-worn-footwear-only",
+        "sha256": "91a46717c69a570716c8a15d7f9c02ebdee6dab3789015eeb960643a22d2d39b"
+      }
     },
     "left": {
       "approved": true,
@@ -388,7 +448,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1485,
+          2331
+        ],
+        "upperRect": [
+          100,
+          0,
+          1214,
+          1295
+        ],
+        "lowerBodyUrl": "/characters/realistic/sweet/left-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          860,
+          1024,
+          676
+        ],
+        "lowerRect": [
+          0,
+          1260,
+          1485,
+          980
+        ],
+        "seatAnchor": [
+          646,
+          1518
+        ],
+        "footAnchors": [
+          [
+            920,
+            2221
+          ],
+          [
+            1116,
+            2202
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -583,7 +687,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1536,
+          2362
+        ],
+        "upperRect": [
+          150,
+          0,
+          1199,
+          1312
+        ],
+        "lowerBodyUrl": "/characters/realistic/sweet/right-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          850,
+          1024,
+          686
+        ],
+        "lowerRect": [
+          0,
+          1220,
+          1536,
+          1029
+        ],
+        "seatAnchor": [
+          900,
+          1470
+        ],
+        "footAnchors": [
+          [
+            390,
+            2215
+          ],
+          [
+            630,
+            2232
+          ]
+        ]
+      }
     }
   },
   "elegant": {
@@ -780,7 +928,66 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2066
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/elegant/front-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          785,
+          1024,
+          751
+        ],
+        "lowerRect": [
+          0,
+          1050,
+          1371,
+          1005
+        ],
+        "seatAnchor": [
+          690,
+          1350
+        ],
+        "footAnchors": [
+          [
+            600,
+            2043
+          ],
+          [
+            790,
+            2044
+          ]
+        ]
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/elegant/self-pov.png",
+        "sourceSize": [
+          1448,
+          1086
+        ],
+        "contentRect": [
+          0,
+          407,
+          1448,
+          679
+        ],
+        "sha256": "81b4a232b8599e46a2dffa1beee87c50d0b9c4c7416735a54ddc1a8c96fa9149"
+      }
     },
     "left": {
       "approved": true,
@@ -975,7 +1182,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1331,
+          2153
+        ],
+        "upperRect": [
+          0,
+          0,
+          1315,
+          1196
+        ],
+        "lowerBodyUrl": "/characters/realistic/elegant/left-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          810,
+          1024,
+          726
+        ],
+        "lowerRect": [
+          0,
+          1160,
+          1331,
+          944
+        ],
+        "seatAnchor": [
+          493,
+          1381
+        ],
+        "footAnchors": [
+          [
+            855,
+            2084
+          ],
+          [
+            1118,
+            2067
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -1170,7 +1421,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1434,
+          2358
+        ],
+        "upperRect": [
+          90,
+          0,
+          1200,
+          1310
+        ],
+        "lowerBodyUrl": "/characters/realistic/elegant/right-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          1536
+        ],
+        "lowerSourceRect": [
+          0,
+          780,
+          1024,
+          756
+        ],
+        "lowerRect": [
+          0,
+          1170,
+          1434,
+          1058
+        ],
+        "seatAnchor": [
+          870,
+          1470
+        ],
+        "footAnchors": [
+          [
+            390,
+            2216
+          ],
+          [
+            570,
+            2210
+          ]
+        ]
+      }
     }
   },
   "honest": {
@@ -1366,7 +1661,66 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2066
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/honest/front-lower-body.png",
+        "lowerSourceSize": [
+          1022,
+          1538
+        ],
+        "lowerSourceRect": [
+          0,
+          770,
+          1022,
+          768
+        ],
+        "lowerRect": [
+          0,
+          1033,
+          1371,
+          1030
+        ],
+        "seatAnchor": [
+          684,
+          1382
+        ],
+        "footAnchors": [
+          [
+            443,
+            2053
+          ],
+          [
+            912,
+            2053
+          ]
+        ]
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/honest/self-pov.png",
+        "sourceSize": [
+          1448,
+          1086
+        ],
+        "contentRect": [
+          61,
+          418,
+          1327,
+          668
+        ],
+        "sha256": "1edc9bf1fa264b97dc836a2f82a0e4518a86c4ca624ff936e53e03c3fde368cb"
+      }
     },
     "left": {
       "approved": true,
@@ -1560,7 +1914,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1254,
+          2257
+        ],
+        "upperRect": [
+          0,
+          0,
+          1254,
+          1254
+        ],
+        "lowerBodyUrl": "/characters/realistic/honest/left-lower-body.png",
+        "lowerSourceSize": [
+          845,
+          1862
+        ],
+        "lowerSourceRect": [
+          0,
+          940,
+          845,
+          922
+        ],
+        "lowerRect": [
+          160,
+          1130,
+          972,
+          1060
+        ],
+        "seatAnchor": [
+          390,
+          1452
+        ],
+        "footAnchors": [
+          [
+            701,
+            2173
+          ],
+          [
+            936,
+            2050
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -1754,7 +2152,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2066
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/honest/right-lower-body.png",
+        "lowerSourceSize": [
+          883,
+          1781
+        ],
+        "lowerSourceRect": [
+          0,
+          890,
+          883,
+          891
+        ],
+        "lowerRect": [
+          145,
+          1060,
+          971,
+          980
+        ],
+        "seatAnchor": [
+          733,
+          1329
+        ],
+        "footAnchors": [
+          [
+            304,
+            2000
+          ],
+          [
+            552,
+            2028
+          ]
+        ]
+      }
     }
   },
   "landlord": {
@@ -1910,7 +2352,103 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1388,
+          2039
+        ],
+        "upperRect": [
+          0,
+          0,
+          1388,
+          1133
+        ],
+        "lowerBodyUrl": "/characters/realistic/landlord/front-lower-body.png",
+        "lowerSourceSize": [
+          933,
+          1686
+        ],
+        "lowerSourceRect": [
+          0,
+          780,
+          933,
+          906
+        ],
+        "lowerRect": [
+          181,
+          1030,
+          1026,
+          997
+        ],
+        "seatAnchor": [
+          692,
+          1234
+        ],
+        "footAnchors": [
+          [
+            390,
+            1970
+          ],
+          [
+            990,
+            1970
+          ]
+        ],
+        "sleevePatches": {
+          "sourceUrl": "/characters/realistic/landlord/front-sleeve-donor.png",
+          "sourceSize": [
+            1460,
+            1077
+          ],
+          "patches": [
+            {
+              "sourceRect": [
+                100,
+                990,
+                230,
+                87
+              ],
+              "targetRect": [
+                42,
+                1030,
+                230,
+                87
+              ]
+            },
+            {
+              "sourceRect": [
+                1220,
+                990,
+                180,
+                87
+              ],
+              "targetRect": [
+                1180,
+                1030,
+                180,
+                87
+              ]
+            }
+          ]
+        }
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/landlord/self-pov.png",
+        "sourceSize": [
+          1448,
+          1086
+        ],
+        "contentRect": [
+          4,
+          419,
+          1440,
+          667
+        ],
+        "sha256": "676fbd6b7fc6dd38f8fa1e4dbf78612c3de1911b589c84c9f106b71b4385d7ef"
+      }
     },
     "left": {
       "approved": true,
@@ -2064,7 +2602,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2066
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/landlord/left-lower-body.png",
+        "lowerSourceSize": [
+          935,
+          1682
+        ],
+        "lowerSourceRect": [
+          0,
+          890,
+          935,
+          792
+        ],
+        "lowerRect": [
+          90,
+          1090,
+          1122,
+          950
+        ],
+        "seatAnchor": [
+          510,
+          1318
+        ],
+        "footAnchors": [
+          [
+            462,
+            1990
+          ],
+          [
+            984,
+            1966
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -2218,7 +2800,51 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1315,
+          2153
+        ],
+        "upperRect": [
+          0,
+          0,
+          1315,
+          1196
+        ],
+        "lowerBodyUrl": "/characters/realistic/landlord/right-lower-body.png",
+        "lowerSourceSize": [
+          935,
+          1683
+        ],
+        "lowerSourceRect": [
+          0,
+          865,
+          935,
+          818
+        ],
+        "lowerRect": [
+          50,
+          1048,
+          1169,
+          1022
+        ],
+        "seatAnchor": [
+          756,
+          1386
+        ],
+        "footAnchors": [
+          [
+            275,
+            2004
+          ],
+          [
+            738,
+            2029
+          ]
+        ]
+      }
     }
   },
   "wealthy": {
@@ -2454,7 +3080,66 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1584,
+          2369
+        ],
+        "upperRect": [
+          100,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/wealthy/front-lower-body.png",
+        "lowerSourceSize": [
+          1022,
+          841
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1022,
+          841
+        ],
+        "lowerRect": [
+          0,
+          1035,
+          1584,
+          1304
+        ],
+        "seatAnchor": [
+          786,
+          1050
+        ],
+        "footAnchors": [
+          [
+            728,
+            2278
+          ],
+          [
+            876,
+            2278
+          ]
+        ]
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/wealthy/self-pov.png",
+        "sourceSize": [
+          1448,
+          1086
+        ],
+        "contentRect": [
+          0,
+          403,
+          1448,
+          683
+        ],
+        "sha256": "fc3a55bc22d17113c90ca01682601268882a5baf6179baeaac6af12b2177d9f4"
+      }
     },
     "left": {
       "approved": true,
@@ -2676,7 +3361,211 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1858,
+          2362
+        ],
+        "upperRect": [
+          270,
+          0,
+          1199,
+          1312
+        ],
+        "lowerBodyUrl": "/characters/realistic/wealthy/left-lower-body.png",
+        "lowerSourceSize": [
+          1199,
+          662
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1199,
+          662
+        ],
+        "lowerRect": [
+          0,
+          1104,
+          1858,
+          1026
+        ],
+        "seatAnchor": [
+          870,
+          1150
+        ],
+        "footAnchors": [
+          [
+            1317,
+            2065
+          ],
+          [
+            1534,
+            2049
+          ]
+        ],
+        "upperClipPolygons": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1199,
+              0
+            ],
+            [
+              1199,
+              1195
+            ],
+            [
+              900,
+              1195
+            ],
+            [
+              800,
+              1180
+            ],
+            [
+              700,
+              1190
+            ],
+            [
+              500,
+              1200
+            ],
+            [
+              300,
+              1230
+            ],
+            [
+              200,
+              1270
+            ],
+            [
+              0,
+              1270
+            ]
+          ],
+          [
+            [
+              180,
+              1000
+            ],
+            [
+              350,
+              1010
+            ],
+            [
+              490,
+              1100
+            ],
+            [
+              600,
+              1090
+            ],
+            [
+              680,
+              1110
+            ],
+            [
+              745,
+              1170
+            ],
+            [
+              745,
+              1195
+            ],
+            [
+              705,
+              1190
+            ],
+            [
+              715,
+              1240
+            ],
+            [
+              680,
+              1245
+            ],
+            [
+              620,
+              1230
+            ],
+            [
+              570,
+              1210
+            ],
+            [
+              500,
+              1205
+            ],
+            [
+              400,
+              1195
+            ],
+            [
+              290,
+              1220
+            ],
+            [
+              180,
+              1190
+            ]
+          ],
+          [
+            [
+              790,
+              990
+            ],
+            [
+              970,
+              1000
+            ],
+            [
+              1015,
+              1070
+            ],
+            [
+              1060,
+              1130
+            ],
+            [
+              1050,
+              1190
+            ],
+            [
+              1020,
+              1230
+            ],
+            [
+              970,
+              1270
+            ],
+            [
+              920,
+              1270
+            ],
+            [
+              900,
+              1240
+            ],
+            [
+              900,
+              1200
+            ],
+            [
+              900,
+              1130
+            ],
+            [
+              800,
+              1120
+            ]
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -2894,7 +3783,203 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1858,
+          2171
+        ],
+        "upperRect": [
+          350,
+          0,
+          1305,
+          1206
+        ],
+        "lowerBodyUrl": "/characters/realistic/wealthy/right-lower-body.png",
+        "lowerSourceSize": [
+          1199,
+          662
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1199,
+          662
+        ],
+        "lowerRect": [
+          0,
+          1034,
+          1858,
+          1026
+        ],
+        "seatAnchor": [
+          1002,
+          1150
+        ],
+        "footAnchors": [
+          [
+            356,
+            1979
+          ],
+          [
+            535,
+            1979
+          ]
+        ],
+        "upperClipPolygons": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1305,
+              0
+            ],
+            [
+              1305,
+              1034
+            ],
+            [
+              1080,
+              1034
+            ],
+            [
+              1040,
+              1070
+            ],
+            [
+              1000,
+              1095
+            ],
+            [
+              930,
+              1105
+            ],
+            [
+              850,
+              1115
+            ],
+            [
+              750,
+              1105
+            ],
+            [
+              700,
+              1060
+            ],
+            [
+              600,
+              1040
+            ],
+            [
+              500,
+              1034
+            ],
+            [
+              400,
+              1034
+            ],
+            [
+              300,
+              1034
+            ],
+            [
+              0,
+              1034
+            ]
+          ],
+          [
+            [
+              360,
+              970
+            ],
+            [
+              490,
+              970
+            ],
+            [
+              540,
+              1010
+            ],
+            [
+              570,
+              1050
+            ],
+            [
+              650,
+              1040
+            ],
+            [
+              720,
+              1035
+            ],
+            [
+              740,
+              1100
+            ],
+            [
+              650,
+              1115
+            ],
+            [
+              570,
+              1130
+            ],
+            [
+              520,
+              1145
+            ],
+            [
+              490,
+              1145
+            ],
+            [
+              465,
+              1135
+            ],
+            [
+              460,
+              1120
+            ],
+            [
+              490,
+              1080
+            ],
+            [
+              450,
+              1060
+            ],
+            [
+              390,
+              1030
+            ]
+          ],
+          [
+            [
+              1030,
+              850
+            ],
+            [
+              1305,
+              850
+            ],
+            [
+              1305,
+              1206
+            ],
+            [
+              1100,
+              1206
+            ],
+            [
+              1000,
+              1140
+            ]
+          ]
+        ]
+      }
     }
   },
   "star": {
@@ -3166,7 +4251,66 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1371,
+          2071
+        ],
+        "upperRect": [
+          0,
+          0,
+          1371,
+          1148
+        ],
+        "lowerBodyUrl": "/characters/realistic/star/front-lower-body.png",
+        "lowerSourceSize": [
+          1021,
+          815
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1021,
+          815
+        ],
+        "lowerRect": [
+          55,
+          1035,
+          1260,
+          1006
+        ],
+        "seatAnchor": [
+          690,
+          1100
+        ],
+        "footAnchors": [
+          [
+            629,
+            1992
+          ],
+          [
+            757,
+            1992
+          ]
+        ]
+      },
+      "pov": {
+        "approved": true,
+        "url": "/characters/realistic/star/self-pov.png",
+        "sourceSize": [
+          1448,
+          1086
+        ],
+        "contentRect": [
+          3,
+          427,
+          1429,
+          659
+        ],
+        "sha256": "23b1ceb2adede6d13ca6de4dbea003ae2cff598f18fa94d520791b5d0275bff2"
+      }
     },
     "left": {
       "approved": true,
@@ -3428,7 +4572,251 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1485,
+          2446
+        ],
+        "upperRect": [
+          90,
+          0,
+          1158,
+          1359
+        ],
+        "lowerBodyUrl": "/characters/realistic/star/left-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          756
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1024,
+          756
+        ],
+        "lowerRect": [
+          0,
+          1125,
+          1485,
+          1096
+        ],
+        "seatAnchor": [
+          590,
+          1200
+        ],
+        "footAnchors": [
+          [
+            873,
+            2162
+          ],
+          [
+            1122,
+            2157
+          ]
+        ],
+        "upperClipPolygons": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1158,
+              0
+            ],
+            [
+              1158,
+              1145
+            ],
+            [
+              1100,
+              1145
+            ],
+            [
+              1040,
+              1230
+            ],
+            [
+              980,
+              1235
+            ],
+            [
+              900,
+              1210
+            ],
+            [
+              810,
+              1170
+            ],
+            [
+              760,
+              1140
+            ],
+            [
+              700,
+              1175
+            ],
+            [
+              660,
+              1190
+            ],
+            [
+              620,
+              1180
+            ],
+            [
+              550,
+              1190
+            ],
+            [
+              500,
+              1230
+            ],
+            [
+              350,
+              1250
+            ],
+            [
+              250,
+              1250
+            ],
+            [
+              160,
+              1230
+            ],
+            [
+              60,
+              1220
+            ],
+            [
+              0,
+              1200
+            ]
+          ],
+          [
+            [
+              200,
+              1030
+            ],
+            [
+              340,
+              1030
+            ],
+            [
+              440,
+              1165
+            ],
+            [
+              525,
+              1170
+            ],
+            [
+              620,
+              1210
+            ],
+            [
+              625,
+              1245
+            ],
+            [
+              700,
+              1240
+            ],
+            [
+              710,
+              1280
+            ],
+            [
+              635,
+              1310
+            ],
+            [
+              560,
+              1320
+            ],
+            [
+              480,
+              1290
+            ],
+            [
+              400,
+              1245
+            ],
+            [
+              300,
+              1195
+            ],
+            [
+              220,
+              1145
+            ]
+          ],
+          [
+            [
+              670,
+              1020
+            ],
+            [
+              785,
+              1040
+            ],
+            [
+              860,
+              1110
+            ],
+            [
+              945,
+              1130
+            ],
+            [
+              1010,
+              1130
+            ],
+            [
+              1056,
+              1160
+            ],
+            [
+              1060,
+              1190
+            ],
+            [
+              1105,
+              1180
+            ],
+            [
+              1105,
+              1210
+            ],
+            [
+              1070,
+              1250
+            ],
+            [
+              1020,
+              1270
+            ],
+            [
+              950,
+              1265
+            ],
+            [
+              850,
+              1205
+            ],
+            [
+              760,
+              1170
+            ],
+            [
+              665,
+              1110
+            ]
+          ]
+        ]
+      }
     },
     "right": {
       "approved": true,
@@ -3698,7 +5086,227 @@
           }
         ]
       },
-      "action": null
+      "action": null,
+      "body": {
+        "approved": true,
+        "canvasSize": [
+          1516,
+          2484
+        ],
+        "upperRect": [
+          250,
+          0,
+          1140,
+          1380
+        ],
+        "lowerBodyUrl": "/characters/realistic/star/right-lower-body.png",
+        "lowerSourceSize": [
+          1024,
+          766
+        ],
+        "lowerSourceRect": [
+          0,
+          0,
+          1024,
+          766
+        ],
+        "lowerRect": [
+          0,
+          1138,
+          1516,
+          1134
+        ],
+        "seatAnchor": [
+          850,
+          1200
+        ],
+        "footAnchors": [
+          [
+            343,
+            2204
+          ],
+          [
+            459,
+            2211
+          ]
+        ],
+        "upperClipPolygons": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              1140,
+              0
+            ],
+            [
+              1140,
+              1250
+            ],
+            [
+              1000,
+              1250
+            ],
+            [
+              925,
+              1210
+            ],
+            [
+              850,
+              1170
+            ],
+            [
+              760,
+              1150
+            ],
+            [
+              680,
+              1170
+            ],
+            [
+              600,
+              1190
+            ],
+            [
+              500,
+              1190
+            ],
+            [
+              400,
+              1210
+            ],
+            [
+              300,
+              1240
+            ],
+            [
+              180,
+              1260
+            ],
+            [
+              0,
+              1260
+            ]
+          ],
+          [
+            [
+              300,
+              1020
+            ],
+            [
+              400,
+              1070
+            ],
+            [
+              400,
+              1120
+            ],
+            [
+              320,
+              1175
+            ],
+            [
+              285,
+              1210
+            ],
+            [
+              275,
+              1250
+            ],
+            [
+              220,
+              1300
+            ],
+            [
+              165,
+              1330
+            ],
+            [
+              105,
+              1330
+            ],
+            [
+              100,
+              1290
+            ],
+            [
+              125,
+              1225
+            ],
+            [
+              175,
+              1180
+            ],
+            [
+              235,
+              1150
+            ]
+          ],
+          [
+            [
+              700,
+              1070
+            ],
+            [
+              825,
+              1090
+            ],
+            [
+              860,
+              1135
+            ],
+            [
+              800,
+              1180
+            ],
+            [
+              690,
+              1250
+            ],
+            [
+              610,
+              1290
+            ],
+            [
+              555,
+              1290
+            ],
+            [
+              500,
+              1310
+            ],
+            [
+              455,
+              1340
+            ],
+            [
+              410,
+              1340
+            ],
+            [
+              415,
+              1300
+            ],
+            [
+              440,
+              1250
+            ],
+            [
+              500,
+              1220
+            ],
+            [
+              590,
+              1220
+            ],
+            [
+              650,
+              1170
+            ]
+          ]
+        ]
+      }
     }
   }
 }

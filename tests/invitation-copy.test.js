@@ -108,7 +108,22 @@ const RoundSummary = compileComponent("RoundSummary.vue", {
   "./round-summary.js": RoundSummaryModule,
   "./MahjongTile.vue": Tile,
 });
+// 真实桌递归编译实际相对依赖，只复用此宿主对挂载副作用的禁用；目标容器不是伪造的div。
+// Compile actual relative scene dependencies using this host's existing lifecycle suppression, never a fake target div.
+async function compileScene(filename) {
+  const source = readFileSync(new URL(`../src/${filename}`, import.meta.url), 'utf8');
+  const dependencies = {};
+  for (const [, specifier] of source.matchAll(/import\s+[\s\S]*?\sfrom\s+['"]([^'"]+)['"]/g)) {
+    if (!specifier.startsWith('.')) continue;
+    dependencies[specifier] = specifier.endsWith('.vue')
+      ? await compileScene(specifier.slice(2))
+      : await import(new URL(`../src/${specifier}`, import.meta.url));
+  }
+  return compileComponent(filename, dependencies);
+}
+const RealisticTable = await compileScene('RealisticTable.vue');
 const App = compileComponent("App.vue", {
+  "./RealisticTable.vue": RealisticTable,
   "./CharacterArtwork.vue": CharacterArtwork,
   "./PortraitMotionSettings.vue": PortraitMotionSettings,
   "./RoundSummary.vue": RoundSummary,
@@ -161,6 +176,10 @@ function hostNode(tag, text = "") {
     children: [],
     parent: null,
     props: {},
+    get tagName() { return this.tag.toUpperCase(); },
+    get options() { return this.children.filter((child) => child.tag === 'option'); },
+    get value() { return this.props.value; },
+    set value(value) { this.props.value = value; },
     // 节点连接性来自真实host父链；浮层撤下时子按钮也必须被视为断开。
     // Derive connection from the host parent chain, including descendants of a removed overlay.
     get isConnected() { return this.tag === 'root' || Boolean(this.parent?.isConnected); },
@@ -206,6 +225,7 @@ function hostNode(tag, text = "") {
 // 下列宿主操作模拟 DOM 插入、删除与属性更新，覆盖 Vue patch 流程但不执行浏览器布局或绘制。
 // These host operations simulate DOM insertion/removal/property updates, exercising Vue patching without browser layout or paint.
 const renderer = Vue.createRenderer({
+  querySelector: (selector) => document.querySelector?.(selector),
   createElement: (tag) => hostNode(tag),
   createText: (text) => hostNode("#text", text),
   createComment: (text) => hostNode("#comment", text),
@@ -356,9 +376,11 @@ function setup({
     },
   });
   const root = hostNode("root");
-  app.mount(root);
-  document.querySelector = (selector) => selector === '[aria-modal="true"]'
+  document.querySelector = (selector) => selector.startsWith('#')
+    ? findAll(root, (node) => node.props.id === selector.slice(1))[0] || null
+    : selector === '[aria-modal="true"]'
     ? findAll(root, (node) => node.props['aria-modal'] === true || node.props['aria-modal'] === 'true')[0] || null : null;
+  app.mount(root);
   mounted.push(app);
   const buttons = () =>
     findAll(
@@ -919,4 +941,127 @@ for (const caseId of ['flower-3', 'flower-legacy-1', 'flower-legacy-2', 'chengdu
       });
     }
   }
+}
+
+// 同一实例反复切换真实/经典桌：Teleport必须重解析新目标，保留原按钮、选牌及服务端动作路径。
+// Repeated same-instance switching must resolve each new Teleport target and preserve original buttons, selection and server action paths.
+for (const caseId of ['flower-3', 'flower-legacy-1', 'flower-legacy-2', 'chengdu-4']) {
+  test(`on-table private controls ${caseId} move without duplication and survive repeated switches`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    const original = stableTableSnapshot(caseId, 'claim').state;
+    const { scope, root } = setup({ initialState: original });
+    await settle();
+    const hasClass = (node, name) => String(node.props.class || '').split(/\s+/).includes(name);
+    const hand = findAll(root, (node) => hasClass(node, 'character-hand-table'))[0];
+    const dock = findAll(root, (node) => hasClass(node, 'hand-action-dock'))[0];
+    assert.ok(hand && dock);
+    const actions = findAll(dock, (node) => node.tag === 'button').map(textOf);
+    for (let cycle = 0; cycle < 3; cycle++) {
+      scope.chooseTablePresentation('realistic');
+      await settle();
+      const target = findAll(root, (node) => node.props.id === 'realistic-private-controls')[0];
+      assert.ok(target?.isConnected);
+      assert.ok(target.contains(hand) && target.contains(dock), 'original live nodes move inside the actual table viewport');
+      assert.equal(findAll(root, (node) => hasClass(node, 'character-hand-table')).length, 1);
+      assert.deepEqual(findAll(dock, (node) => node.tag === 'button').map(textOf), actions);
+      const self = findAll(root, (node) => node.props['data-realistic-seat'] === original.game.mySeat)[0];
+      assert.equal(findAll(self, (node) => hasClass(node, 'realistic-hand-zone')).length, 0, 'no duplicate read-only own rack');
+      scope.chooseTablePresentation('classic');
+      await settle();
+      assert.ok(hand.isConnected && dock.isConnected);
+      assert.equal(findAll(root, (node) => node.props.id === 'realistic-private-controls').length, 0);
+      assert.equal(findAll(root, (node) => hasClass(node, 'character-hand-table'))[0], hand);
+    }
+    scope.resetRoomContext();
+    await settle();
+  });
+}
+
+// 真组件按钮经原mutate发出动作请求；只替换传输，不能据此声称服务端规则或浏览器几何已验收。
+// Real component buttons reach the original mutate request; transport is mocked, not proof of server rules or browser geometry.
+for (const [caseId, stage] of [
+  ['flower-3', 'discard'], ['flower-legacy-1', 'discard'], ['flower-legacy-2', 'discard'],
+  ['flower-3', 'claim'], ['flower-3', 'rob-kong'], ['chengdu-4', 'discard'],
+  ['chengdu-4', 'chengdu-exchange'], ['chengdu-4', 'chengdu-dingque'], ['chengdu-4', 'claim'],
+]) {
+  test(`on-table action ${caseId}/${stage} retains selection, guards and one original POST`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    const original = stableTableSnapshot(caseId, stage).state;
+    const { scope, root } = setup({ initialState: original });
+    scope.chooseTablePresentation('realistic');
+    await settle();
+    const target = () => findAll(root, (node) => node.props.id === 'realistic-private-controls')[0];
+    const tiles = findAll(target(), (node) => node.tag === 'button' && String(node.props.class).includes('tile-interactive'));
+    const requested = [];
+    let finish;
+    globalThis.fetch = (url, options) => {
+      requested.push({ url, options, payload: JSON.parse(options.body) });
+      return new Promise((resolve) => { finish = resolve; });
+    };
+    if (stage === 'discard' || stage === 'chengdu-exchange') {
+      const count = stage === 'discard' ? 1 : 3;
+      assert.equal(tiles[0].disabled, false);
+      for (const tile of tiles.slice(0, count)) tile.props.onClick();
+      await settle();
+      assert.equal(requested.length, 0, 'selection alone never submits');
+      scope.chooseTablePresentation('classic');
+      await settle();
+      scope.chooseTablePresentation('realistic');
+      await settle();
+      assert.equal(tiles.filter((tile) => tile.props['aria-pressed']).length, count, 'selection survives view switches');
+    }
+    const action = findAll(target(), (node) => node.tag === 'button' && String(node.props.class).split(/\s+/).includes('button') && !node.disabled)[0];
+    assert.ok(action);
+    scope.offline.value = true;
+    await settle();
+    assert.equal(action.disabled, true, 'offline guard still disables the real button');
+    action.props.onClick();
+    assert.equal(requested.length, 0, 'mutate rejects a bypassed disabled control');
+    scope.offline.value = false;
+    await settle();
+    action.props.onClick();
+    action.props.onClick();
+    await settle();
+    assert.equal(requested.length, 1, 'busy guard prevents a repeated submission');
+    assert.match(requested[0].url, /\/api\/rooms\/[^/]+\/action$/);
+    assert.equal(requested[0].options.method, 'POST');
+    assert.ok(original.game.legalActions.some((legal) => JSON.stringify(legal) === JSON.stringify(requested[0].payload.action)));
+    assert.equal(requested[0].payload.gameId, original.game.id);
+    assert.equal(requested[0].payload.gameRevision, original.game.revision);
+    const next = structuredClone(original);
+    next.revision++;
+    next.game.legalActions = [];
+    finish({ ok: true, json: async () => ({ state: next }) });
+    await settle();
+    assert.equal(scope.busy.value, false);
+    scope.resetRoomContext();
+    await settle();
+  });
+}
+
+// 变为观众必须撤下已搬入桌面的私有DOM；换桌时销毁目标，不留下可点旧牌。
+// Becoming a spectator removes teleported private DOM; leaving destroys the target and every stale clickable tile.
+for (const caseId of ['flower-3', 'chengdu-4']) {
+  test(`on-table privacy ${caseId} withdraws the private rack on spectator transition and departure`, async () => {
+    const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+    const original = stableTableSnapshot(caseId, 'discard').state;
+    const { scope, root } = setup({ initialState: original });
+    scope.chooseTablePresentation('realistic');
+    await settle();
+    const target = findAll(root, (node) => node.props.id === 'realistic-private-controls')[0];
+    const privateTiles = findAll(target, (node) => node.tag === 'button' && String(node.props.class).includes('tile-interactive'));
+    assert.ok(privateTiles.length > 0);
+    const next = structuredClone(original);
+    next.viewerRole = 'spectator'; next.you = null; next.game.mySeat = null;
+    delete next.game.players[0].hand;
+    next.game.legalActions = [];
+    scope.state.value = next;
+    await settle();
+    assert.equal(findAll(target, (node) => node.tag === 'button').length, 0);
+    assert.ok(privateTiles.every((tile) => !tile.isConnected));
+    scope.resetRoomContext();
+    await settle();
+    assert.equal(scope.realisticControlsTarget.value, null);
+    assert.equal(target.isConnected, false);
+  });
 }

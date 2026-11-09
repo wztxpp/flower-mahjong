@@ -6,11 +6,14 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import RealisticCharacter from './RealisticCharacter.vue';
-import { buildRealisticTableModel, clampRealisticPan, resetRealisticPan, fitRealisticTileGrid } from './realistic-table-layout.js';
+import { realisticCharacterView } from './realistic-character-catalog.js';
+import { realisticPovModel } from './realistic-character-body.js';
+import { buildRealisticTableModel, resetRealisticPan, fitRealisticTileGrid } from './realistic-table-layout.js';
 import { realisticFlightForEvent } from './realistic-table-events.js';
 import { chengduTableStatus } from './chengdu-table-status.js';
 import { REALISTIC_FLIGHT_STAGGER_MS } from './realistic-presentation.js';
 import { openRealisticPopover, closeRealisticPopovers, dismissRealisticPopoverFallback } from './realistic-popover.js';
+import { REALISTIC_ROOM_SCENE, projectRealisticTablePoint, realisticTableProjectionTransform, realisticSceneCamera, clampRealisticScenePan } from './realistic-table-perspective.js';
 
 const props = defineProps({
   state: { type: Object, required: true },
@@ -20,8 +23,12 @@ const props = defineProps({
   blocked: Boolean,
   canConfigureStart: Boolean,
   hasPrivateFeedback: Boolean,
+  hasPrivateControls: Boolean,
 });
-const emit = defineEmits(['next-round', 'copy-invite']);
+const emit = defineEmits(['next-round', 'copy-invite', 'controls-target']);
+// 模板ref在真实目标挂载/卸载时通知父级，只提供展示位置，不传递动作或暗牌。
+// The template ref announces target mount/unmount to its parent, carrying layout only, never actions or concealed tiles.
+function setControlsTarget(node) { emit('controls-target', node); }
 const model = computed(() => buildRealisticTableModel(props.state));
 const game = computed(() => props.state.game);
 const isChengdu = computed(() => (game.value.gameMode ?? props.state.gameMode) === 'chengdu');
@@ -45,35 +52,47 @@ let mediaQuery;
 // The mounted frame is baseline only; switching presentations never replays the event already in progress.
 let lastPresentationSequence = props.presentationFrame?.sequence ?? 0;
 const timers = new Set();
-// 场景尺寸包含角色留白，而非仅缩放桌面；默认1倍时四边牌区和全部人物都在画面内。
-// Scene dimensions include character gutters; default zoom fits all four table edges and characters rather than fitting the felt alone.
-// 三人桌没有北侧人物，不保留无用的上方留白；四人桌只为正面角色保留实际需要的高度。
-// Three-player tables omit the unused north portrait gutter; four-player tables reserve only its actual portrait height.
-const scene = computed(() => ({
-  width: 1360,
-  height: model.value.seats.length === 3 ? 1160 : 1250,
-  tableX: 180,
-  tableY: model.value.seats.length === 3 ? 80 : 200,
-}));
-const scale = computed(() => Math.max(0.01, Math.min(
-  viewportSize.value.width / scene.value.width,
-  viewportSize.value.height / scene.value.height,
-)) * zoom.value);
+// 三/四人所有视角使用同一完整房间，空位变化不能裁掉真实对家或桌下。
+// Every three/four-player viewpoint uses one complete room; vacancy changes never crop an opposite player or the under-table scene.
+const scene = computed(() => REALISTIC_ROOM_SCENE);
+const camera = computed(() => realisticSceneCamera(viewportSize.value.width, viewportSize.value.height, zoom.value, pan.value));
+const scale = computed(() => camera.value.scale);
 const sceneStyle = computed(() => ({
   width: `${scene.value.width}px`,
   height: `${scene.value.height}px`,
-  '--realistic-table-x': `${scene.value.tableX}px`,
-  '--realistic-table-y': `${scene.value.tableY}px`,
-  '--realistic-side-player-y': `${scene.value.tableY + 350}px`,
-  // 名字与庄家/本人标记可能换行，给固定底部人物标签留足余量，而非只预留图片高度。
-  // Names and self/dealer badges may wrap, so reserve label headroom rather than only the portrait height.
-  '--realistic-south-player-y': `${scene.value.height - 260}px`,
-  transform: `translate(${(viewportSize.value.width - scene.value.width * scale.value) / 2 + pan.value.x}px, ${(viewportSize.value.height - scene.value.height * scale.value) / 2 + pan.value.y}px) scale(${scale.value})`,
+  transform: `translate(${camera.value.x}px, ${camera.value.y}px) scale(${scale.value})`,
 }));
+const tableProjectionStyle = { transform: realisticTableProjectionTransform() };
+// 真正可操作手牌沿同一桌面近边锚定，但保持原生可点尺寸；拖动/缩放时随桌边平移，不留第二个底部操作台。
+// Anchor actual controls to the same near edge while keeping native click sizes; pan/zoom follows the table rather than a second bottom HUD.
+const privateControlsStyle = computed(() => {
+  const anchor = projectRealisticTablePoint({ x: 500, y: 1000 });
+  const width = Math.min(viewportSize.value.width - 12, 1120 * scale.value);
+  return {
+    left: `${camera.value.x + anchor.x * scale.value - width / 2}px`,
+    bottom: `${viewportSize.value.height - camera.value.y - (anchor.y + 34) * scale.value}px`,
+    width: `${width}px`,
+  };
+});
 const centerTiles = computed(() => grid(model.value.radishes.length, 200, 80, 28));
 const names = computed(() => new Map(model.value.seats.map(({ seat }) => [seat,
   game.value.participantNames?.[seat] || props.state.seats?.find((player) => player?.seat === seat)?.name || `牌友 ${seat + 1}`])));
 const characters = computed(() => new Map(model.value.seats.map(({ seat }) => [seat, props.characterForPlayer(seat)])));
+const selfPov = computed(() => {
+  const self = model.value.seats.find((seat) => seat.isSelf);
+  return self ? realisticPovModel(realisticCharacterView(characters.value.get(self.seat)?.id, 'south')) : null;
+});
+const selfPovStyle = computed(() => {
+  if (!selfPov.value) return {};
+  const [, , width, height] = selfPov.value.viewBox.split(' ').map(Number);
+  const displayWidth = selfPov.value.displayWidth;
+  const displayHeight = displayWidth * height / width;
+  // 高窄屏已能看完整房间时，大腿仍从画面底边延续，不能在半空出现一条平切边。
+  // When tall narrow screens fit the full room, thighs still continue off the viewport bottom rather than ending in mid-air.
+  const top = Math.max(scene.value.height - displayHeight,
+    (viewportSize.value.height - camera.value.y) / scale.value - displayHeight);
+  return { top: `${top}px`, bottom: 'auto', left: `${(scene.value.width - displayWidth) / 2}px`, width: `${displayWidth}px`, height: `${displayHeight}px`, aspectRatio: selfPov.value.aspectRatio };
+});
 const latestDiscardIndex = computed(() => (game.value.discards?.length || 0) - 1);
 const meldLabels = { peng: '碰', mingGang: '明杠', anGang: '暗杠', buGang: '补杠', addGang: '加杠' };
 
@@ -123,15 +142,15 @@ function flightStyle(flight) {
 // 只捕获场景空白/公开牌的主指针；工具、滚动详情与固定手牌不属于拖拽范围。
 // Capture only the scene's primary pointer; tools, detail scrolling and the fixed private hand are outside this drag surface.
 function beginPan(event) {
-  if (event.button !== 0 || event.isPrimary === false || event.target.closest?.('button, input, select, a, details')) return;
-  pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  if (event.button !== 0 || event.isPrimary === false || event.target.closest?.('button, input, select, a, details, #realistic-private-controls')) return;
+  pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, pan: { ...pan.value } };
   dragging.value = true;
   viewport.value?.setPointerCapture?.(event.pointerId);
 }
 function movePan(event) {
   if (!pointer || event.pointerId !== pointer.id) return;
-  pan.value = clampRealisticPan({ x: event.clientX - pointer.x, y: event.clientY - pointer.y },
-    viewportSize.value.width, viewportSize.value.height, scene.value.width * scale.value, scene.value.height * scale.value);
+  pan.value = clampRealisticScenePan({ x: pointer.pan.x + event.clientX - pointer.x, y: pointer.pan.y + event.clientY - pointer.y },
+    viewportSize.value.width, viewportSize.value.height, zoom.value);
 }
 function resetPan() {
   const id = pointer?.id;
@@ -140,13 +159,23 @@ function resetPan() {
   pan.value = resetRealisticPan();
   if (id != null && viewport.value?.hasPointerCapture?.(id)) viewport.value.releasePointerCapture(id);
 }
+// 为触屏与键盘补充稳定的桌下查看入口；拖拽仍按松手回正，全桌按钮恢复默认取景。
+// Provide a stable under-table view for touch and keyboard; dragging still springs back and Full table restores framing.
+function viewUnderTable() {
+  const initial = realisticSceneCamera(viewportSize.value.width, viewportSize.value.height, zoom.value);
+  const lowerEdgePan = Math.min(0, viewportSize.value.height - initial.y - scene.value.height * scale.value);
+  pan.value = clampRealisticScenePan({ x: 0, y: lowerEdgePan },
+    viewportSize.value.width, viewportSize.value.height, zoom.value);
+}
 function onPanKey(event) {
   const directions = { ArrowLeft: [-40, 0], ArrowRight: [40, 0], ArrowUp: [0, -40], ArrowDown: [0, 40] };
-  if (!directions[event.key]) return;
+  // 私有控件的方向键属于原生手牌/动作滚动，不应触发桌面平移。
+  // Arrow keys inside private controls belong to native hand/action scrolling, never table panning.
+  if (event.target?.closest?.('#realistic-private-controls') || !directions[event.key]) return;
   event.preventDefault();
   const [x, y] = directions[event.key];
-  pan.value = clampRealisticPan({ x: pan.value.x + x, y: pan.value.y + y },
-    viewportSize.value.width, viewportSize.value.height, scene.value.width * scale.value, scene.value.height * scale.value);
+  pan.value = clampRealisticScenePan({ x: pan.value.x + x, y: pan.value.y + y },
+    viewportSize.value.width, viewportSize.value.height, zoom.value);
 }
 function resize() {
   resetPan();
@@ -234,7 +263,7 @@ onUnmounted(() => {
       <div class="realistic-view-tools">
         <label>桌布 <select v-model="skin" aria-label="桌布皮肤"><option value="jade">松石绿</option><option value="night">午夜蓝</option><option value="clay">暖陶棕</option></select></label>
         <label class="realistic-zoom">视野 <input v-model.number="zoom" type="range" min="1" max="2" step="0.1" aria-label="桌面放大倍率" /></label>
-        <button @click="zoom = 1; resetPan()">全桌</button><button :aria-expanded="showDetails" @click="showDetails = !showDetails">积分 / 牌局</button>
+        <button @click="zoom = 1; resetPan()">全桌</button><button @click="viewUnderTable">桌下</button><button :aria-expanded="showDetails" @click="showDetails = !showDetails">积分 / 牌局</button>
         <button data-realistic-invite @click="emit('copy-invite')">复制邀请</button>
         <button v-if="hasPrivateFeedback" popovertarget="realistic-hand-feedback" @click.prevent="openRealisticPopover('realistic-hand-feedback')">胡牌判断 / 结算</button>
         <button v-if="canConfigureStart" popovertarget="realistic-start-options" @click.prevent="openRealisticPopover('realistic-start-options')">下一局配置</button>
@@ -247,7 +276,8 @@ onUnmounted(() => {
       @keydown="onPanKey" @keyup="resetPan" @blur="resetPan">
       <div class="realistic-scene" :style="sceneStyle">
         <div class="realistic-room-pattern" aria-hidden="true"></div>
-        <div class="realistic-felt">
+        <div class="realistic-under-table" aria-hidden="true"><div class="realistic-table-apron"></div><i class="realistic-table-leg left"></i><i class="realistic-table-leg right"></i><i class="realistic-table-crossbar"></i></div>
+        <div class="realistic-felt" :style="tableProjectionStyle">
           <div class="realistic-felt-inlay" aria-hidden="true"></div>
           <!-- 无论三人四人都有四面墙；空垛保留位置，只从公开数量确定的前/后端逐步减少。
                Both player counts retain four walls; empty stacks keep their slots as public front/tail counts shrink. -->
@@ -260,7 +290,7 @@ onUnmounted(() => {
             </div>
           </div>
           <div v-for="seat in model.seats" :key="seat.seat" class="realistic-seat-plane" :style="{ transform: `rotate(${seat.rotation}deg)` }" :data-realistic-seat="seat.seat" :data-position="seat.position">
-            <div class="realistic-zone realistic-hand-zone" :style="zoneStyle(seat.zones.hand)" :aria-label="`${names.get(seat.seat)}的手牌，共${seat.hand.length}张`">
+            <div v-if="!(hasPrivateControls && seat.isSelf)" class="realistic-zone realistic-hand-zone" :style="zoneStyle(seat.zones.hand)" :aria-label="`${names.get(seat.seat)}的手牌，共${seat.hand.length}张`">
               <div class="realistic-tiles" :style="grid(seat.hand.length, seat.zones.hand.width, seat.zones.hand.height)">
                 <MahjongTile v-for="(tile, index) in seat.hand" :key="index" :tile="tile.tile" :back="tile.hidden" small />
               </div>
@@ -299,10 +329,16 @@ onUnmounted(() => {
           <div v-for="flight in flights" :key="flight.eventKey" class="realistic-tile-flight" :style="flightStyle(flight)" aria-hidden="true"><MahjongTile :tile="flight.tile" :back="flight.hidden" small /><b>{{ flight.label }}</b></div>
         </div>
         <div v-for="seat in model.seats" :key="`character:${seat.seat}`" class="realistic-player" :class="[`realistic-player-${seat.position}`, { current: game.currentSeat === seat.seat && game.phase !== 'finished' }]">
-          <RealisticCharacter :character="characters.get(seat.seat)" :position="seat.position" :action="characterActions[seat.seat]" :enabled="!reducedMotion" />
+          <RealisticCharacter v-if="!seat.isSelf" :character="characters.get(seat.seat)" :position="seat.position" :action="characterActions[seat.seat]" :enabled="!reducedMotion" />
           <div class="realistic-player-label"><span><b>{{ names.get(seat.seat) }}</b><i v-if="seat.isSelf">你</i><i v-if="seat.seat === game.dealerSeat">庄</i></span><strong>{{ scoreText(scoreFor(seat.seat)) }}</strong><small>{{ seat.handCount }}张手牌 · {{ playerSummary(seat) }}</small></div>
         </div>
+        <!-- 本人是朝桌面的膝腿前景，不是左下角面朝自己的小人；缺该角色POV时不借用他人的裤鞋。
+             The self view is knees facing the table, not a miniature facing the camera; absent identity-specific POV stays absent. -->
+        <svg v-if="selfPov" class="realistic-self-pov" :viewBox="selfPov.viewBox" :style="selfPovStyle" aria-hidden="true" data-body-status="approved-first-person" :data-coverage="selfPov.coverage"><image :href="selfPov.url" :width="selfPov.sourceSize[0]" :height="selfPov.sourceSize[1]" /></svg>
       </div>
+      <!-- 原私有组件被移入此桌内近沿；不随公开场景缩小，保留可点尺寸与原生横向滚动。
+           Original private components move into this near edge; no scene scaling shrinks targets or native horizontal scrolling. -->
+      <div :ref="setControlsTarget" id="realistic-private-controls" class="realistic-private-controls" :style="privateControlsStyle"></div>
     </div>
     <div class="realistic-bottomline"><span role="status">{{ blocked ? '正在同步，请稍等' : game.phase === 'finished' ? '本局结束，可查看结算与摊牌' : visibleStatus }}</span><small>拖动查看，松手回正 · 牌墙按公开余牌示意</small></div>
     <aside v-if="showDetails" class="realistic-details" aria-label="本桌积分与本局状态"><button @click="showDetails = false">关闭</button><h3>本桌累计 · 虚拟积分</h3><p v-for="(row, index) in state.tableScores || []" :key="row.id || index"><span>{{ row.name }}</span><b>{{ scoreText(row.totalScore) }}</b></p><hr /><p v-for="seat in model.seats" :key="seat.seat"><span>{{ names.get(seat.seat) }} · 本局</span><b>{{ scoreText(scoreFor(seat.seat)) }}</b></p><small>经典桌可查看完整历史与玩法说明。切换显示不会离桌或更改牌局。</small></aside>

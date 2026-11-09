@@ -4,6 +4,7 @@ import { writeStableTableReport, clearStableTableReport } from '../helpers/stabl
 import { STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES, STABLE_TABLE_CHARACTERS } from '../helpers/stable-table-fixtures.js';
 const frame = document.querySelector('#fixture-frame');
 const caseInput = document.querySelector('#fixture-case');
+const seatInput = document.querySelector('#fixture-seat');
 const widthInput = document.querySelector('#fixture-width');
 const heightInput = document.querySelector('#fixture-height');
 const characterInput = document.querySelector('#fixture-character');
@@ -36,7 +37,7 @@ async function configure() {
   frame.height = heightInput.value;
   frame.style.height = `${heightInput.value}px`;
   const api = await ready();
-  await api.set(caseInput.value, stageInput.value, characterInput.value);
+  await api.set(caseInput.value, stageInput.value, characterInput.value, Number(seatInput.value));
   return api;
 }
 // 每次操作保留可见状态/错误；审计期间禁用并发诊断输入，不能用重叠运行制造假基线。

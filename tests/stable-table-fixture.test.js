@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse, compileScript } from '@vue/compiler-sfc';
-import { stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES } from './helpers/stable-table-fixtures.js';
+import { stableTableSeatSnapshot, stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_COMPAT_CASES, STABLE_TABLE_STAGES, STABLE_TABLE_MANUAL_STAGES } from './helpers/stable-table-fixtures.js';
 import { transformStableTableApp } from './helpers/stable-table-transform.js';
 import { rejectStableTableApi } from './helpers/stable-table-server-boundary.js';
 import { compareStableTable, isStableTableEndVisible } from './helpers/stable-table-browser-audit.js';
@@ -371,4 +371,25 @@ test('visible overlay diagnostics exercise actual focus and selection without su
   assert.match(frame, /event\.stopImmediatePropagation\(\)/);
   assert.doesNotMatch(frame, /\.mutate\(|\.submit\(|\.startNextRound\(|\.newTable\(/);
   assert.match(source('tests/browser/stable-table-preview-server.mjs'), /middlewares\.use\(rejectStableTableApi\)/);
+});
+
+// 切换查看者不移动公开座位、不泄漏多份暗手，也不改原夹具。
+// Switching viewers never moves public seats, exposes multiple hands or mutates the original fixture.
+test('visible seat selector copies only the synthetic private rack for every three/four player viewpoint', () => {
+  for (const caseId of ['flower-3', 'flower-4', 'chengdu-4']) {
+    const original = stableTableSnapshot(caseId, 'discard');
+    for (const { seat } of original.state.game.players) {
+      const view = stableTableSeatSnapshot(original, seat);
+      assert.equal(view.state.you, seat);
+      assert.equal(view.state.game.mySeat, seat);
+      assert.deepEqual(view.state.game.players.filter((player) => player.hand).map((player) => player.seat), [seat]);
+      assert.deepEqual(view.state.seats, original.state.seats);
+      assert.deepEqual(view.state.game.discards, original.state.game.discards);
+      if (seat !== 0) assert.deepEqual(view.state.game.legalActions, []);
+    }
+    assert.equal(original.state.you, 0);
+    assert.ok(original.state.game.players[0].hand);
+  }
+  const spectator = stableTableSnapshot('flower-spectator', 'discard');
+  assert.deepEqual(stableTableSeatSnapshot(spectator, 1), spectator);
 });

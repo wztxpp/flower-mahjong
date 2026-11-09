@@ -248,3 +248,9 @@ See the full overlay contract; permanent action slots are the superseded present
 - `wallDistribution`：公开数量推导的固定四墙展示或明确降级；开墙口仅展示约定，始终不是暗墙身份。 / Public-count fixed-wall presentation or explicit fallback; the break is a visual convention, never concealed identities.
 - `ACTIVE_CHARACTER_IDS`：新选择器/随机落座的六个可用身份；`CHARACTER_IDS`仍包含七个稳定ID供旧局与旧客户端兼容。 / Six active new-selection/random roles; all seven stable IDs remain valid for legacy saves/clients.
 - `realisticView`：角色的独立front/left/right原画视角，不允许由水平镜像代替。 / An independently authored perspective, never a horizontally mirrored substitute.
+
+- `absolute seat` / `physical side` / `position`：服务端绝对座位 / 本局固定四方之一 / 查看者旋转后的屏幕方向。三人缺席边也参与旋转，行牌方向不改变这层映射。 / Server seat / fixed physical table side / viewer-relative screen side. Vacancies rotate too; play direction never changes this mapping.
+- `projectRealisticTablePoint` / `realisticTableProjectionTransform`：同一二维单应投影的点计算与CSS表示，供桌面、飞牌和近沿坐标共用，不是三维引擎。 / Point helper and CSS representation of one 2D homography shared by table, flights and near-edge positioning, not a 3D engine.
+- `REALISTIC_ROOM_SCENE` / `focusHeight`：完整房间边界 / 默认框住桌面的高度；完整房间可高于默认视野，供临时拖看桌下。 / Complete-room bounds / default table-framing height; under-table space may extend beyond the initial viewport.
+- `controls-target` / `realisticControlsTarget`：真实桌上报的已挂载DOM目标 / App持有的本地目标引用；仅控制Teleport位置，不能授予动作或暴露暗牌。卸载目标会清空引用。 / Mounted DOM target event / App's local reference. They route Teleport only, never grant actions or reveal hidden cards; unmount clears the reference.
+- `realisticBodyModel` / `data-body-status`：已批准且有效的角色上下身组合展示 / 当前全身或半身表示状态。不是角色全目录审批或动作验收结论。 / Approved valid body-layer presentation / current full- or half-body representation, not catalog-wide approval or animation acceptance.

@@ -1,5 +1,9 @@
 # 测试阅读指南 / Test reading guide
 
+当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
+Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
+
+
 真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
 Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
 
@@ -298,7 +302,7 @@ Integration UI cases feed real engine views into the revised layout, covering he
 Compact-table regressions continue in the existing stable-layout, UI and Chengdu UI suites without new rule fixtures. They verify dynamic radish provenance/pending counts, turn/missing suit and accessible names survive heading removal; both action bars have only a first-element auto start margin, preserving68px rows,44px targets and the overflow origin. Frozen schemas, spectators and finish checks remain. Real-browser QA separately measures320/390/1280px one/many/stress actions, thirteen radishes, ordinary public cards/ledgers, fourteen-stage geometry and retained browsing; source checks do not establish those pixel results.
 
 后续取消牌河标题/条数的回归将三种观察座位、旧schema1/2/3和终局断言转向精确 `aria-label` 与弃牌下标，保护归属而非已删除的可见标题。另检查花麻将156/144px、成都150px牌河容量不缩，成都手机gap/按钮内边距仅改变间隔，不碰字体和44px高度。
-Follow-up river-title/count regressions check exact accessible labels and discard indices across all three viewpoints, schemas1/2/3 and finish views, protecting ownership rather than removed visible headings. They also retain Flower156/144px and Chengdu150px river capacities and constrain phone action changes to gaps/inline padding, preserving fonts and44px height.
+Follow-up river-title/count regressions check exact accessible labels and discard indices across all three viewpoints, schemas 1/2/3 and finish views, protecting ownership rather than removed visible headings. They also retain Flower156/144px and Chengdu150px river capacities and constrain phone action changes to gaps/inline padding, preserving fonts and44px height.
 
 ## 下一局弹层交互 / Next-round dialog interaction
 
@@ -348,3 +352,5 @@ The new suite legally finishes every Flower version/table size and Chengdu, test
 
 实际组件挂载测试触发img错误，确认只移除该背景、轮询不重试、旧错误不影响新角色，以及阶段/摘要撤销；渲染前后输入深比较不变。真实SFC/CSS编译保护绝对底层、pointer-events/读屏隐藏、74%/82%遮罩最坏像素文字4.5:1和26×36/24×33/flex:none。浏览器网络、像素与手机外观由独立浏览器验收覆盖，不将此套件称为浏览器通过。
 Mounted-component errors remove only the failed layer, avoid polling retries, spare new roles and withdraw on phase/summary changes; input deep comparisons remain unchanged. Actual SFC/CSS checks protect out-of-flow decoration, noninteractive/hidden semantics, worst-pixel4.5:1 contrast and unchanged26×36/24×33/flex:none. Separate browser QA covers network/pixels/phone appearance; this suite makes no browser-pass claim.
+
+`realistic-character-body-assets.test.js`是完整坐姿/本人近景的素材构建门：18视角、6身份、PNG alpha/尺寸/hash、原上身坐标与小桃膝下范围。实际组合证据见`REALISTIC-SEATED-VIEW-QA.md`，不能用数据测试代替图像检查。The body-asset gate complements, rather than replaces, actual seated composition review.

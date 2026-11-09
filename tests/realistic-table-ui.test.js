@@ -110,7 +110,7 @@ function eventTarget() {
 let activeBrowser = null;
 export function realisticBrowser(t, reducedMotion = false) {
   const cleanups = [];
-  const keys = ['window', 'document', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout'];
+  const keys = ['window', 'document', 'Document', 'ShadowRoot', 'ResizeObserver', 'requestAnimationFrame', 'cancelAnimationFrame', 'setTimeout', 'clearTimeout'];
   const originals = new Map(keys.map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   const timers = new Map();
   const frames = new Map();
@@ -124,7 +124,9 @@ export function realisticBrowser(t, reducedMotion = false) {
     observe() {}
     disconnect() { this.disconnected = true; }
   }
-  Object.assign(globalThis, { window, document, ResizeObserver,
+  // Vue原生range的v-model更新会检查Document/ShadowRoot；提供类型外壳而不伪造布局。
+  // Vue range v-model updates inspect Document/ShadowRoot types; supply type shells without fabricating layout.
+  Object.assign(globalThis, { window, document, Document: class {}, ShadowRoot: class {}, ResizeObserver,
     requestAnimationFrame(callback) { frames.set(++sequence, callback); return sequence; },
     cancelAnimationFrame(id) { frames.delete(id); },
     setTimeout(callback) { timers.set(++sequence, callback); return sequence; },
@@ -209,7 +211,7 @@ test('real actor retains approved art, emits no actions and removes lifecycle li
   browser.cleanups.push(() => { if (root.children.length) app.unmount(); });
   app.mount(root);
   await Vue.nextTick();
-  const frame = realisticNodes(root, (node) => node.props.class === 'realistic-character')[0];
+  const frame = realisticNodes(root, (node) => String(node.props.class || '').split(/\s+/).includes('realistic-character'))[0];
   assert.equal(frame.props['data-art-status'], 'approved-base');
   assert.equal(frame.props['data-view'], 'left');
   assert.equal(realisticNodes(root, (node) => node.props.class === 'realistic-character-loader').length, 0);
@@ -218,6 +220,57 @@ test('real actor retains approved art, emits no actions and removes lifecycle li
   app.unmount();
   assert.equal(browser.document.listeners.get('visibilitychange')?.size || 0, 0);
   assert.equal(browser.media.listeners.get('change')?.size || 0, 0);
+});
+
+// 接入真实目录全身后，上身原画与眼发描述符仍属于原坐标，不随腿画布扩展而改写。
+// With production full bodies, original upper art and motion descriptors retain their coordinates rather than adopting the leg canvas.
+test('production full bodies retain original upper artwork and motion coordinate descriptors', async (t) => {
+  const browser = realisticBrowser(t, true);
+  const component = await loadRealisticComponent('RealisticCharacter.vue');
+  const { REALISTIC_CHARACTER_IDS, realisticCharacterView } = await import('../src/realistic-character-catalog.js');
+  const { realisticBodyModel } = await import('../src/realistic-character-body.js');
+  const artworkComponent = await loadRealisticComponent('RealisticCharacterArtwork.vue');
+  const findComponent = (vnode) => {
+    if (!vnode) return null;
+    if (vnode.type === artworkComponent) return vnode.component;
+    if (vnode.component) return findComponent(vnode.component.subTree);
+    return Array.isArray(vnode.children) ? vnode.children.map(findComponent).find(Boolean) : null;
+  };
+  let checked = 0;
+  for (const id of REALISTIC_CHARACTER_IDS) {
+    for (const position of ['north', 'left', 'right']) {
+      const view = realisticCharacterView(id, position);
+      const body = realisticBodyModel(view);
+      if (!body) continue;
+      const root = hostNode('root');
+      const app = renderer.createApp(component, { character: { id, name: id }, position, enabled: true });
+      browser.cleanups.push(() => { if (root.children.length) app.unmount(); });
+      const instance = app.mount(root);
+      await Vue.nextTick();
+      const actor = realisticNodes(root, (node) => node.props['data-character'] === id)[0];
+      assert.equal(actor.props['data-body-status'], 'approved-full-body');
+      const upper = realisticNodes(actor, (node) => node.props.class === 'realistic-body-upper')[0];
+      for (const key of ['left', 'top', 'width', 'height']) assert.equal(upper.props.style[key], body.upperStyle[key]);
+      // 从百分比框还原源像素：必须仍与目录上身尺寸一致，不是完整腿画布尺寸。
+      // Restore source pixels from percentage bounds: match upper art dimensions, never the full leg canvas.
+      assert.ok(Math.abs(parseFloat(upper.props.style.width) / 100 * body.canvasSize[0] - view.width) < 1e-8);
+      assert.ok(Math.abs(parseFloat(upper.props.style.height) / 100 * body.canvasSize[1] - view.height) < 1e-8);
+      const artwork = findComponent(instance.$.subTree);
+      assert.ok(artwork);
+      assert.equal(Vue.toRaw(artwork.props.motionDescriptor), view.motion || null);
+      assert.equal(Vue.toRaw(artwork.props.actionDescriptor), view.action || null);
+      assert.equal(artwork.props.character.portrait, view.baseUrl);
+      const original = realisticNodes(upper, (node) => node.props.class === 'realistic-character-artwork-original');
+      assert.equal(original.length, 1);
+      assert.equal(original[0].props.src, view.baseUrl);
+      assert.equal(realisticNodes(upper, (node) => node.props.class === 'realistic-character-artwork-canvas').length, view.motion ? 1 : 0);
+      assert.equal(realisticNodes(upper, (node) => node.props.class === 'realistic-body-lower').length, 0);
+      assert.equal(browser.frames.size, 0);
+      app.unmount();
+      checked += 1;
+    }
+  }
+  assert.equal(checked, 18, 'all eighteen production views must exercise approved body metadata');
 });
 
 // 模式开关只选展示，不包裹/替换原手牌组件；此结构断言补充稍后的真实patch交互测试。
@@ -230,7 +283,8 @@ test('App keeps original hands and action authority independent of realistic sce
   assert.ok(realisticTag);
   assert.doesNotMatch(realisticTag, /@action=|@start=|mutate/);
   assert.match(chengduTag, /@action="mutate"/);
-  assert.doesNotMatch(chengduTag, /tablePresentation/);
+  assert.match(chengduTag, /v-if="isChengduRoom && game"/);
+  assert.match(chengduTag, /:realistic="tablePresentation === 'realistic'"/);
   const choose = descriptor.scriptSetup.content.match(/function chooseTablePresentation\(value\) \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(choose);
   assert.doesNotMatch(choose, /mutate|selectedTile|state\.value|session|fetch/);
@@ -332,7 +386,7 @@ test('public scene exposes no action emit and hidden cards have no face metadata
   state.game.players[1].melds = [{ type: 'anGang', tile: 16, hidden: true, tiles: [16, 16, 16, 16] }];
   const mounted = await mountRealistic(t, state);
   const component = await loadRealisticComponent('RealisticTable.vue');
-  assert.deepEqual(component.emits, ['next-round', 'copy-invite']);
+  assert.deepEqual(component.emits, ['next-round', 'copy-invite', 'controls-target']);
   const win = realisticNodes(mounted.root, (node) => node.props['data-win-seat'] === 1)[0];
   const serialized = JSON.stringify(realisticNodes(win, () => true).map(({ props, text }) => ({ props, text })));
   assert.doesNotMatch(serialized, /九筒|mahjong-photo/);
@@ -356,17 +410,31 @@ test('keyboard pan springs home on keyup and viewport focus loss', async (t) => 
   assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
 });
 
-// 三人省掉北席人物留白，四人仅保留真实前置头像高度；两者桌面仍用同一1000平方坐标。
-// Three players reclaim the vacant north portrait gutter; both counts retain the same1000-square table coordinates.
-test('real table fits a compact scene specific to the occupied physical seats', async (t) => {
+// 全部视角共享斜视房间；三人换到侧家时真的出现北家，不能只换名字或裁掉对家。
+// All viewpoints share the seated room; a side player's three-seat view truly gains an opposite actor, not only renamed labels.
+test('real table preserves physical seats and the whole room through every viewpoint', async (t) => {
   realisticBrowser(t);
   const mounted = await mountRealistic(t);
-  assert.deepEqual(mounted.scope.scene, { width: 1360, height: 1160, tableX: 180, tableY: 80 });
-  assert.equal(mounted.scope.sceneStyle['--realistic-table-y'], '80px');
-  mounted.props.state = realisticFixture(4);
-  await Vue.nextTick();
-  assert.deepEqual(mounted.scope.scene, { width: 1360, height: 1250, tableX: 180, tableY: 200 });
-  assert.equal(mounted.scope.sceneStyle['--realistic-table-y'], '200px');
+  const expected = [
+    [[0, 'south'], [2, 'right'], [1, 'left']],
+    [[1, 'south'], [0, 'right'], [2, 'north']],
+    [[2, 'south'], [1, 'north'], [0, 'left']],
+  ];
+  for (const count of [3, 4]) {
+    for (let ownSeat = 0; ownSeat < count; ownSeat++) {
+      const state = realisticFixture(count);
+      state.you = state.game.mySeat = ownSeat;
+      mounted.props.state = state;
+      await Vue.nextTick();
+      assert.deepEqual(mounted.scope.scene, { width: 1360, height: 1700, focusHeight: 950 });
+      const planes = realisticNodes(mounted.root, (node) => node.props['data-realistic-seat'] !== undefined);
+      assert.equal(planes.length, count);
+      const positions = planes.map((node) => [node.props['data-realistic-seat'], node.props['data-position']]);
+      if (count === 3) assert.deepEqual(positions, expected[ownSeat]);
+      assert.equal(positions.find(([seat]) => seat === ownSeat)[1], 'south');
+      assert.match(mounted.scope.tableProjectionStyle.transform, /^matrix3d\(/);
+    }
+  }
 });
 
 // 同次轮询带来的多条事件不能立刻覆盖同一人物；延迟回调也必须被后台/换局清理。
@@ -387,4 +455,104 @@ test('batched actor starts follow flight order and never start after background 
   await Vue.nextTick();
   assert.deepEqual(mounted.scope.characterActions, {});
   assert.deepEqual(mounted.scope.flights, []);
+});
+
+// 本人是第一人称位置，不能重复放正面小人；观众没有本人身份，仍可看公开南家人物。
+// Self occupies a first-person viewpoint without a duplicate facing actor; spectators have no self and retain the public south actor.
+test('self actor is replaced only by its approved identity-specific POV and spectators retain public actors', async (t) => {
+  realisticBrowser(t);
+  const { realisticCharacterView } = await import('../src/realistic-character-catalog.js');
+  const { realisticPovModel } = await import('../src/realistic-character-body.js');
+  const ids = ['sweet', 'elegant', 'landlord', 'honest'];
+  const mounted = await mountRealistic(t, realisticFixture(4), {
+    characterForPlayer: (seat) => ({ id: ids[seat], name: `合成角色${seat}`, portrait: '/synthetic.png' }),
+  });
+  const hasClass = (node, name) => String(node.props.class || '').split(/\s+/).includes(name);
+  for (let seat = 0; seat < 4; seat++) {
+    const state = realisticFixture(4);
+    state.you = state.game.mySeat = seat;
+    mounted.props.state = state;
+    await Vue.nextTick();
+    const south = realisticNodes(mounted.root, (node) => hasClass(node, 'realistic-player-south'))[0];
+    assert.equal(realisticNodes(south, (node) => hasClass(node, 'realistic-character')).length, 0);
+    assert.equal(realisticNodes(mounted.root, (node) => hasClass(node, 'realistic-character')).length, 3);
+    const expected = realisticPovModel(realisticCharacterView(ids[seat], 'south'));
+    const povs = realisticNodes(mounted.root, (node) => hasClass(node, 'realistic-self-pov'));
+    assert.equal(povs.length, expected ? 1 : 0, 'missing approval never borrows another character or front-facing body');
+    if (expected) {
+      const image = realisticNodes(povs[0], (node) => node.tag === 'image')[0];
+      assert.equal(image.props.href, expected.url);
+      assert.equal(povs[0].props.viewBox, expected.viewBox);
+    }
+  }
+  const spectator = realisticFixture(4);
+  spectator.viewerRole = 'spectator'; spectator.you = null; spectator.game.mySeat = null;
+  delete spectator.game.players[0].hand;
+  mounted.props.state = spectator;
+  await Vue.nextTick();
+  assert.equal(realisticNodes(mounted.root, (node) => hasClass(node, 'realistic-self-pov')).length, 0);
+  assert.equal(realisticNodes(mounted.root, (node) => hasClass(node, 'realistic-character')).length, 4);
+});
+
+// 桌下按钮产生稳定查看位置；从该位置拖拽使用当前pan，不能第一帧跳回零点再计算偏移。
+// The under-table button holds its view; dragging begins at current pan rather than jumping to zero before adding movement.
+test('under-table button holds framing, drags from its current pan, and resets with release or Full table', async (t) => {
+  realisticBrowser(t);
+  const { clampRealisticScenePan } = await import('../src/realistic-table-perspective.js');
+  const mounted = await mountRealistic(t);
+  const textOf = (node) => node.text + node.children.map(textOf).join('');
+  const button = (text) => realisticNodes(mounted.root, (node) => node.tag === 'button' && textOf(node) === text)[0];
+  const viewport = realisticNodes(mounted.root, (node) => String(node.props.class).includes('realistic-viewport'))[0];
+  const controls = realisticNodes(mounted.root, (node) => node.props.id === 'realistic-private-controls')[0];
+  button('桌下').props.onClick();
+  await Vue.nextTick();
+  const under = { ...mounted.scope.pan };
+  assert.ok(under.y < 0);
+  assert.equal(mounted.scope.dragging, false);
+  button('桌下').props.onClick();
+  await Vue.nextTick();
+  assert.deepEqual(mounted.scope.pan, under, 'repeated under-table clicks are idempotent');
+  mounted.props.state.game.revision++;
+  await Vue.nextTick();
+  assert.deepEqual(mounted.scope.pan, under, 'ordinary snapshot updates do not cancel the stable view');
+  viewport.props.onPointerdown({ button: 0, pointerId: 24, clientX: 50, clientY: 100, target: viewport });
+  viewport.props.onPointermove({ pointerId: 24, clientX: 80, clientY: 180 });
+  assert.deepEqual(mounted.scope.pan, clampRealisticScenePan({ x: under.x + 30, y: under.y + 80 }, 900, 700, mounted.scope.zoom));
+  assert.equal(viewport.hasPointerCapture(24), true);
+  viewport.props.onPointerup({ pointerId: 24 });
+  await Vue.nextTick();
+  assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
+  assert.equal(viewport.hasPointerCapture(24), false);
+  mounted.scope.zoom = 2;
+  await Vue.nextTick();
+  button('桌下').props.onClick();
+  await Vue.nextTick();
+  button('全桌').props.onClick();
+  await Vue.nextTick();
+  assert.equal(mounted.scope.zoom, 1);
+  assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
+  assert.equal(realisticNodes(mounted.root, (node) => node.props.id === 'realistic-private-controls')[0], controls, 'camera changes preserve the live Teleport destination');
+});
+
+// 查看中resize或私有键盘/触摸交互不得复制目标或抢走原生横滚；viewport pan只响应场景输入。
+// Resize keeps the live target; private keyboard/touch input retains native scrolling rather than becoming a scene drag.
+test('under-table resize resets camera without replacing controls and private input does not pan', async (t) => {
+  const browser = realisticBrowser(t);
+  const mounted = await mountRealistic(t);
+  const controls = realisticNodes(mounted.root, (node) => node.props.id === 'realistic-private-controls')[0];
+  const viewport = realisticNodes(mounted.root, (node) => String(node.props.class).includes('realistic-viewport'))[0];
+  mounted.scope.viewUnderTable();
+  assert.ok(mounted.scope.pan.y < 0);
+  browser.observers[0].callback([]);
+  await Vue.nextTick();
+  assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
+  assert.equal(realisticNodes(mounted.root, (node) => node.props.id === 'realistic-private-controls')[0], controls);
+  const privateTarget = { closest: () => controls };
+  let prevented = false;
+  viewport.props.onKeydown({ key: 'ArrowRight', target: privateTarget, preventDefault() { prevented = true; } });
+  viewport.props.onPointerdown({ button: 0, pointerId: 44, clientX: 0, clientY: 0, target: privateTarget });
+  viewport.props.onPointermove({ pointerId: 44, clientX: 100, clientY: 100 });
+  assert.equal(prevented, false, 'private arrow keys remain native');
+  assert.equal(viewport.hasPointerCapture(44), false);
+  assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
 });

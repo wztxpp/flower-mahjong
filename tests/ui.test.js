@@ -5600,6 +5600,7 @@ test('unmuting never voices events received while muted', async () => {
   assert.equal(scope.localPresentationBusy.value, false);
   assert.equal(scope.state.value.revision, snapshot.revision);
   scope.resetRoomContext();
+  await settlePlayback();
 });
 
 // 很长的积压只由明确按钮略过，不悄悄丢播；略过不改权威历史或积分。
@@ -5608,7 +5609,14 @@ test('long local backlog offers explicit skip while preserving authority', async
   const scope = setup(fixture({ schemaVersion: 3 }));
   const snapshot = localPlaybackFixture(scope);
   for (let index = 1; index < 9; index++) snapshot.game.history.push({ type: 'discard', seat: index % 3, tile: index });
-  scope.characterAudio.enqueueOrdered = () => new Promise(() => {});
+  // 略过必须能取消假音频并释放真实Node Web Lock；永不完成的Promise会污染后续测试。
+  // Skipping must cancel fake audio and release Node's real Web Lock; an unresolvable promise poisons later tests.
+  let finishAudio;
+  const originalClear = scope.characterAudio.clear.bind(scope.characterAudio);
+  scope.characterAudio.enqueueOrdered = (events) => new Promise((resolve) => {
+    finishAudio = () => resolve({ events: events.map(({ eventKey }) => ({ eventKey, status: 'cancelled' })) });
+  });
+  scope.characterAudio.clear = () => { originalClear(); finishAudio?.(); };
   scope.applyState(snapshot);
   assert.equal(scope.pendingPresentationCount.value, 9);
   assert.match(await render(scope), /待播 9 段 · 略过并看最新牌面/);

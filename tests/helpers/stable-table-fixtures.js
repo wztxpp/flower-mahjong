@@ -163,3 +163,25 @@ export function stableTableSnapshot(caseId, stageId, characterId = 'sweet') {
   if (finished) snapshot.state.game.roundSummary = terminalSummaryFixture(snapshot.state);
   return snapshot;
 }
+
+// 仅供隔离浏览器切换观看席位：复制合成快照，把同一份虚构私有手牌交给所选席位，绝不读取对手暗手。
+// Isolated viewing-seat switch: clone the synthetic view and assign its invented private rack to the selected seat, never reading opponent hands.
+export function stableTableSeatSnapshot(snapshot, seat = 0) {
+  const result = structuredClone(snapshot);
+  const { state } = result;
+  if (state.viewerRole === 'spectator') return result;
+  const players = state.game.players;
+  if (!Number.isInteger(seat) || !players.some((player) => player.seat === seat)) return result;
+  const previousSeat = state.game.mySeat;
+  const hand = players.find((player) => player.seat === previousSeat)?.hand;
+  for (const player of players) delete player.hand;
+  const viewer = players.find((player) => player.seat === seat);
+  viewer.hand = [...(hand || [])];
+  viewer.handCount = viewer.hand.length;
+  state.you = seat;
+  state.game.mySeat = seat;
+  // 只保留原合成桌的几何/公开座位；换位后的按钮不冒充该座位真实可用的动作。
+  // Preserve public seats/geometry, clearing fabricated actions rather than claiming another seat's real permissions.
+  if (seat !== previousSeat) state.game.legalActions = [];
+  return result;
+}

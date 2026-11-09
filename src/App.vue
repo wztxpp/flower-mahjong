@@ -43,6 +43,9 @@ const DEPARTURES_KEY = 'huajian-mahjong-departures-v1';
 // 真实桌只是本机展示偏好，不写入房间规则；切换不重建会话、不清空已选手牌。
 // Realistic mode is a local view preference, never a room rule; switching preserves sessions and selected tiles.
 const tablePresentation = ref('classic');
+// 真实DOM目标就绪后才移动原控件；每次切换都取得新元素，避免Teleport复用已卸载的旧目标。
+// Move original controls only after the real DOM target is ready; every switch receives a fresh element instead of a detached target.
+const realisticControlsTarget = ref(null);
 function chooseTablePresentation(value) {
   if (!['classic', 'realistic'].includes(value)) return;
   if (tablePresentation.value !== value) resetRealisticPresentation();
@@ -2953,13 +2956,14 @@ onUnmounted(() => {
         · 神龙 <template v-if="exponentialDragon">{{ tableDragonStartCount }}张起10分，每多一张翻倍</template>
         <template v-else>保留旧局6/7/8张分表</template>
       </p>
-      <!-- 新桌只替换公开场景；下方原手牌/动作组件保持挂载，权限和选择路径不变。
-           Replace only the public scene; original hand/action components remain mounted with their existing authority and selection paths. -->
-      <RealisticTable v-if="game && tablePresentation === 'realistic'" :state="state"
+      <!-- 真实桌内的近沿容器接收同一份私有控件；Teleport只移动DOM，不重建选择或复制服务端动作。
+           The realistic near edge receives the same private controls; Teleport moves DOM without rebuilding selection or duplicating server actions. -->
+      <RealisticTable v-if="game && tablePresentation === 'realistic'" :state="state" @controls-target="realisticControlsTarget = $event"
+        :has-private-controls="!isSpectator && me?.isCurrentParticipant !== false && Array.isArray(me?.hand)"
         :presentation-frame="realisticPresentationFrame" :can-configure-start="canConfigureStart" :has-private-feedback="!isChengduRoom && !isSpectator" @copy-invite="copyInvite"
         :character-for-player="characterForPlayer" :status="statusTitle" :blocked="busy || offline || syncing || presentationWaiting"
         @next-round="openNextRound" />
-      <ChengduTable v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" @next-round="openNextRound" />
+      <ChengduTable :controls-target="realisticControlsTarget" :realistic="tablePresentation === 'realistic'" v-if="isChengduRoom && game" :state="state" :blocked="busy || offline || syncing || presentationWaiting" :can-start="canStart" :character-for-player="characterForPlayer" @action="mutate" @start="mutate(null, true)" @next-round="openNextRound" />
       <div v-else class="play-layout" :class="{ 'four-player-table': !isSpectator && tablePlayerCount === 4 }">
         <section class="table-column" :aria-label="`${tablePlayerCount}人麻将牌桌`">
           <div class="table-surface" :class="{ 'lobby-table': phase === 'lobby' }">
@@ -3240,6 +3244,7 @@ onUnmounted(() => {
 
           <!-- 手牌留在桌面，主角在操作区下方独立占位；不把人物铺到牌或按钮背后。
                Keep cards on the table and give the character its own space below controls, never behind tiles or buttons. -->
+          <Teleport :to="realisticControlsTarget" :disabled="tablePresentation !== 'realistic' || !game || !realisticControlsTarget">
           <div v-if="!isSpectator && game" class="own-player-area"
             :class="`character-${characterForPlayer(mySeat, true).id}`">
           <!-- 只有本局参与者才显示私有手牌和动作，新落座的下一局玩家不能操作旧局。 / Only current-game participants see the private hand/actions; newly seated next-round players cannot act in the old round. -->
@@ -3425,6 +3430,7 @@ onUnmounted(() => {
               :character="characterForPlayer(mySeat, true)" /></div>
           </figure>
           </div>
+          </Teleport>
           <!-- 状态、结束操作和本人身份按DOM顺序放在主桌面末端；大厅仍在原位置使用同一身份摘要。
                Status, end-of-round controls and own identity follow the main table in DOM order; the lobby keeps the same summary in its original place. -->
           <footer v-if="game || !isSpectator" class="table-info-footer"
