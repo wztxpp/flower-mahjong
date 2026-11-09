@@ -143,3 +143,12 @@ Apply a mode and real viewport width/height before loading a normal, missing-fie
 
 “记录弹层DOM”输出真实边界、唯一内容滚动区的client/scroll尺寸、玩家文字、details状态和当前焦点，不改焦点或滚动。外层可见JSON保持有界，完整数据留在原始JSON节点。人工验证Tab/Shift+Tab首尾循环、Escape、关闭恢复、长胡牌详情展开/收起、320px换行、420px短屏底部按钮可达。正式验收前冻结src与预览代码，重启服务器并reload；HMR重挂App会清空隔离session，不能把热更新造成的重置当成生产离桌。此夹具不能证明真实开局请求或生产网络成功，相关行为由已有模拟请求及API回归覆盖。
 The measurement button records real geometry, scroll dimensions, text, details and focus without changing them. Perform actual key and visual checks separately. Freeze source/preview files, restart and reload before final acceptance: HMR remounts clear the isolated session and are not evidence of a production departure bug. This fixture cannot establish real starts or production network success; existing request/API tests cover those contracts.
+
+
+## 按需动作浮层纯视图检查 / On-demand action diagnostics
+
+选择玩法/宽度后先切换合成画面。“操作层焦点撤下检查”在iframe内聚焦真实操作区/按钮，然后只换同实例合成快照，检查等待、已回应、只撤胡保留过、busy禁用再撤下、其他工具/结算接管及换局。每项保留前后尺寸/scrollY、旧节点连接性、最终焦点及禁用后的原生焦点。外层按钮先抢焦点不算通过；诊断会重新在帧内建立焦点。
+After applying a mode/width, the focus diagnostic focuses actual in-frame controls, then changes only synthetic snapshots in the same instance. It records idle/answered/replacement, busy-disable removal, newer tools/dialogs and new-round transitions with geometry, scrollY, connection and native focus. An outer click stealing focus is not a pass; the frame establishes actual focus itself.
+
+“选中手牌并检查安全间距”仅点击已放行的私有牌选择，记录真正 aria-pressed、transform、内描边和dock/牌上缘间距。牌桌中也只允许该本地选择，不能点确认出牌、胡碰杠过、准备提交、开局或离桌。客户端fetch与服务端所有API方法403边界不变。分别实测1280/390/320px、普通和多动作首尾、选中/hover/键盘、普通公开牌/长公开牌回看；原生focus与实体手机/Safari/Firefox验证不得混称。
+The selection diagnostic clicks only the allowed private-hand selector and reports actual selected state, transform, inset outline and clearance. Every game/preparation confirmation/start/departure remains blocked, with unchanged client/server API isolation. Measure each viewport and normal/long actions/cards, selection/hover/keys separately; native desktop focus is not hardware-phone or other-browser proof.

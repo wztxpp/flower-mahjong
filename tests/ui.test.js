@@ -6870,17 +6870,17 @@ test('Flower footer preserves one public status/claim and original finish contro
       const html = await render(scope);
       const footer = html.indexOf('class="table-info-footer');
       assert.ok(footer >= 0);
-      assert.equal((html.match(/class="claim-slot stable-scroll"/g) || []).length, 1);
+      assert.equal((html.match(spectator ? /class="claim-slot stable-scroll"/g : /class="passive-claim"/g) || []).length, 1);
       assert.equal((html.match(/class="game-status"/g) || []).length, 1);
       assert.ok(html.indexOf('class="game-status"') > footer);
-      const claim = html.indexOf('class="claim-slot stable-scroll"');
+      const claim = html.indexOf(spectator ? 'class="claim-slot stable-scroll"' : 'class="passive-claim"');
       if (spectator) {
         assert.ok(claim > footer);
         assert.doesNotMatch(html, /own-seat-summary|我的手牌与操作/);
       } else {
-        assert.ok(claim < footer && claim < html.indexOf('class="my-hand"'));
+        assert.ok(claim < footer && claim > html.indexOf('class="my-hand"'));
         assert.ok(claim > html.indexOf('class="hand-action-dock"'));
-        assert.ok(claim < html.indexOf('class="action-row"'));
+        assert.ok(claim > html.indexOf('class="action-row"'));
         assert.equal((html.match(/class="[^"]*\bown-seat-summary\b/g) || []).length, 1, 'one own identity summary remains');
       }
       scope.state.value = { ...state, phase: 'finished', game: { ...state.game, phase: 'finished', claim: null, legalActions: [] } };
@@ -7500,7 +7500,8 @@ test('Flower upper-right dock preserves own/other-turn, claim, answered and bloc
     assert.equal(dock.includes('轮到你了'), entry.own, 'claim responders are not mislabeled as current turn');
     if (blocked) assert.ok(buttons.every((button) => /\bdisabled\b/.test(button[1])));
     assert.doesNotMatch(dock, /等待牌友/);
-    assert.ok(dock.includes('tabindex="0"'));
+    assert.equal(html.includes('class="hand-action-dock"'), entry.expected.length > 0, 'idle/answered states remove the entire action overlay');
+    if (entry.expected.length) assert.ok(dock.includes('tabindex="0"'));
     scope.resetRoomContext();
   }
 });
@@ -7514,7 +7515,7 @@ test('Flower dock keeps a mandatory out-of-turn hu and rob-kong context from the
     const html = (await render(scope)).replace(/<!--[\s\S]*?-->/g, '');
     const dock = html.slice(html.indexOf('class="hand-action-dock"'), html.indexOf('class="hand-scroll'));
     assert.equal((dock.match(/<button\b/g) || []).length, 1); assert.match(dock, /胡牌/); assert.doesNotMatch(dock, /轮到你了/);
-    if (kind === 'robKong') assert.match(dock, /正在加杠/);
+    if (kind === 'robKong') assert.match(html, /class="passive-claim"[^>]*>[^<]*正在加杠/);
     scope.resetRoomContext();
   }
 });

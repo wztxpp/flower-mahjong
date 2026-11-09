@@ -1,5 +1,8 @@
 # 从这里开始读代码 / Start reading here
 
+按需操作浮层当前合同：[OVERLAY-HAND-ACTIONS.md](OVERLAY-HAND-ACTIONS.md)。维护路径为 `App.vue / ChengduTable.vue → tabletop.css`，专项仍在 `hand-action-dock`、`ui`、`chengdu-ui`、`invitation-copy`、`stable-table-layout/fixture`；该合同替代旧常驻92/132px动作槽说明。
+The current overlay contract owns the existing component/style/test path, superseding the former permanent92/132px action reservation.
+
 终局总览当前验收：[FINISHED-ROUND-SUMMARY-20261108.md](qa/FINISHED-ROUND-SUMMARY-20261108.md) 与同目录浏览器JSON，记录权威隐私门、完整测试和窄屏/键盘范围。
 Current terminal-overview acceptance records the authoritative privacy gate, complete checks and narrow-screen/keyboard scope in the linked report and companion JSON.
 

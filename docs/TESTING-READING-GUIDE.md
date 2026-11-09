@@ -1,5 +1,8 @@
 # 测试阅读指南 / Test reading guide
 
+当前动作布局以 [按需操作浮层](OVERLAY-HAND-ACTIONS.md) 为准，替代本文历史68px行/92或132px常驻动作槽的结构要求。原稳定牌河/记录/手牌契约不变。新增同实例撤层焦点回归与可见浏览器focus/选牌诊断，不把内存DOM的disabled行为冒充原生浏览器。
+The current overlay contract supersedes historical permanent action-row/dock reservations below while preserving river/record/hand stability. Mounted focus regressions and visible browser focus/selection diagnostics remain separate evidence, especially for native disabled-button blur.
+
 当前原图动效测试为 `tests/portrait-motion-{settings,controller,component,renderer,timeline,geometry,build}.test.js`，浏览器诊断入口为 `tests/browser/portrait-motion-preview.{html,js}`、`portrait-motion-preview-server.mjs`、`tests/helpers/portrait-motion-browser-audit.js`。前者验证真实逻辑/组件/构建合同，后者才验证Canvas2D像素和实际屏幕。旧 `live2d-*` 剩余套件保留离线历史，不代表生产使用SDK。完整范围见 [原图局部动效](PORTRAIT-MOTION.md)。
 Current portrait-motion suites verify real logic/components/build contracts; the browser preview/audit helpers verify actual Canvas2D pixels and screens. Remaining old Live2D suites are offline history, not evidence of SDK use in production.
 

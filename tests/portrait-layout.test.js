@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parse } from '@vue/compiler-sfc';
+import { parse, compileStyle } from '@vue/compiler-sfc';
 
 // 只读遍历编译器的原模板AST；静态class选择结构，动态身份/动作仍由真实组件测试覆盖。
 // Walk the compiler's source-template AST read-only; static classes select structure, while component tests cover dynamic identity/actions.
@@ -58,5 +58,17 @@ test('portrait frames are tall at desktop and mobile widths without own-backgrou
   assert.match(current, /@media \(max-width: 640px\)\s*\{\s*\.character-portrait \{ height: clamp\(180px, 48vw, 240px\)/);
   assert.match(current, /\.own-character-art\s*\{[^}]*aspect-ratio: 1254 \/ 1050;[^}]*overflow: clip;/);
   assert.match(current, /\.own-character-scene\s*\{[^}]*position: static;[^}]*width: 100%;[^}]*height: 100%;/);
-  assert.doesNotMatch(current, /has-character-scene|position: absolute|z-index:/);
+  assert.doesNotMatch(current, /has-character-scene/);
+  // 后置动作浮层允许absolute；禁止绝对定位的是本人场景外容器和人物画框，不是所有后续样式。
+  // Later action overlays may be absolute; the own scene container and portrait frames must stay in flow.
+  const compiled = compileStyle({ source: current, filename: 'tabletop.css', id: 'portrait' });
+  assert.deepEqual(compiled.errors, []);
+  compiled.rawResult.root.walkRules((rule) => {
+    if (rule.selectors.some((selector) => /\.(?:own-player-area|own-character-(?:display|art|scene)|character-portrait)(?:\s*>\s*(?:img|\.character-artwork))?\s*$/.test(selector))) {
+      for (const declaration of rule.nodes.filter((node) => node.type === 'decl')) {
+        assert.notEqual(declaration.prop, 'z-index', `portrait rule ${rule.selector} cannot become an overlay`);
+        if (declaration.prop === 'position') assert.notEqual(declaration.value, 'absolute', `portrait rule ${rule.selector} stays in flow`);
+      }
+    }
+  });
 });

@@ -24,17 +24,17 @@ function lastRule(compiled, selector, media = null) {
 
 for (const [name, descriptor, handClass, actionsClass] of [
   ['Flower', app, 'hand-scroll', 'action-row'], ['Chengdu', chengdu, 'chengdu-hand', 'chengdu-action-bar'],
-]) test(`${name} reserves a normal-flow dock before tiles without hiding out-of-turn actions`, () => {
+]) test(`${name} mounts its dock only for actual buttons without hiding out-of-turn actions`, () => {
   const dock = find(descriptor.template.ast, 'hand-action-dock');
   const hand = find(descriptor.template.ast, handClass);
   const actions = find(dock, actionsClass);
   assert.ok(dock.loc.end.offset < hand.loc.start.offset);
   assert.ok(find(dock, 'hand-turn-prompt'));
-  assert.equal(dock.props.some((entry) => entry.type === 7 && ['if', 'show'].includes(entry.name)), false);
+  assert.equal(dock.props.find((entry) => entry.type === 7 && entry.name === 'if')?.exp.content, 'hasHandActions');
   assert.equal(actions.props.some((entry) => entry.type === 7 && ['if', 'show'].includes(entry.name)), false);
   assert.match(actions.loc.source, /tabindex="0"/);
   assert.match(actions.loc.source, /aria-label=/);
-  assert.doesNotMatch(actions.loc.source, /v-(?:if|show)="(?:isMyTurn|.*currentSeat)/);
+  assert.equal(actions.props.some((entry) => entry.type === 7 && ['if', 'show'].includes(entry.name)), false, 'own-turn cue never gates the action run');
   assert.equal(nodes(dock).some((entry) => /^h[1-6]$/.test(entry.tag)), false, 'no replacement heading or frame clutter');
 });
 
@@ -43,26 +43,54 @@ test('frameless rack and intrinsic-width lists preserve safe centering in both m
   const rack = lastRule(tabletop, '.own-player-area .character-hand-table');
   assert.deepEqual(rack, { background: 'transparent', border: '0', 'border-radius': '0', 'box-shadow': 'none' });
   for (const [compiled, selector] of [[tabletop, '.own-player-area .my-hand'], [chengduStyle, '.chengdu-hand-tiles']]) {
-    const list = lastRule(compiled, selector);
+    const list = {};
+    compiled.rawResult.root.walkRules((rule) => { if (rule.selector === selector && rule.parent.type !== 'atrule') Object.assign(list, properties(rule)); });
     assert.equal(list.width, 'max-content'); assert.equal(list['min-width'], '0'); assert.equal(list['margin-inline'], 'auto');
     assert.notEqual(list['justify-content'], 'center', 'overflow cannot be centered into negative coordinates');
   }
-  assert.equal(lastRule(chengduStyle, '.chengdu-own-area .chengdu-hand').display, 'block');
+  const handStyle = {};
+  chengduStyle.rawResult.root.walkRules((rule) => { if (rule.selector === '.chengdu-own-area .chengdu-hand') Object.assign(handStyle, properties(rule)); });
+  assert.equal(handStyle.display, 'block');
+  assert.equal(handStyle.height, '114px');
   const phone = lastRule(tabletop, '.own-player-area .hand-scroll', '(max-width: 640px)');
-  assert.equal(phone.height, '100px'); assert.equal(phone['padding-bottom'], '8px', 'leave scrollbar capacity without removing the selection lift at the top');
+  assert.equal(phone.height, '100px'); assert.equal(phone.padding, '28px 4px 6px', 'balance selection clearance, tile shadows and native scrollbar capacity inside the unchanged hand height');
 });
 
-test('dock capacity is constant per viewport, outside the tile row, with full-width phone actions', () => {
-  const desktop = lastRule(tabletop, '.own-player-area .hand-action-dock');
-  const phone = lastRule(tabletop, '.own-player-area .hand-action-dock', '(max-width: 640px)');
-  assert.equal(desktop.display, 'grid'); assert.equal(desktop.height, '92px'); assert.equal(desktop['grid-template-rows'], '24px 68px');
-  assert.equal(phone.height, '132px'); assert.equal(phone['grid-template-rows'], '64px 68px');
-  for (const rule of [desktop, phone]) assert.equal(rule.position, undefined, 'the dock cannot cover tiles or leave flow');
-  const phoneActions = lastRule(tabletop, '.own-player-area .hand-action-dock > .action-row,\n.own-player-area .hand-action-dock > .chengdu-action-bar', '(max-width: 640px)');
-  assert.equal(phoneActions['grid-column'], '1 / -1');
+// 浮层必须真正脱离流且无替代占位；数值只是样式合同，重叠/影子仍由浏览器量测。
+// Require real out-of-flow controls with no substitute spacer; numeric contracts do not replace browser overlap/shadow measurements.
+test('dock reuses existing edge space without any replacement flow height', () => {
+  const dock = lastRule(tabletop, '.own-player-area .hand-action-dock');
+  assert.equal(dock.position, 'absolute');
+  assert.equal(dock.bottom, 'calc(100% - 24px)');
+  assert.equal(dock.height, '54px');
+  assert.equal(dock['inset-inline'], '0');
+  assert.equal(dock['pointer-events'], 'none');
+  const wrapper = lastRule(tabletop, '.own-player-area .hand-interaction-area');
+  assert.deepEqual(wrapper, { position: 'relative', 'min-width': '0' });
+  assert.equal(lastRule(tabletop, '.own-public-slot').height, '80px');
+  const publicCards = lastRule(tabletop, '.own-player-area .own-public-slot > .own-public-cards');
+  assert.equal(publicCards.height, '50px');
+  assert.equal(publicCards.padding, '0 4px 6px');
+  const run = lastRule(tabletop, '.own-player-area .hand-action-dock > .action-row,\n.own-player-area .hand-action-dock > .chengdu-action-bar');
+  assert.equal(run.height, '54px');
+  assert.equal(run.padding, '0');
+  assert.equal(run['pointer-events'], 'auto');
   const buttons = lastRule(tabletop, '.own-player-area .hand-action-dock .button');
-  assert.equal(buttons['min-height'], '44px'); assert.equal(buttons['min-width'], '44px');
-  assert.ok(lastRule(tabletop, '.own-player-area .hand-action-dock .button:focus-visible').outline);
+  assert.equal(buttons['min-height'], '44px');
+  assert.equal(buttons['min-width'], '44px');
+  assert.equal(buttons.height, '44px');
+  const turnCue = lastRule(tabletop, '.hand-action-dock .hand-turn-prompt');
+  assert.equal(turnCue.height, '44px'); assert.equal(turnCue['max-height'], '44px');
+  assert.equal(turnCue.display, 'flex'); assert.equal(turnCue['align-items'], 'center');
+  assert.equal(turnCue['line-height'], '1', 'inline cue baselines cannot add vertical overflow above the horizontal scrollbar');
+  assert.equal(lastRule(tabletop, '.own-player-area .hand-action-dock .button:focus-visible')['outline-offset'], '-3px');
+  assert.equal(lastRule(tabletop, '.own-player-area .character-hand-table .tile-selected').transform, 'translateY(-2px)');
+  assert.equal(lastRule(tabletop, '.own-player-area .character-hand-table .tile-interactive:hover:not(:disabled)').transform, 'translateY(-2px)');
+  assert.equal(lastRule(tabletop, '.own-player-area .character-hand-table .tile-selected::after').bottom, '3px', 'the selection dot remains inside the tile rather than in the scrollbar');
+  assert.equal(lastRule(tabletop, '.own-player-area .character-hand-table .tile-interactive:focus-visible')['outline-offset'], '-3px');
+  assert.equal(lastRule(chengduStyle, '.chengdu-hand-note-content').height, '24px');
+  assert.equal(lastRule(chengduStyle, '.chengdu-own-area .chengdu-hand').padding, '34px 4px 6px');
+  assert.doesNotMatch(source('src/tabletop.css'), /scrollbar-width:\s*none/);
 });
 
 // WCAG相对亮度只检查本文件的固定颜色，不读取或执行任何来自玩家的CSS。

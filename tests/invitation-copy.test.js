@@ -149,12 +149,17 @@ const textOf = (node) => node.text + node.children.map(textOf).join("");
 // 构造内存 DOM 节点与最小焦点/选中文本接口，使复制按钮走真实组件处理函数。
 // Build an in-memory DOM node with minimal focus/selection APIs so copy buttons invoke real component handlers.
 function hostNode(tag, text = "") {
-  return {
+  return Vue.markRaw({
     tag,
     text,
     children: [],
     parent: null,
     props: {},
+    // 节点连接性来自真实host父链；浮层撤下时子按钮也必须被视为断开。
+    // Derive connection from the host parent chain, including descendants of a removed overlay.
+    get isConnected() { return this.tag === 'root' || Boolean(this.parent?.isConnected); },
+    get disabled() { return Boolean(this.props.disabled); },
+    contains(candidate) { for (let node = candidate; node; node = node.parent) if (node === this) return true; return false; },
     selectionStart: 0,
     selectionEnd: 0,
     addEventListener() {},
@@ -169,11 +174,13 @@ function hostNode(tag, text = "") {
           .some(
             (part) =>
               part.trim() === node.tag ||
+              (part.trim() === `${node.tag}:not(:disabled)` && !node.props.disabled) ||
               (part.trim() === '[tabindex="0"]' && node.props.tabindex === "0"),
           ),
       );
     },
-    focus() {
+    focus(options) {
+      this.focusOptions = options;
       document.activeElement = this;
       this.props.onFocus?.({
         target: this,
@@ -188,7 +195,7 @@ function hostNode(tag, text = "") {
       // Clear focus only when this node owns it, so a stale blur cannot erase newer focus.
       if (document.activeElement === this) document.activeElement = null;
     },
-  };
+  });
 }
 // 下列宿主操作模拟 DOM 插入、删除与属性更新，覆盖 Vue patch 流程但不执行浏览器布局或绘制。
 // These host operations simulate DOM insertion/removal/property updates, exercising Vue patching without browser layout or paint.
@@ -208,6 +215,9 @@ const renderer = Vue.createRenderer({
     node.parent?.children[node.parent.children.indexOf(node) + 1] || null,
   patchProp: (node, key, before, value) => {
     node.props[key] = value;
+    // 模拟原生disabled使按钮失焦，覆盖watch更新前捕获；真实浏览器另验证其原生行为。
+    // Model disabled-button blur to exercise pre-patch capture; independent browser checks verify native behavior.
+    if (key === 'disabled' && value && document.activeElement === node) document.activeElement = document.body;
   },
   insert(node, parent, anchor = null) {
     // 仅在节点已挂到父级时移除旧引用，未挂载节点无需删除。
@@ -224,6 +234,7 @@ const renderer = Vue.createRenderer({
   remove(node) {
     // 仅在节点已挂到父级时移除旧引用，未挂载节点无需删除。
     // Remove the old reference only for a parented node; unmounted nodes need no detachment.
+    if (node.contains(document.activeElement)) document.activeElement = document.body;
     if (node.parent)
       node.parent.children.splice(node.parent.children.indexOf(node), 1);
     node.parent = null;
@@ -340,6 +351,8 @@ function setup({
   });
   const root = hostNode("root");
   app.mount(root);
+  document.querySelector = (selector) => selector === '[aria-modal="true"]'
+    ? findAll(root, (node) => node.props['aria-modal'] === true || node.props['aria-modal'] === 'true')[0] || null : null;
   mounted.push(app);
   const buttons = () =>
     findAll(
@@ -822,4 +835,82 @@ for (const caseId of ['flower-3', 'flower-4', 'flower-legacy-1', 'flower-legacy-
     assert.equal(findAll(root, node => String(node.props.class).includes('finished-table-hand-label')).length, 0);
     scope.resetRoomContext();
   });
+}
+
+
+// 同一真实组件实例撤下动作：保留手牌节点、无网络/代选，并拒绝抢占较新的焦点或弹层。
+// Remove actions in the same real component instance: preserve hand nodes, never send/choose, and yield to newer focus/modal ownership.
+for (const caseId of ['flower-3', 'flower-legacy-1', 'flower-legacy-2', 'chengdu-4']) {
+  for (const scenario of ['region', 'button', 'replacement', 'other-focus', 'modal', 'new-game', 'spectator']) {
+    test(`action overlay ${caseId}/${scenario} recovers only its own removed focus`, async () => {
+      const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+      const original = stableTableSnapshot(caseId, 'claim').state;
+      const { scope, root } = setup({ initialState: original });
+      await settle();
+      const hasClass = (node, name) => String(node.props.class || '').split(/\s+/).includes(name);
+      const dock = findAll(root, (node) => hasClass(node, 'hand-action-dock'))[0];
+      const hand = findAll(root, (node) => hasClass(node, 'character-hand-table'))[0];
+      const target = scenario === 'region' ? dock.children.find((node) => hasClass(node, 'action-row') || hasClass(node, 'chengdu-action-bar'))
+        : findAll(dock, (node) => node.tag === 'button')[0];
+      assert.ok(dock && hand && target);
+      target.focus();
+      const next = structuredClone(original);
+      next.game.legalActions = scenario === 'replacement' ? [{ type: 'pass' }] : [];
+      if (scenario === 'new-game') next.game.id += '-another';
+      if (scenario === 'spectator') { next.viewerRole = 'spectator'; next.you = null; next.game.mySeat = null; delete next.game.players[0].hand; }
+      let other;
+      if (scenario === 'other-focus') {
+        other = findAll(root, (node) => node.tag === 'button' && !dock.contains(node) && !hand.contains(node))[0];
+        other.focus();
+      }
+      scope.state.value = next;
+      if (scenario === 'modal') scope.showRules.value = true;
+      await settle();
+      assert.equal(target.isConnected, false, 'the test must actually remove the previously focused node');
+      if (['region', 'button', 'replacement'].includes(scenario)) {
+        assert.equal(document.activeElement, hand);
+        assert.equal(hand.isConnected, true);
+        assert.deepEqual(hand.focusOptions, { preventScroll: true });
+      } else if (scenario === 'other-focus') assert.equal(document.activeElement, other);
+      else if (scenario === 'modal') assert.equal(scope.modalRef.value.contains(document.activeElement), true);
+      else assert.notEqual(document.activeElement, hand, 'round/viewer changes must not force an old hand focus');
+      if (scenario !== 'spectator') assert.equal(findAll(root, (node) => hasClass(node, 'character-hand-table'))[0], hand, 'hand viewport remains mounted');
+      if (scenario !== 'replacement') assert.equal(findAll(root, (node) => hasClass(node, 'hand-action-dock')).length, 0);
+      scope.resetRoomContext();
+    });
+  }
+  for (const blockedState of ['busy', 'offline', 'syncing']) {
+    for (const newerFocus of [false, true]) {
+      test(`action overlay ${caseId}/${blockedState} recovers disabled focus and respects newer focus=${newerFocus}`, async () => {
+        const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+        const original = stableTableSnapshot(caseId, 'claim').state;
+        const { scope, root } = setup({ initialState: original });
+        await settle();
+        const hasClass = (node, name) => String(node.props.class || '').split(/\s+/).includes(name);
+        const dock = findAll(root, (node) => hasClass(node, 'hand-action-dock'))[0];
+        const hand = findAll(root, (node) => hasClass(node, 'character-hand-table'))[0];
+        const target = findAll(dock, (node) => node.tag === 'button' && !node.disabled)[0];
+        const other = findAll(root, (node) => node.tag === 'button' && !dock.contains(node) && !hand.contains(node))[0];
+        assert.ok(target && hand && other);
+        target.focus();
+        scope[blockedState].value = true;
+        // DOM已禁用，但恢复watch的nextTick还没运行时移焦；旧watch不能抢回来。
+        // Move focus after DOM disabling but before the recovery continuation, so the old watcher must yield.
+        if (newerFocus) Vue.queuePostFlushCb(() => other.focus());
+        await settle();
+        assert.equal(target.disabled, true, 'the real component applies its existing blocked guard');
+        assert.equal(target.isConnected, true, 'the disabled action still exists in this first update');
+        assert.equal(document.activeElement, newerFocus ? other : hand);
+        if (!newerFocus) assert.deepEqual(hand.focusOptions, { preventScroll: true });
+        const next = structuredClone(original);
+        next.game.legalActions = [];
+        scope.state.value = next;
+        await settle();
+        assert.equal(target.isConnected, false);
+        assert.equal(document.activeElement, newerFocus ? other : hand, 'later removal cannot strand or steal focus');
+        assert.equal(findAll(root, (node) => hasClass(node, 'character-hand-table'))[0], hand);
+        scope.resetRoomContext();
+      });
+    }
+  }
 }

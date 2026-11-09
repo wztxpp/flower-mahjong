@@ -274,10 +274,10 @@ The character helper distinguishes game snapshots from present occupants. Game/C
 
 ## 局内稳定视窗 / Stable in-game viewports
 
-参见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)：`App.vue` 和 `ChengduTable.vue` 把条件内容放在游戏期间常驻槽位中；`tabletop.css` 最后覆盖固定可视高度及滚动条占位。维护时不要把 `v-if` 移到空槽父级、只留下 max-height，或添加整页滚动补偿。长内容必须保留可命名、可聚焦的原生滚动入口。
+参见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)：`App.vue` 和 `ChengduTable.vue` 把条件内容放在游戏期间常驻槽位中；`tabletop.css` 最后覆盖固定可视高度及滚动条占位。维护时不要把 `v-if` 移到牌/记录空槽父级、只留下 max-height，或添加整页滚动补偿；按需动作浮层是已明确允许的例外。长内容必须保留可命名、可聚焦的原生滚动入口。
 See [stable table layout](STABLE-TABLE-LAYOUT.md): conditional content lives inside game-long slots, with final CSS fixing visible heights/gutters. Do not move conditionals onto empty parents, restore max-height-only growth or add document-scroll compensation. Long content requires named, focusable native scrolling.
 
-主牌桌底部信息由 `table-info-footer` / `chengdu-table-footer` 承载：状态、终局控制及花麻将本人身份在真实DOM中排到手牌/立绘后；成都还排在账本/动态后。玩家接牌槽紧邻手牌动作，观众公开提示在页脚。大厅身份保持原位置；不要把该移动误解为身份、私有手牌或合法动作权限变化。细节和回归见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
+主牌桌底部信息由 `table-info-footer` / `chengdu-table-footer` 承载：状态、终局控制及花麻将本人身份在真实DOM中排到手牌/立绘后；成都还排在账本/动态后。玩家完整接牌说明位于手牌下方既有信息行，观众公开提示在页脚。大厅身份保持原位置；不要把该移动误解为身份、私有手牌或合法动作权限变化。细节和回归见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
 Main-table footers place status, finish controls and Flower own identity after hand/art in real DOM order; Chengdu additionally follows its ledger/history. Player claims stay by hand actions, while spectator claims live in the footer. Lobby identity stays in place. These moves change no identity, private-hand or action permissions; see the layout guide and regressions.
 
 
@@ -301,10 +301,10 @@ River headings/counts are also no longer visible: Flower removes `discard-label`
 The close branch captures and clears `previousFocus`, then awaits the actual DOM flush before checking `epoch` and `activeModal`. A new game can remove or disable the trigger in that tick, and a replacement modal must keep focus. Restore only a connected, enabled old control; otherwise query a current enabled choice trigger or table tool.
 
 
-### 无框手牌与上方动作带 / Frameless hand and upper action dock
+### 无框手牌与按需浮层 / Frameless hand and on-demand overlay
 
-`hand-action-dock` 在两玩法模板里真实排在手牌前，空闲也常驻；只让回合提示条件显示，不能用本人回合条件包住接炮/抢杠合法动作。原事件/禁用表达式和两组件脚本不改。手牌实体列表按内容定宽加auto边距，足宽居中、超宽起点可达。七角色class只选择固定调色变量，不接受自由CSS。完整高度、手机侧边留白、测试与纯视图入口见 [稳定布局](STABLE-TABLE-LAYOUT.md#无框居中手牌与角色动作带--frameless-centered-hands-and-themed-actions)。
-Both real templates place a persistent hand-action-dock before tiles. Condition only the prompt, never the claim/rob-kong allowlist container. Original events/disabled expressions and both scripts remain unchanged. Intrinsic-width lists with auto margins center when fitting and keep a reachable overflow origin. Seven enum classes select fixed palette variables, never arbitrary CSS. See the stable-layout guide for capacities, phone spacing, tests and isolated preview controls.
+`hasHandActions` 从原可显示动作派生，两玩法 `hand-action-dock` 仅在有按钮时挂载，absolute固定在手牌右上；手牌与公开槽本身持续挂载。没有92/132px常驻动作空槽，也不以本人回合挡住接炮/抢杠或成都准备。完整接牌文字在手牌下方既有信息区，回合短提示与按钮同行。七角色主题、事件/禁用表达式、原牌图和立绘顺序不变。几何预算、公开视窗50px取舍、2px选中反馈与安全焦点回退见 [按需操作浮层](OVERLAY-HAND-ACTIONS.md)。
+The derived renderable-action flag mounts an absolute upper-right dock only when needed, while hand/public slots persist. No92/132px idle reservation remains, and own-turn cues never gate claims, rob-kongs or preparation. Full claims share existing below-hand information; short turn cues share the action run. Themes, handlers/guards, tile art and portrait order remain. See the overlay contract for geometry, the50px public-viewport trade-off,2px selection and safe focus recovery.
 
 ## 下一局弹层中的终局总览 / Finished overview inside the next-round dialog
 

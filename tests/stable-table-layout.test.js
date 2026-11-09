@@ -60,8 +60,8 @@ test('boxed labels and role nameplates disappear while player identity, portrait
 // 条件内容留在稳定父槽内；v-if不得重新挂到这些父槽导致空闲时又塌缩。
 // Conditional contents stay inside stable parents; moving v-if onto these parents would collapse their idle space again.
 for (const [file, names] of [
-  ['App.vue', ['claim-slot', 'own-public-cards', 'hand-feedback', 'room-notices']],
-  ['ChengduTable.vue', ['chengdu-public-cards', 'chengdu-claim-slot', 'chengdu-hand-note', 'chengdu-waits']],
+  ['App.vue', ['own-public-slot', 'own-public-cards', 'hand-interaction-area', 'hand-feedback', 'room-notices']],
+  ['ChengduTable.vue', ['chengdu-public-cards', 'hand-interaction-area', 'chengdu-hand-note', 'chengdu-waits']],
 ]) {
   test(`${file} keeps empty content slots mounted throughout the game`, () => {
     for (const name of names) {
@@ -138,18 +138,18 @@ test('both modes keep named full-capacity rivers without visible headings or rec
 
 // 普通接牌仅显示来源和牌，冗长等待句保留在具名区域描述；不靠增高槽或缩牌来消除手机小滚条。
 // Ordinary claims show source/tile only, with waiting prose in the named region description; no taller slot or smaller tiles hide phone overflow.
-test('Chengdu player and spectator claims keep accessible waiting guidance without a repeated visible sentence', () => {
-  const slots = elements(descriptors['ChengduTable.vue'].template.ast).filter((node) => hasClass(node, 'chengdu-claim-slot'));
-  assert.equal(slots.length, 2);
-  for (const slot of slots) {
-    assert.match(binding(slot, 'aria-description').exp.content, /game.claim \? '等待所有有资格的牌友回应' : undefined/);
-    const claim = find(slot, 'chengdu-claim');
-    assert.doesNotMatch(claim.loc.source, /等待所有有资格/);
-    assert.match(claim.loc.source, /nameFor\(game.claim.fromSeat\)/);
-    assert.match(claim.loc.source, /game.claim.source === 'robKong'/);
-    assert.match(claim.loc.source, /:tile="game.claim.tile" small/);
-  }
-  assert.match(descriptors['ChengduTable.vue'].styles[0].content, /\.chengdu-claim-slot \{ height: 64px; \}/);
+test('Chengdu player and spectator claims retain full visible and accessible context', () => {
+  const root = descriptors['ChengduTable.vue'].template.ast;
+  const slots = elements(root).filter((node) => hasClass(node, 'chengdu-claim-slot'));
+  assert.equal(slots.length, 1, 'only spectator claims retain a separate card slot');
+  assert.match(binding(slots[0], 'aria-description').exp.content, /game.claim \? '等待所有有资格的牌友回应' : undefined/);
+  assert.ok(find(slots[0], 'chengdu-claim'));
+  const visibleContext = find(find(root, 'chengdu-waits'), 'passive-claim');
+  assert.match(visibleContext.loc.source, /nameFor\(game.claim.fromSeat\)/);
+  assert.match(visibleContext.loc.source, /labelFor\(game.claim.tile\)/);
+  assert.match(visibleContext.loc.source, /game.claim.source === 'robKong'/);
+  assert.equal(attribute(visibleContext, 'aria-live').value.content, 'polite');
+  assert.equal(elements(find(root, 'hand-action-dock')).some((node) => node.tag === 'MahjongTile'), false, 'normal responses are not crowded by a duplicate claim tile');
 });
 
 // 只给明确单行横向区取消竖沟槽，不能顺手去掉牌河/公开牌/历史的稳定滚动条占位。
@@ -378,9 +378,9 @@ test('Flower groups status, finish controls and own identity after the entire ma
   assert.match(find(footer, 'finished-banner').loc.source, /@click="mutate\(null, true\)"/);
   assert.match(find(footer, 'finished-banner').loc.source, /@click="newTable"/);
   assert.match(find(footer, 'game-status').loc.source, /game.wallCount/);
-  const claim = find(find(ownArea, 'hand-panel'), 'claim-slot');
+  const claim = find(find(ownArea, 'waits-info'), 'passive-claim');
   assert.ok(find(ownArea, 'hand-action-dock').loc.end.offset < find(ownArea, 'hand-scroll').loc.start.offset, 'dock and claims precede tiles in real DOM order');
-  assert.ok(claim.loc.end.offset < find(ownArea, 'action-row').loc.start.offset, 'claim stays beside real actions');
+  assert.ok(claim.loc.start.offset > find(ownArea, 'hand-scroll').loc.end.offset, 'full claim wording remains just below the hand without using action-row width');
   assert.ok(find(footer, 'claim-slot'), 'public-only viewers retain the claim in their footer');
 });
 
@@ -397,9 +397,9 @@ test('Chengdu finishes with status/results and keeps claim information next to h
     assert.ok(find(footer, name));
   }
   const hand = find(table, 'chengdu-hand-panel');
-  const claim = find(hand, 'chengdu-claim-slot');
+  const claim = find(find(hand, 'chengdu-waits'), 'passive-claim');
   assert.ok(find(hand, 'hand-action-dock').loc.end.offset < find(hand, 'chengdu-hand').loc.start.offset, 'preparation and response dock precedes tiles');
-  assert.ok(claim.loc.end.offset < find(hand, 'chengdu-action-bar').loc.start.offset);
+  assert.ok(claim.loc.start.offset > find(hand, 'chengdu-hand').loc.end.offset);
   assert.ok(find(footer, 'chengdu-claim-slot'));
   assert.match(find(footer, 'chengdu-finish').loc.source, /@click="emit\('start'\)"/);
   assert.match(find(footer, 'chengdu-finish').loc.source, /game.settlement\?\.payments/);

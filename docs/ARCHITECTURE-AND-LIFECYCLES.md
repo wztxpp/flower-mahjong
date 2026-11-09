@@ -190,7 +190,7 @@ Retired Live2D source/license records remain historical without modifying users'
 进行中的牌桌视窗按玩法/人数/屏宽确定尺寸，内容随已显示快照更新，槽位不随回合或牌河行数增删。可滚动状态留在原DOM中，不写入服务器、浏览器存储或音画队列；开局/终局/换桌仍可明确切换布局。详见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
 Active-table slots are sized by mode/count/width and survive turn/river-row changes. Native scroll state stays in the DOM, not authority, browser storage or presentation queues. Explicit game/navigation lifecycle transitions may still change layout; see [the layout contract](STABLE-TABLE-LAYOUT.md).
 
-主桌面状态/终局/身份页脚只是DOM重排：私有手牌继续受原参与者/观战守卫，终局和重开仍由同一阶段、权限及处理器控制。固定接牌槽在玩家手牌动作附近常驻；观众只有公开页脚提示。大厅身份不随这次局内移动改变位置。没有新增状态、订阅或网络副作用。
+主桌面状态/终局/身份页脚只是DOM重排：私有手牌继续受原参与者/观战守卫，终局和重开仍由同一阶段、权限及处理器控制。完整接牌说明保留在玩家手牌下方既有信息槽；观众只有公开页脚提示。大厅身份不随这次局内移动改变位置。没有新增状态、订阅或网络副作用。
 The main-table status/finish/identity footer is a DOM rearrangement only. Original participant/spectator guards protect hands, and existing phases, permissions and handlers govern finish/restart. Fixed player claim slots remain by hand controls; spectators get public footer prompts only. Lobby identity stays in place, with no new state, subscriptions or transport effects.
 
 ## 自弃限制的生命周期 / Self-discard lock lifecycle
@@ -204,8 +204,8 @@ Schema three derives locks from committed history instead of persisting a duplic
 Next-round choices are page-local presentation. A live finish queues one prompt after media and existing modals; initial restoration of a finished snapshot does not. Prompted game keys stay only in page memory, without storage keys, room fields, history consumption or game creation. Game/navigation changes cancel pending/open state; original start CAS, fixed mode settings, participant archives and ledgers remain unchanged. Only explicit host action starts a game.
 
 
-无框手牌动作带沿用上述局内槽位生命周期：桌面/手机各有固定容量，空闲、轮到本人、他家回应与准备阶段只换内容，不重挂手牌。`hand-action-dock` 在真实DOM中先于手牌，提示不拥有动作权限，七角色CSS变量不进入服务端快照、存储或声音/计时流程。详细展示合同见 [稳定牌桌布局](STABLE-TABLE-LAYOUT.md)。
-The frameless hand dock follows the same game-long slot lifetime: fixed desktop/phone capacity, with idle, own-turn, other-seat responses and preparation changing contents rather than remounting hands. The dock precedes tiles in real DOM order; its prompt owns no action authority, and role CSS variables never enter server snapshots, storage, audio or timers. See the stable-layout contract.
+手牌/公开区持续挂载，按需操作层是固定槽的明确例外：`hasHandActions` 只从原按钮列表派生，v-if撤下空动作层，absolute不留流式高度。两组件仅增加DOM refs及焦点watch，撤下或禁用节点后等待DOM提交、同桌同局同座复核，且新弹层/新焦点优先；不写权威快照、存储或声音队列。详见 [按需操作浮层](OVERLAY-HAND-ACTIONS.md)。
+Hands/public regions persist; the explicitly requested action overlay is an exception to fixed slots. Its derived flag unmounts an empty absolute layer without flow height. New refs/watchers recover only removed or disabled focus after DOM commit and room/round/seat checks, yielding to dialogs/new focus without writing authority, storage or audio. See the overlay contract.
 
 ## 终局摘要公开生命周期 / Finished-summary disclosure lifetime
 

@@ -1,5 +1,8 @@
 # 稳定牌桌布局 / Stable table layout
 
+后续用户明确取消动作框预占空间；当前实现见 [按需操作浮层](OVERLAY-HAND-ACTIONS.md)。本文固定牌区/记录/滚动原则继续有效，常驻动作槽的92/132px说明为旧设计，已由条件absolute层替代。
+The later user request removes reserved action space. The current overlay contract supersedes permanent92/132px dock statements here; fixed card/record/scrolling principles remain.
+
 ## 目标与原因 / Goal and causes
 
 2026-11-08 按用户截图移除对手画框的声线类型、牌河下方“花间 / 自贡花麻将”装饰横栏，以及本人手牌上方整条角色说明。玩家姓名、角色名/头像、我/房主/庄家标记、规则、虚拟积分、原图局部动画与角色语音保持原有来源和权限。

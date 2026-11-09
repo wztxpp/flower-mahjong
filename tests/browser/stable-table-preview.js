@@ -57,6 +57,8 @@ for (const action of ['load', 'finish', 'open', 'close', 'poll', 'new-game']) {
     return api.summary(action, document.querySelector('#fixture-summary-variant').value);
   });
 }
+document.querySelector('#fixture-focus-actions').onclick = () => run('检查真实动作撤下后的焦点…', async () => (await ready()).actionFocus());
+document.querySelector('#fixture-select-hand').onclick = () => run('本地选牌并量测浮层间距…', async () => (await ready()).selectHand());
 document.querySelector('#fixture-summary-measure').onclick = () => run('量测终局弹层…', async () => (await ready()).summaryMeasure());
 document.querySelector('#fixture-measure').onclick = () => run('量测当前DOM…', async () => (await ready()).measure());
 document.querySelector('#fixture-audit').onclick = () => run('正在审计当前玩法/尺寸…', async () => (await ready()).audit());

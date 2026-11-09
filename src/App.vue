@@ -166,6 +166,10 @@ const selectedTile = ref(null);
 const selectedHandIndex = ref(null);
 const copyDone = ref(false);
 const modalRef = ref(null);
+// 手牌/浮层引用仅用于撤下已聚焦动作后的本地回退，不新增动作或导航。
+// Hand/dock refs only restore local focus after focused actions disappear, without new moves or navigation.
+const handActionDockRef = ref(null);
+const handScrollRef = ref(null);
 const inviteInput = ref(null);
 const playerToken = ref('');
 const personalHistory = ref(null);
@@ -398,6 +402,12 @@ const primaryActions = computed(() =>
 );
 const gangActions = computed(() =>
   legalActions.value.filter((action) => ['anGang', 'buGang', 'addGang'].includes(action.type)),
+);
+// 仅按现有按钮的展示条件决定浮层是否需要操作，不能用本人回合过滤接炮、抢杠或旧版摸牌。
+// Derive overlay visibility from existing button groups, never own-turn gating that would hide claims, rob-kongs or legacy draws.
+const hasHandActions = computed(() =>
+  gangActions.value.length > 0 || primaryActions.value.length > 0 ||
+  (!postHu.value && discardOptions.value.length > 0),
 );
 const isMyTurn = computed(
   () =>
@@ -2180,6 +2190,25 @@ function onKey(event) {
 }
 // watch 用于副作用：弹窗开关变化时管理焦点与滚动；nextTick 等待 Vue 真正更新 DOM。
 // watch runs side effects: manage focus and scrolling when dialogs change; nextTick waits for Vue’s DOM update.
+// Vue更新前捕获浮层内焦点，提交DOM后仅恢复被撤下或禁用的节点；新弹层、换桌/换局或用户移焦一律优先。
+// Capture dock focus before Vue patches, then recover only a removed or disabled node after commit; dialogs, room/game changes and newer focus always win.
+watch(
+  [legalActions, hasHandActions, () => state.value?.id, () => game.value?.id, mySeat, busy, offline, syncing],
+  async ([, , roomId, gameId, seat], [, , previousRoomId, previousGameId, previousSeat]) => {
+    if (roomId !== previousRoomId || gameId !== previousGameId || seat !== previousSeat || seat == null) return;
+    const pageDocument = globalThis.document;
+    const focused = pageDocument?.activeElement;
+    if (!focused || !handActionDockRef.value?.contains?.(focused)) return;
+    const currentEpoch = epoch;
+    await nextTick();
+    if ((focused.isConnected && !focused.disabled) || epoch !== currentEpoch || activeModal.value || phase.value !== 'playing' || isSpectator.value) return;
+    if (state.value?.id !== roomId || game.value?.id !== gameId || mySeat.value !== seat) return;
+    const currentFocus = pageDocument.activeElement;
+    if (currentFocus && currentFocus !== focused && currentFocus !== pageDocument.body) return;
+    if (handScrollRef.value?.isConnected) handScrollRef.value.focus({ preventScroll: true });
+  },
+);
+
 watch(
   activeModal,
   async (open, previousModal) => {
@@ -3145,6 +3174,7 @@ onUnmounted(() => {
           >
             <!-- 无重复手牌标题；私有说明保留在区域描述，公开牌仍有独立固定槽。
                  No repeated hand title: private guidance stays in the region description, with a separate stable public-card slot. -->
+            <div class="own-public-slot">
             <div class="own-public-cards stable-scroll" tabindex="0" role="region" aria-label="我的胡牌、碰杠与萝卜，可滚动查看">
               <div v-if="!isLegacy" class="own-win-pile win-pile" aria-label="我的胡牌区"
                 ><span class="public-zone-label"
@@ -3200,25 +3230,17 @@ onUnmounted(() => {
                     :tile="tile"
                     small /></div></div
             ></div>
-            <!-- 常驻无框动作带排在手牌上方；本人回合只控制提示，接炮/抢杠仍直接读取合法动作。
-                 The permanent frameless dock precedes the hand; own turn controls only the prompt, never claim/rob-kong actions. -->
-            <div class="hand-action-dock">
-            <div class="claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看">
-            <div v-if="game.phase === 'claim' && game.claim" class="claim-strip"
-              ><MahjongTile :tile="game.claim.tile" small /><span
-                ><b>{{ seatLabel(game.claim.discardSeat) }}</b>
-                {{ game.claim.kind === 'robKong' ? `正在${pendingKongLabel}` : '打出了' }}
-                {{ tileLabel(game.claim.tile) }}</span
-              ></div
-            >
             </div>
-              <div class="hand-turn-prompt" role="status" aria-live="polite">
-                <span v-if="isMyTurn" class="my-turn-pill">轮到你了</span>
-              </div>
+            <!-- 浮层借用既有公开槽下沿与手牌上沿留白，不在文档流里留动作高度；无按钮时彻底撤下。
+                 The overlay reuses existing public-slot/hand edge space, reserving no flow height and unmounting when no buttons apply. -->
+            <div class="hand-interaction-area">
+            <div v-if="hasHandActions" ref="handActionDockRef" class="hand-action-dock">
               <!-- 每个按钮仍提交原服务端动作；出牌继续等待本人选牌确认。
                    Each button submits its original server action; discard still requires an explicit tile selection. -->
               <div class="action-row" data-stable-scroll tabindex="0" role="region" aria-label="合法动作，可横向滚动"
-                ><button
+                >
+                <span v-if="isMyTurn" class="hand-turn-prompt" role="status" aria-live="polite"><span class="my-turn-pill">轮到你了</span></span>
+                <button
                   v-for="(action, actionIndex) in gangActions"
                   :key="`gang-${actionIndex}`"
                   class="button action-button secondary"
@@ -3252,7 +3274,7 @@ onUnmounted(() => {
                 ></div>
             </div>
             <!-- key 同时包含下标和牌种；点击仅选牌，disabled 同时检查胡后锁定、网络状态和服务端可出牌列表。 / Keys combine index and tile type; clicks only select, while disabled checks post-win locking, connectivity and server discard options. -->
-            <div class="hand-scroll character-hand-table stable-scroll" tabindex="0" role="region" aria-label="我的手牌，可横向滚动"
+            <div ref="handScrollRef" class="hand-scroll character-hand-table stable-scroll" tabindex="0" role="region" aria-label="我的手牌，可横向滚动"
               ><div class="my-hand"
                 ><MahjongTile
                   v-for="(tile, tileIndex) in hand"
@@ -3270,9 +3292,11 @@ onUnmounted(() => {
                   "
                   @click="selectHand(tile, tileIndex)" /></div
             ></div>
+            </div>
             <!-- 听口留在手牌下方的固定窄行；长内容可滚动，不挤占右上方动作。
                  Waits retain a slim fixed row below the hand; long text scrolls without crowding upper-right actions. -->
-            <div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"
+            <div class="waits-info stable-scroll" tabindex="0" role="region" aria-label="我的听牌与接牌提示"
+                ><span v-if="game.phase === 'claim' && game.claim" class="passive-claim" role="status" aria-live="polite">{{ seatLabel(game.claim.discardSeat) }}{{ game.claim.kind === 'robKong' ? `正在${pendingKongLabel}` : '打出了' }}{{ tileLabel(game.claim.tile) }} · 等待回应</span
                 ><template v-if="game.waitTiles?.length"
                   ><span class="wait-label">听牌</span
                   ><span>{{ game.waitTiles.map(tileLabel).join('、') }}</span></template

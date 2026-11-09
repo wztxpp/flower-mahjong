@@ -209,7 +209,7 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 - `own-player-area` / 本人场景区域：局内本人手牌和独立立绘的共同展示容器；大厅仍用此样式承托身份摘要，不是新座位、权威牌区或存储字段；`own-character-scene` 为忽略指针的装饰背景。 / A presentation container for the in-game own hand/art, also styling the lobby identity, not a new seat, authoritative card zone or stored field; its scene is pointer-transparent decoration.
 
 - `stable-scroll` / `data-stable-scroll`：可命名、可聚焦的局部滚动视窗；只固定可视高度，不截断记录、不改变全页滚动，也不是新牌区或协议字段。 / Named, focusable local scroll viewports with fixed visible height, not truncated records, document-scroll control, new game zones or protocol fields.
-- `claim-slot` / `hand-feedback`：局内常驻的接牌提示/私有诊断和结算展示容器；其内容仍由原服务端裁剪视图决定。 / Game-long claim/private-feedback presentation slots whose contents still come from the original filtered server view.
+- `claim-slot` / `hand-feedback`：前者保留观众的公开接牌槽，玩家接牌文字已移入既有听牌信息区；后者仍为私有诊断和结算固定容器。内容均来自原服务端裁剪视图。 / The claim slot remains for spectators, while player claim wording shares the existing waits region; feedback keeps its fixed private-diagnostics/results slot. Contents still come from the original filtered server view.
 
 - `table-info-footer` / `chengdu-table-footer`：主牌桌末端的状态、身份或结算展示区；按DOM顺序置后，不是新牌区、存储字段或动作权限。玩家接牌提示仍靠手牌，观众只在页脚读取公开提示。 / End-of-table status/identity/results in actual DOM order, never new game zones, stored fields or authority. Player claims stay by hand controls; public-only viewers read them in the footer.
 
@@ -218,7 +218,7 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 
 - `showNextRound` / `activeModal`：下一局选择弹层与当前唯一模态内容，仅浏览器临时展示状态；不是 `start` 动作、开局参数或玩家准备状态。 / Page-local next-round choices and the single active modal, not a start action, settings snapshot or player-ready state.
 
-- `hand-action-dock` / 手牌上方动作带：常驻、无框、普通流布局容器，包含接牌上下文、回合提示和原合法动作；不是固定到屏幕的悬浮层，也不是本人回合的权限判断。 / Persistent frameless normal-flow container for claim context, turn prompt and original legal actions; neither a viewport overlay nor an own-turn permission gate.
+- `hand-action-dock` / 手牌上方动作带：仅有实际按钮时挂载的无框绝对定位浮层，锚定手牌右上，包含同行回合提示与原合法动作；等待时不占高度，不固定到屏幕，也不以本人回合判断权限。完整接牌文字在既有手牌下方信息区。 / Conditional frameless absolute overlay anchored above the hand, with inline turn cues and original actions; no idle height, viewport fixing or own-turn permission gate. Full claim context stays in the existing below-hand info region.
 - `hand-turn-prompt` / 回合提示槽：仅提示当前本人回合的具名状态，不控制接炮/抢杠/准备动作可见性。`--hand-accent` 等为七角色枚举选择的本地CSS变量，不是协议字段。 / Status slot for own-turn guidance, never a claim/rob-kong/preparation visibility gate. Hand palette variables are enum-selected local CSS, not protocol fields.
 
 - `roundSummary`：服务端确认终局后公开的只读摘要，不是原引擎状态或历史存档。`finalHand` 是实际剩余手牌；`wins[].inHand` 表示胡牌引用是否已包含在该手牌中，不能再次拼牌。 / A server-finished-only public projection, not state/archive; finalHand is the actual remaining hand and inHand prevents duplicating winning references.
@@ -228,3 +228,14 @@ Null current engine/empty engine versions permit room lifecycle only; a null pub
 - `finishedTableHands` / `roundSummaryHandsBySeat`：当前双终局显示快照按原绝对座位映射的完整公开手牌副本；不是普通私有hand字段、缓存、规则动作或新的API字段。`finishedTableNames`只为摘要原参与者标注归属。 / Complete copied public hands derived by original absolute seat from the current doubly-finished view, not ordinary private hands, caching, actions or a new API field; names attribute them only to summary participants.
 - `closeNextRoundDialog` / 返回牌桌：只关闭结算弹层并沿用忙碌/焦点守卫；不表示离桌、清凭证或大厅导航。 / Close only the settlement dialog under existing busy/focus guards, never departure, credential clearing or lobby navigation.
 - `roundSummary.players[].characterId` / `roundSummaryPortrait`：原始本局角色快照的终局只读字段 / 固定基础立绘目录选择器；缺记录为null，不能从含默认值的game.characters或现任座位补历史。 / Finished-only original-round role field / fixed base-art selector; absent records stay null, never inferred from defaulted game.characters or replacement occupants.
+
+
+## 按需动作浮层 / On-demand action overlay
+
+- `hasHandActions`：仅表示原模板能渲染至少一个按钮，不是规则合法性或本人回合判断。 / At least one existing button is renderable; neither a rules engine nor own-turn authority.
+- `hand-interaction-area`：只由手牌撑高的定位祖先，不是新增动作占位。 / Hand-sized positioning ancestor, not a replacement action spacer.
+- `handActionDockRef` / `handScrollRef`：真实浮层与稳定手牌DOM，用于安全本地焦点回退，不存服务器。 / Actual dock/persistent-hand DOM refs for safe local focus recovery, never server state.
+- `own-public-slot`：沿用原80px外槽，内层50px仍保留全部公开牌及原生滚动。 / Existing80px outer slot with a50px inner viewport retaining all public cards/native scrolling.
+
+完整合同见 [按需操作浮层](OVERLAY-HAND-ACTIONS.md)，旧常驻操作槽属于被替代的展示设计。
+See the full overlay contract; permanent action slots are the superseded presentation design.

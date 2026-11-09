@@ -232,6 +232,9 @@ test('Chengdu footer preserves public-only claims and host finish controls', asy
   for (const spectator of [false, true]) {
     const state = fixture('claim');
     state.game.claim = { fromSeat: 1, tile: 4, source: 'discard' };
+    // 接牌夹具必须给接牌动作，不能沿用exchange默认动作制造一个空操作带。
+    // A claim fixture needs a response action instead of retaining an exchange-only action and an empty dock.
+    state.game.legalActions = [{ type: 'pass' }];
     if (spectator) {
       state.viewerRole = 'spectator'; state.game.mySeat = null;
       delete state.game.players[0].hand; state.game.legalActions = [];
@@ -240,14 +243,14 @@ test('Chengdu footer preserves public-only claims and host finish controls', asy
     const html = await render(scope);
     const footer = html.indexOf('class="chengdu-table-footer"');
     assert.ok(footer > html.indexOf('class="chengdu-details"'));
-    assert.equal((html.match(/class="chengdu-claim-slot stable-scroll"/g) || []).length, 1);
+    assert.equal((html.match(spectator ? /class="chengdu-claim-slot stable-scroll"/g : /class="passive-claim"/g) || []).length, 1);
     assert.equal((html.match(/class="chengdu-status stable-scroll"/g) || []).length, 1);
-    const claim = html.indexOf('class="chengdu-claim-slot stable-scroll"');
+    const claim = html.indexOf(spectator ? 'class="chengdu-claim-slot stable-scroll"' : 'class="passive-claim"');
     if (spectator) {
       assert.ok(claim > footer);
       assert.doesNotMatch(html, /aria-label="我的手牌与操作"|aria-label="成都合法动作"/);
     } else {
-      assert.ok(claim < html.indexOf('aria-label="本人私有手牌"') && claim < html.indexOf('class="chengdu-action-bar'));
+      assert.ok(claim > html.indexOf('aria-label="本人私有手牌"') && claim > html.indexOf('class="chengdu-action-bar'));
       assert.ok(claim > html.indexOf('class="hand-action-dock"'));
     }
     props.state.game.phase = 'finished'; props.state.game.claim = null; props.state.game.legalActions = [];
@@ -277,8 +280,9 @@ test('Chengdu dock preserves all phases, answered claims, retirement and blocked
       const dock = html.slice(html.indexOf('class="hand-action-dock"'), html.indexOf('class="chengdu-hand character-hand-table'));
       const buttons = [...dock.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
       assert.equal(buttons.length, state.game.legalActions.length, `${stage}/${blocked}`);
+      assert.equal(html.includes('class="hand-action-dock"'), state.game.legalActions.length > 0, 'idle/answered/retired states remove the entire action overlay');
       assert.equal(dock.includes('轮到你了'), stage === 'own');
-      if (stage === 'robKong') assert.match(dock, /尝试补杠/);
+      if (stage === 'robKong') assert.match(html, /class="passive-claim"[^>]*>[^<]*尝试补杠/);
       if (blocked) assert.ok(buttons.every((button) => /\bdisabled\b/.test(button[1])));
       assert.deepEqual(events, [], 'rendering never auto-submits a preparation or response');
     }

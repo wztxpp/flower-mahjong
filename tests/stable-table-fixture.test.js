@@ -353,3 +353,22 @@ test('terminal summary fixture variants never leak into active stages and retain
   }
   assert.throws(() => terminalSummaryFixture({}, 'untrusted'), /Unknown summary fixture variant/);
 });
+
+
+// 放行范围仅有私有手牌的本地选择；可见诊断自己建立帧内焦点，所有确认与双层API拒绝都保留。
+// Allow only private-hand local selection; visible diagnostics establish in-frame focus while all confirmations and both API barriers remain blocked.
+test('visible overlay diagnostics exercise actual focus and selection without submitting moves', () => {
+  const frame = source('tests/browser/stable-table-frame.js');
+  const html = source('tests/browser/stable-table-preview.html');
+  const preview = source('tests/browser/stable-table-preview.js');
+  for (const id of ['fixture-focus-actions', 'fixture-select-hand']) { assert.ok(html.includes(`id="${id}"`)); assert.ok(preview.includes(`#${id}`)); }
+  assert.match(frame, /#app \.character-hand-table button\.tile-interactive:not\(:disabled\)/);
+  assert.match(frame, /target\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(frame, /api\.setSnapshot\(next\)/);
+  assert.match(frame, /tile\.click\(\)/);
+  assert.match(frame, /correctFocus/);
+  assert.match(frame, /View-only fixture network boundary/);
+  assert.match(frame, /event\.stopImmediatePropagation\(\)/);
+  assert.doesNotMatch(frame, /\.mutate\(|\.submit\(|\.startNextRound\(|\.newTable\(/);
+  assert.match(source('tests/browser/stable-table-preview-server.mjs'), /middlewares\.use\(rejectStableTableApi\)/);
+});

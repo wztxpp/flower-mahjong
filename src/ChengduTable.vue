@@ -3,7 +3,7 @@
 // Chengdu-only table: display the filtered server view and return the user's selected authoritative action to App.
 // 网络、身份、重连、角色分配和累计账本仍由 App/房间层管理；这里不判胡、不算番、不自动代选。
 // App/room layers own transport, identity, reconnects, characters and ledgers; this component never judges wins, scores or chooses automatically.
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import MahjongTile from './MahjongTile.vue';
 import CharacterArtwork from './CharacterArtwork.vue';
 import { chengduEventText } from './chengdu-event-text.js';
@@ -25,6 +25,8 @@ const me = computed(() => game.value.players.find((player) => player.seat === my
 const hand = computed(() => [...(me.value?.hand || [])].sort((left, right) => left - right));
 const legalActions = computed(() => mySeat.value == null ? [] : game.value.legalActions || []);
 const selectedIndices = ref([]);
+const handActionDockRef = ref(null);
+const handScrollRef = ref(null);
 const selectedTiles = computed(() => selectedIndices.value.map((index) => hand.value[index]).sort((left, right) => left - right));
 const isExchange = computed(() => game.value.phase === 'exchange');
 const isFinished = computed(() => game.value.phase === 'finished');
@@ -45,11 +47,35 @@ const selectedAction = computed(() => legalActions.value.find((action) => isExch
   : action.type === 'discard' && selectedIndices.value.length === 1 && action.tile === selectedTiles.value[0]));
 const responseActions = computed(() => legalActions.value.filter((action) => Object.hasOwn(actionLabels, action.type)));
 const dingqueActions = computed(() => legalActions.value.filter((action) => action.type === 'dingque'));
+// 浮层只由实际可显示的原动作决定；等待、已回应和退出后不保留空操作容器。
+// Only existing renderable actions open the overlay; waiting, answered and retired states keep no empty action container.
+const hasHandActions = computed(() =>
+  responseActions.value.length > 0 || dingqueActions.value.length > 0 ||
+  legalActions.value.some((action) => action.type === 'discard' || (isExchange.value && action.type === 'exchangeThree')),
+);
 const recentEvents = computed(() => [...(game.value.history || [])].reverse().slice(0, 30));
 // 轮询他人准备进度不会清空本人尚未提交的选择；只有本手牌/阶段/局号变化才重置。
 // Other players' preparation updates preserve an unsubmitted selection; reset only when this hand, phase or game changes.
 watch(() => `${game.value.id}:${game.value.phase}:${hand.value.join(',')}:${game.value.preparation?.myExchange?.join(',') || ''}`,
   () => { selectedIndices.value = []; });
+
+// 撤下或禁用正在聚焦的动作后回到稳定手牌区域；仅本局本座位有效，不能抢新弹层或用户刚移动的焦点。
+// Return a removed or disabled focused action to the stable hand only within this round/seat, never stealing from a new modal or newer user focus.
+watch(
+  [legalActions, hasHandActions, () => props.state.id, () => game.value.id, mySeat, () => props.blocked],
+  async ([, , roomId, gameId, seat], [, , previousRoomId, previousGameId, previousSeat]) => {
+    if (roomId !== previousRoomId || gameId !== previousGameId || seat !== previousSeat || seat == null) return;
+    const pageDocument = globalThis.document;
+    const focused = pageDocument?.activeElement;
+    if (!focused || !handActionDockRef.value?.contains?.(focused)) return;
+    await nextTick();
+    if ((focused.isConnected && !focused.disabled) || isFinished.value || mySeat.value !== seat || props.state.id !== roomId || game.value.id !== gameId) return;
+    if (pageDocument.querySelector?.('[aria-modal="true"]')) return;
+    const currentFocus = pageDocument.activeElement;
+    if (currentFocus && currentFocus !== focused && currentFocus !== pageDocument.body) return;
+    if (handScrollRef.value?.isConnected) handScrollRef.value.focus({ preventScroll: true });
+  },
+);
 
 // 座位显示从本人下方开始按顺时针排列：左手+1、对家+2、右手+3；观众不虚构本人。
 // From the viewer at bottom, clockwise seats are left+1/opposite+2/right+3; spectators receive no invented own seat.
@@ -156,43 +182,37 @@ function eventText(event) {
     <div v-if="me?.hand" class="own-player-area chengdu-own-area"
       :class="`character-${characterForPlayer(mySeat).id}`">
     <section class="chengdu-hand-panel" aria-label="我的手牌与操作">
-      <!-- 无重复标题；准备进度和缺门保留在固定说明行，回合提示位于下方动作带右上方。
-           No repeated title: preparation/missing suit keep their fixed note row, with the turn prompt at the dock’s upper right. -->
-      <!-- 各阶段说明只替换内容，不增删槽位；手机长文可聚焦后滚动。
-           Phase instructions replace content, not slots; long phone text remains focusable and scrollable. -->
-      <div class="chengdu-hand-note stable-scroll" tabindex="0" role="region" aria-label="手牌操作说明">
-      <p v-if="isExchange">同花色三张 · 已选 {{ selectedIndices.length }}/3<span class="chengdu-commit-note">提交后不能修改</span></p>
-      <p v-else-if="game.phase === 'dingque'">选择缺门 · 提交后不能修改</p>
+      <!-- 48px原说明槽仅用前24px显示完整紧凑说明；其余留白与手牌上沿共用给绝对定位动作。
+           Keep the existing48px note slot with complete compact text in its first24px; remaining edge space hosts absolute actions. -->
+      <div class="chengdu-hand-note">
+      <div class="chengdu-hand-note-content stable-scroll" tabindex="0" role="region" aria-label="手牌操作说明" :aria-description="status">
+      <p v-if="isExchange">同色3张 · 已选{{ selectedIndices.length }}/3 · 提交不可改</p>
+      <p v-else-if="game.phase === 'dingque'">选择缺门 · 提交不可改</p>
       <p v-else><span v-if="me.dingqueSuit">缺{{ suitLabels[me.dingqueSuit] }}</span></p>
       </div>
-      <!-- 操作带始终预留在手牌上方；换牌、定缺和他家回合的回应仍由原白名单显示。
-           Reserve the dock above tiles throughout the game; preparation and out-of-turn responses still use the original allowlist. -->
-      <div class="hand-action-dock">
-      <!-- 接牌信息紧邻手牌动作；等候说明放在可访问描述，避免普通姓名加牌也被重复长句挤出滚动条。
-           Keep claims beside hand actions; an accessible waiting description avoids wrapping an ordinary name/tile into needless scrolling. -->
-      <div class="chengdu-claim-slot stable-scroll" tabindex="0" role="region" aria-label="当前接牌提示，可滚动查看"
-        :aria-description="game.claim ? '等待所有有资格的牌友回应' : undefined">
-      <div v-if="game.claim" class="chengdu-claim"><span>{{ nameFor(game.claim.fromSeat) }}{{ game.claim.source === 'robKong' ? '尝试补杠' : '打出' }}</span><MahjongTile :tile="game.claim.tile" small /></div>
       </div>
-      <div class="hand-turn-prompt" role="status" aria-live="polite">
-        <span v-if="game.phase === 'turn' && !me.won && game.currentSeat === mySeat" class="my-turn-pill">轮到你了</span>
-      </div>
+      <!-- 原动作/权限不变，等待时无浮层；回合提示与按钮共用一行原生横滚，接牌说明保留在下方。
+           Preserve original actions/guards and unmount while idle; turn cues and buttons share one native run, with claims below. -->
+      <div class="hand-interaction-area">
+      <div v-if="hasHandActions" ref="handActionDockRef" class="hand-action-dock">
       <div class="chengdu-action-bar stable-scroll" tabindex="0" role="region" aria-label="成都合法动作" aria-description="可横向滚动查看全部动作">
+        <span v-if="game.phase === 'turn' && !me.won && game.currentSeat === mySeat" class="hand-turn-prompt" role="status" aria-live="polite"><span class="my-turn-pill">轮到你了</span></span>
         <button v-if="isExchange && legalActions.some((action) => action.type === 'exchangeThree')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认换三张</button>
         <button v-if="legalActions.some((action) => action.type === 'discard')" class="button gold" :disabled="blocked || !selectedAction" @click="submit(selectedAction)">确认出牌{{ selectedAction ? ` · ${labelFor(selectedAction.tile)}` : '' }}</button>
         <button v-for="action in dingqueActions" :key="action.suit" class="button" :disabled="blocked" @click="submit(action)">定缺{{ suitLabels[action.suit] }}</button>
         <button v-for="action in responseActions" :key="`${action.type}:${action.tile ?? ''}`" class="button" :class="{ gold: action.type === 'hu' }" :disabled="blocked" @click="submit(action)">{{ actionLabel(action) }}</button>
       </div>
       </div>
-      <div class="chengdu-hand character-hand-table stable-scroll" tabindex="0" role="region" aria-label="本人私有手牌" aria-description="可横向滚动查看全部手牌">
+      <div ref="handScrollRef" class="chengdu-hand character-hand-table stable-scroll" tabindex="0" role="region" aria-label="本人私有手牌" aria-description="可横向滚动查看全部手牌">
         <div class="chengdu-hand-tiles"><MahjongTile v-for="(tile, index) in hand" :key="index" :tile="tile" interactive
           :selected="selectedIndices.includes(index)" :disabled="blocked || (!isExchange && !legalActions.some((action) => action.type === 'discard' && action.tile === tile)) || (isExchange && !legalActions.some((action) => action.type === 'exchangeThree'))"
           @click="chooseTile(index)" /></div>
       </div>
+      </div>
       <div v-if="game.rules.exchangeThree" class="chengdu-receipt-slot stable-scroll" tabindex="0" role="region" aria-label="我的换牌结果">
       <div v-if="game.preparation?.receivedExchange" class="chengdu-exchange-receipt"><span>收到的三张：</span><MahjongTile v-for="(tile, index) in game.preparation.receivedExchange.tiles" :key="index" :tile="tile" small /></div>
       </div>
-      <div class="chengdu-waits stable-scroll" tabindex="0" role="region" aria-label="我的听牌提示"><p v-if="game.waitTiles?.length && !me.won">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p></div>
+      <div class="chengdu-waits stable-scroll" tabindex="0" role="region" aria-label="我的听牌与接牌提示"><p v-if="game.claim" class="passive-claim" role="status" aria-live="polite">{{ nameFor(game.claim.fromSeat) }}{{ game.claim.source === 'robKong' ? '尝试补杠' : '打出' }}{{ labelFor(game.claim.tile) }} · 等待回应</p><p v-if="game.waitTiles?.length && !me.won">当前听牌：{{ game.waitTiles.map(labelFor).join('、') }}</p></div>
     </section>
     <!-- 本人画框只显示原图，角色名称仍留在图片替代文本和入座选择器中。
          The own frame shows only original art; character names remain in image alternatives and the seating selector. -->
@@ -291,11 +311,19 @@ function eventText(event) {
 
 /* 与花麻将共用无框动作带；真实牌组按内容定宽，过长时auto边距归零，首尾均可滚到。
    Share Flower's frameless dock; intrinsic-width tile lists center when fitting and reset auto margins on overflow. */
-.chengdu-own-area .chengdu-hand { display: block; height: 112px; }
+.chengdu-own-area .chengdu-hand { display: block; height: 114px; }
 .chengdu-hand-tiles { display: flex; width: max-content; min-width: 0; margin-inline: auto; gap: 5px; }
 .chengdu-own-area .hand-action-dock > .chengdu-action-bar { margin-top: 0; }
 .chengdu-own-area .hand-action-dock .button:not(.gold) { color: var(--hand-accent-light); background: var(--hand-action-surface); border-color: var(--hand-accent); }
 .chengdu-own-area .hand-action-dock .button.gold { color: var(--hand-accent-ink); background: linear-gradient(160deg, var(--hand-accent-light), var(--hand-accent)); border-color: var(--hand-accent-light); }
+
+/* 说明压在既有48px槽的前24px，完整长文可滚；成都较高手牌使用34px上沿，因此仍留2px安全间隔。
+   Notes use the first24px of the existing48px slot and scroll if long; Chengdu's taller hand uses34px top space, retaining a2px gap. */
+.chengdu-hand-note-content { height: 24px; }
+.chengdu-hand-note-content p { display: block; margin: 0; font-size: 11px; line-height: 18px; white-space: nowrap; }
+.chengdu-own-area .hand-action-dock { bottom: calc(100% - 30px); }
+.chengdu-own-area .chengdu-hand { padding: 34px 4px 6px; }
+.chengdu-own-area .chengdu-action-bar > * { flex-shrink: 0; }
 
 /* 页脚保持普通文档流，不能覆盖手牌或用视觉order改变焦点顺序。
    Keep the footer in normal flow, never overlaying hands or using visual order to disagree with focus order. */
