@@ -41,3 +41,6 @@ The user also confirmed mandatory available wins for prior winners in schema thr
 
 2026-11-08用户另确认：schema3胡后补/加杠只能用本次真实摸入同牌，不能借听口不变换掉锁定手牌，合法暗杠仍保留；自弃同牌至本人下一次实际摸牌前禁胡。当前与保存局后续动作共用检查，不迁移、不改已接受回应或旧账，缺历史不猜。详见[锁手牌与自弃纠错](docs/FLOWER-HAND-LOCK-CORRECTION.md)。
 The 2026-11-08 correction locks held tiles after hu and blocks self-discarded identities until the next actual own draw. Apply to future schema-three actions without migrations, revoking accepted responses or guessing absent history; preserve legal concealed kongs and frozen engines.
+
+2026-11-10用户明确杠上花消费本次杠后机会，胡后续摸弃牌受已胡保护，不能普通接炮或加杠后番。schema3后续动作及可证明的旧未回应窗口按此纠正；已接受回应、历史及旧账不改，schema1/2冻结。详见[杠上花续摸纠错](docs/KONG-HU-CONTINUATION-CORRECTION.md)。
+The 2026-11-10 correction consumes a kong opportunity upon replacement hu, protecting later continuation discards. Apply to future schema-three actions and provable unanswered saved windows without revoking accepted responses, rescoring history or changing frozen engines.

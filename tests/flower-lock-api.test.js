@@ -11,6 +11,7 @@ import { FileStore } from '../server/node.js';
 import { variableFixture, meld } from './fixtures/variable-table.js';
 import { postHuWinClaim } from './fixtures/post-hu-win.js';
 import { assertGameInvariants } from '../shared/game.js';
+import { oldContinuationClaim } from './fixtures/kong-hu-continuation.js';
 
 // 只把合成局存入隔离测试桌；不使用真实房间号、凭证或外部网络。
 // Inject only synthetic games into isolated test rooms; no real rooms, credentials or external networking.
@@ -104,5 +105,36 @@ test('FileStore restart filters a saved rob-kong hu, keeps its committed history
     const replay = await scope.action(0, latest.revision, { type: 'pass' });
     assert.equal(replay.status, 409);
     assert.deepEqual((await scope.getStore().get(scope.id)).game, after);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+// 修正前保存的胡后续摸弃牌，重启后不能被旧客户端直接提交胡；读取和拒绝均不改旧账。
+// After disk restart, an old client cannot hu a saved continuation discard; reads/rejections do not rewrite old ledgers.
+test('FileStore restart rejects stale post-kong continuation claims over HTTP without rewriting history', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'flower-kong-continuation-'));
+  try {
+    const game = oldContinuationClaim({ repeatedResponder: true });
+    const scope = await table(game, new FileStore(directory));
+    scope.restart(new FileStore(directory));
+    const { state } = await scope.get(2);
+    assert.deepEqual(state.game.legalActions, [{ type: 'pass' }]);
+    assert.equal(state.game.huDiagnostic.code, 'PROTECTED_DISCARD');
+    const before = await scope.getStore().get(scope.id);
+    assert.deepEqual(before.game, game);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const rejected = await scope.action(2, state.revision, { type: 'hu' });
+      assert.equal(rejected.status, 422);
+      assert.deepEqual(await scope.getStore().get(scope.id), before);
+    }
+    for (const seat of [2, 1]) {
+      const current = (await scope.get(seat)).state;
+      const accepted = await scope.action(seat, current.revision, { type: 'pass' });
+      assert.equal(accepted.status, 200);
+    }
+    const after = (await scope.getStore().get(scope.id)).game;
+    assert.equal(after.history.filter(event => event.type === 'hu').length, 1);
+    assert.deepEqual(after.history.slice(0, before.game.history.length), before.game.history);
+    assert.deepEqual(after.rules, before.game.rules);
+    assertGameInvariants(after);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

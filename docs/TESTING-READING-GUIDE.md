@@ -44,6 +44,7 @@ A scenario may repeat act/assert phases to cover a lifecycle. A cloned `before` 
 - `tests/peng-upgrade-regression.test.js`：碰后先打一次牌，之后正常操作窗口可用已持有第四张补杠，不要求刚摸到同牌；同时覆盖 v0.7.0 错误 false 的纠正、抢杠和旧规则时机。 / Discard once after peng, then permit a held fourth copy in a later normal window without requiring a matching new draw; cover the v0.7.0 false correction, rob-kong and preserved older timing.
 - `tests/fixtures/pung-upgrade.js`：共享真实碰牌夹具，分别控制已持有第四张与后续墙头，避免把这两个条件混为一谈。 / Shared real-peng fixture with independent held-fourth-copy and later-wall-head controls.
 - `tests/extended-kong.test.js`：五至八张扩杠、补牌来源与付款方。 / Five-to-eight-tile extensions and replacement payer provenance.
+- `tests/kong-hu-continuation.test.js`、`tests/fixtures/kong-hu-continuation.js`：杠上花后续摸弃牌保护、四类杠、自动/手动与分段、旧保存态证据、已接受回应和终局；`tests/flower-lock-api.test.js`另验证FileStore重启和HTTP拒绝无写入。 / Post-kong-win continuation protection, four kong kinds, pacing, saved evidence, accepted responses and termination; the existing HTTP suite verifies disk restart and no-write rejection.
 - `tests/rob-kong.test.js`：未提交的加杠、抢杠窗口、回应顺序和原子结算。 / Uncommitted upgrades, rob windows, response order and atomic settlement.
 - `tests/deferred-radishes.test.js`：首次胡牌前累计杠萝卜，首次胡时一次翻出。 / Accrue pre-first-win kong radishes and reveal them once.
 - `tests/special-patterns.test.js`：特殊牌型、首胡冻结信息、扩展听牌和重复胡。 / Special patterns, frozen first-win metadata, expanded waits and repeat wins.

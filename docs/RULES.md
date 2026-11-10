@@ -26,6 +26,8 @@ New tables select three/four seats, one–five decks in half steps and a dragon 
 - 胡后必胡是用户确认的 schema-v3 规则纠错，已有局和已保存待回应窗口也按此过滤可用动作，不改规则快照、已提交回应、历史或已结算分。schema1/2 冻结引擎不改。详见 [胡后必胡纠错](POST-HU-WIN-CORRECTION.md)。
 - 胡过者不能再碰；**胡过者打出的任何牌，其他人都不能碰或明杠**，包括杠后弃牌。
 - 胡过者普通弃牌不能被接胡；只有其杠后的下一张弃牌仍可被胡。合法暗杠、完成碰后出牌的补杠、逐张加杠至八张仍允许，不因禁止接明杠而一并禁掉；胡后杠必须保持完整听口。胡后补杠/加杠还必须使用本次真实摸入的同牌，不能抽走原暗手而留下另一张摸牌，听口相同也不能换手牌。
+- **杠上花结束本次杠后机会**：补牌自摸胡后，再续摸打出的牌受已胡保护，别人不能胡、碰、明杠，不是普通放炮，也不加杠后接炮番。只有之后真实完成一个新杠，才重新产生杠后补摸和弃牌机会。当前schema3及旧保存态的后续动作按此纠正，已接受回应、旧历史和分数不重算；详见[杠上花续摸纠错](KONG-HU-CONTINUATION-CORRECTION.md)。
+  **A replacement win consumes its kong opportunity**: subsequent continuation discards are protected from hu/peng/exposed kong, not ordinary discard wins with reduced fan. Only a new committed kong creates another replacement/discard opportunity. Apply to future schema-three actions and restored states without revoking accepted responses or rescoring history.
 - **自己已经胡过不再锁普通接炮**：只要未胡者打出合法听牌，就可以再次胡，不必等自己下一次正常摸牌，也不必更换听口。已胡出牌者普通弃牌保护仍保留，杠后弃牌和抢杠的来源例外不变。旧存档中的锁口字段保留以兼容历史，但不再限制 schema-v3 接胡；schema1/2 仍走冻结旧引擎。
 - **自弃同牌限制**：无论是否已经胡过，自己打过的同种牌，在本人下一次实际摸牌前不能接胡或抢杠胡，其他听口不受此条限制。正常摸、胡后续摸、杠后补摸都解除先前限制；碰或准备摸牌不解除。若碰后又打出另一种牌，在实际摸牌前两种牌都不能胡。当前schema3和保存局的未回应机会都按此检查，已接受回应、历史和旧账保留。详见[锁手牌与自弃纠错](FLOWER-HAND-LOCK-CORRECTION.md)。
 

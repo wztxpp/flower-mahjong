@@ -105,6 +105,9 @@ In new games, getDiscardClaimOptions lists all unwon hu/exposed-kong/peng option
 `settleHuBatch` 在牌型固定后选择本次事件来源；七对不加事件番，普通抢杠保持原行为，其余只在 `rules.kongEventFan === true` 下开启。`calculateHuScore` 在番转分前加一次，不修改 `firstHuPattern` 或付款方。读取旧局不合并默认值，旧历史不重算。详细规则见 [当前规则](RULES.md)。
 After freezing the pattern, settleHuBatch chooses this win's event source. Seven pairs excludes event fan; ordinary rob-kong keeps its old behavior, and other sources require rules.kongEventFan === true. calculateHuScore adds it once before point conversion without changing firstHuPattern or payers. Saved-game reads do not merge defaults or recalculate history. See the current rules.
 
+`continueAfterHu`在胡后清除杠后弃牌机会，`discardTile`另防旧保存态的续摸残留。`isProtectedPostHuDiscard`统一新窗口、旧未回应窗口、展示恢复和诊断；只有完整匹配历史证明续摸时才纠正旧弃牌资格，已提交回应仍按原来源结算。见[完整边界](KONG-HU-CONTINUATION-CORRECTION.md)。
+`continueAfterHu` consumes the kong opportunity; `discardTile` guards stale saved continuation draws. The read-only helper unifies new/saved claims, presentation recovery and diagnostics, correcting old eligibility only with matching history while honoring accepted responses.
+
 ## 可变牌桌维护入口 / Variable-table maintenance
 
 [可变人数与副数](VARIABLE-TABLES.md) 是3/4人、1–5副、神龙门槛及新计分快照的当前说明，替代本指南早期固定三人/144张/八张上限的默认描述。新增维护测试为 `tests/variable-table.test.js`、`tests/fixtures/variable-table.js` 和 `tests/variable-room-api.test.js`；UI专项并入原测试。旧局和schema1/2不改。

@@ -590,6 +590,32 @@ function canDeclareKong(game, seat, type, tile) {
   }
   return before.length > 0 && sameTileList(before, contextualWaitTiles(game, player, hand, melds));
 }
+/* 判断已胡来源的弃牌是否受保护；只读计算，不改已经提交的弃牌、回应和旧账。
+ * Determine whether a won source's discard is protected, without rewriting committed discards, responses or scores.
+ * 旧版本可能把杠标记带过胡后续摸。仅在牌河与对应事件数量一致、当前末张弃牌精确匹配、
+ * 且其前一个本人动作确为胡后续摸时纠正资格；缺记录不能猜，真实新杠会中断该证据链。
+ * Older versions carried kong markers through continuation draws. Correct eligibility only when river/event counts
+ * agree, the current final discard matches exactly and its preceding own action is a continuation draw; never guess missing history. */
+function isProtectedPostHuDiscard(game, discarded) {
+  if (!discarded || discarded.robKong || !game.players[discarded.seat].huCount) return false;
+  if (!discarded.afterKong) return true;
+  if (game.discards.at(-1) !== discarded) return false;
+  const riverEvents = game.history.filter((event) => ['discard', 'robKongAttempt'].includes(event.type));
+  if (riverEvents.length !== game.discards.length) return false;
+  const event = riverEvents.at(-1);
+  if (event?.type !== 'discard' || event.seat !== discarded.seat ||
+      event.tile !== discarded.tile || event.afterKong !== true) return false;
+  // 只取弃牌前最近的本人动作，不越过另一轮胡、杠、碰或出牌寻找更老的续摸。
+  // Inspect only the nearest preceding own action, never reaching past a later hu, kong, peng or discard.
+  for (let index = game.history.lastIndexOf(event) - 1; index >= 0; index--) {
+    const previous = game.history[index];
+    if (previous.seat !== discarded.seat) continue;
+    if (previous.type === 'draw') return previous.source === 'continuation';
+    if (['hu', 'anGang', 'mingGang', 'buGang', 'addGang', 'peng', 'discard', 'robKongAttempt'].includes(previous.type))
+      return false;
+  }
+  return false;
+}
 /* 为一个接牌座位计算此弃牌可用的胡、明杠、碰；按当前版本保留来源保护与优先级。
  * Compute this seat’s hu, exposed-kong, and peng options for one discard using this version’s protection and priority. */
 function getDiscardClaimOptions(game, seat, discarded) {
@@ -599,7 +625,7 @@ function getDiscardClaimOptions(game, seat, discarded) {
    * A source player who has already won may have protected ordinary discards. */
   const sourceHasHu = game.players[discarded.seat].huCount > 0;
   const canHu =
-    (!sourceHasHu || discarded.afterKong) &&
+    !isProtectedPostHuDiscard(game, discarded) &&
     getAllowedHuWaits(game, seat, discarded.tile, false);
   // A post-hu source is protected from both peng and mingGang, even after its kong.
   /* 来源已胡时保留胡牌例外，但不允许以该弃牌碰或明杠。
@@ -687,8 +713,9 @@ export function getLegalActions(game, seat) {
     // Filter unanswered saved windows too, retaining pass so a now-blocked old window can close.
     // 已提交回应在上面返回空动作，不在读取时改写或撤销。
     // Already committed responses returned above are never rewritten or revoked on read.
+    const protectedDiscard = isProtectedPostHuDiscard(game, game.discards[game.claim.discardIndex]);
     const options = cloneSerializable(game.claim.options[seat]).filter((action) =>
-      action.type !== 'hu' || !hasSelfDiscardHuLock(game, seat, game.claim.tile));
+      action.type !== 'hu' || (!protectedDiscard && !hasSelfDiscardHuLock(game, seat, game.claim.tile)));
     // 已胡者能胡就只能胡，普通接炮和抢杠共用此入口。读取时也过滤旧存档的选项，
     // 但不改写原窗口、已提交回应或历史；旧客户端不能通过直接发“过”绕过。
     // A prior winner must take an available discard/rob-kong win. Filter saved options on read
@@ -810,7 +837,7 @@ export function getHuDiagnostic(game, seat) {
     tile = game.claim.tile;
     fromHand = false;
     const discarded = game.discards[game.claim.discardIndex];
-    if (game.players[discarded.seat].huCount && !discarded.afterKong && !discarded.robKong)
+    if (isProtectedPostHuDiscard(game, discarded))
       return reply('PROTECTED_DISCARD', '对方已经胡过；其普通出牌不能接胡，杠后出牌除外。', {
         tile,
       });
@@ -1422,6 +1449,11 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
 /* 完成本轮胡牌结算后决定终局或胡后补摸；不把胡牌等同于个人离席。
  * After settling hu, decide between game end and continuation draw; hu does not mean leaving a seat. */
 function continueAfterHu(game, seat, presentationOptions) {
+  // 胡牌已消费本次杠后机会；之后续摸弃牌受已胡保护，不再给他家接胡或加杠后番。
+  // Hu consumes this kong opportunity. Later continuation discards are protected, not new post-kong claims.
+  // 在展示暂停前清除，也覆盖从旧版“胡牌展示中”存档恢复的入口；既有结算不重算。
+  // Clear before pausing, including restored old hu-presentation states, without recalculating committed scores.
+  game.players[seat].pendingKongDiscard = false;
   // 结算已完成，但终局判定和续摸要等本批胡牌展示结束。
   // Settlement is committed; defer the end decision and draw until the hu batch is presented.
   if (presentationOptions?.pausePresentation) {
@@ -1649,7 +1681,12 @@ function discardTile(game, seat, tile, automatic = false, presentationOptions) {
     seat,
     tile,
     claimable: false,
-    afterKong: player.pendingKongDiscard,
+    // 旧存档可能已完成续摸但还未弃牌；当前真实续摸来源足以证明旧杠标记已失效。
+    // A saved continuation may already be drawn: its actual draw source proves the old kong marker expired.
+    // 后续新杠的来源是 replacement，仍保留真正杠后出牌的接胡资格。
+    // A newly committed kong produces replacement instead, preserving genuine post-kong discard claims.
+    afterKong: player.pendingKongDiscard &&
+      !(game.lastDraw?.seat === seat && game.lastDraw.source === 'continuation'),
   };
   player.pendingKongDiscard = false;
   // 只有实际弃牌才完成这次碰后的义务，后续符合条件即可补杠。

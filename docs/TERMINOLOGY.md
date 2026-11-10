@@ -81,6 +81,7 @@ This dictionary defines each concept in code. Prefer the Chinese terms below and
 - `fan`（番）不等于 `points`（分），`fanToPoints` 负责映射。`score` 是本局净变动，`payments` 是一次事件的零和明细。 / Fan and points are different units; score is a game delta and payments are one event’s zero-sum transfers.
 - `bigSingleReadyPoints` 是每个对手支付的喜钱金额，整数 0–100000；0 不收费但仍记录已处理标记与事件，旧局缺金额按 50。 / Per-opponent ready bonus, integer 0–100000; zero creates no transfers but still records processing/event state; missing saved amounts retain fifty.
 - `pendingPungDiscard` 是本座位仍欠碰后一次出牌的状态；只有实际出牌清除，暗杠/补摸不能清除。 / Per-seat post-peng discard obligation; only an actual discard clears it, not a kong/replacement draw.
+- `pendingKongDiscard` 是当前杠后尚未消费的弃牌机会；当前schema3胡牌即消费，不能跨胡后续摸继续生效。`isProtectedPostHuDiscard`只读过滤有精确历史证据的旧错误窗口，不改已接受回应或账本。 / Current post-kong discard opportunity, consumed by hu in schema three; the read-only protection helper filters proven stale saved windows without rewriting accepted responses or ledgers.
 - `bigSingleReadyPayment` 是是否启用大单吊听牌喜钱的规则开关；`bigSingleReadyPaid` 是本玩家本局是否已经处理的状态。不要把配置与已支付标记混用。 / The rule switch and one-game processed marker are distinct.
 - `tableScores` 是本房间跨局总账视图；个人 `records` 是匿名档案跨房间的记录，不能混在同一个总分里。 / Table totals belong to one room; profile records span rooms.
 - `history` 在引擎里指本局事件；房间归档是 `archivedGames` 等持久记录结构；前端 `personalHistory` 是个人记录响应。阅读时带上对象前缀。 / Engine history means game events; room archives and personalHistory are separate structures. Read qualified names.

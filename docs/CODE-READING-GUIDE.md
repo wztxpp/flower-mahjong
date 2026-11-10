@@ -4,6 +4,9 @@
 
 # 从这里开始读代码 / Start reading here
 
+杠上花续摸纠错维护入口：[规则与保存边界](KONG-HU-CONTINUATION-CORRECTION.md)。新增维护文件为`tests/kong-hu-continuation.test.js`和`tests/fixtures/kong-hu-continuation.js`，HTTP恢复检查加入既有`tests/flower-lock-api.test.js`；规则实现仍在`shared/game.js`。
+Kong-win continuation maintenance: the linked guide covers rules/recovery; the two new test/fixture files and existing HTTP suite verify the implementation in shared/game.js.
+
 当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
 Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
 

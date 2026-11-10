@@ -64,6 +64,9 @@ Common current-engine path:
 无人可接时跳过 claim。碰成功直接进入碰牌者 discard 步骤，不能伪造一次摸牌。胡/杠后可能进入 continuation/replacement 摸牌；v2 与未启用展示的 v3 在一次 API 动作内完成自动步骤；启用展示的 v3 按已提交动作分段；local 使用服务端短节拍，只有旧屏障等待全桌音画回执。
 Skip claim when nobody is eligible. A successful peng enters its claimant’s discard step without inventing a draw. Hu/kong may start continuation/replacement draws; v2 and unpaced v3 complete non-decision steps in one action; paced v3 pauses at committed segments: local mode uses server cadence, while legacy gates await table media receipts.
 
+当前schema3杠标记在胡牌后、展示暂停前结束；续摸弃牌受已胡来源保护。旧已摸/已展示/待回应状态的保守恢复和已接受回应边界见[杠上花续摸纠错](KONG-HU-CONTINUATION-CORRECTION.md)，不修改冻结引擎或旧账。
+Current schema-three kong markers expire after hu before presentation pauses; continuation discards are protected. See the correction guide for conservative saved-state recovery and accepted-response boundaries, without frozen-engine or ledger changes.
+
 接牌窗口要收齐回应，再按引擎版本和保存方向处理。`pass` 也必须记录，没回应和明确放弃不同。一炮多响先准备所有赢家再一起算分，不按最快点击者结算。
 Collect all eligible responses before resolving by saved engine/direction. No response is not a pass. Simultaneous winners are prepared together before scoring, not by click speed.
 
