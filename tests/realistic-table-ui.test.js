@@ -183,12 +183,18 @@ export async function mountRealistic(t, state = realisticFixture(), extraProps =
   return { props, root, app, get instance() { return instance; }, get scope() { return instance?.$?.setupState; } };
 }
 
-test('solid shells preserve canonical hidden-face privacy and have four connected sides', async () => {
+test('solid shells preserve canonical hidden-face privacy and close all rounded edges', async () => {
   const component = await loadRealisticComponent('RealisticTableTile.vue');
   const root = hostNode('root');
   const app = renderer.createApp(component, { tile: 17, back: true, small: true });
   app.mount(root); await Vue.nextTick();
-  assert.equal(realisticNodes(root, (node) => String(node.props.class).includes('realistic-tile-side')).length, 4);
+  // 三层各含四条直边和十二个圆角片；两张底盖闭合实体，不再断言旧方盒。
+  // Three bands each contain four straight sides and twelve corner facets; two caps close the solid, not the old square box.
+  const panels = realisticNodes(root, (node) => node.props.class === 'realistic-tile-shell-panel');
+  assert.equal(panels.length, 48);
+  assert.ok(panels.every((panel) => panel.props.style.transform.includes('matrix3d(')));
+  assert.equal(realisticNodes(root, (node) => node.props.class === 'realistic-tile-bottom').length, 1);
+  assert.equal(realisticNodes(root, (node) => node.props.class === 'realistic-tile-face').length, 1);
   assert.equal(realisticNodes(root, (node) => node.props['aria-label'] === '背面牌').length, 1);
   assert.equal(realisticNodes(root, (node) => node.props.class === 'tile-photo-face').length, 0);
   assert.equal(realisticNodes(root, (node) => node.tag === 'button').length, 0);
@@ -569,4 +575,42 @@ test('under-table resize resets camera without replacing controls and private in
   assert.equal(prevented, false, 'private arrow keys remain native');
   assert.equal(viewport.hasPointerCapture(44), false);
   assert.deepEqual(mounted.scope.pan, { x: 0, y: 0 });
+});
+
+// 浏览器选字/拖图与场景平移互斥；右键同样支持，但私有控件必须保留默认手势。
+// Native selection/image dragging is exclusive with panning; right drag works without stealing private-control gestures.
+test('scene pan prevents native selection for both mouse buttons while preserving private controls', async (t) => {
+  realisticBrowser(t);
+  const mounted = await mountRealistic(t, realisticFixture(), { hasPrivateControls: true });
+  const viewport = realisticNodes(mounted.root, (node) => String(node.props.class).includes('realistic-viewport'))[0];
+  for (const button of [0, 2]) {
+    let prevented = 0;
+    viewport.props.onPointerdown({ button, pointerId: 71, clientX: 0, clientY: 0, target: viewport, preventDefault() { prevented += 1; } });
+    assert.equal(prevented, 1);
+    viewport.props.onPointermove({ pointerId: 71, clientX: 20, clientY: 30 });
+    assert.deepEqual(mounted.scope.pan, { x: 20, y: 30 });
+    viewport.props.onPointerup({ pointerId: 71 });
+  }
+  for (const eventName of ['onDragstart', 'onSelectstart', 'onContextmenu']) {
+    let prevented = 0;
+    viewport.props[eventName]({ target: viewport, preventDefault() { prevented += 1; } });
+    assert.equal(prevented, 1);
+    viewport.props[eventName]({ target: { closest: () => ({}) }, preventDefault() { prevented += 1; } });
+    assert.equal(prevented, 1, 'Private controls keep native gestures');
+  }
+});
+
+// 对手暗手只能竖立背牌；终局公开牌仍平摊，不能把姿态开关当成看牌权限。
+// Opponent concealed racks stand upright; public terminal hands stay flat, and posture never grants visibility.
+test('only concealed hand racks stand upright, never rivers or exposed tiles', async (t) => {
+  realisticBrowser(t);
+  const mounted = await mountRealistic(t, realisticFixture(), { hasPrivateControls: true });
+  const hands = realisticNodes(mounted.root, (node) => String(node.props.class).includes('realistic-hand-zone'));
+  assert.ok(hands.length > 0);
+  for (const hand of hands) {
+    const tiles = realisticNodes(hand, (node) => String(node.props.class).includes('realistic-solid-tile'));
+    assert.ok(tiles.length > 0);
+    assert.ok(tiles.every((node) => String(node.props.class).includes('is-upright')));
+    assert.equal(realisticNodes(hand, (node) => String(node.props.class).includes('tile-photo-face')).length, 0);
+  }
 });

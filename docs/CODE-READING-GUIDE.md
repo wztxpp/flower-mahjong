@@ -1,3 +1,5 @@
+当前 v41 展示修复见 [验收修复](REALISTIC-V41-CORRECTIONS.md) 与 [圆角实体牌](REALISTIC-ROUNDED-TILES.md)，新增维护测试 `tests/realistic-rounded-tile.test.js`。Current presentation fixes and rounded-tile test inventory are linked here.
+
 当前完整整图与AI桌椅维护入口：[REALISTIC-SOLID-SCENE.md](REALISTIC-SOLID-SCENE.md)。新来源由 `realistic-character-figure.js` 和 `RealisticTableTile.vue` 明确隔离旧拼接，家具角点统一注册；历史v39验收不代表新版本像素验收。Current full-source scene contract and new-file inventory are documented there.
 
 # 从这里开始读代码 / Start reading here

@@ -169,10 +169,18 @@ function flightStyle(flight) {
 // 只捕获场景空白/公开牌的主指针；工具、滚动详情与固定手牌不属于拖拽范围。
 // Capture only the scene's primary pointer; tools, detail scrolling and the fixed private hand are outside this drag surface.
 function beginPan(event) {
-  if (event.button !== 0 || event.isPrimary === false || event.target.closest?.('button, input, select, a, details, #realistic-private-controls')) return;
+  if (![0, 2].includes(event.button) || event.isPrimary === false || event.target.closest?.('button, input, select, a, details, #realistic-private-controls')) return;
+  // 场景拖动替代浏览器默认的文字选区/图片拖出；私有按钮和滚动入口已在上面排除。
+  // Panning replaces native text selection/image dragging; private controls and scrolling were excluded above.
+  event.preventDefault?.();
   pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, pan: { ...pan.value } };
   dragging.value = true;
   viewport.value?.setPointerCapture?.(event.pointerId);
+}
+// 仅场景取消浏览器默认手势；私有牌/表单仍可使用原生选择、上下文菜单和横向滚动。
+// Cancel native gestures only on the scene; private tiles/forms keep selection, context menus and horizontal scrolling.
+function preventSceneGesture(event) {
+  if (!event.target?.closest?.('#realistic-private-controls')) event.preventDefault?.();
 }
 function movePan(event) {
   if (!pointer || event.pointerId !== pointer.id) return;
@@ -304,10 +312,11 @@ onUnmounted(() => {
     <div ref="viewport" class="realistic-viewport" :class="{ dragging, 'reduced-motion': reducedMotion }"
       tabindex="0" role="region" aria-label="可拖动的二维桌面，松手回正；方向键移动，松键回正"
       @pointerdown="beginPan" @pointermove="movePan" @pointerup="resetPan" @pointercancel="resetPan" @lostpointercapture="resetPan"
+      @dragstart="preventSceneGesture" @selectstart="preventSceneGesture" @contextmenu="preventSceneGesture"
       @keydown="onPanKey" @keyup="resetPan" @blur="resetPan">
       <div class="realistic-scene" :style="sceneStyle">
         <div class="realistic-room-pattern" aria-hidden="true"></div>
-        <img class="realistic-table-art" :src="REALISTIC_TABLE_ART.url" :style="tableArtStyle" alt="" aria-hidden="true" />
+        <img class="realistic-table-art" :src="REALISTIC_TABLE_ART.url" :style="tableArtStyle" alt="" aria-hidden="true" draggable="false" />
         <div class="realistic-felt" :style="tableProjectionStyle">
           <div class="realistic-felt-tint" aria-hidden="true"></div>
           <!-- 牌墙按用户要求不绘制；中央余牌仍来自同一公开状态，发牌/摸牌规则不变。
@@ -315,7 +324,7 @@ onUnmounted(() => {
           <div v-for="seat in model.seats" :key="seat.seat" class="realistic-seat-plane" :style="{ transform: `rotate(${seat.rotation}deg)` }" :data-realistic-seat="seat.seat" :data-position="seat.position">
             <div v-if="!(hasPrivateControls && seat.isSelf)" class="realistic-zone realistic-hand-zone" :style="zoneStyle(seat.zones.hand)" :aria-label="`${names.get(seat.seat)}的手牌，共${seat.hand.length}张`">
               <div class="realistic-tiles" :style="grid(seat.hand.length, seat.zones.hand.width, seat.zones.hand.height)">
-                <MahjongTile v-for="(tile, index) in seat.hand" :key="index" :tile="tile.tile" :back="tile.hidden" small />
+                <MahjongTile v-for="(tile, index) in seat.hand" :key="index" :tile="tile.tile" :back="tile.hidden" :upright="tile.hidden" small />
               </div>
             </div>
             <div class="realistic-zone realistic-river-zone" :style="zoneStyle(seat.zones.river)" :aria-label="`${names.get(seat.seat)}的牌河，${seat.discards.length}张`">

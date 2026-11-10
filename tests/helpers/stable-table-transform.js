@@ -32,6 +32,9 @@ export function transformStableTableApp(source) {
   // 只保存本页视图，session只是无凭证的inRoom展示哨兵；绝不调用applyState/initialize/mutate。
   // Set page-local views only; session is a credential-free inRoom sentinel, never applyState/initialize/mutate.
   content += `\nwindow.__stableTableFixture = Object.freeze({
+    // 隔离页面可由URL选择初始展示，不写偏好存储，也不调用游戏动作。
+    // The isolated page selects its initial presentation without stored preferences or game actions.
+    async setPresentation(value) { tablePresentation.value = value === 'realistic' ? 'realistic' : 'classic'; await nextTick(); },
     async setSnapshot(input) {
       const snapshot = structuredClone(input);
       session.value = { roomId: 'VIEWONLY' };

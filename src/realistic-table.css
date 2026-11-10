@@ -244,3 +244,41 @@
 .realistic-tile-flight { --realistic-tile-width: 30px; --realistic-tile-height: 42px; }
 
 .is-realistic-table .realistic-private-controls .hand-panel { padding: 0 !important; }
+
+/* 场景拖拽不等同于浏览器拖图/选字；只锁定装饰场景，不影响表单和私有牌的键盘操作。
+   Scene panning is not native image/text selection; scope this to artwork without disabling private controls. */
+.realistic-scene { user-select: none; -webkit-user-select: none; }
+.realistic-scene img, .realistic-scene svg { -webkit-user-drag: none; }
+.realistic-viewport { touch-action: none; }
+
+/* 旧自动放置把五个标签挤到同一角。显式三行三列让四方围绕桌心，避免误当座位风规则。
+   Explicit grid placement keeps the four spatial directions around the center, without inventing seat-wind rules. */
+.realistic-compass { grid-template-areas: '. north .' 'west center east' '. south .'; grid-template-rows: 24px 36px 24px; width: 160px; opacity: 1; }
+.realistic-compass span:nth-of-type(1) { grid-area: north; }
+.realistic-compass span:nth-of-type(2) { grid-area: west; }
+.realistic-compass b { grid-area: center; white-space: nowrap; font-size: 22px; }
+.realistic-compass span:nth-of-type(3) { grid-area: east; }
+.realistic-compass span:nth-of-type(4) { grid-area: south; }
+
+/* 外层不是滚动容器，否则子牌行的阴影/按钮会制造第二个横纵滚条。只让真正过长的牌行横滚。
+   The outer overlay must not scroll: tile shadows/actions otherwise create a second horizontal/vertical scrollbar. */
+.is-realistic-table .realistic-private-controls { overflow: visible; max-height: none; }
+.is-realistic-table .realistic-private-controls :is(.hand-panel,.chengdu-hand-panel,.hand-interaction-area) { min-width: 0; max-width: 100%; }
+.is-realistic-table .realistic-private-controls :is(.hand-scroll,.chengdu-hand) {
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: auto;
+  height: calc(var(--private-tile-height) + 30px) !important;
+  min-height: calc(var(--private-tile-height) + 30px) !important;
+  padding: 5px 8px 25px !important;
+}
+/* 近沿操作牌保留原牌面和原生button，只恢复圆角、象牙倒角与完整绿色底边；不改变选择/出牌权限。
+   Private tiles retain their canonical faces and buttons, restoring rounded ivory bevels and a full green base only. */
+.is-realistic-table .realistic-private-controls :is(.hand-scroll,.chengdu-hand) .mahjong-tile {
+  min-width: 0;
+  border-radius: max(4px,calc(var(--private-tile-width) * .15));
+  border: 1px solid #c8b588;
+  background: linear-gradient(135deg,#fff9e8,#e8d7b1);
+  box-shadow: inset 1px 1px 1px #fffdf4, inset -1px -2px 2px #beaa7b, 0 3px 0 #e0d4ae, 0 6px 0 #37614a, 0 8px 0 #214431, 0 10px 4px #07160e66;
+}

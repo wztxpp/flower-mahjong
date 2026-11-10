@@ -7,7 +7,10 @@ import { resolve } from 'node:path';
 import { rejectStableTableApi } from '../helpers/stable-table-server-boundary.js';
 import { transformStableTableApp } from '../helpers/stable-table-transform.js';
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const port = Number(process.argv[2] || 5518);
+// 托管预览附加 --port 时优先使用其指定端口，仍只启动一个隔离实例。
+// Honor the managed preview port override while running one isolated instance only.
+const portFlag = process.argv.indexOf('--port');
+const port = Number(portFlag >= 0 ? process.argv[portFlag + 1] : process.argv[2] || 5518);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Invalid preview port');
 const server = await createServer({
   root, configFile: false,

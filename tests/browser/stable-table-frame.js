@@ -43,10 +43,15 @@ window.fetch = (input, options) => {
 };
 let app = createApp(App);
 app.mount('#app');
-let currentCase = new URL(location.href).searchParams.get('case') || 'flower-3';
-let currentCharacter = 'sweet';
+const initialOptions = new URL(location.href).searchParams;
+let currentCase = initialOptions.get('case') || 'flower-3';
+let currentCharacter = initialOptions.get('character') || 'sweet';
 let summaryGameNumber = 0;
-await window.__stableTableFixture.setSnapshot(stableTableSnapshot(currentCase, 'empty'));
+// URL只选择合成快照与本地展示，方便图形输入不可用时只读检查真实DOM；没有真实房间和API。
+// URL options choose synthetic snapshots/presentation for read-only DOM checks when graphic input is unavailable.
+await window.__stableTableFixture.setSnapshot(stableTableSeatSnapshot(
+  stableTableSnapshot(currentCase, initialOptions.get('stage') || 'empty', currentCharacter), Number(initialOptions.get('seat') || 0)));
+await window.__stableTableFixture.setPresentation(initialOptions.get('presentation'));
 window.stableTablePreview = Object.freeze({
   cases: STABLE_TABLE_CASES, stages: STABLE_TABLE_STAGES,
   async set(caseId, stageId, characterId, viewerSeat = 0) {
