@@ -264,3 +264,5 @@ See the full overlay contract; permanent action slots are the superseded present
 - `buildThreeTableModel`：把已显示且按查看者裁剪的视图转成三维展示模型；不是另一套规则引擎。 / Adapts the displayed viewer-filtered view, never another rules engine.
 - `createSceneLifetime`：三维资源与清理回调的所有者，不代表房间或单局生命周期。 / Owns scene resources and cleanup callbacks, not rooms or game rounds.
 - `createFrameGate`：以房间、局和递增序号接纳 App 的已提交展示帧；挂载只建立基线。 / Accepts committed App frames by room, round and monotonic sequence; mounting only establishes a baseline.
+
+- 胡后固定牌型 / fixed post-hu pattern：七对首胡快照不能用于证明拆对成杠合法；普通杠须保留原手牌结构与所有听口。`preserveWaitsOnPostHuKong`保留为旧存档/协议字段，当前schema3不允许false/缺字段绕过本次纠错。详见[牌型保护](POST-HU-KONG-PATTERN-CORRECTION.md)。 / A saved seven-pairs snapshot cannot validate breaking pairs into kongs. Ordinary kongs preserve held structure and all waits; the retained legacy field cannot bypass this schema-three correction.

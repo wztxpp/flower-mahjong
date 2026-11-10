@@ -222,3 +222,6 @@ The explicitly requested final reveal exists only in authoritative finished resp
 
 终局牌桌摊手牌复用上述只读摘要，由当前已显示快照派生，不另存手牌或监听器。摘要/阶段撤销即收起牌面；成都血战已胡但未结束不满足门槛。可见本局原名与当前占座区分，不让替补继承旧手牌归属。结算“返回牌桌”只关闭本地弹层，沿用焦点与busy守卫，不触发房间离席或导航生命周期。
 Table hand reveals derive from that same displayed summary without another hand cache or listener; withdrawn summaries/phases remove faces, and live Chengdu retirements do not qualify. Visible original names distinguish old hands from replacement occupants. Returning from settlement only closes the local dialog under focus/busy guards, without entering departure/navigation lifecycles.
+
+胡后杠的牌型保护只存在于`shared/game.js`权威白名单；界面不另写七对禁杠逻辑。保存窗口读取同样过滤尚未回应明杠，但不撤销已提交回应、重算旧账或回填字段。详见[胡后杠牌型纠错](POST-HU-KONG-PATTERN-CORRECTION.md)。
+Post-hu pattern protection belongs to the authoritative engine allowlist, not a separate UI rule. Saved-window reads filter unanswered exposed kongs without revoking accepted responses, rescoring history or adding fields.

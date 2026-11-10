@@ -12,6 +12,7 @@ import { variableFixture, meld } from './fixtures/variable-table.js';
 import { postHuWinClaim } from './fixtures/post-hu-win.js';
 import { assertGameInvariants } from '../shared/game.js';
 import { oldContinuationClaim } from './fixtures/kong-hu-continuation.js';
+import { sevenPairsAfterHu, sevenPairShapes } from './fixtures/post-hu-pattern.js';
 
 // 只把合成局存入隔离测试桌；不使用真实房间号、凭证或外部网络。
 // Inject only synthetic games into isolated test rooms; no real rooms, credentials or external networking.
@@ -74,6 +75,33 @@ test('HTTP rejects held-tile post-hu upgrades repeatedly without changing saved 
   const accepted = await scope.action(0, state.revision, { type: 'pass' });
   assert.equal(accepted.status, 200);
   assert.deepEqual((await scope.getStore().get(scope.id)).game.players[0].hand, [3, 4, 5, 5, 11, 12, 13]);
+});
+
+// 七对错误杠按钮不能从旧客户端或重连后HTTP请求绕过；拒绝与重复请求均无写入。
+// Old buttons and reconnecting HTTP clients cannot bypass seven-pairs protection; repeated rejections do not write state.
+test('FileStore restart rejects a seven-pairs concealed kong and preserves its fixed pattern and ledger', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'flower-seven-pairs-kong-'));
+  try {
+    const game = sevenPairsAfterHu();
+    const scope = await table(game, new FileStore(directory));
+    scope.restart(new FileStore(directory));
+    const { state } = await scope.get(0);
+    assert.deepEqual(state.game.legalActions, [{ type: 'pass' }]);
+    const before = await scope.getStore().get(scope.id);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const rejected = await scope.action(0, state.revision, { type: 'anGang', tile: 0 });
+      assert.equal(rejected.status, 422);
+      assert.deepEqual(await scope.getStore().get(scope.id), before);
+    }
+    const accepted = await scope.action(0, state.revision, { type: 'pass' });
+    assert.equal(accepted.status, 200);
+    const after = await scope.getStore().get(scope.id);
+    assert.deepEqual(after.game.players[0].hand, sevenPairShapes.quadruple.slice(0, -1));
+    assert.deepEqual(after.game.players[0].firstHuPattern, before.game.players[0].firstHuPattern);
+    assert.deepEqual(after.game.players.map(player => player.score), before.game.players.map(player => player.score));
+    assert.deepEqual(after.game.players[0].melds, []);
+    assertGameInvariants(after.game);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test('FileStore restart filters a saved rob-kong hu, keeps its committed history, and permits pass to close it', async () => {

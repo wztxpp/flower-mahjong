@@ -44,3 +44,6 @@ The 2026-11-08 correction locks held tiles after hu and blocks self-discarded id
 
 2026-11-10用户明确杠上花消费本次杠后机会，胡后续摸弃牌受已胡保护，不能普通接炮或加杠后番。schema3后续动作及可证明的旧未回应窗口按此纠正；已接受回应、历史及旧账不改，schema1/2冻结。详见[杠上花续摸纠错](docs/KONG-HU-CONTINUATION-CORRECTION.md)。
 The 2026-11-10 correction consumes a kong opportunity upon replacement hu, protecting later continuation discards. Apply to future schema-three actions and provable unanswered saved windows without revoking accepted responses, rescoring history or changing frozen engines.
+
+2026-11-10用户另确认胡后杠必须保留固定牌型：七对不能杠，暗杠只能用本次同牌摸入补原刻子，旧听口开关不能放行丢听口。当前及保存未回应窗口共用检查，不撤销已接受回应或改旧账。见[胡后杠牌型纠错](docs/POST-HU-KONG-PATTERN-CORRECTION.md)。
+The same day's pattern correction forbids seven-pairs kongs, requires matching current draws for concealed kongs, and preserves every wait despite old toggles. Apply to new/unanswered saved actions without revoking accepted responses or rescoring history.

@@ -552,8 +552,8 @@ function getHandBeforeLastDraw(game, seat) {
   if (game.lastDraw?.seat === seat) removeTilesFromHand(hand, game.lastDraw.tile);
   return hand;
 }
-/* 试算杠后的手牌和副露；胡后若要求保留听口，前后听口必须完全一致。试算不改原局。
- * Simulate the hand and melds after a kong; post-hu waits must remain identical when required. Do not mutate the game. */
+/* 试算杠后的手牌和副露；胡后固定牌型与完整听口均须保留。试算不改原局。
+ * Simulate the hand and melds after a kong; preserve the fixed post-hu shape and every wait without mutating the game. */
 function canDeclareKong(game, seat, type, tile) {
   const player = game.players[seat];
   /* 保留补摸与萝卜所需的牌墙余量；不能宣告无法完成后续步骤的杠。
@@ -563,11 +563,20 @@ function canDeclareKong(game, seat, type, tile) {
   // 否则会把锁定顺子里的牌抽走，再用另一张摸牌拼回相同听口（例如345筒换456筒）。
   // After hu the held hand itself is locked, not merely its waits. An upgrade must use
   // the actual current draw; otherwise 345 dots can illegally become 456 with unchanged waits.
-  // 暗杠/明杠仍由原听口检查决定；未胡者仍可使用早先保留的牌补杠。
-  // Concealed/exposed kongs retain their wait checks; unwon players may still upgrade held tiles.
-  if (player.huCount > 0 && ['buGang', 'addGang'].includes(type) &&
+  // 七对的扩展听口来自首胡快照，不能用它证明拆对子成杠后仍是七对。
+  // 先保护已确认牌型，独立于旧听口开关；只拒绝未来动作，不改旧副露、快照或积分。
+  // Expanded seven-pairs waits come from the first-win snapshot, not structural validation.
+  // Guard that fixed pattern before the legacy wait toggle, without rewriting committed melds, snapshots or scores.
+  if (player.huCount > 0 && player.firstHuPattern?.kind === 'sevenPairs') return false;
+  // 暗杠也必须用本次摸牌把原刻子变成杠；不能拿走原有四张而把不同的新牌留在锁手中。
+  // 明杠由他人弃牌补足原刻子，不要求本人摸牌；未胡者仍保留原有杠牌选择。
+  // A concealed kong must likewise extend a held triplet with the current draw, never exchange four held tiles for it.
+  // An exposed kong instead consumes another player's discard; unwon players retain their original choices.
+  if (player.huCount > 0 && ['anGang', 'buGang', 'addGang'].includes(type) &&
     (game.lastDraw?.seat !== seat || game.lastDraw.tile !== tile)) return false;
-  if (!player.huCount || !game.rules.preserveWaitsOnPostHuKong) return true;
+  // 用户确认胡后不能改牌型，旧false/缺字段不能绕过；保留存档原值而不回填或迁移。
+  // The confirmed post-hu shape rule also applies to old false/missing toggles; preserve saved values without migration.
+  if (!player.huCount) return true;
   const before = contextualWaitTiles(game, player, getHandBeforeLastDraw(game, seat));
   const hand = [...player.hand];
   const melds = cloneSerializable(player.melds);
@@ -714,8 +723,15 @@ export function getLegalActions(game, seat) {
     // 已提交回应在上面返回空动作，不在读取时改写或撤销。
     // Already committed responses returned above are never rewritten or revoked on read.
     const protectedDiscard = isProtectedPostHuDiscard(game, game.discards[game.claim.discardIndex]);
-    const options = cloneSerializable(game.claim.options[seat]).filter((action) =>
-      action.type !== 'hu' || (!protectedDiscard && !hasSelfDiscardHuLock(game, seat, game.claim.tile)));
+    const options = cloneSerializable(game.claim.options[seat]).filter((action) => {
+      if (action.type === 'hu')
+        return !protectedDiscard && !hasSelfDiscardHuLock(game, seat, game.claim.tile);
+      // 保存窗口中的未回应明杠也须保护胡后牌型；已接受的回应在函数开头返回，不撤销。
+      // Revalidate unanswered saved exposed kongs against the fixed post-hu shape; accepted responses returned above stay committed.
+      if (action.type === 'mingGang' && game.players[seat].huCount > 0)
+        return canDeclareKong(game, seat, action.type, action.tile);
+      return true;
+    });
     // 已胡者能胡就只能胡，普通接炮和抢杠共用此入口。读取时也过滤旧存档的选项，
     // 但不改写原窗口、已提交回应或历史；旧客户端不能通过直接发“过”绕过。
     // A prior winner must take an available discard/rob-kong win. Filter saved options on read

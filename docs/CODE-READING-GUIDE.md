@@ -288,3 +288,6 @@ Final table review adds the maintained helper-boundary suite, table wiring and t
 
 
 万牌纸色维护入口：[原图保留与显示归一化](WAN-PAPER-CORRECTION.md)，新增专项 `tests/wan-paper.test.js`。 / Wan paper maintenance and new regression inventory are documented in the linked guide.
+
+胡后杠牌型维护入口：[固定牌型纠错](POST-HU-KONG-PATTERN-CORRECTION.md)。新增维护文件为`tests/post-hu-pattern.test.js`、`tests/fixtures/post-hu-pattern.js`，HTTP恢复检查并入`tests/flower-lock-api.test.js`；实现集中在`shared/game.js`权威白名单。
+Post-hu kong-pattern maintenance: the linked correction, the new pattern test/fixture and existing HTTP suite cover the authoritative allowlist in shared/game.js.

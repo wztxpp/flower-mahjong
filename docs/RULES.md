@@ -145,3 +145,8 @@ Saved schema-three games with an absent/false flag keep historical scoring: ordi
 
 新局另保存 `publicConcealedKongs: true`，已成立暗杠（含后续加张）牌面对所有玩家公开，其他暗手牌不因此公开。缺字段/false 的旧局和 schema1/2 保留原策略，不改历史或计分。详见 [展示隐私](TILE-VISIBILITY.md)。
 New snapshots publish established concealed-kong faces, including extensions, without exposing unrelated concealed hands. Missing/false old snapshots and schemas one/two retain their policy, history and scoring.
+
+## 胡后杠牌型纠错（2026-11-10） / Post-hu kong pattern correction
+
+胡后杠必须保留原胡牌牌型：七对（含清七对、四张组、六张组）不能杠。暗杠须用本次真实摸入同牌补原刻子，不能拿走原有四张而留下另一张摸牌，听口相同也不能换手。普通牌型的合法暗杠、明杠、补杠、加杠仍保留，且必须保留全部听口。旧听口开关不能绕过本次纠错；保存未回应窗口同样检查，已接受动作和旧账不撤销。详见[完整边界](POST-HU-KONG-PATTERN-CORRECTION.md)。
+Post-hu kongs must preserve the fixed winning pattern: no seven-pairs kongs, including pure/quad/sextuple forms. Concealed kongs must add the actual matching draw to a held triplet, never swap a held quadruple for a different draw. Legal ordinary concealed/exposed/upgraded/extended kongs remain and must retain every wait despite old flags. Saved unanswered choices are checked without revoking accepted actions or rewriting ledgers.

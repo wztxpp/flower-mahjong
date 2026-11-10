@@ -350,3 +350,8 @@ The new suite legally finishes every Flower version/table size and Chengdu, test
 
 实际组件挂载测试触发img错误，确认只移除该背景、轮询不重试、旧错误不影响新角色，以及阶段/摘要撤销；渲染前后输入深比较不变。真实SFC/CSS编译保护绝对底层、pointer-events/读屏隐藏、74%/82%遮罩最坏像素文字4.5:1和26×36/24×33/flex:none。浏览器网络、像素与手机外观由独立浏览器验收覆盖，不将此套件称为浏览器通过。
 Mounted-component errors remove only the failed layer, avoid polling retries, spare new roles and withdraw on phase/summary changes; input deep comparisons remain unchanged. Actual SFC/CSS checks protect out-of-flow decoration, noninteractive/hidden semantics, worst-pixel4.5:1 contrast and unchanged26×36/24×33/flex:none. Separate browser QA covers network/pixels/phone appearance; this suite makes no browser-pass claim.
+
+## 胡后杠固定牌型 / Fixed patterns after hu
+
+`tests/post-hu-pattern.test.js`与`tests/fixtures/post-hu-pattern.js`覆盖真实七对首胡、五种牌型、三种摸牌、旧开关、同听口换手、丢听口、保存明杠和合法杠；`tests/flower-lock-api.test.js`增加FileStore重启与重复非法HTTP请求无写入。见[合同](POST-HU-KONG-PATTERN-CORRECTION.md)。
+The pattern suite/fixture cover real seven-pairs wins, draw sources, old toggles, equal-wait swaps, lost waits, saved exposed-kong choices and legal kongs. The HTTP suite verifies FileStore restart and no-write repeated rejections.
