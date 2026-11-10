@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../src/mahjong-wan-faces.js';
 import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 import * as ChengduTableStatusModule from '../src/chengdu-table-status.js';
@@ -90,7 +91,7 @@ function compileComponent(filename, dependencies = {}) {
   return component;
 }
 const Tile = compileComponent("MahjongTile.vue", {
-  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+  './mahjong-wan-faces.js': WanPaperModule, "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
 const CharacterArtwork = compileComponent('CharacterArtwork.vue', {
@@ -105,7 +106,7 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
-  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+  './mahjong-wan-faces.js': WanPaperModule, "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const PortraitMotionSettings = compileComponent('PortraitMotionSettings.vue', { './portrait-motion/settings.js': MotionSettings });
 const RoundSummary = compileComponent("RoundSummary.vue", {

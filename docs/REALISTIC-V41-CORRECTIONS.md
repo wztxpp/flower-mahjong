@@ -1,3 +1,6 @@
+> 历史记录：本文件描述已废弃的二维真实桌；当前实现与维护入口见 [Three.js 真实桌](REALISTIC-TABLE.md)。资源名及验收仅对应旧提交。
+> Historical record of the retired 2D renderer; asset names and acceptance apply only to that revision. See the current Three.js contract.
+
 # v41 验收修复 / Acceptance corrections
 
 本轮仅改展示、输入手势与隔离验收工具，不改规则、积分、服务端、动画事件路径或音画节奏。新 Three.js 原型在独立项目，不并入旧站点。

@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../src/mahjong-wan-faces.js';
 /**
  * 终局原画背景回归：真实引擎/HTTP历史角色来源、固定素材白名单、实际Vue编译/SSR与加载失败。
  * Terminal original-art regressions cover real engine/HTTP provenance, the fixed catalog, actual Vue compilation/SSR and load failures.
@@ -175,7 +176,7 @@ function component(filename, dependencies) {
       (_, name, module) => `const ${name} = modules[${JSON.stringify(module)}];`);
   return new Function('modules', code.replace('export default', 'return'))({ vue: Vue, ...dependencies });
 }
-const Tile = component('MahjongTile.vue', { './mahjong-tile-presentation.js': TilePresentation });
+const Tile = component('MahjongTile.vue', { './mahjong-wan-faces.js': WanPaperModule, './mahjong-tile-presentation.js': TilePresentation });
 const Summary = component('RoundSummary.vue', { './round-summary.js': SummaryModule, './MahjongTile.vue': Tile });
 
 // 使用生产适配的双终局门进入实际组件；无摘要时不挂载，和App的原调用合同一致。

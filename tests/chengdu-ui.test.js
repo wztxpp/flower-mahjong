@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../src/mahjong-wan-faces.js';
 import * as RoundSummaryModule from '../src/round-summary.js';
 import * as ChengduEventTextModule from '../src/chengdu-event-text.js';
 import * as ChengduTableStatusModule from '../src/chengdu-table-status.js';
@@ -30,14 +31,14 @@ function compile(filename, dependencies = {}) {
   component.ssrRender = new Function('modules', `${load(template.code).replace('export function ssrRender', 'function ssrRender')}\nreturn ssrRender;`)(modules);
   return component;
 }
-const Tile = compile('MahjongTile.vue', { './mahjong-tile-presentation.js': TilePresentation });
+const Tile = compile('MahjongTile.vue', { './mahjong-wan-faces.js': WanPaperModule, './mahjong-tile-presentation.js': TilePresentation });
 const CharacterArtwork = compile('CharacterArtwork.vue', {
   './portrait-motion/settings.js': MotionSettings,
   './portrait-motion/catalog.js': MotionCatalog,
   './portrait-motion/loader.js': MotionLoader,
   './portrait-motion/controller.js': MotionController,
 });
-const Table = compile('ChengduTable.vue', { './round-summary.js': RoundSummaryModule, './CharacterArtwork.vue': CharacterArtwork, './chengdu-event-text.js': ChengduEventTextModule, './chengdu-table-status.js': ChengduTableStatusModule, './MahjongTile.vue': Tile, './mahjong-tile-presentation.js': TilePresentation });
+const Table = compile('ChengduTable.vue', { './round-summary.js': RoundSummaryModule, './CharacterArtwork.vue': CharacterArtwork, './chengdu-event-text.js': ChengduEventTextModule, './chengdu-table-status.js': ChengduTableStatusModule, './MahjongTile.vue': Tile, './mahjong-wan-faces.js': WanPaperModule, './mahjong-tile-presentation.js': TilePresentation });
 
 // 合成“已裁剪视图”不是权威牌墙；各测试只改变显示/动作字段，不拿夹具作算分证据。
 // This synthetic filtered view is not an authoritative wall; tests vary display/actions and never claim scoring evidence from it.

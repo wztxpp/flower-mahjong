@@ -255,3 +255,12 @@ See the full overlay contract; permanent action slots are the superseded present
 - `REALISTIC_ROOM_SCENE` / `focusHeight`：完整房间边界 / 默认框住桌面的高度；完整房间可高于默认视野，供临时拖看桌下。 / Complete-room bounds / default table-framing height; under-table space may extend beyond the initial viewport.
 - `controls-target` / `realisticControlsTarget`：真实桌上报的已挂载DOM目标 / App持有的本地目标引用；仅控制Teleport位置，不能授予动作或暴露暗牌。卸载目标会清空引用。 / Mounted DOM target event / App's local reference. They route Teleport only, never grant actions or reveal hidden cards; unmount clears the reference.
 - `realisticBodyModel` / `data-body-status`：已批准且有效的角色上下身组合展示 / 当前全身或半身表示状态。不是角色全目录审批或动作验收结论。 / Approved valid body-layer presentation / current full- or half-body representation, not catalog-wide approval or animation acceptance.
+
+- `WAN_PAPER_START/END`：仅万牌显示纸色的sRGB最小通道过渡阈值200/240，不是图像或规则版本。 / Wan-only display-paper minimum-channel thresholds200/240, not an image or rules version.
+
+
+## Three.js 真实桌 / Three.js realistic table
+
+- `buildThreeTableModel`：把已显示且按查看者裁剪的视图转成三维展示模型；不是另一套规则引擎。 / Adapts the displayed viewer-filtered view, never another rules engine.
+- `createSceneLifetime`：三维资源与清理回调的所有者，不代表房间或单局生命周期。 / Owns scene resources and cleanup callbacks, not rooms or game rounds.
+- `createFrameGate`：以房间、局和递增序号接纳 App 的已提交展示帧；挂载只建立基线。 / Accepts committed App frames by room, round and monotonic sequence; mounting only establishes a baseline.

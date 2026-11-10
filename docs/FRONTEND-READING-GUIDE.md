@@ -1,16 +1,11 @@
-当前完整整图与AI桌椅维护入口：[REALISTIC-SOLID-SCENE.md](REALISTIC-SOLID-SCENE.md)。新来源由 `realistic-character-figure.js` 和 `RealisticTableTile.vue` 明确隔离旧拼接，家具角点统一注册；历史v39验收不代表新版本像素验收。Current full-source scene contract and new-file inventory are documented there.
+当前真实桌使用 Three.js，入口见 [三维真实桌合同](REALISTIC-TABLE.md)。维护路径为 `src/RealisticTable.vue → src/three-table/{adapter,lifecycle,renderer}.js`；保留 `realistic-table-layout.js` 的隐私投影与固定座位关系，以及 App 的原 FIFO、私有手牌和动作权限。旧二维场景文档只作历史记录，不是当前验收。
+The current realistic table uses Three.js. Follow the linked contract and maintained modules; existing privacy, physical seats, FIFO, private controls and authority remain intact. Old two-dimensional scene reports are historical, not current acceptance.
 
 # 前端阅读指南 / Frontend reading guide
-
-当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
-Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
 
 
 真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
 Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
-
-二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
-Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
 
 全局 `PortraitMotionSettings` 提供普通本地显示开关，`portrait-motion/settings.js` 默认静态且不迁移旧SDK许可。`CharacterArtwork` 在两玩法/独立挂载始终显示原img，仅用透明Canvas2D叠审查过的眼睑和发区。见 [原图局部动效](PORTRAIT-MOTION.md)。
 Global ordinary settings default static without migrating old SDK assent. Both modes/standalone frames always retain the original img, overlaying only reviewed eyelids and hair regions through Canvas2D.
@@ -346,3 +341,5 @@ The table helper reuses sanitization, then checks explicit mode agreement, three
 
 终局牌条固定30×40px、不压缩、原生横滚到末牌；不会修改进行中的固定槽。Vue每次快照重新派生且不缓存，阶段回退、新局、缺摘要或非法数据会撤下已显示牌面。`tests/invitation-copy.test.js` 通过真实组件同实例patch验证，SSR与浏览器验收另行报告。
 Final strips keep fixed30×40px uncompressed tiles with native scrolling to every card, leaving live slots unchanged. Each snapshot re-derives the reveal without caching; phase changes, new games, missing summaries and invalid records withdraw prior faces. Actual-component patch tests complement separate SSR and browser verification.
+
+万牌统一纸色见 [显示归一化](WAN-PAPER-CORRECTION.md)：SVG与Three.js Canvas共用原图、裁切与sRGB阈值，不改游戏生命周期。 / Wan SVG/Canvas share original art, crops and sRGB thresholds without game lifecycle changes.

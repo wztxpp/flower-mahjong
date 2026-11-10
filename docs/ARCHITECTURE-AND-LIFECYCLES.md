@@ -1,11 +1,9 @@
+当前真实桌使用 Three.js，入口见 [三维真实桌合同](REALISTIC-TABLE.md)。维护路径为 `src/RealisticTable.vue → src/three-table/{adapter,lifecycle,renderer}.js`；保留 `realistic-table-layout.js` 的隐私投影与固定座位关系，以及 App 的原 FIFO、私有手牌和动作权限。旧二维场景文档只作历史记录，不是当前验收。
+The current realistic table uses Three.js. Follow the linked contract and maintained modules; existing privacy, physical seats, FIFO, private controls and authority remain intact. Old two-dimensional scene reports are historical, not current acceptance.
+
 # 架构与生命周期 / Architecture and lifecycles
 
-当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
-Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
 
-
-二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
-Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
 
 当前角色画框使用 [原图局部Canvas2D](PORTRAIT-MOTION.md)：原img永远可见，新普通开关默认静态。可见/前台/基础表情/非减少动态才加载和绘制；反应暂停复用，关开/换角/卸载失效旧代次。旧SDK许可不迁移，旧模型不执行或公开分发。装饰不拥有游戏、三秒表情计时或声音。
 Current frames use original-preserving local Canvas2D: original img always remains visible and a new ordinary setting defaults static. Visibility, foreground, base reaction and motion allowance govern load/draw. Reactions pause/reuse; toggling, role changes and unmount revoke generations. Old SDK assent is not migrated, old models are neither executed nor redistributed, and decoration owns no game/reaction/audio authority.

@@ -8,10 +8,8 @@ import reviewedCatalog from '../public/characters/realistic/catalog.json' with {
 export const REALISTIC_CHARACTER_IDS = Object.freeze(['sweet', 'elegant', 'landlord', 'honest', 'wealthy', 'star']);
 export const REALISTIC_CHARACTER_VIEWS = Object.freeze(['front', 'left', 'right']);
 
-// 完整静态来源须通过身份、左右饰物和坐姿审查；动画必须另有同源登记，缺省为空。
-// Full static sources require identity, accessory-side and seated-pose review; motion needs separate same-source registration and otherwise stays null.
-// 底姿态、眼发及右手动作分别登记；没有action就没有已验收的出手帧，不能冒称整套动作完成。
-// Bases, eye/hair motion and right-arm actions are recorded separately; missing action means no accepted hand sequence.
+// Three.js 复用已审查的独立整身图；旧拼接、POV和局部动作资料已移除。
+// Three.js reuses reviewed independent full figures; retired stitching, POV and motion metadata is removed.
 export const APPROVED_REALISTIC_VIEWS = Object.freeze(Object.fromEntries(
   Object.entries(reviewedCatalog).map(([id, views]) => [id, Object.freeze(Object.fromEntries(
     Object.entries(views).map(([position, view]) => [position, Object.freeze(view)]),

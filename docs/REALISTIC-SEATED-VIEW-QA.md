@@ -1,3 +1,6 @@
+> 历史记录：本文件描述已废弃的二维真实桌；当前实现与维护入口见 [Three.js 真实桌](REALISTIC-TABLE.md)。资源名及验收仅对应旧提交。
+> Historical record of the retired 2D renderer; asset names and acceptance apply only to that revision. See the current Three.js contract.
+
 # Seated-view acceptance / 坐桌边视角验收
 
 2026-11-09, successor to the v38 presentation. This is presentation-only: no rules, scoring, room protocol, database or production game actions changed.

@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../src/mahjong-wan-faces.js';
 import * as RoundSummaryModule from '../src/round-summary.js';
 import * as MotionCatalog from '../src/portrait-motion/catalog.js';
 import * as MotionLoader from '../src/portrait-motion/loader.js';
@@ -83,7 +84,7 @@ function compileComponent(filename, dependencies = {}) {
   return component;
 }
 const Tile = compileComponent("MahjongTile.vue", {
-  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+  './mahjong-wan-faces.js': WanPaperModule, "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Icon = compileComponent("Icon.vue");
 // 牌桌patch回归使用当前生产画框/设置组件，避免旧Live2D装载表产生无效节点掩盖真实更新。
@@ -101,7 +102,7 @@ const ChengduTable = compileComponent("ChengduTable.vue", {
   "./chengdu-event-text.js": ChengduEventTextModule,
   "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
-  "./mahjong-tile-presentation.js": MahjongPresentationModule,
+  './mahjong-wan-faces.js': WanPaperModule, "./mahjong-tile-presentation.js": MahjongPresentationModule,
 });
 const Live2DSettings = compileComponent("Live2DSettings.vue", { "./live2d/consent.js": Live2DConsent });
 const RoundSummary = compileComponent("RoundSummary.vue", {
@@ -964,8 +965,7 @@ for (const caseId of ['flower-3', 'flower-legacy-1', 'flower-legacy-2', 'chengdu
       assert.ok(target.contains(hand) && target.contains(dock), 'original live nodes move inside the actual table viewport');
       assert.equal(findAll(root, (node) => hasClass(node, 'character-hand-table')).length, 1);
       assert.deepEqual(findAll(dock, (node) => node.tag === 'button').map(textOf), actions);
-      const self = findAll(root, (node) => node.props['data-realistic-seat'] === original.game.mySeat)[0];
-      assert.equal(findAll(self, (node) => hasClass(node, 'realistic-hand-zone')).length, 0, 'no duplicate read-only own rack');
+      assert.equal(findAll(root, (node) => hasClass(node, 'realistic-hand-zone')).length, 0, 'no retired duplicate read-only own rack');
       scope.chooseTablePresentation('classic');
       await settle();
       assert.ok(hand.isConnected && dock.isConnected);

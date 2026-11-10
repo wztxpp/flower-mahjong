@@ -52,6 +52,12 @@ function chooseTablePresentation(value) {
   tablePresentation.value = value;
   try { localStorage.setItem('huajian-table-presentation-v1', value); } catch { /* 本页仍生效 / Keep the page-local choice. */ }
 }
+// WebGL失败恢复原桌并解释原因；主动切换不显示错误，不改变房间或已选牌。
+// WebGL failures restore classic with a reason; intentional switches show no error and preserve room/selection.
+function fallbackToClassic(failed) {
+  chooseTablePresentation('classic');
+  if (failed === true) flash('当前浏览器无法启用三维牌桌，已切回经典桌');
+}
 // ref 保存会改变的值：脚本中用 .value，模板中 Vue 自动解包。以下状态仅控制声音和临时动画。
 // ref stores mutable state: use .value in script; Vue unwraps it in templates. These values control audio and transient animation only.
 const voiceStatus = ref('locked');
@@ -2958,7 +2964,7 @@ onUnmounted(() => {
       </p>
       <!-- 真实桌内的近沿容器接收同一份私有控件；Teleport只移动DOM，不重建选择或复制服务端动作。
            The realistic near edge receives the same private controls; Teleport moves DOM without rebuilding selection or duplicating server actions. -->
-      <RealisticTable v-if="game && tablePresentation === 'realistic'" :state="state" @controls-target="realisticControlsTarget = $event"
+      <RealisticTable v-if="game && tablePresentation === 'realistic'" :state="state" @controls-target="realisticControlsTarget = $event" @fallback="fallbackToClassic"
         :has-private-controls="!isSpectator && me?.isCurrentParticipant !== false && Array.isArray(me?.hand)"
         :presentation-frame="realisticPresentationFrame" :can-configure-start="canConfigureStart" :has-private-feedback="!isChengduRoom && !isSpectator" @copy-invite="copyInvite"
         :character-for-player="characterForPlayer" :status="statusTitle" :blocked="busy || offline || syncing || presentationWaiting"

@@ -1,21 +1,14 @@
-当前 v41 展示修复见 [验收修复](REALISTIC-V41-CORRECTIONS.md) 与 [圆角实体牌](REALISTIC-ROUNDED-TILES.md)，新增维护测试 `tests/realistic-rounded-tile.test.js`。Current presentation fixes and rounded-tile test inventory are linked here.
-
-当前完整整图与AI桌椅维护入口：[REALISTIC-SOLID-SCENE.md](REALISTIC-SOLID-SCENE.md)。新来源由 `realistic-character-figure.js` 和 `RealisticTableTile.vue` 明确隔离旧拼接，家具角点统一注册；历史v39验收不代表新版本像素验收。Current full-source scene contract and new-file inventory are documented there.
+当前真实桌使用 Three.js，入口见 [三维真实桌合同](REALISTIC-TABLE.md)。维护路径为 `src/RealisticTable.vue → src/three-table/{adapter,lifecycle,renderer}.js`；保留 `realistic-table-layout.js` 的隐私投影与固定座位关系，以及 App 的原 FIFO、私有手牌和动作权限。旧二维场景文档只作历史记录，不是当前验收。
+The current realistic table uses Three.js. Follow the linked contract and maintained modules; existing privacy, physical seats, FIFO, private controls and authority remain intact. Old two-dimensional scene reports are historical, not current acceptance.
 
 # 从这里开始读代码 / Start reading here
 
 杠上花续摸纠错维护入口：[规则与保存边界](KONG-HU-CONTINUATION-CORRECTION.md)。新增维护文件为`tests/kong-hu-continuation.test.js`和`tests/fixtures/kong-hu-continuation.js`，HTTP恢复检查加入既有`tests/flower-lock-api.test.js`；规则实现仍在`shared/game.js`。
 Kong-win continuation maintenance: the linked guide covers rules/recovery; the two new test/fixture files and existing HTTP suite verify the implementation in shared/game.js.
 
-当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
-Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
-
 
 真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
 Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
-
-二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
-Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
 
 人物身份与配音目录的独立映射见 [人物声线对应](REALISTIC-VOICE-MAPPING.md)：维护入口为 `character-audio.js` 及既有 audio/voice-assets/ui 测试。正式原图、存档ID与录音来源不改；按设定推断不代表试听认证。
 See [character/voice mapping](REALISTIC-VOICE-MAPPING.md) for the audio module and existing audio/assets/UI suites. Original art, saved IDs and recording provenance stay fixed; persona inference is not listening certification.
@@ -292,4 +285,6 @@ Existing UI/invitation harnesses load the real component; fixture/browser helper
 终局牌桌回看新增维护测试 `tests/finished-table-hands.test.js`，接线为 `src/round-summary.js → App.vue / ChengduTable.vue`，终局尺寸覆盖位于 `src/tabletop.css`。既有ui/invitation-copy套件验证返回牌桌不离席、原参与者归属与同实例牌面撤销，详见[终局合同](FINISHED-ROUND-SUMMARY.md#牌桌回看与按钮纠正--table-review-and-return-button)。
 Final table review adds the maintained helper-boundary suite, table wiring and terminal-only CSS. Existing UI/mounted-component tests cover no-departure returns, original attribution and reactive reveal withdrawal; see the contract.
 
-本次斜视/腿部组合证据见[REALISTIC-SEATED-VIEW-QA.md](REALISTIC-SEATED-VIEW-QA.md)；`tests/realistic-character-body-assets.test.js`核对18坐姿与6个身份本人近景的实物PNG及范围，`public/characters/realistic/full-body-audit.json`保存下层hash。The seated-view QA and body-asset build gate record actual PNG coverage separately from layout/model tests.
+
+
+万牌纸色维护入口：[原图保留与显示归一化](WAN-PAPER-CORRECTION.md)，新增专项 `tests/wan-paper.test.js`。 / Wan paper maintenance and new regression inventory are documented in the linked guide.

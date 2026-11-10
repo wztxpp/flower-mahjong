@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../../src/mahjong-wan-faces.js';
 /** Compare Vue component patch CPU with an in-memory renderer. No browser/layout/network claim.
  * Usage: node tests/performance/benchmark-presentation.mjs [baseline-git-ref]
  * Only synthetic public table state and one private test hand are used.
@@ -101,7 +102,7 @@ const tile = component(
   "MahjongTile.vue",
   readFileSync(new URL("../../src/MahjongTile.vue", import.meta.url), "utf8"),
   {
-    "./mahjong-tile-presentation.js": TilePresentation,
+    './mahjong-wan-faces.js': WanPaperModule, "./mahjong-tile-presentation.js": TilePresentation,
   },
 );
 const icon = component(

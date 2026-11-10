@@ -11,18 +11,13 @@ export const MOTION_MAX_PIXELS = 350000;
 export const MOTION_MAX_PATCH_PIXELS = 4000000;
 const CHARACTER_IDS = new Set(['sweet', 'sunny', 'landlord', 'honest', 'wealthy', 'star', 'elegant']);
 
-// 新桌独立视角使用显式来源标记；缺标记时仍严格只接收旧原图路径。
-// Independent table views require an explicit provenance marker; absent markers retain the strict original source path.
-// 角色、视角与目录必须同时吻合，不能借新功能允许任意URL或跨角色供体。
-// Role, view and directory must all agree; this does not allow arbitrary URLs or cross-role donors.
+// 旧真实桌局部动画已废弃，只允许原立绘和对应的经典图集路径。
+// Retired realistic local animation is rejected; only original portraits and matching classic atlases remain allowed.
 function validSourcePath(descriptor) {
-  if (descriptor.realisticView === undefined) return descriptor.sourceUrl === `/characters/${descriptor.id}-scene-base.png`;
-  return ['front', 'left', 'right'].includes(descriptor.realisticView) && descriptor.id !== 'sunny' &&
-    descriptor.sourceUrl === `/characters/realistic/${descriptor.id}/${descriptor.realisticView}-base.png`;
+  return descriptor.realisticView === undefined && descriptor.sourceUrl === `/characters/${descriptor.id}-scene-base.png`;
 }
 function validFramePath(descriptor, url) {
-  if (descriptor.realisticView === undefined) return new RegExp(`^/portrait-motion/${descriptor.id}/[a-z0-9-]+\\.png$`).test(url);
-  return new RegExp(`^/characters/realistic/${descriptor.id}/${descriptor.realisticView}-[a-z0-9-]+\\.png$`).test(url);
+  return descriptor.realisticView === undefined && new RegExp(`^/portrait-motion/${descriptor.id}/[a-z0-9-]+\\.png$`).test(url);
 }
 
 // 无效参数不能扩张蒙版或产生NaN；异常控制值回到静止原图。

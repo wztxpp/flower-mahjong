@@ -1,5 +1,5 @@
-// 独立侧面素材只能显式启用自己的来源路径；旧图、角色和视角边界不放宽。
-// Independent views explicitly opt into their own source paths; original, character and perspective boundaries remain strict.
+// 废弃真实桌动态入口必须拒绝，原立绘的路径和角色隔离继续保持。
+// Reject retired realistic motion descriptors while preserving original portrait path and identity boundaries.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PORTRAIT_MOTION_CHARACTERS } from '../src/portrait-motion/catalog.js';
@@ -12,9 +12,9 @@ function sideDescriptor() {
   for (const frame of descriptor.frames) frame.url = '/characters/realistic/sweet/left-eyes.png';
   return descriptor;
 }
-test('original descriptors remain strict and independently sourced views opt in', () => {
+test('original descriptors remain valid and retired realistic motion paths fail closed', () => {
   assert.equal(validateMotionDescriptor(PORTRAIT_MOTION_CHARACTERS.sweet), true);
-  assert.equal(validateMotionDescriptor(sideDescriptor()), true);
+  assert.equal(validateMotionDescriptor(sideDescriptor()), false);
   const missingMarker = sideDescriptor();
   delete missingMarker.realisticView;
   assert.equal(validateMotionDescriptor(missingMarker), false);

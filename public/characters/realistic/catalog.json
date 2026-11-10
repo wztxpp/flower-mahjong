@@ -5,8 +5,6 @@
       "baseUrl": "/characters/realistic/sweet/front-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/sweet/front-full-body.png",
         "sourceSize": [
@@ -44,22 +42,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "01ec1d8874adeabbc5091fd559b51d0f9160cb8a5a9feeaf856e9273fb1ad30d",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/sweet/self-pov.png",
-        "sourceSize": [
-          1199,
-          1312
-        ],
-        "contentRect": [
-          103,
-          95,
-          991,
-          1217
-        ],
-        "coverage": "lower-shins-and-worn-footwear-only",
-        "sha256": "91a46717c69a570716c8a15d7f9c02ebdee6dab3789015eeb960643a22d2d39b"
       }
     },
     "left": {
@@ -67,8 +49,6 @@
       "baseUrl": "/characters/realistic/sweet/left-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/sweet/left-full-body.png",
         "sourceSize": [
@@ -113,8 +93,6 @@
       "baseUrl": "/characters/realistic/sweet/right-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/sweet/right-full-body.png",
         "sourceSize": [
@@ -161,8 +139,6 @@
       "baseUrl": "/characters/realistic/elegant/front-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/elegant/front-full-body.png",
         "sourceSize": [
@@ -200,21 +176,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "a87876e940ce3fc986d99770e690e01fe4a7445c22828c82de471a9156a27dba",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/elegant/self-pov.png",
-        "sourceSize": [
-          1448,
-          1086
-        ],
-        "contentRect": [
-          0,
-          407,
-          1448,
-          679
-        ],
-        "sha256": "81b4a232b8599e46a2dffa1beee87c50d0b9c4c7416735a54ddc1a8c96fa9149"
       }
     },
     "left": {
@@ -222,8 +183,6 @@
       "baseUrl": "/characters/realistic/elegant/left-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/elegant/left-full-body.png",
         "sourceSize": [
@@ -268,8 +227,6 @@
       "baseUrl": "/characters/realistic/elegant/right-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/elegant/right-full-body.png",
         "sourceSize": [
@@ -415,8 +372,6 @@
       "baseUrl": "/characters/realistic/honest/front-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/honest/front-full-body.png",
         "sourceSize": [
@@ -454,21 +409,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "78cd64ede5d49fe3289f6ea3a8f40c4610445bbe9044b330dfbbcb640efab4f8",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/honest/self-pov.png",
-        "sourceSize": [
-          1448,
-          1086
-        ],
-        "contentRect": [
-          61,
-          418,
-          1327,
-          668
-        ],
-        "sha256": "1edc9bf1fa264b97dc836a2f82a0e4518a86c4ca624ff936e53e03c3fde368cb"
       }
     },
     "left": {
@@ -476,8 +416,6 @@
       "baseUrl": "/characters/realistic/honest/left-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/honest/left-full-body.png",
         "sourceSize": [
@@ -629,8 +567,6 @@
       "baseUrl": "/characters/realistic/honest/right-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/honest/right-full-body.png",
         "sourceSize": [
@@ -840,8 +776,6 @@
       "baseUrl": "/characters/realistic/landlord/front-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/landlord/front-full-body.png",
         "sourceSize": [
@@ -879,21 +813,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "9b034a4ce682d67a463c018fe22d74473e1db2a848b0c5e42ead2b511bb19210",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/landlord/self-pov.png",
-        "sourceSize": [
-          1448,
-          1086
-        ],
-        "contentRect": [
-          4,
-          419,
-          1440,
-          667
-        ],
-        "sha256": "676fbd6b7fc6dd38f8fa1e4dbf78612c3de1911b589c84c9f106b71b4385d7ef"
       }
     },
     "left": {
@@ -901,8 +820,6 @@
       "baseUrl": "/characters/realistic/landlord/left-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/landlord/left-full-body.png",
         "sourceSize": [
@@ -1038,8 +955,6 @@
       "baseUrl": "/characters/realistic/landlord/right-full-body.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/landlord/right-full-body.png",
         "sourceSize": [
@@ -1177,8 +1092,6 @@
       "baseUrl": "/characters/realistic/wealthy/front-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/wealthy/front-unified-seated.png",
         "sourceSize": [
@@ -1216,21 +1129,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "e3c3c774fba09592088fb9af6491d20bc1cdf72ab411b515c3d244142675155d",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/wealthy/self-pov.png",
-        "sourceSize": [
-          1448,
-          1086
-        ],
-        "contentRect": [
-          0,
-          403,
-          1448,
-          683
-        ],
-        "sha256": "fc3a55bc22d17113c90ca01682601268882a5baf6179baeaac6af12b2177d9f4"
       }
     },
     "left": {
@@ -1238,8 +1136,6 @@
       "baseUrl": "/characters/realistic/wealthy/left-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/wealthy/left-unified-seated.png",
         "sourceSize": [
@@ -1284,8 +1180,6 @@
       "baseUrl": "/characters/realistic/wealthy/right-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/wealthy/right-unified-seated.png",
         "sourceSize": [
@@ -1332,8 +1226,6 @@
       "baseUrl": "/characters/realistic/star/front-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/star/front-unified-seated.png",
         "sourceSize": [
@@ -1371,21 +1263,6 @@
         "sourceMode": "singleFullBody",
         "sourceSha256": "c1f942d9c32db22ef55b6cf1c7100e2f310f6969cc1c5b3e81bff5eddfbffbc4",
         "frontOfTablePolygons": []
-      },
-      "pov": {
-        "approved": true,
-        "url": "/characters/realistic/star/self-pov.png",
-        "sourceSize": [
-          1448,
-          1086
-        ],
-        "contentRect": [
-          3,
-          427,
-          1429,
-          659
-        ],
-        "sha256": "23b1ceb2adede6d13ca6de4dbea003ae2cff598f18fa94d520791b5d0275bff2"
       }
     },
     "left": {
@@ -1393,8 +1270,6 @@
       "baseUrl": "/characters/realistic/star/left-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/star/left-unified-seated.png",
         "sourceSize": [
@@ -2468,8 +2343,6 @@
       "baseUrl": "/characters/realistic/star/right-unified-seated.png",
       "width": 1024,
       "height": 1536,
-      "motion": null,
-      "action": null,
       "figure": {
         "url": "/characters/realistic/star/right-unified-seated.png",
         "sourceSize": [

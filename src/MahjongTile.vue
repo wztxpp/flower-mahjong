@@ -2,7 +2,8 @@
 // 单张麻将的展示组件：接收父组件 props，展示照片牌面或背面，保留原生按钮语义。
 // Single-tile presentation component: receive parent props, show a photographed face or back, and preserve native button semantics.
 // 阅读路线：docs/FRONTEND-READING-GUIDE.md。 / Reading map: docs/FRONTEND-READING-GUIDE.md.
-import { computed } from 'vue';
+import { computed, useId } from 'vue';
+import { MAHJONG_WAN_URL, WAN_PAPER_START, WAN_PAPER_END } from './mahjong-wan-faces.js';
 import { tilePresentation } from './mahjong-tile-presentation.js';
 
 // 这些 props 是父子组件接口；组件只画牌，不判牌，不修改传入数据。
@@ -28,6 +29,12 @@ const label = computed(() =>
 // 象牙底色仅衔接现有牌壳，牌面图案全部来自原图，不再需要旧一筒的缺角补色。
 // Ivory joins the existing tile shell; all artwork comes from the atlas, without the old one-dot corner repair.
 const faceBackground = '#fff5df';
+// 每张牌有独立滤镜ID，避免多个牌区/组件互相引用；仅万牌应用，条筒仍显示原像素。
+// Unique IDs prevent cross-instance filter references; only wan receives correction, leaving bamboo/dots untouched.
+const wanFilterId = `wan-paper-${useId()}`;
+const isWanFace = computed(() => face.value?.url === MAHJONG_WAN_URL);
+const paperSlope = 255 / (WAN_PAPER_END - WAN_PAPER_START);
+const paperIntercept = -WAN_PAPER_START / (WAN_PAPER_END - WAN_PAPER_START);
 </script>
 
 <!-- interactive 决定使用原生 button 或展示用 span；:class 绑定外观，aria-pressed 描述选牌状态。 / interactive selects a native button or display span; :class binds appearance and aria-pressed describes selection. -->
@@ -63,9 +70,30 @@ const faceBackground = '#fff5df';
       focusable="false"
     >
       <!-- 底色、变换后的原图、细边框按绘制顺序叠放；viewBox 统一局部坐标。 / Underlay, transformed photo and thin border paint in order; viewBox defines common local coordinates. -->
+      <!-- 取最小RGB通道建立近白蒙版，200以下墨迹不动、240以上纸色统一；sRGB与Canvas纹理相同。
+           The minimum RGB channel masks near-white paper: ink below200 stays intact, paper above240 unifies in sRGB. -->
+      <defs v-if="isWanFace">
+        <filter :id="wanFilterId" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
+          <feColorMatrix in="SourceGraphic" values="1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 1 0" result="red" />
+          <feColorMatrix in="SourceGraphic" values="0 1 0 0 0  0 1 0 0 0  0 1 0 0 0  0 0 0 1 0" result="green" />
+          <feBlend in="red" in2="green" mode="darken" result="redGreen" />
+          <feColorMatrix in="SourceGraphic" values="0 0 1 0 0  0 0 1 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+          <feBlend in="redGreen" in2="blue" mode="darken" />
+          <feComponentTransfer>
+            <feFuncR type="linear" :slope="paperSlope" :intercept="paperIntercept" />
+            <feFuncG type="linear" :slope="paperSlope" :intercept="paperIntercept" />
+            <feFuncB type="linear" :slope="paperSlope" :intercept="paperIntercept" />
+          </feComponentTransfer>
+          <feColorMatrix type="luminanceToAlpha" result="paperMask" />
+          <feFlood :flood-color="faceBackground" />
+          <feComposite in2="paperMask" operator="in" />
+          <feComposite in2="SourceGraphic" operator="over" />
+        </filter>
+      </defs>
       <rect width="60" height="80" :fill="faceBackground" />
       <image
         :href="face.url"
+        :filter="isWanFace ? `url(#${wanFilterId})` : undefined"
         :width="face.width"
         :height="face.height"
         :transform="face.transform"

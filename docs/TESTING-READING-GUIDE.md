@@ -1,14 +1,11 @@
-# 测试阅读指南 / Test reading guide
+当前真实桌使用 Three.js，入口见 [三维真实桌合同](REALISTIC-TABLE.md)。维护路径为 `src/RealisticTable.vue → src/three-table/{adapter,lifecycle,renderer}.js`；保留 `realistic-table-layout.js` 的隐私投影与固定座位关系，以及 App 的原 FIFO、私有手牌和动作权限。旧二维场景文档只作历史记录，不是当前验收。
+The current realistic table uses Three.js. Follow the linked contract and maintained modules; existing privacy, physical seats, FIFO, private controls and authority remain intact. Old two-dimensional scene reports are historical, not current acceptance.
 
-当前斜向真实桌维护入口仍为 [REALISTIC-TABLE.md](REALISTIC-TABLE.md)。`src/realistic-table-perspective.js` 与 `tests/realistic-table-perspective.test.js`负责统一二维投影、近沿锚点及完整房间可达范围；`src/realistic-character-body.js` 与 `tests/realistic-character-body.test.js`负责已批准下半身元数据及缺失/非法资料降级。`App.vue / ChengduTable.vue → RealisticTable.vue`通过真实DOM目标Teleport搬移原私有控件，不新增游戏动作路径。固定四边关系与空位随观察者一同旋转，三人桌不再对每位查看者强制空北。完整资产与实际像素验收仍需单独记录。
-Current seated-view maintenance uses the same table guide. The perspective module/tests own shared 2D projection, near-edge anchors and complete-room reach; the body module/tests own approved lower-body metadata and missing/invalid fallbacks. App/Chengdu move original private controls through a real DOM Teleport target, without a new action path. Fixed physical sides and vacancies rotate together, rather than always leaving north empty for every three-player viewer. Asset completion and pixel acceptance remain separate.
+# 测试阅读指南 / Test reading guide
 
 
 真实桌串行动作维护文件：`src/realistic-presentation.js` 连接App既有FIFO与只读场景；`src/chengdu-table-status.js` 让两种成都桌面共用原状态文字。对应专项为同名测试及realistic-table-ui。
 Realistic FIFO presentation and shared Chengdu status live in these focused modules and tests; neither changes the rules engine.
-
-二维真实桌入口：[REALISTIC-TABLE.md](REALISTIC-TABLE.md)。新增维护文件为 `src/RealisticTable.vue`、`src/realistic-table-layout.js`、`src/realistic-table-events.js`、`src/realistic-table.css` 及同名专项测试；角色另见真实角色目录/验收，不能把代码接通当成完整素材或浏览器验收。
-Realistic-table entry: the linked guide covers the new scene, geometry, event adapter, scoped skin and focused tests. Media completion and browser acceptance remain separate evidence requirements.
 
 当前动作布局以 [按需操作浮层](OVERLAY-HAND-ACTIONS.md) 为准，替代本文历史68px行/92或132px常驻动作槽的结构要求。原稳定牌河/记录/手牌契约不变。新增同实例撤层焦点回归与可见浏览器focus/选牌诊断，不把内存DOM的disabled行为冒充原生浏览器。
 The current overlay contract supersedes historical permanent action-row/dock reservations below while preserving river/record/hand stability. Mounted focus regressions and visible browser focus/selection diagnostics remain separate evidence, especially for native disabled-button blur.
@@ -353,5 +350,3 @@ The new suite legally finishes every Flower version/table size and Chengdu, test
 
 实际组件挂载测试触发img错误，确认只移除该背景、轮询不重试、旧错误不影响新角色，以及阶段/摘要撤销；渲染前后输入深比较不变。真实SFC/CSS编译保护绝对底层、pointer-events/读屏隐藏、74%/82%遮罩最坏像素文字4.5:1和26×36/24×33/flex:none。浏览器网络、像素与手机外观由独立浏览器验收覆盖，不将此套件称为浏览器通过。
 Mounted-component errors remove only the failed layer, avoid polling retries, spare new roles and withdraw on phase/summary changes; input deep comparisons remain unchanged. Actual SFC/CSS checks protect out-of-flow decoration, noninteractive/hidden semantics, worst-pixel4.5:1 contrast and unchanged26×36/24×33/flex:none. Separate browser QA covers network/pixels/phone appearance; this suite makes no browser-pass claim.
-
-`realistic-character-body-assets.test.js`是完整坐姿/本人近景的素材构建门：18视角、6身份、PNG alpha/尺寸/hash、原上身坐标与小桃膝下范围。实际组合证据见`REALISTIC-SEATED-VIEW-QA.md`，不能用数据测试代替图像检查。The body-asset gate complements, rather than replaces, actual seated composition review.

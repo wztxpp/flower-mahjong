@@ -48,22 +48,9 @@ test('all eighteen approved complete sources have independent bytes and disable 
     const bytes = readFileSync(new URL(`../public${figure.url}`, import.meta.url));
     assert.equal(createHash('sha256').update(bytes).digest('hex'), figure.sourceSha256);
     assert.deepEqual([bytes.readUInt32BE(16), bytes.readUInt32BE(20)], figure.sourceSize);
-    assert.equal(view.motion, null); assert.equal(view.action, null);
+    assert.equal(view.motion, undefined); assert.equal(view.action, undefined);
+    assert.equal(view.pov, undefined); assert.equal(view.body, undefined);
     sourceHashes.add(figure.sourceSha256);
   }
   assert.equal(sourceHashes.size, 18);
-});
-
-test('component has explicit fallback and cleanup, not mirroring or floating CSS', () => {
-  const source = readFileSync(new URL('../src/RealisticCharacter.vue', import.meta.url), 'utf8');
-  const artwork = readFileSync(new URL('../src/RealisticCharacterArtwork.vue', import.meta.url), 'utf8');
-  assert.match(source, /original-fallback/);
-  assert.match(source, /CharacterArtwork/);
-  assert.match(artwork, /controller\.dispose/);
-  assert.match(artwork, /observer\?\.disconnect/);
-  assert.match(artwork, /prefers-reduced-motion/);
-  assert.doesNotMatch(source, /scaleX\s*\(\s*-1|rotateY\s*\(\s*180|@keyframes/);
-  assert.match(source, /v-if="view && !view.figure"/);
-  assert.match(source, /v-else-if="included && !view\?\.figure"/);
-  assert.doesNotMatch(source, /reaction !== 'base'/);
 });

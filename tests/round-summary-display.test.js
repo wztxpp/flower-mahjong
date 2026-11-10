@@ -1,3 +1,4 @@
+import * as WanPaperModule from '../src/mahjong-wan-faces.js';
 // 只验证终局显示适配，不运行浏览器、网络或另造客户端计分；服务端真实摘要与展示夹具分别验证。
 // Test only terminal display adaptation, with no browser/network/client scoring; cover actual server summaries and view fixtures separately.
 import test from 'node:test';
@@ -210,7 +211,7 @@ test('summary tile dimensions remain intrinsic across row and column containers 
 // 使用真实RoundSummary与MahjongTile渲染两玩法及长记录，确认三类牌仍共用尺寸作用域且不漏牌。
 // Render both real components for both modes and long records, preserving the shared sizing scope and every tile.
 test('actual summary components keep every hand, meld and winning reference inside the shared tile sizing scope', async () => {
-  const Tile = displayComponent('MahjongTile.vue', { './mahjong-tile-presentation.js': TilePresentation });
+  const Tile = displayComponent('MahjongTile.vue', { './mahjong-wan-faces.js': WanPaperModule, './mahjong-tile-presentation.js': TilePresentation });
   const Summary = displayComponent('RoundSummary.vue', { './MahjongTile.vue': Tile, './round-summary.js': RoundSummaryModule });
   for (const [caseId, variant] of [['flower-3', 'normal'], ['chengdu-4', 'normal'], ['flower-3', 'long'], ['flower-3', 'missing']]) {
     const summary = roundSummaryView(stateFixture(caseId, variant));

@@ -1,3 +1,6 @@
+> 历史记录：本文件描述已废弃的二维真实桌；当前实现与维护入口见 [Three.js 真实桌](REALISTIC-TABLE.md)。资源名及验收仅对应旧提交。
+> Historical record of the retired 2D renderer; asset names and acceptance apply only to that revision. See the current Three.js contract.
+
 # 圆角厚牌 / Rounded solid tiles
 
 本说明替代 REALISTIC-SOLID-SCENE.md 中“四个侧面”的旧描述，仅改变展示，不修改任何规则、牌值或私有数据来源。
