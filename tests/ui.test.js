@@ -39,6 +39,9 @@ import { continuePresentedGame } from "../shared/game.js";
 // rather than maintaining a separate presentation model in the tests.
 // 编译实际 Vue 单文件组件，并把导入替换为测试依赖；不是另写一套假的界面逻辑。
 // Compile the real Vue SFC and substitute test dependencies for imports rather than duplicating the UI logic.
+// 保存挂载回调供偏好恢复专项显式触发；其他测试仍不运行浏览器挂载副作用。
+// Capture mount hooks for explicit preference restoration; other tests still skip browser mount effects.
+let mountedCallbacks = [];
 function compileComponent(filename, dependencies = {}) {
   const { descriptor } = parse(
     readFileSync(new URL(`../src/${filename}`, import.meta.url), "utf8"),
@@ -60,7 +63,7 @@ function compileComponent(filename, dependencies = {}) {
   const modules = {
     vue: {
       ...Vue,
-      onMounted() {},
+      onMounted(callback) { mountedCallbacks.push(callback); },
       onUnmounted() {},
     },
     "vue/server-renderer": Renderer,
@@ -156,6 +159,7 @@ function browser({
   malformed = false,
 } = {}) {
   scheduled = [];
+  mountedCallbacks = [];
   const sessionItems = new Map();
   const localItems = new Map();
   const storage = (items) => ({
@@ -7891,4 +7895,121 @@ test('realistic legacy frames use accepted playback and respect initial and sile
   assert.equal(scope.realisticPresentationFrame.value.reset, true);
   assert.deepEqual(scope.realisticPresentationFrame.value.events, []);
   scope.resetRoomContext();
+});
+
+// 三种展示共享同一权威快照；切换和详情不是出牌动作，也不得清掉已选牌。
+// All views share authority; switching/details are not game actions and must retain selection.
+test('landscape switches preserve selection, authority, session and never submit an API action', async () => {
+  const scope = setup(fixture({ schemaVersion: 3 }));
+  const snapshot = scope.state.value;
+  const session = scope.session.value;
+  const requests = [];
+  globalThis.fetch = (...args) => { requests.push(args); throw new Error('Unexpected presentation request'); };
+  scope.selectedTile.value = 3;
+  for (const presentation of ['landscape', 'classic', 'landscape', 'realistic', 'landscape']) {
+    scope.chooseTablePresentation(presentation);
+    assert.equal(scope.tablePresentation.value, presentation);
+    assert.equal(localStorage.getItem('huajian-table-presentation-v1'), presentation);
+    assert.equal(scope.selectedTile.value, 3);
+    assert.equal(scope.state.value, snapshot);
+    assert.equal(scope.session.value, session);
+    assert.equal(scope.landscapeDetailsOpen.value, false);
+  }
+  const html = await render(scope);
+  assert.match(html, /is-landscape-table/);
+  assert.doesNotMatch(html, /is-realistic-table|class="realistic-table/);
+  assert.match(html, /aria-pressed="true"[^>]*>横屏桌/);
+  assert.equal(requests.length, 0);
+  scope.resetRoomContext();
+});
+
+// 详情只展开原文档，关闭后仍是横屏；换模式不能把展开状态带进真实桌。
+// Details reveal the original document; closing stays landscape and mode changes cannot leak expansion to realistic.
+test('landscape details close repeatedly and reset when choosing another presentation', async () => {
+  const scope = setup(fixture());
+  scope.chooseTablePresentation('landscape');
+  for (const open of [true, false, true, false]) {
+    scope.landscapeDetailsOpen.value = open;
+    const html = await render(scope);
+    assert.equal(html.includes('landscape-details-open'), open);
+    assert.match(html, new RegExp(`aria-expanded="${open}"[^>]*>${open ? '回到横屏牌桌' : '详情 / 积分'}`));
+    assert.equal(scope.tablePresentation.value, 'landscape');
+  }
+  scope.landscapeDetailsOpen.value = true;
+  scope.chooseTablePresentation('realistic');
+  assert.equal(scope.landscapeDetailsOpen.value, false);
+  scope.chooseTablePresentation('classic');
+  const html = await render(scope);
+  assert.doesNotMatch(html, /is-landscape-table|landscape-details-toggle|landscape-rotate-hint/);
+  scope.resetRoomContext();
+});
+
+// 显式运行真实App挂载回调，验证保存值白名单；网络替身只返回空大厅记录。
+// Run the actual App mount hook to test its saved-value allowlist; mocked networking returns empty lobby history.
+for (const saved of ['landscape', 'realistic', 'classic', 'future-mode', '', null]) {
+  test(`landscape preference restoration safely handles ${String(saved)}`, async () => {
+    browser();
+    if (saved !== null) localStorage.setItem('huajian-table-presentation-v1', saved);
+    globalThis.fetch = async () => response(emptyHistory());
+    const scope = lobby();
+    const mount = mountedCallbacks.at(-1);
+    assert.equal(typeof mount, 'function');
+    mount();
+    await settle();
+    const expected = ['landscape', 'realistic'].includes(saved) ? saved : 'classic';
+    assert.equal(scope.tablePresentation.value, expected);
+    scope.chooseTablePresentation('invalid-mode');
+    assert.equal(scope.tablePresentation.value, expected);
+    scope.resetRoomContext();
+  });
+}
+
+// 成都状态必须沿用实际桌面文案，不能误用App的大厅“等待开局”；四种阻塞都覆盖。
+// Chengdu must reuse active-table wording, not App lobby text; exercise all four blocked states.
+test('landscape Chengdu status reflects preparation, turn, claims, finish and every blocked state', async () => {
+  const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+  for (const [stage, expected] of [
+    ['chengdu-exchange', '换三张：选择同一花色的三张牌'],
+    ['chengdu-dingque', '定缺：选择本局要打缺的花色'],
+    ['discard', '轮到你：选择一张合法手牌，再确认出牌'],
+    ['claim', '这张牌，等你回应'],
+    ['finished', '牌墙已尽，本局流局结算完成'],
+  ]) {
+    const scope = setup(stableTableSnapshot('chengdu-4', stage).state);
+    scope.chooseTablePresentation('landscape');
+    const status = (await render(scope)).match(/class="landscape-status[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(status?.includes(expected), `${stage}: ${status}`);
+    scope.resetRoomContext();
+  }
+  for (const blocked of ['busy', 'offline', 'syncing', 'presentationWaiting']) {
+    const scope = setup(stableTableSnapshot('chengdu-4', 'discard').state);
+    scope.chooseTablePresentation('landscape');
+    // 展示等待是派生值，通过公开屏障输入激活，不改写computed。
+    // Presentation waiting is derived; activate its public barrier input rather than writing computed state.
+    if (blocked === 'presentationWaiting') scope.state.value.presentation = { id: 'landscape-test-barrier' };
+    else scope[blocked].value = true;
+    const status = (await render(scope)).match(/class="landscape-status[^>]*>([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(status?.includes('正在同步或处理操作，请稍等'), blocked);
+    scope.resetRoomContext();
+  }
+});
+
+// 两种观战视图的原接牌区域继续保留来源与真实牌面，不把抢杠误当成已进牌河。
+// Both spectator views retain original claim sources/faces without pretending rob-kongs are river discards.
+test('landscape spectator discard and rob-kong claims retain original source and tile markup', async () => {
+  const { stableTableSnapshot } = await import('./helpers/stable-table-fixtures.js');
+  for (const caseId of ['flower-spectator', 'chengdu-spectator']) {
+    for (const stage of ['claim', 'rob-kong']) {
+      const scope = setup(stableTableSnapshot(caseId, stage).state);
+      scope.chooseTablePresentation('landscape');
+      const html = await render(scope);
+      const className = caseId.startsWith('flower') ? 'claim-strip' : 'chengdu-claim';
+      const claim = html.match(new RegExp(`class="${className}"[^>]*>([\\s\\S]*?)</div>`))?.[1];
+      assert.ok(claim, `${caseId}/${stage}`);
+      assert.match(claim, /mahjong-tile/);
+      assert.match(claim, stage === 'rob-kong' ? /正在|尝试补杠/ : /打出/);
+      assert.ok(claim.includes(caseId.startsWith('flower') ? scope.seatLabel(1) : scope.state.value.seats[1].name));
+      scope.resetRoomContext();
+    }
+  }
 });

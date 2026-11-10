@@ -15,6 +15,7 @@ import { CharacterPortraitReactions, portraitForCharacter, warmCharacterPortrait
 import CharacterArtwork from './CharacterArtwork.vue';
 import PortraitMotionSettings from './PortraitMotionSettings.vue';
 import { chengduEventText } from './chengdu-event-text.js';
+import { chengduTableStatus } from './chengdu-table-status.js';
 import { isChengduRoomSettings, CHENGDU_FAN_CAPS } from '../shared/chengdu-room-settings.js';
 import { SharedPlaybackCoordinator } from './shared-playback.js';
 // 开局选项与服务端共用默认值、上限和校验，避免两端接受不同的输入。
@@ -40,16 +41,20 @@ const STORAGE_KEY = 'huajian-mahjong-session-v1';
 const ROOMS_KEY = 'huajian-mahjong-rooms-v2';
 const PROFILE_KEY = 'huajian-mahjong-player-v1';
 const DEPARTURES_KEY = 'huajian-mahjong-departures-v1';
-// 真实桌只是本机展示偏好，不写入房间规则；切换不重建会话、不清空已选手牌。
-// Realistic mode is a local view preference, never a room rule; switching preserves sessions and selected tiles.
+// 三种桌面只保存本机展示偏好；横屏桌不启用真实桌，也不改变房间规则、会话或已选牌。
+// All three views are local preferences; landscape never enables realistic mode or changes rules, sessions or selection.
 const tablePresentation = ref('classic');
+// 横屏的详情开关只展开原页面信息，不复制牌桌或新增游戏动作；离开此模式时收起。
+// Landscape details reveal the original page information, without cloning tables/actions; close on mode changes.
+const landscapeDetailsOpen = ref(false);
 // 真实DOM目标就绪后才移动原控件；每次切换都取得新元素，避免Teleport复用已卸载的旧目标。
 // Move original controls only after the real DOM target is ready; every switch receives a fresh element instead of a detached target.
 const realisticControlsTarget = ref(null);
 function chooseTablePresentation(value) {
-  if (!['classic', 'realistic'].includes(value)) return;
+  if (!['classic', 'landscape', 'realistic'].includes(value)) return;
   if (tablePresentation.value !== value) resetRealisticPresentation();
   tablePresentation.value = value;
+  landscapeDetailsOpen.value = false;
   try { localStorage.setItem('huajian-table-presentation-v1', value); } catch { /* 本页仍生效 / Keep the page-local choice. */ }
 }
 // WebGL失败恢复原桌并解释原因；主动切换不显示错误，不改变房间或已选牌。
@@ -2325,7 +2330,10 @@ async function initialize() {
 onMounted(() => {
   try {
     voiceMuted.value = localStorage.getItem('huajian-voice-muted') === 'true';
-    if (localStorage.getItem('huajian-table-presentation-v1') === 'realistic') tablePresentation.value = 'realistic';
+    // 沿用原存储键，只接纳明确的展示值；损坏/未来值保持经典桌，旧真实桌偏好原样恢复。
+    // Reuse the original key with an explicit allowlist; unknown values keep classic and saved realistic remains unchanged.
+    const savedPresentation = localStorage.getItem('huajian-table-presentation-v1');
+    if (['landscape', 'realistic'].includes(savedPresentation)) tablePresentation.value = savedPresentation;
   } catch {
     /* 可选偏好保存失败不影响牌局。 / optional preference */
   }
@@ -2365,6 +2373,8 @@ onUnmounted(() => {
       'in-room': inRoom,
       'has-room-route': !!roomCode || restoring || busy,
       'is-realistic-table': inRoom && game && tablePresentation === 'realistic',
+      'is-landscape-table': inRoom && game && tablePresentation === 'landscape',
+      'landscape-details-open': landscapeDetailsOpen,
     }"
   >
     <!-- 全局页眉提供声音、换桌和规则入口；按钮事件只调用上面的处理函数。 / The global header exposes audio, room navigation and rules; button events call the handlers above. -->
@@ -2381,8 +2391,12 @@ onUnmounted(() => {
       <div class="header-actions" :class="{ 'stable-scroll': game }" :tabindex="game ? 0 : undefined" role="group" aria-label="声音与牌桌工具">
         <div v-if="game" class="table-presentation-switch" role="group" aria-label="牌桌显示模式">
           <button class="text-button" :aria-pressed="tablePresentation === 'classic'" @click="chooseTablePresentation('classic')">经典桌</button>
+          <button class="text-button" :aria-pressed="tablePresentation === 'landscape'" @click="chooseTablePresentation('landscape')">横屏桌</button>
           <button class="text-button" :aria-pressed="tablePresentation === 'realistic'" @click="chooseTablePresentation('realistic')">真实桌</button>
         </div>
+        <button v-if="game && tablePresentation === 'landscape'" class="text-button landscape-details-toggle"
+          :aria-expanded="landscapeDetailsOpen" @click="landscapeDetailsOpen = !landscapeDetailsOpen">{{ landscapeDetailsOpen ? '回到横屏牌桌' : '详情 / 积分' }}</button>
+        <button v-if="game && tablePresentation === 'landscape' && phase === 'finished'" class="text-button" data-next-round-trigger @click="openNextRound">本局结算 / 下一局</button>
         <button
           class="text-button voice-toggle"
           :aria-pressed="voiceStatus === 'ready' && !voiceMuted"
@@ -2417,6 +2431,9 @@ onUnmounted(() => {
     </header>
     <!-- 全局可选设置同时覆盖两玩法；不阻挡建房、开局或静态角色。 / Optional global settings cover both modes without blocking rooms, play or static art. -->
     <PortraitMotionSettings />
+    <!-- 只提示转向，不调用全屏或方向锁API；竖屏仍沿用可滚动的经典排版。
+         Suggest rotation without fullscreen/orientation-lock APIs; portrait retains the scrollable classic layout. -->
+    <p v-if="game && tablePresentation === 'landscape'" class="landscape-rotate-hint" role="status">横屏桌已选好。将手机横过来，手牌和操作会集中在同一屏；竖屏仍可正常使用。</p>
 
     <!-- 短暂飞牌覆盖层不持有真实牌；稳定 eventKey 区分每次已提交事件。 / Transient flight overlays do not own real tiles; stable eventKey values identify committed events. -->
     <div
@@ -2773,6 +2790,12 @@ onUnmounted(() => {
 
     <!-- 已在房间时展示桌面；大厅与房间互斥，不创建第二份游戏引擎。 / Render the table when in a room; lobby and room are mutually exclusive and do not create a second game engine. -->
     <main v-else class="room-layout">
+      <!-- 横屏紧凑状态只读现有快照，完整说明/结算仍在原详情；不引入新的回合判断。
+           Compact landscape status reads the existing snapshot; full guidance/settlement remain in details, without new turn logic. -->
+      <div v-if="game && tablePresentation === 'landscape'" class="landscape-status stable-scroll" tabindex="0" role="region" aria-label="横屏牌桌状态">
+        <span>{{ isSpectator ? '观战' : me.name }} · 余牌 {{ game.wallCount }} 张</span>
+        <span role="status" aria-live="polite" aria-atomic="true">{{ isChengduRoom ? chengduTableStatus(state, busy || offline || syncing || presentationWaiting) : statusTitle }}</span>
+      </div>
       <div class="room-heading">
         <div class="room-title"
           ><span class="eyebrow">{{ isChengduRoom ? '四人成都麻将' : phase === 'lobby' ? '牌桌准备中' : `${tablePlayerCount}人花麻将` }}</span
@@ -3207,7 +3230,7 @@ onUnmounted(() => {
               <div class="discard-area"
                 ><div v-for="player in riverPlayers" :key="player.seat" class="discard-group"
                   :data-river-seat="player.seat"
-                  ><div class="discard-tiles stable-scroll" tabindex="0" role="region"
+                  ><span v-if="tablePresentation === 'landscape'" class="landscape-river-owner">{{ seatLabel(player.seat) }}</span><div class="discard-tiles stable-scroll" tabindex="0" role="region"
                     :aria-label="`${seatLabel(player.seat)}的牌河，可滚动查看全部记录`"
                     ><template v-if="discardsFor(player.seat).length"
                       ><span

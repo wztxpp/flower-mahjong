@@ -1,0 +1,344 @@
+/* 横屏桌是独立展示模式：全部选择器必须带 .is-landscape-table，不改真实桌/经典桌的层叠。
+   Landscape is an independent presentation: every selector requires .is-landscape-table, preserving other views.
+   横屏时把公开区、牌河和原私有控件安排在一屏；详情展开后恢复原完整文档，不复制或删改数据。
+   Fit public zones, rivers and original private controls into one landscape viewport; details reveal the original full document. */
+.is-landscape-table .landscape-rotate-hint {
+  padding: 10px 14px;
+  border: 1px solid #b1c5ae;
+  border-radius: 10px;
+  background: #f1f5e9;
+  color: #244e3c;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.is-landscape-table .landscape-status { display: none; }
+.is-landscape-table .landscape-river-owner { display: none; }
+.is-landscape-table .landscape-details-toggle { min-height: 44px; }
+
+/* 只在足够宽的横向视口启用一屏布局；窄屏/竖屏不强制旋转、不缩放整页。
+   Enable the fitted layout only in wide landscape viewports; narrow/portrait screens never force rotation or page scaling. */
+@media (orientation: landscape) and (min-width: 560px) {
+  .is-landscape-table .landscape-rotate-hint { display: none; }
+  .is-landscape-table:not(.landscape-details-open) .landscape-status {
+    display: flex; justify-content: space-between; flex: 0 0 20px; height: 20px;
+    gap: 12px; padding: 0 6px; font-size: 11px; line-height: 20px; color: #efe5cc;
+    white-space: nowrap; scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .landscape-status > span { flex-shrink: 0; }
+  .is-landscape-table:not(.landscape-details-open) .landscape-river-owner {
+    display: block; height: 14px; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 10px; line-height: 14px; color: #d6dfc6;
+  }
+  .is-landscape-table:not(.landscape-details-open) {
+    --landscape-own-height: 160px;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 320px;
+    padding: max(2px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(2px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+    background: #182e27;
+  }
+  .is-landscape-table:not(.landscape-details-open) .site-header {
+    height: 46px;
+    min-height: 46px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    gap: 8px;
+  }
+  .is-landscape-table:not(.landscape-details-open) .brand { display: none; }
+  .is-landscape-table:not(.landscape-details-open) .header-actions {
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    margin: 0;
+    gap: 8px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .header-actions .text-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .is-landscape-table:not(.landscape-details-open) .table-presentation-switch { display: flex; gap: 2px; }
+  .is-landscape-table:not(.landscape-details-open) .table-presentation-switch [aria-pressed="true"] {
+    border-radius: 9px;
+    color: #fff5d5;
+    background: #225642;
+  }
+  /* 装饰和次要长信息仅在紧凑视图折叠；明确的详情入口恢复原节点及其全部滚动内容。
+     Collapse decoration/secondary long information only in compact view; the explicit details control restores every original node. */
+  .is-landscape-table:not(.landscape-details-open) :is(
+    .portrait-motion-settings, .prototype-pill, .room-heading, .room-settings-recap,
+    .game-rule-choice, .legacy-banner, .start-options, .table-footnote, .room-sidebar,
+    .own-character-display, .character-portrait, .hand-feedback, .table-info-footer,
+    .chengdu-details, .chengdu-table-footer, .table-topline, .chengdu-table-center
+  ) { display: none; }
+  .is-landscape-table:not(.landscape-details-open) .room-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    gap: 2px;
+    padding: 0;
+    max-width: none;
+    width: 100%;
+  }
+  /* 错误和掉线不能因一屏布局消失；只有空提示槽折叠，出现时占用有限可滚动空间。
+     Never hide connection/errors for fitting; collapse only empty slots and bound visible notices with scrolling. */
+  .is-landscape-table:not(.landscape-details-open) .room-notices {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: 44px;
+    margin: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .room-notices:not(:has(> div)) { display: none; }
+  .is-landscape-table:not(.landscape-details-open) :is(.connection-banner, .room-error, .legacy-banner, .spectator-banner) {
+    margin: 0;
+    padding: 4px 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    max-height: 44px;
+    overflow: auto;
+    flex-shrink: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) :is(.play-layout, .table-column) {
+    display: block;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .play-layout { flex: 1; }
+  .is-landscape-table:not(.landscape-details-open) .table-surface {
+    height: 100%;
+    min-height: 0;
+    padding: 4px 6px;
+    border-width: 2px;
+    border-radius: 14px;
+    display: grid;
+    grid-template-rows: minmax(0, .8fr) minmax(0, 1fr) var(--landscape-own-height);
+    gap: 4px;
+    overflow: hidden;
+  }
+  .is-landscape-table:not(.landscape-details-open) .opponent-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .four-player-table .opponent-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .is-landscape-table:not(.landscape-details-open) .opponent-seat {
+    grid-column: auto;
+    grid-row: auto;
+    width: auto;
+    justify-self: stretch;
+    min-width: 0;
+    min-height: 0;
+    padding: 3px 6px;
+    margin: 0;
+    border-radius: 9px;
+    display: grid;
+    grid-template-rows: 34px minmax(0, 1fr);
+    overflow: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .relative-seat-label { display: none; }
+  .is-landscape-table:not(.landscape-details-open) .table-surface .player-topline {
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+    margin: 0;
+    gap: 5px;
+    align-content: start;
+    scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .avatar { width: 28px; height: 32px; min-width: 28px; border-radius: 6px; }
+  .is-landscape-table:not(.landscape-details-open) .player-name { font-size: 12px; line-height: 1.2; }
+  .is-landscape-table:not(.landscape-details-open) .player-caption { font-size: 10px; line-height: 1.2; margin-top: 2px; }
+  .is-landscape-table:not(.landscape-details-open) .player-score { font-size: 18px; }
+  .is-landscape-table:not(.landscape-details-open) .host-tag { font-size: 9px; padding: 1px 3px; }
+  /* 暗手数量已在身份行显示，背牌装饰可收起；终局真实摊牌仍显示并可横滚至末张。
+     Concealed counts remain in identities, so decorative backs collapse; terminal revealed hands stay scrollable to the final tile. */
+  .is-landscape-table:not(.landscape-details-open) .opponent-hand:not(.finished-table-hand) { display: none; }
+  .is-landscape-table:not(.landscape-details-open) .opponent-public-cards {
+    height: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) :is(.win-pile, .meld-list, .radish-row) { margin: 0; padding: 0; gap: 4px; }
+  .is-landscape-table:not(.landscape-details-open) :is(.win-pile-tiles, .meld-tiles, .radish-tiles) { gap: 2px; }
+  .is-landscape-table:not(.landscape-details-open) .public-zone-label { white-space: nowrap; flex-shrink: 0; }
+  .is-landscape-table:not(.landscape-details-open) :is(.public-zone-label, .public-zone-empty, .meld small) { font-size: 10px; line-height: 1.2; }
+  .is-landscape-table:not(.landscape-details-open) .playing-center {
+    display: grid;
+    grid-template-columns: minmax(76px, 16%) minmax(0, 1fr);
+    gap: 6px;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .shared-radish-pool {
+    height: 100%;
+    min-height: 0;
+    padding: 2px;
+    margin: 0;
+    scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .shared-radish-status { font-size: 10px; line-height: 1.2; gap: 1px; }
+  .is-landscape-table:not(.landscape-details-open) .discard-area {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-height: 0;
+    gap: 4px;
+    padding: 0;
+    margin: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .discard-area:has(> :nth-child(4)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .is-landscape-table:not(.landscape-details-open) .playing-center:not(:has(.shared-radish-pool)) { grid-template-columns: minmax(0, 1fr); }
+  .is-landscape-table:not(.landscape-details-open) .discard-group { display: grid; grid-template-rows: 14px minmax(0, 1fr); padding: 0; margin: 0; min-height: 0; }
+  .is-landscape-table:not(.landscape-details-open) .table-surface .discard-tiles {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    padding: 2px;
+    gap: 3px;
+    scrollbar-gutter: auto;
+    border-radius: 6px;
+    background: #092d252e;
+  }
+  .is-landscape-table:not(.landscape-details-open) .mahjong-tile.tile-small { width: 24px; height: 32px; min-width: 24px; flex-shrink: 0; }
+  /* 原操作仍需先选牌再确认。把按钮放回固定行，使44px点击区不遮住手牌，切动作时牌行不跳动。
+     Preserve select-then-confirm; a fixed action row keeps44px targets clear of tiles and stable across action changes. */
+  .is-landscape-table:not(.landscape-details-open) .table-surface > .own-player-area {
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    border: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area > :is(.hand-panel, .chengdu-hand-panel) {
+    padding: 0;
+    margin: 0;
+    border: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .own-public-slot { height: 32px; margin: 0; }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area .own-public-cards {
+    height: 32px;
+    padding: 0 4px;
+    margin: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    scrollbar-gutter: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .own-public-cards :is(.win-pile, .own-meld-zone) { display: flex; flex-wrap: nowrap; gap: 5px; }
+  .is-landscape-table:not(.landscape-details-open) .hand-interaction-area { height: 108px; padding-top: 46px; }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area .hand-action-dock {
+    inset: 0 0 auto;
+    height: 46px;
+  }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area .hand-action-dock > :is(.action-row, .chengdu-action-bar) {
+    height: 46px;
+    padding: 0;
+    gap: 6px;
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
+  }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area .hand-action-dock .button { font-size: 14px; padding-inline: 14px; }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area :is(.hand-scroll, .chengdu-hand) {
+    height: 62px;
+    padding: 3px 3px 1px;
+    margin: 0;
+    scrollbar-gutter: auto;
+    scrollbar-width: none;
+  }
+  .is-landscape-table:not(.landscape-details-open) :is(.my-hand, .chengdu-hand-tiles) { gap: 3px; margin-inline: auto; padding: 0; }
+  .is-landscape-table:not(.landscape-details-open) .character-hand-table .mahjong-tile {
+    width: 44px;
+    min-width: 44px;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .is-landscape-table:not(.landscape-details-open) .character-hand-table .drawn-tile { margin-left: 8px; }
+  .is-landscape-table:not(.landscape-details-open) .own-player-area > .hand-panel > .waits-info {
+    height: 20px;
+    margin: 0;
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 20px;
+    scrollbar-gutter: auto;
+  }
+  /* 成都仍使用原组件及四家公开数据；只重排CSS，不借用花麻将动作或规则。
+     Chengdu keeps its original component/four public views; CSS alone reflows them, never borrowing Flower actions/rules. */
+  .is-landscape-table:not(.landscape-details-open) .chengdu-play { display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-play-heading { height: 20px; min-height: 20px; margin: 0; font-size: 11px; line-height: 20px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-board {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr) auto;
+    padding: 4px;
+    gap: 4px;
+  }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-seat {
+    grid-area: auto;
+    display: grid;
+    grid-template-rows: 30px 18px minmax(0, .7fr) minmax(20px, 1fr);
+    min-height: 0;
+    padding: 3px;
+    gap: 2px;
+    border-radius: 8px;
+    overflow: auto;
+  }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-player-heading { height: 30px; min-height: 30px; padding: 0; gap: 4px; flex-wrap: nowrap; scrollbar-gutter: auto; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-player-heading img { width: 24px; height: 28px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-player-heading div { min-width: 0; font-size: 11px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-player-heading small { font-size: 9px; margin: 0; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-player-heading b { font-size: 16px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-seat-meta { height: 18px; margin: 0; gap: 2px 4px; font-size: 10px; line-height: 18px; scrollbar-gutter: auto; }
+  .is-landscape-table:not(.landscape-details-open) :is(.chengdu-public-cards, .chengdu-river) { height: auto; min-height: 0; padding: 1px; margin: 0; gap: 2px; scrollbar-gutter: auto; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-melds { margin: 0; gap: 2px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-melds small { font-size: 10px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-own-area { margin: 0; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-hand-note { height: 20px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-hand-note-content { height: 20px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-hand-note p { font-size: 11px; line-height: 20px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-receipt-slot { height: 26px; padding: 0; scrollbar-gutter: auto; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-receipt-slot .chengdu-exchange-receipt { margin: 0; gap: 3px; font-size: 10px; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-waits { height: 20px; scrollbar-gutter: auto; }
+  .is-landscape-table:not(.landscape-details-open) .chengdu-waits p { margin: 0; font-size: 11px; line-height: 20px; }
+  /* 观众无私有手牌，不为不存在的手牌占底部高度；终局仍可从详情进入原结算/下一局。
+     Spectators reserve no space for absent private controls; original settlement/next-round remains available in details. */
+  .is-landscape-table.is-spectator:not(.landscape-details-open) .table-surface { grid-template-rows: minmax(0, .8fr) minmax(0, 1fr) auto; }
+  .is-landscape-table.is-spectator:not(.landscape-details-open) .opponent-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .is-landscape-table.is-spectator:not(.landscape-details-open) .chengdu-board { grid-template-rows: minmax(0, 1fr); }
+  /* 观众的接牌/抢杠信息只在原页脚，必须保留公开来源与牌面，尤其抢杠尚不在牌河中。
+     Spectator claims live only in the original footer; retain source/faces, especially rob-kongs not yet in rivers. */
+  .is-landscape-table.is-spectator:not(.landscape-details-open) :is(.table-info-footer:has(.claim-strip), .chengdu-table-footer:has(.chengdu-claim)) {
+    display: block; flex: 0 0 40px; min-height: 0; padding: 0; margin: 0; border: 0;
+  }
+  .is-landscape-table.is-spectator:not(.landscape-details-open) :is(.table-info-footer .game-status, .chengdu-table-footer .chengdu-status) { display: none; }
+  .is-landscape-table.is-spectator:not(.landscape-details-open) :is(.claim-slot, .chengdu-claim-slot) { height: 40px; margin: 0; }
+  .is-landscape-table.is-spectator:not(.landscape-details-open) :is(.claim-strip, .chengdu-claim) { min-height: 40px; height: 40px; padding: 2px 6px; margin: 0; font-size: 12px; }
+  .is-landscape-table:not(.landscape-details-open) .finished-table-hand-label { font-size: 10px; }
+  .is-landscape-table:not(.landscape-details-open) .opponent-hand.finished-table-hand { height: 40px; min-height: 40px; margin: 0; }
+  /* 详情用原有可滚动文档；顶部切回入口保持在视口中，不改变窗口滚动/焦点或请求。
+     Details use the original scrollable document; keep its return control visible without scripting scroll/focus/requests. */
+  .is-landscape-table.landscape-details-open .site-header { position: sticky; top: 0; z-index: 20; background: #182e27; }
+}

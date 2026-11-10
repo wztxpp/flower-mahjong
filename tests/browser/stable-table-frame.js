@@ -5,6 +5,7 @@ import App from '/src/App.vue';
 import '/src/style.css';
 import '/src/tabletop.css';
 import '/src/realistic-table.css';
+import '/src/landscape-table.css';
 import { terminalSummaryFixture } from '../helpers/round-summary-fixtures.js';
 import { stableTableSeatSnapshot, stableTableSnapshot, STABLE_TABLE_CASES, STABLE_TABLE_STAGES } from '../helpers/stable-table-fixtures.js';
 import { measureStableTable, auditStableTable, auditReachability, setRiverReviewPosition, compareStableTable, settleStableTable } from '../helpers/stable-table-browser-audit.js';
@@ -24,7 +25,7 @@ document.addEventListener('click', (event) => {
   // Allow only local tile selection and existing modal controls; selection never submits, while discard/preparation/start/departure remain blocked.
   // 仅放行写实桌本地显示工具；不放行任何出牌、回应或开局按钮。
   // Allow realistic local display tools only, never discard, claim or start controls.
-  if (event.target.closest('#app .table-presentation-switch button, #app .realistic-view-tools button, #app .realistic-view-tools input, #app .realistic-view-tools select, #app .realistic-details button')) return;
+  if (event.target.closest('#app .table-presentation-switch button, #app .landscape-details-toggle, #app .realistic-view-tools button, #app .realistic-view-tools input, #app .realistic-view-tools select, #app .realistic-details button')) return;
   if (event.target.closest('#app .character-hand-table button.tile-interactive:not(:disabled)')) return;
   if (event.target.closest('#app [data-next-round-trigger], #app .next-round-dialog .modal-close, #app .next-round-dialog [data-next-round-return]')) return;
   if (event.target.closest('#app button, #app a, #app input, #app select')) {

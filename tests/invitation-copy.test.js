@@ -131,6 +131,9 @@ const App = compileComponent("App.vue", {
   "./round-summary.js": RoundSummaryModule,
   "./Live2DSettings.vue": Live2DSettings,
   "./chengdu-event-text.js": ChengduEventTextModule,
+  // 横屏只读状态复用现有成都模块，邀请装载器也注入同一依赖。
+  // Landscape reuses existing Chengdu status; this invitation harness injects that same dependency.
+  "./chengdu-table-status.js": ChengduTableStatusModule,
   "./MahjongTile.vue": Tile,
   "./Icon.vue": Icon,
   "./ChengduTable.vue": ChengduTable,

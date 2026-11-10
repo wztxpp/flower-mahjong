@@ -34,7 +34,7 @@ export function transformStableTableApp(source) {
   content += `\nwindow.__stableTableFixture = Object.freeze({
     // 隔离页面可由URL选择初始展示，不写偏好存储，也不调用游戏动作。
     // The isolated page selects its initial presentation without stored preferences or game actions.
-    async setPresentation(value) { tablePresentation.value = value === 'realistic' ? 'realistic' : 'classic'; await nextTick(); },
+    async setPresentation(value) { tablePresentation.value = ['landscape', 'realistic'].includes(value) ? value : 'classic'; await nextTick(); },
     async setSnapshot(input) {
       const snapshot = structuredClone(input);
       session.value = { roomId: 'VIEWONLY' };

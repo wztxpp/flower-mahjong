@@ -151,8 +151,8 @@ test('manual preview offers 320px while the automatic matrix retains its two wid
   const html = source('tests/browser/stable-table-preview.html');
   const widthSelector = html.match(/<select id="fixture-width">([\s\S]*?)<\/select>/)?.[1];
   assert.ok(widthSelector);
-  const widths = [...widthSelector.matchAll(/<option value="(\d+)">/g)].map((match) => Number(match[1]));
-  assert.deepEqual(widths, [1280, 390, 320]);
+  const widths = [...widthSelector.matchAll(/<option value="(\d+)"(?: selected)?>/g)].map((match) => Number(match[1]));
+  assert.deepEqual(widths, [568, 667, 812, 844, 932, 1024, 1280, 390, 320]);
   assert.match(source('tests/browser/stable-table-preview.js'), /for \(const width of \[1280, 390\]\)/);
 });
 

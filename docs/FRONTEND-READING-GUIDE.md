@@ -343,3 +343,8 @@ The table helper reuses sanitization, then checks explicit mode agreement, three
 Final strips keep fixed30×40px uncompressed tiles with native scrolling to every card, leaving live slots unchanged. Each snapshot re-derives the reveal without caching; phase changes, new games, missing summaries and invalid records withdraw prior faces. Actual-component patch tests complement separate SSR and browser verification.
 
 万牌统一纸色见 [显示归一化](WAN-PAPER-CORRECTION.md)：SVG与Three.js Canvas共用原图、裁切与sRGB阈值，不改游戏生命周期。 / Wan SVG/Canvas share original art, crops and sRGB thresholds without game lifecycle changes.
+
+## 手机横屏显示 / Mobile landscape display
+
+见[横屏桌合同](LANDSCAPE-TABLE.md)：`tablePresentation`新增本地值`landscape`，`landscapeDetailsOpen`只折叠/恢复原页面信息。新CSS独立根类不命中真实桌；私有控件、状态、观战权限和模式切换的选牌保持原逻辑。
+See the landscape contract: the new local presentation/details state only reflows existing information. Independent CSS never matches realistic mode; private controls, status, spectator permissions and selection retain their original logic.

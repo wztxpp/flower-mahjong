@@ -32,12 +32,18 @@ async function ready() {
   }
   throw new Error('真实组件未就绪，请检查预览终端编译错误');
 }
-async function configure() {
+// 旋转验收只修改iframe视口，不替换快照/组件或清空选牌；与真正的屏幕尺寸变化同一CSS路径。
+// Rotation QA changes only the iframe viewport, retaining snapshots/components/selection and exercising the same CSS path.
+function resizeViewport() {
   frame.width = widthInput.value;
   frame.height = heightInput.value;
   frame.style.height = `${heightInput.value}px`;
+}
+async function configure() {
+  resizeViewport();
   const api = await ready();
   await api.set(caseInput.value, stageInput.value, characterInput.value, Number(seatInput.value));
+  await frame.contentWindow.__stableTableFixture.setPresentation(document.querySelector('#fixture-presentation').value);
   return api;
 }
 // 每次操作保留可见状态/错误；审计期间禁用并发诊断输入，不能用重叠运行制造假基线。
@@ -51,6 +57,7 @@ async function run(label, operation) {
   catch (error) { report({ passed: false, error: error.message, stack: error.stack }); status.textContent = '诊断失败，未宣称通过'; }
   finally { controls.forEach((control) => { control.disabled = false; }); }
 }
+document.querySelector('#fixture-resize').onclick = () => run('只调整视口，不重设牌局…', async () => { resizeViewport(); return (await ready()).measure(); });
 document.querySelector('#fixture-apply').onclick = () => run('切换纯视图…', async () => { const api = await configure(); return api.measure(); });
 for (const action of ['load', 'finish', 'open', 'close', 'poll', 'new-game']) {
   document.querySelector(`#fixture-summary-${action}`).onclick = () => run('切换本地终局总览…', async () => {

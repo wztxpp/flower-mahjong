@@ -8,6 +8,9 @@ import './style.css';
 import './tabletop.css';
 // 仅 .is-realistic-table 内覆盖，经典桌不受影响。 / Scope new skin overrides to the optional realistic view.
 import './realistic-table.css';
+// 横屏桌使用独立根类，真实桌和经典桌不会命中这些后置规则。
+// Landscape overrides require their own root class, leaving realistic and classic views untouched.
+import './landscape-table.css';
 
 // 挂载点来自 index.html 的 #app；mount 之后 Vue 才开始管理这块 DOM。
 // index.html provides #app; Vue manages that DOM subtree after mount.

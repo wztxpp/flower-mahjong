@@ -1,0 +1,2716 @@
+{
+  "date": "2026-11-10",
+  "baseline": "544048a7950f1b16e1af0865a0714b8571f682d5",
+  "environment": "Cloud Chromium iframe viewport, synthetic fixture, no live game actions",
+  "matrix": [
+    {
+      "case": "flower-3",
+      "width": 568,
+      "height": 320,
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 553,
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "rootWidth": 553,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 568,
+      "height": 320,
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 553,
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "rootWidth": 553,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 568,
+      "height": 320,
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 12,
+        "right": 541,
+        "top": 184,
+        "width": 529,
+        "x": 12,
+        "y": 184
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 553,
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 230,
+        "width": 529,
+        "x": 12,
+        "y": 230
+      },
+      "rootWidth": 553,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-3",
+      "width": 667,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 14,
+        "right": 638,
+        "top": 239,
+        "width": 624,
+        "x": 14,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 652,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 14,
+        "right": 638,
+        "top": 285,
+        "width": 624,
+        "x": 14,
+        "y": 285
+      },
+      "rootWidth": 652,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 667,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 14,
+        "right": 638,
+        "top": 239,
+        "width": 624,
+        "x": 14,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 652,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 14,
+        "right": 638,
+        "top": 285,
+        "width": 624,
+        "x": 14,
+        "y": 285
+      },
+      "rootWidth": 652,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 667,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 12,
+        "right": 640,
+        "top": 239,
+        "width": 628,
+        "x": 12,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 652,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 12,
+        "right": 640,
+        "top": 285,
+        "width": 628,
+        "x": 12,
+        "y": 285
+      },
+      "rootWidth": 652,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-3",
+      "width": 812,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 14,
+        "right": 783,
+        "top": 239,
+        "width": 769,
+        "x": 14,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 797,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 14,
+        "right": 783,
+        "top": 285,
+        "width": 769,
+        "x": 14,
+        "y": 285
+      },
+      "rootWidth": 797,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 812,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 14,
+        "right": 783,
+        "top": 239,
+        "width": 769,
+        "x": 14,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 797,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 14,
+        "right": 783,
+        "top": 285,
+        "width": 769,
+        "x": 14,
+        "y": 285
+      },
+      "rootWidth": 797,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 812,
+      "height": 375,
+      "passed": true,
+      "action": {
+        "bottom": 285,
+        "height": 46,
+        "left": 12,
+        "right": 785,
+        "top": 239,
+        "width": 773,
+        "x": 12,
+        "y": 239
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 797,
+      "hand": {
+        "bottom": 347,
+        "height": 62,
+        "left": 12,
+        "right": 785,
+        "top": 285,
+        "width": 773,
+        "x": 12,
+        "y": 285
+      },
+      "rootWidth": 797,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-3",
+      "width": 844,
+      "height": 390,
+      "passed": true,
+      "action": {
+        "bottom": 300,
+        "height": 46,
+        "left": 14,
+        "right": 815,
+        "top": 254,
+        "width": 801,
+        "x": 14,
+        "y": 254
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 829,
+      "hand": {
+        "bottom": 362,
+        "height": 62,
+        "left": 14,
+        "right": 815,
+        "top": 300,
+        "width": 801,
+        "x": 14,
+        "y": 300
+      },
+      "rootWidth": 829,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 844,
+      "height": 390,
+      "passed": true,
+      "action": {
+        "bottom": 300,
+        "height": 46,
+        "left": 14,
+        "right": 815,
+        "top": 254,
+        "width": 801,
+        "x": 14,
+        "y": 254
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 829,
+      "hand": {
+        "bottom": 362,
+        "height": 62,
+        "left": 14,
+        "right": 815,
+        "top": 300,
+        "width": 801,
+        "x": 14,
+        "y": 300
+      },
+      "rootWidth": 829,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 844,
+      "height": 390,
+      "passed": true,
+      "action": {
+        "bottom": 300,
+        "height": 46,
+        "left": 12,
+        "right": 817,
+        "top": 254,
+        "width": 805,
+        "x": 12,
+        "y": 254
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 829,
+      "hand": {
+        "bottom": 362,
+        "height": 62,
+        "left": 12,
+        "right": 817,
+        "top": 300,
+        "width": 805,
+        "x": 12,
+        "y": 300
+      },
+      "rootWidth": 829,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-3",
+      "width": 932,
+      "height": 430,
+      "passed": true,
+      "action": {
+        "bottom": 340,
+        "height": 46,
+        "left": 14,
+        "right": 903,
+        "top": 294,
+        "width": 889,
+        "x": 14,
+        "y": 294
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 917,
+      "hand": {
+        "bottom": 402,
+        "height": 62,
+        "left": 14,
+        "right": 903,
+        "top": 340,
+        "width": 889,
+        "x": 14,
+        "y": 340
+      },
+      "rootWidth": 917,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 932,
+      "height": 430,
+      "passed": true,
+      "action": {
+        "bottom": 340,
+        "height": 46,
+        "left": 14,
+        "right": 903,
+        "top": 294,
+        "width": 889,
+        "x": 14,
+        "y": 294
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 917,
+      "hand": {
+        "bottom": 402,
+        "height": 62,
+        "left": 14,
+        "right": 903,
+        "top": 340,
+        "width": 889,
+        "x": 14,
+        "y": 340
+      },
+      "rootWidth": 917,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 932,
+      "height": 430,
+      "passed": true,
+      "action": {
+        "bottom": 340,
+        "height": 46,
+        "left": 12,
+        "right": 905,
+        "top": 294,
+        "width": 893,
+        "x": 12,
+        "y": 294
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 917,
+      "hand": {
+        "bottom": 402,
+        "height": 62,
+        "left": 12,
+        "right": 905,
+        "top": 340,
+        "width": 893,
+        "x": 12,
+        "y": 340
+      },
+      "rootWidth": 917,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-3",
+      "width": 1024,
+      "height": 760,
+      "passed": true,
+      "action": {
+        "bottom": 670,
+        "height": 46,
+        "left": 14,
+        "right": 995,
+        "top": 624,
+        "width": 981,
+        "x": 14,
+        "y": 624
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 1009,
+      "hand": {
+        "bottom": 732,
+        "height": 62,
+        "left": 14,
+        "right": 995,
+        "top": 670,
+        "width": 981,
+        "x": 14,
+        "y": 670
+      },
+      "rootWidth": 1009,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "flower-4",
+      "width": 1024,
+      "height": 760,
+      "passed": true,
+      "action": {
+        "bottom": 670,
+        "height": 46,
+        "left": 14,
+        "right": 995,
+        "top": 624,
+        "width": 981,
+        "x": 14,
+        "y": 624
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 1009,
+      "hand": {
+        "bottom": 732,
+        "height": 62,
+        "left": 14,
+        "right": 995,
+        "top": 670,
+        "width": 981,
+        "x": 14,
+        "y": 670
+      },
+      "rootWidth": 1009,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    },
+    {
+      "case": "chengdu-4",
+      "width": 1024,
+      "height": 760,
+      "passed": true,
+      "action": {
+        "bottom": 670,
+        "height": 46,
+        "left": 12,
+        "right": 997,
+        "top": 624,
+        "width": 985,
+        "x": 12,
+        "y": 624
+      },
+      "actions": [
+        {
+          "height": 44
+        }
+      ],
+      "clientWidth": 1009,
+      "hand": {
+        "bottom": 732,
+        "height": 62,
+        "left": 12,
+        "right": 997,
+        "top": 670,
+        "width": 985,
+        "x": 12,
+        "y": 670
+      },
+      "rootWidth": 1009,
+      "tiles": [
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        },
+        {
+          "height": 56,
+          "width": 44
+        }
+      ]
+    }
+  ],
+  "stress": [
+    {
+      "game": "flower-4",
+      "stage": "empty",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "ordinary-public",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "public-growth",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "many-actions",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "暗杠 · 1条",
+          "w": 95.734375
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "暗杠 · 2条",
+          "w": 95.734375
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "暗杠 · 3条",
+          "w": 95.734375
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "胡牌",
+          "w": 85
+        },
+        {
+          "disabled": true,
+          "h": 44,
+          "label": "选牌后打出",
+          "w": 128.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "claim",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "胡牌",
+          "w": 85
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "碰",
+          "w": 44.5
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "明杠",
+          "w": 59
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "过",
+          "w": 44.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "rob-kong",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "胡牌",
+          "w": 85
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "过",
+          "w": 44.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "offline",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 103,
+        "height": 31,
+        "left": 6,
+        "right": 547,
+        "top": 72,
+        "width": 541,
+        "x": 6,
+        "y": 72
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-4",
+      "stage": "finished",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "ordinary-public",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 230,
+        "width": 529,
+        "x": 12,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "public-growth",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 230,
+        "width": 529,
+        "x": 12,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "claim",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 12,
+        "right": 541,
+        "top": 184,
+        "width": 529,
+        "x": 12,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "胡牌",
+          "w": 59
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "碰 1条",
+          "w": 71.6875
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "明杠 1条",
+          "w": 86.1875
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "过",
+          "w": 44.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 230,
+        "width": 529,
+        "x": 12,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "offline",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 230,
+        "width": 529,
+        "x": 12,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 103,
+        "height": 31,
+        "left": 6,
+        "right": 547,
+        "top": 72,
+        "width": 541,
+        "x": 6,
+        "y": 72
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "chengdu-exchange",
+      "passed": true,
+      "action": {
+        "bottom": 204,
+        "height": 46,
+        "left": 12,
+        "right": 541,
+        "top": 158,
+        "width": 529,
+        "x": 12,
+        "y": 158
+      },
+      "buttons": [
+        {
+          "disabled": true,
+          "h": 44,
+          "label": "确认换三张",
+          "w": 102.5
+        }
+      ],
+      "hand": {
+        "bottom": 266,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 204,
+        "width": 529,
+        "x": 12,
+        "y": 204
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "chengdu-4",
+      "stage": "chengdu-dingque",
+      "passed": true,
+      "action": {
+        "bottom": 204,
+        "height": 46,
+        "left": 12,
+        "right": 541,
+        "top": 158,
+        "width": 529,
+        "x": 12,
+        "y": 158
+      },
+      "buttons": [
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "定缺条",
+          "w": 73.5
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "定缺筒",
+          "w": 73.5
+        },
+        {
+          "disabled": false,
+          "h": 44,
+          "label": "定缺万",
+          "w": 73.5
+        }
+      ],
+      "hand": {
+        "bottom": 266,
+        "height": 62,
+        "left": 12,
+        "right": 541,
+        "top": 204,
+        "width": 529,
+        "x": 12,
+        "y": 204
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-legacy-1",
+      "stage": "discard",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": true,
+          "h": 44,
+          "label": "选牌后打出",
+          "w": 128.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-legacy-2",
+      "stage": "discard",
+      "passed": true,
+      "action": {
+        "bottom": 230,
+        "height": 46,
+        "left": 14,
+        "right": 539,
+        "top": 184,
+        "width": 525,
+        "x": 14,
+        "y": 184
+      },
+      "buttons": [
+        {
+          "disabled": true,
+          "h": 44,
+          "label": "选牌后打出",
+          "w": 128.5
+        }
+      ],
+      "hand": {
+        "bottom": 292,
+        "height": 62,
+        "left": 14,
+        "right": 539,
+        "top": 230,
+        "width": 525,
+        "x": 14,
+        "y": 230
+      },
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 1,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": false
+    },
+    {
+      "game": "flower-spectator",
+      "stage": "public-growth",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": null,
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 0,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": true
+    },
+    {
+      "game": "chengdu-spectator",
+      "stage": "public-growth",
+      "passed": true,
+      "action": null,
+      "buttons": [],
+      "hand": null,
+      "notice": {
+        "bottom": 0,
+        "height": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "privateCount": 0,
+      "root": {
+        "bottom": 320,
+        "height": 320,
+        "left": 0,
+        "right": 553,
+        "top": 0,
+        "width": 553,
+        "x": 0,
+        "y": 0
+      },
+      "spectator": true
+    }
+  ],
+  "claims": [
+    {
+      "cid": "flower-spectator",
+      "stage": "claim",
+      "claimRect": {
+        "bottom": 312,
+        "height": 40,
+        "left": 14,
+        "right": 529,
+        "top": 272,
+        "width": 515,
+        "x": 14,
+        "y": 272
+      },
+      "claimText": "合成牌友2 打出了 1条",
+      "clientWidth": 553,
+      "footerDisplay": "block",
+      "privateHands": 0,
+      "rootWidth": 553
+    },
+    {
+      "cid": "flower-spectator",
+      "stage": "rob-kong",
+      "claimRect": {
+        "bottom": 312,
+        "height": 40,
+        "left": 14,
+        "right": 529,
+        "top": 272,
+        "width": 515,
+        "x": 14,
+        "y": 272
+      },
+      "claimText": "合成牌友2 正在补杠 1条",
+      "clientWidth": 553,
+      "footerDisplay": "block",
+      "privateHands": 0,
+      "rootWidth": 553
+    },
+    {
+      "cid": "chengdu-spectator",
+      "stage": "claim",
+      "claimRect": {
+        "bottom": 318,
+        "height": 40,
+        "left": 6,
+        "right": 537,
+        "top": 278,
+        "width": 531,
+        "x": 6,
+        "y": 278
+      },
+      "claimText": "合成牌友2打出",
+      "clientWidth": 553,
+      "footerDisplay": "block",
+      "privateHands": 0,
+      "rootWidth": 553
+    },
+    {
+      "cid": "chengdu-spectator",
+      "stage": "rob-kong",
+      "claimRect": {
+        "bottom": 318,
+        "height": 40,
+        "left": 6,
+        "right": 537,
+        "top": 278,
+        "width": 531,
+        "x": 6,
+        "y": 278
+      },
+      "claimText": "合成牌友2尝试补杠",
+      "clientWidth": 553,
+      "footerDisplay": "block",
+      "privateHands": 0,
+      "rootWidth": 553
+    }
+  ],
+  "statuses": [
+    {
+      "stage": "chengdu-exchange",
+      "actions": [
+        {
+          "height": 44,
+          "text": "确认换三张"
+        }
+      ],
+      "handBottom": 266,
+      "status": "合成牌友1 · 余牌 60 张\n换三张：选择同一花色的三张牌"
+    },
+    {
+      "stage": "chengdu-dingque",
+      "actions": [
+        {
+          "height": 44,
+          "text": "定缺条"
+        },
+        {
+          "height": 44,
+          "text": "定缺筒"
+        },
+        {
+          "height": 44,
+          "text": "定缺万"
+        }
+      ],
+      "handBottom": 266,
+      "status": "合成牌友1 · 余牌 60 张\n定缺：选择本局要打缺的花色"
+    },
+    {
+      "stage": "discard",
+      "actions": [
+        {
+          "height": 44,
+          "text": "确认出牌"
+        }
+      ],
+      "handBottom": 292,
+      "status": "合成牌友1 · 余牌 60 张\n轮到你：选择一张合法手牌，再确认出牌"
+    },
+    {
+      "stage": "claim",
+      "actions": [
+        {
+          "height": 44,
+          "text": "胡牌"
+        },
+        {
+          "height": 44,
+          "text": "碰 1条"
+        },
+        {
+          "height": 44,
+          "text": "明杠 1条"
+        },
+        {
+          "height": 44,
+          "text": "过"
+        }
+      ],
+      "handBottom": 292,
+      "status": "合成牌友1 · 余牌 60 张\n这张牌，等你回应"
+    }
+  ],
+  "rotation": {
+    "portrait": {
+      "hand": {
+        "bottom": 1814.6875,
+        "height": 100,
+        "left": 38,
+        "right": 337,
+        "top": 1714.6875,
+        "width": 299,
+        "x": 38,
+        "y": 1714.6875
+      },
+      "hint": "block",
+      "mode": "app-shell in-game in-room is-landscape-table",
+      "selected": "9筒"
+    },
+    "landscape": {
+      "hand": {
+        "bottom": 362,
+        "height": 62,
+        "left": 14,
+        "right": 815,
+        "top": 300,
+        "width": 801,
+        "x": 14,
+        "y": 300
+      },
+      "mode": "app-shell in-game in-room is-landscape-table",
+      "selected": "9筒"
+    }
+  },
+  "limitations": [
+    "Physical touchscreen and iOS Safari not tested",
+    "WebGL unavailable; original fallback and source isolation verified, not realistic 3D pixels"
+  ]
+}

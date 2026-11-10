@@ -291,3 +291,6 @@ Final table review adds the maintained helper-boundary suite, table wiring and t
 
 胡后杠牌型维护入口：[固定牌型纠错](POST-HU-KONG-PATTERN-CORRECTION.md)。新增维护文件为`tests/post-hu-pattern.test.js`、`tests/fixtures/post-hu-pattern.js`，HTTP恢复检查并入`tests/flower-lock-api.test.js`；实现集中在`shared/game.js`权威白名单。
 Post-hu kong-pattern maintenance: the linked correction, the new pattern test/fixture and existing HTTP suite cover the authoritative allowlist in shared/game.js.
+
+横屏桌维护入口：[手机横屏桌](LANDSCAPE-TABLE.md)。新增维护文件 `src/landscape-table.css`、`tests/landscape-table.test.js`；偏好/详情在App.vue，复用成都状态和原控件，真实桌代码不改。隔离浏览器入口沿用stable-table-preview并支持仅改变视口。
+Landscape maintenance adds the scoped stylesheet/test; App owns local choices/details and reuses Chengdu status/original controls without changing realistic source. The existing isolated preview supports viewport-only resizing.

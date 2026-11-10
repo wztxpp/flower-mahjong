@@ -266,3 +266,8 @@ See the full overlay contract; permanent action slots are the superseded present
 - `createFrameGate`：以房间、局和递增序号接纳 App 的已提交展示帧；挂载只建立基线。 / Accepts committed App frames by room, round and monotonic sequence; mounting only establishes a baseline.
 
 - 胡后固定牌型 / fixed post-hu pattern：七对首胡快照不能用于证明拆对成杠合法；普通杠须保留原手牌结构与所有听口。`preserveWaitsOnPostHuKong`保留为旧存档/协议字段，当前schema3不允许false/缺字段绕过本次纠错。详见[牌型保护](POST-HU-KONG-PATTERN-CORRECTION.md)。 / A saved seven-pairs snapshot cannot validate breaking pairs into kongs. Ordinary kongs preserve held structure and all waits; the retained legacy field cannot bypass this schema-three correction.
+
+## 横屏展示 / Landscape presentation
+
+- `tablePresentation`：本机经典/横屏/真实桌展示偏好，值`classic`/`landscape`/`realistic`；与服务端玩法`gameMode`无关。 / Local classic/landscape/realistic view preference, independent of server gameMode.
+- `landscapeDetailsOpen`：横屏模式中恢复完整页面详情的临时布尔值，不写规则、会话或牌局。 / Temporary details visibility in landscape, never game/rule/session state.

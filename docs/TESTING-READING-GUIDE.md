@@ -355,3 +355,8 @@ Mounted-component errors remove only the failed layer, avoid polling retries, sp
 
 `tests/post-hu-pattern.test.js`与`tests/fixtures/post-hu-pattern.js`覆盖真实七对首胡、五种牌型、三种摸牌、旧开关、同听口换手、丢听口、保存明杠和合法杠；`tests/flower-lock-api.test.js`增加FileStore重启与重复非法HTTP请求无写入。见[合同](POST-HU-KONG-PATTERN-CORRECTION.md)。
 The pattern suite/fixture cover real seven-pairs wins, draw sources, old toggles, equal-wait swaps, lost waits, saved exposed-kong choices and legal kongs. The HTTP suite verifies FileStore restart and no-write repeated rejections.
+
+## 横屏桌专项 / Landscape-specific checks
+
+新增 `tests/landscape-table.test.js` 与 `ui.test.js` 中横屏用例覆盖独立CSS/媒体条件/触控声明及真实SFC的偏好、往返、选牌保留和零API。`tests/browser/stable-table-preview.html`可选横屏桌与568–1024px横向尺寸，“只调整视口”保留快照/选牌以验旋转。区别物理触屏、浏览器像素和内存DOM证据；详细验收见[横屏桌](LANDSCAPE-TABLE.md)。
+The focused CSS suite and real-SFC UI additions cover isolation, media, hit-target declarations, saved preferences, switching, selection and no requests. The isolated preview adds landscape dimensions and viewport-only resizing. Distinguish hardware touch, actual browser pixels and in-memory evidence; see the contract.

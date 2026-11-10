@@ -225,3 +225,8 @@ Table hand reveals derive from that same displayed summary without another hand 
 
 胡后杠的牌型保护只存在于`shared/game.js`权威白名单；界面不另写七对禁杠逻辑。保存窗口读取同样过滤尚未回应明杠，但不撤销已提交回应、重算旧账或回填字段。详见[胡后杠牌型纠错](POST-HU-KONG-PATTERN-CORRECTION.md)。
 Post-hu pattern protection belongs to the authoritative engine allowlist, not a separate UI rule. Saved-window reads filter unanswered exposed kongs without revoking accepted responses, rescoring history or adding fields.
+
+## 横屏展示生命周期 / Landscape presentation lifecycle
+
+`tablePresentation=landscape`属于浏览器展示，不是`gameMode`或`schemaVersion`；沿用原本地偏好键。`landscapeDetailsOpen`为页内临时状态，切换显示模式清除，普通轮询和方向变化不清除选牌或创建会话。媒体查询只改变排版，无新监听/定时器/请求。详见[横屏桌](LANDSCAPE-TABLE.md)。
+Landscape is a browser presentation, not a game mode/schema version, reusing the existing preference key. Details are temporary page state reset on explicit mode choices; polling/orientation never reset selection or sessions. Media queries change layout without new listeners/timers/requests; see the contract.
