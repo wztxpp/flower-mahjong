@@ -1397,13 +1397,15 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
     }
     const score = calculateHuScore(game, seat, bigSingle, pattern, kongEventType);
     const repeatSelfDrawWithOneUnhu =
-      selfDraw && !bigSingle && priorHuSeats.length === game.players.length - 1 && priorHuSeats.includes(seat);
+      selfDraw && priorHuSeats.length === game.players.length - 1 && priorHuSeats.includes(seat);
     /* 本批次之前尚未胡、而现在全员均已胡，才符合末家首次胡的付款例外。
      * The final-first-hu payment exception requires a previously unwon seat and all seats now having won. */
     const finalFirstHu =
       game.rules.finalHuPaymentExceptions === true &&
       !priorHuSeats.includes(seat) &&
       game.players.every((player) => player.huCount > 0);
+    // 付款方看胡牌来源，不看牌型；大单吊仍单独计算番分和喜钱。
+    // The win source, not its shape, determines payers; big-single scoring and ready bonus stay separate.
     // A discard after a kong is still a discard: only its actual source pays.
     const payerSeats =
       source === 'kongDiscard' || source === 'robKong'
@@ -1420,7 +1422,7 @@ function settleHuBatch(game, winners, tile, source, fromSeat = null, discardInde
               ? allSeats(game).filter((other) => other !== seat && !priorHuSeats.includes(other))
               : repeatSelfDrawWithOneUnhu
                 ? allSeats(game).filter((other) => !priorHuSeats.includes(other))
-                : source === 'discard' && !bigSingle
+                : source === 'discard'
                   ? [fromSeat]
                   : allSeats(game).filter((other) => other !== seat);
     const payments = transferPoints(game, seat, payerSeats, score.total);

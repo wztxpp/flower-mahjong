@@ -87,7 +87,8 @@ New tables select three/four seats, one–five decks in half steps and a dragon 
 - 终局首胡自摸例外：第三家普通自摸结束时，另外两家仍各付一次；明杠后补摸仍仅原明杠出牌者付。多人共胡先全部记胡再判断终局；所有杠后接炮无论首胡或再胡，均只由出牌者付款。神龙独立结算。
 - v0.4.2 新局保存 `finalHuPaymentExceptions: true`；旧局缺少该标记保留原自摸付款规则；schema 3 杠后接炮付款修复不依赖此标记。
 - 普通自摸付款方排除也适用于大单吊；新局分值按上述番分加萝卜，旧局原固定五十分规则继续保留。即时杠分和终局神龙保持独立。杠后补摸按上述本次杠的来源确定付款方。杠后接炮适用上面的出牌者单独付款规则。旧局未保存 `selfDrawOnlyUnwon` 的，继续原有付款规则，不改旧账。
-- 新牌型只改变大单吊的分值与特殊听牌，不暗改付款方：普通接炮的大单吊仍沿用已有两家付款逻辑，自摸及终局例外按既有规则；杠后接炮适用最新出牌者单独付款修复。旧局保留原五十分与旧叠加选项；终局神龙独立结算。
+- v3 大单吊胡牌的付款方和其他牌型相同：普通接炮只收炮家，自摸、抢杠、杠后接炮及末家首次胡按相同的来源规则判断。修正只影响后续结算，不重算已有账目；大单吊听牌喜钱、旧快照五十分及叠加选项、v1/v2 兼容引擎均不变。
+- In v3, big-single wins use the same source-based payer rules as other hands. Ordinary discard wins charge only the discarder. This correction affects future settlements only, not past payments, the ready bonus, saved fixed-point scoring, or the v1/v2 compatibility engines.
 
 ## 即时杠分
 

@@ -59,7 +59,7 @@ getWaitTiles tries each possible added identity using structural checks without 
 
 - `classifyHuPattern` 解释完整牌型；首次七对档位要保存，不因以后胡牌区积累又升档。 / Classify the complete shape and preserve the first qualifying seven-pairs tier.
 - `calculateHuScore` 计算 fan、fanPoints、radishBonus 等分解，但不扣任何人的分。 / Calculate a breakdown without moving points.
-- `settleHuBatch` 根据来源、杠来源、已经胡过的人和末家例外确定付款座位。这个顺序很敏感，不能随便交换分支。 / Determine payers from win source, kong provenance, prior winners, and final-win exceptions; branch order matters.
+- `settleHuBatch` 根据来源、杠来源、已经胡过的人和末家例外确定付款座位。这个顺序很敏感，不能随便交换分支。 / Determine payers from win source, kong provenance, prior winners, and final-win exceptions; branch order matters. 大单吊也使用相同付款规则；普通接炮只收炮家，牌型仍影响计番，不影响谁付分。 / Big single uses the same payer rules; an ordinary discard win charges only the discarder. Shape still affects fan, not payer selection.
 - `transferPoints` 才进行零和转账，同时返回 payments 给历史/界面。 / Only the transfer helper mutates balances and emits payment entries.
 - `settleDragons` 在 v3 终局收一次神龙分，独立 settled 防重；不能把它重新加到每次胡里。 / Settle v3 dragons once at finish, not on every hu.
 - `awardBigSingleReady` 在真实形成待牌后处理一次喜钱；不在 `getLegalActions` 这类读取里收费。 / Process the ready bonus only after a committed ready shape, never during a read-only legal-action calculation.

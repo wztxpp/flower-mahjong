@@ -1004,9 +1004,9 @@ test("a first seven-pairs win can activate after an earlier standard win with ov
   // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
   assertGameInvariants(game);
 });
-// 场景：以大单吊副露牌值荣胡时保留原付款策略，且胡牌仅计一次
-// Scenario: big-single meld-type discard wins retain the existing payer policy and count the tile once
-test("big-single meld-type discard wins retain the existing payer policy and count the tile once", () => {
+// 场景：以大单吊副露牌值再次接炮胡，只由出牌者付款，且胡牌仅计一次。
+// Scenario: a repeat big-single discard win on a meld tile charges only the discarder and counts the tile once.
+test("repeat big-single discard win on a meld tile charges only the discarder and counts the tile once", () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const groups = [meld(0), meld(3), meld(9), meld(12)];
@@ -1058,12 +1058,8 @@ test("big-single meld-type discard wins retain the existing payer policy and cou
       delta: -8,
     },
     {
-      seat: 2,
-      delta: -8,
-    },
-    {
       seat: 1,
-      delta: 16,
+      delta: 8,
     },
   ]);
   assert.deepEqual(game.players[1].melds, groups);

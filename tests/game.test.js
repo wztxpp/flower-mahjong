@@ -1610,9 +1610,9 @@ test("dragon 6/7/8 pays each opponent 10/20/40 only at game end", () => {
     assertGameInvariants(game);
   }
 });
-// 场景：旧版大单吊向每名对手恰好收取 50 分，即使是荣胡
-// Scenario: legacy big single wait charges each opponent exactly 50, even on a discard
-test("legacy big single wait charges each opponent exactly 50, even on a discard", () => {
+// 场景：v3 旧快照仍按每付款方 50 分计价，但普通接炮只收炮家。
+// Scenario: a saved v3 fixed-price big-single discard win still charges 50 points, but only to the discarder.
+test("v3 fixed-price big-single discard win charges 50 points only to the discarder", () => {
   // 准备：建立本步骤的输入或保留对照数据；这些值属于当前合成场景。
   // Arrange: prepare this step’s input or reference data within the synthetic scenario.
   const melds = [meld(0), meld(3), meld(9), meld(12)];
@@ -1641,9 +1641,9 @@ test("legacy big single wait charges each opponent exactly 50, even on a discard
   assert.equal(event.score.overlapPolicy, "exclusive");
   assert.deepEqual(
     game.players.map((player) => player.score),
-    [-50, 100, -50],
+    [-50, 50, 0],
   );
-  assert.equal(event.payments.length, 3);
+  assert.equal(event.payments.length, 2);
   // 验证当前状态的引擎不变量；场景不能靠非法牌数来满足期望。
   // Check current engine invariants; an expected outcome must not rely on illegal tile counts.
   assertGameInvariants(game);

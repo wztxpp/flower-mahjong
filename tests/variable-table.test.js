@@ -237,16 +237,24 @@ for (const points of [0, 50]) {
   });
 }
 
-test('ordinary big-single discard retains all-opponent payment while ordinary wins charge only the discarder', () => {
-  let game = variableFixture({ melds: [[], [meld(0), meld(3), meld(6), meld(9)], [], []],
-    hands: [[...scattered, 17], [17], scattered, scattered], drawTile: 17 });
-  game = applyAction(game, 0, { type: 'discard', tile: 17 });
-  for (const seat of [...game.claim.eligibleSeats].reverse()) {
-    game = applyAction(game, seat, { type: seat === 1 ? 'hu' : 'pass' });
-  }
-  const event = game.history.find(item => item.type === 'hu' && item.seat === 1);
-  assert.deepEqual(event.payments.filter(item => item.delta < 0).map(item => item.seat), [0, 2, 3]);
-});
+// 三、四人桌的大单吊普通接炮只扣出牌者，不扣已经胡过或仍未胡的旁家。
+// In three- and four-player games only the discarder pays; bystanders never pay regardless of prior wins.
+for (const playerCount of [3, 4]) {
+  test(`ordinary big-single discard charges only the discarder with ${playerCount} players`, () => {
+    let game = variableFixture({ playerCount, melds: [[], [meld(0), meld(3), meld(6), meld(9)], [], []],
+      huCounts: [0, 0, 1], hands: [[...scattered, 17], [17], scattered, scattered], drawTile: 17 });
+    game = applyAction(game, 0, { type: 'discard', tile: 17 });
+    for (const seat of [...game.claim.eligibleSeats].reverse()) {
+      game = applyAction(game, seat, { type: seat === 1 ? 'hu' : 'pass' });
+    }
+    const event = game.history.find(item => item.type === 'hu' && item.seat === 1);
+    assert.equal(event.source, 'discard');
+    assert.equal(event.score.bigSingle, true);
+    assert.deepEqual(event.payments, [{ seat: 0, delta: -event.score.total }, { seat: 1, delta: event.score.total }]);
+    assert.deepEqual(game.players.slice(2).map(player => player.score), Array(playerCount - 2).fill(0));
+    assertGameInvariants(game);
+  });
+}
 
 test('fourth-seat exposed-kong provenance is a valid sole replacement payer', () => {
   const game = variableFixture({ hands: [[...waiting, 17], scattered, scattered, scattered], drawTile: 17 });
